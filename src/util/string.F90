@@ -21,7 +21,7 @@ module musica_string
     !> the string
     character(len=:), allocatable :: val_
   contains
-    !> \defgroup StringAssign String assignment
+    !> @name String assignment
     !! @{
     procedure, private, pass(to) :: string_assign_char
     procedure, private, pass(to) :: string_assign_int
@@ -33,7 +33,7 @@ module musica_string
                                 string_assign_real, string_assign_double,     &
                                 string_assign_logical, assign_string
     !> @}
-    !> \defgroup StringJoin Join a string
+    !> @name Join a string
     !! @{
     procedure, private :: string_join_string
     procedure, private :: string_join_char
@@ -45,7 +45,7 @@ module musica_string
                                string_join_int, string_join_real,             &
                                string_join_double, string_join_logical
     !> @}
-    !> \defgroup StringEquality String equality
+    !> @name String equality
     !! @{
     procedure, private :: string_equals_string
     procedure, private :: string_equals_char
@@ -69,7 +69,8 @@ module musica_string
                                string_not_equals_double,                      &
                                string_not_equals_logical
     !> @}
-    !> Output
+    !> @name String Output
+    !! @{
     procedure :: write_string_unformatted
     procedure :: write_string_formatted
     generic :: write(unformatted) => write_string_unformatted
@@ -89,6 +90,7 @@ module musica_string
     procedure :: to_char => string_to_char
   end type string_t
 
+  !> Join with string
   interface operator(//)
     module procedure char_join_string
     module procedure int_join_string
@@ -97,6 +99,7 @@ module musica_string
     module procedure logical_join_string
   end interface
 
+  !> String equality
   interface operator(==)
     module procedure char_equals_string
     module procedure int_equals_string
@@ -105,6 +108,7 @@ module musica_string
     module procedure logical_equals_string
   end interface
 
+  !> String inequality
   interface operator(/=)
     module procedure char_not_equals_string
     module procedure int_not_equals_string

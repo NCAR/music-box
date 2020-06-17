@@ -12,20 +12,22 @@ module musica_convert
 
   public :: convert_t
 
-  !> Conversion equation types
+  !> @defgroup convert_eq_types Conversion equation types
   !!
   !! The names describe the conversion from standard to non-standard units.
   !! @{
+
   !> An unspecified conversion
   integer, parameter :: CONV_INVALID = 0
-  !> non_std = (std + offset) * scale
+  !> \f$ nonStd = (std + offset) * scale \f$
   integer, parameter :: CONV_OFFSET_THEN_SCALE = 1
-  !> non_std = std * scale + offset
+  !> \f$ nonStd = std * scale + offset \f$
   integer, parameter :: CONV_SCALE_THEN_OFFSET = 2
-  !> non_std = ( longitude * scale ) + std
+  !> \f$ nonStd = ( longitude * scale ) + std \f$
   integer, parameter :: CONV_SCALE_LONGITUDE_THEN_MOD_OFFSET = 3
-  !> non_std = ( std * surface_area * scale ) + offset
+  !> \f$ nonStd = ( std * cellHeight * scale ) + offset \f$
   integer, parameter :: CONV_SCALE_WITH_HEIGHT_THEN_OFFSET = 4
+
   !> @}
 
   !> Conversion to and from standard MUSICA units
@@ -39,10 +41,10 @@ module musica_convert
     real(kind=musica_dk) :: offset_ = 0.0d0
   contains
     !> Convert to the standard units
-    procedure :: to_standard
+    procedure, public :: to_standard
     !> Convert to the non-standard units
-    procedure :: to_non_standard
-    !> Private setup functions
+    procedure, public :: to_non_standard
+    !> @name Private setup functions
     !! @{
     procedure :: set_up_for_UTC
     procedure :: set_up_for_K
@@ -326,7 +328,7 @@ contains
       this%scale_factor_ = 1.0d-5
     else if( non_standard .eq. "mmhg" .or.                                    &
              non_standard .eq. "torr" ) then
-      !> \fixme The conversion between torr/mmHg and Pa is approximate
+      !> \bug The conversion between torr/mmHg and Pa is approximate
       this%conversion_type_ = CONV_SCALE_THEN_OFFSET
       this%scale_factor_ = 1.0d0 / 133.0d0
     else

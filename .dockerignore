@@ -1,0 +1,9 @@
+# blacklist all
+*
+
+# whitelist things to copy
+!CMakeLists.txt
+!src/
+!apps/
+!test/
+!examples/
