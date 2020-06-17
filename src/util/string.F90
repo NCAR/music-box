@@ -1,0 +1,1095 @@
+!> \file
+!> The musica_string module
+
+!> The string_t type and related functions
+module musica_string
+
+  use musica_constants,                only : musica_ik, musica_rk, musica_dk
+
+  implicit none
+  private
+
+  public :: string_t, assignment(=), operator(//), operator(==),              &
+            operator(/=), to_char
+
+  !> Length of character array for to_char conversions
+  integer(kind=musica_ik), parameter :: CONVERT_CHAR_LENGTH = 100
+
+  !> Generic tring type
+  type :: string_t
+  private
+    !> the string
+    character(len=:), allocatable :: val_
+  contains
+    !> \defgroup StringAssign String assignment
+    !! @{
+    procedure, private, pass(to) :: string_assign_char
+    procedure, private, pass(to) :: string_assign_int
+    procedure, private, pass(to) :: string_assign_real
+    procedure, private, pass(to) :: string_assign_double
+    procedure, private, pass(to) :: string_assign_logical
+    procedure, private, pass(from) :: assign_string
+    generic :: assignment(=) => string_assign_char, string_assign_int,        &
+                                string_assign_real, string_assign_double,     &
+                                string_assign_logical, assign_string
+    !> @}
+    !> \defgroup StringJoin Join a string
+    !! @{
+    procedure, private :: string_join_string
+    procedure, private :: string_join_char
+    procedure, private :: string_join_int
+    procedure, private :: string_join_real
+    procedure, private :: string_join_double
+    procedure, private :: string_join_logical
+    generic :: operator(//) => string_join_string, string_join_char,          &
+                               string_join_int, string_join_real,             &
+                               string_join_double, string_join_logical
+    !> @}
+    !> \defgroup StringEquality String equality
+    !! @{
+    procedure, private :: string_equals_string
+    procedure, private :: string_equals_char
+    procedure, private :: string_equals_int
+    procedure, private :: string_equals_real
+    procedure, private :: string_equals_double
+    procedure, private :: string_equals_logical
+    generic :: operator(==) => string_equals_string, string_equals_char,      &
+                               string_equals_int, string_equals_real,         &
+                               string_equals_double, string_equals_logical
+    procedure, private :: string_not_equals_string
+    procedure, private :: string_not_equals_char
+    procedure, private :: string_not_equals_int
+    procedure, private :: string_not_equals_real
+    procedure, private :: string_not_equals_double
+    procedure, private :: string_not_equals_logical
+    generic :: operator(/=) => string_not_equals_string,                      &
+                               string_not_equals_char,                        &
+                               string_not_equals_int,                         &
+                               string_not_equals_real,                        &
+                               string_not_equals_double,                      &
+                               string_not_equals_logical
+    !> @}
+    !> Output
+    procedure :: write_string_unformatted
+    procedure :: write_string_formatted
+    generic :: write(unformatted) => write_string_unformatted
+    generic :: write(formatted) => write_string_formatted
+    !> @}
+    !> String length
+    procedure :: length
+    !> Convert a string to upper case
+    procedure :: to_upper
+    !> Convert a string to lower case
+    procedure :: to_lower
+    !> Substring
+    procedure :: substring
+    !> Split a string on a sub-string
+    procedure :: split
+    !> Convert the string to a character array
+    procedure :: to_char => string_to_char
+  end type string_t
+
+  interface operator(//)
+    module procedure char_join_string
+    module procedure int_join_string
+    module procedure real_join_string
+    module procedure double_join_string
+    module procedure logical_join_string
+  end interface
+
+  interface operator(==)
+    module procedure char_equals_string
+    module procedure int_equals_string
+    module procedure real_equals_string
+    module procedure double_equals_string
+    module procedure logical_equals_string
+  end interface
+
+  interface operator(/=)
+    module procedure char_not_equals_string
+    module procedure int_not_equals_string
+    module procedure real_not_equals_string
+    module procedure double_not_equals_string
+    module procedure logical_not_equals_string
+  end interface
+
+  !> Converts values to character arrays
+  interface to_char
+    module procedure int_to_char
+    module procedure real_to_char
+    module procedure double_to_char
+    module procedure logical_to_char
+  end interface to_char
+
+contains
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Assign a string from a character array
+  subroutine string_assign_char( to, from )
+
+    !> String to assign
+    class(string_t), intent(out) :: to
+    !> New string value
+    character(len=*), intent(in) :: from
+
+    to%val_ = trim( from )
+
+  end subroutine string_assign_char
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Assign a string from an integer
+  subroutine string_assign_int( to, from )
+
+    !> String to assign
+    class(string_t), intent(out) :: to
+    !> New string value
+    integer(kind=musica_ik), intent(in) :: from
+
+    character(len=30) :: new_val
+
+    write( new_val, '(i30)' ) from
+    to%val_ = adjustl( new_val )
+
+  end subroutine string_assign_int
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Assign a string from an real number
+  subroutine string_assign_real( to, from )
+
+    !> String to assign
+    class(string_t), intent(out) :: to
+    !> New string value
+    real(kind=musica_rk), intent(in) :: from
+
+    character(len=60) :: new_val
+
+    write( new_val, '(g30.20)' ) from
+    to%val_ = adjustl( new_val )
+
+  end subroutine string_assign_real
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Assign a string from an double precision real number
+  subroutine string_assign_double( to, from )
+
+    !> String to assign
+    class(string_t), intent(out) :: to
+    !> New string value
+    real(kind=musica_dk), intent(in) :: from
+
+    character(len=60) :: new_val
+
+    write( new_val, '(g30.20)' ) from
+    to%val_ = adjustl( new_val )
+
+  end subroutine string_assign_double
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Assign a string from a logical
+  subroutine string_assign_logical( to, from )
+
+    !> String to assign
+    class(string_t), intent(out) :: to
+    !> New string value
+    logical, intent(in) :: from
+
+    if( from ) then
+      to%val_ = "true"
+    else
+      to%val_ = "false"
+    end if
+
+  end subroutine string_assign_logical
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Assign from a string
+  subroutine assign_string( to, from )
+
+    use musica_assert,                 only : die_msg, assert_msg
+
+    !> Object to assign
+    class(*), intent(inout) :: to
+    !> String
+    class(string_t), intent(in) :: from
+
+    integer :: ios, len_char, len_str
+
+    select type( to )
+      type is( string_t )
+        to%val_ = from%val_
+      type is( character(len=*) )
+        len_char = len( to )
+        len_str  = len( from%val_ )
+        if( len_char .lt. len_str ) then
+          to = from%val_(1:len_char)
+        else
+          to = from%val_
+        end if
+      type is( real )
+        call assert_msg( 621504169, len( from%val_ ) .le. 30,                 &
+                         "Error converting '"//from%val_//"' to real: "//     &
+                         "string too long" )
+        read( from%val_, '(f30.0)', iostat=ios ) to
+        call assert_msg( 102862672, ios .eq. 0,                               &
+                         "Error converting '"//from%val_//"' to real: "//     &
+                         "IOSTAT = "//trim( to_char( ios ) ) )
+      type is( double precision)
+        call assert_msg( 156176342, len( from%val_ ) .le. 30,                 &
+                         "Error converting '"//from%val_//"' to double: "//   &
+                         "string too long" )
+        read( from%val_, '(f30.0)', iostat=ios ) to
+        call assert_msg( 445821432, ios .eq. 0,                               &
+                         "Error converting '"//from%val_//"' to double: "//   &
+                         "IOSTAT = "//trim( to_char( ios ) ) )
+      type is( integer )
+        call assert_msg( 822629448, len( from%val_ ) .le. 20,                 &
+                         "Error converting '"//from%val_//"' to integer: "//  &
+                         "string too long" )
+        read( from%val_, '(i20)', iostat=ios ) to
+        call assert_msg( 484221174, ios .eq. 0,                               &
+                         "Error converting '"//from%val_//"' to integer: "//  &
+                         "IOSTAT = "//trim( to_char( ios ) ) )
+      type is( logical )
+        if( from .eq. "true" ) then
+          to = .true.
+        else if( from .eq. "false" ) then
+          to = .false.
+        else
+          call die_msg( 359920976, "Cannot convert '"//from%val_//            &
+                        "' to logical" )
+        end if
+      class default
+        call die_msg( 383270832, "Invalid type for assignment from string" )
+    end select
+
+  end subroutine assign_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Join a string to a string
+  elemental function string_join_string( a, b ) result( c )
+
+    !> Joined string
+    type(string_t) :: c
+    !> String to join
+    class(string_t), intent(in) :: a
+    !> String to join
+    class(string_t), intent(in) :: b
+
+    c%val_ = a%val_//b%val_
+
+  end function string_join_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Join a string to a character array
+  elemental function string_join_char( a, b ) result( c )
+
+    !> Joined string
+    type(string_t) :: c
+    !> String to join
+    class(string_t), intent(in) :: a
+    !> Character array to join
+    character(len=*), intent(in) :: b
+
+    c%val_ = a%val_//trim( b )
+
+  end function string_join_char
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Join a string to an integer
+  elemental function string_join_int( a, b ) result( c )
+
+    !> Joined string
+    type(string_t) :: c
+    !> String to join
+    class(string_t), intent(in) :: a
+    !> Integer to join
+    integer(kind=musica_ik), intent(in) :: b
+
+    character(len=30) :: new_val
+
+    write( new_val, '(i30)' ) b
+    c%val_ = a%val_//adjustl( new_val )
+
+  end function string_join_int
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Join a string to a real number
+  elemental function string_join_real( a, b ) result( c )
+
+    !> Joined string
+    type(string_t) :: c
+    !> String to join
+    class(string_t), intent(in) :: a
+    !> Real number to join
+    real(kind=musica_rk), intent(in) :: b
+
+    character(len=60) :: new_val
+
+    write( new_val, '(g30.20)' ) b
+    c%val_ = a%val_//adjustl( new_val )
+
+  end function string_join_real
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Join a string to a double precision real number
+  elemental function string_join_double( a, b ) result( c )
+
+    !> Joined string
+    type(string_t) :: c
+    !> String to join
+    class(string_t), intent(in) :: a
+    !> Double precision real number to join
+    real(kind=musica_dk), intent(in) :: b
+
+    character(len=60) :: new_val
+
+    write( new_val, '(g30.20)' ) b
+    c%val_ = a%val_//adjustl( new_val )
+
+  end function string_join_double
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Join a string to a logical
+  elemental function string_join_logical( a, b ) result( c )
+
+    !> Joined string
+    type(string_t) :: c
+    !> String to join
+    class(string_t), intent(in) :: a
+    !> Logical to join
+    logical, intent(in) :: b
+
+    if( b ) then
+      c%val_ = a%val_//"true"
+    else
+      c%val_ = a%val_//"false"
+    end if
+
+  end function string_join_logical
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a string to a string for equality
+  logical elemental function string_equals_string( a, b ) result( equals )
+
+    !> String a
+    class(string_t), intent(in) :: a
+    !> String b
+    class(string_t), intent(in) :: b
+
+    equals = trim( a%val_ ) .eq. trim( b%val_ )
+
+  end function string_equals_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a string to a character array for equality
+  logical elemental function string_equals_char( a, b ) result( equals )
+
+    !> String a
+    class(string_t), intent(in) :: a
+    !> Character array b
+    character(len=*), intent(in) :: b
+
+    equals = trim( a%val_ ) .eq. trim( b )
+
+  end function string_equals_char
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a string to a integer for equality
+  logical elemental function string_equals_int( a, b ) result( equals )
+
+    !> String a
+    class(string_t), intent(in) :: a
+    !> Integer b
+    integer(kind=musica_ik), intent(in) :: b
+
+    character(len=30) :: comp_val
+
+    write( comp_val, '(i30)' ) b
+    equals = trim( a%val_ ) .eq. adjustl( comp_val )
+
+  end function string_equals_int
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a string to a real number for equality
+  logical elemental function string_equals_real( a, b ) result( equals )
+
+    !> String a
+    class(string_t), intent(in) :: a
+    !> Real number b
+    real(kind=musica_rk), intent(in) :: b
+
+    character(len=60) :: comp_val
+
+    write( comp_val, '(g30.20)' ) b
+    equals = trim( a%val_ ) .eq. adjustl( comp_val )
+
+  end function string_equals_real
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a string to a double-precision real number for equality
+  logical elemental function string_equals_double( a, b ) result( equals )
+
+    !> String a
+    class(string_t), intent(in) :: a
+    !> Double-precition real number b
+    real(kind=musica_dk), intent(in) :: b
+
+    character(len=60) :: comp_val
+
+    write( comp_val, '(g30.20)' ) b
+    equals = trim( a%val_ ) .eq. adjustl( comp_val )
+
+  end function string_equals_double
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a string to a logical for equality
+  logical elemental function string_equals_logical( a, b ) result( equals )
+
+    !> String a
+    class(string_t), intent(in) :: a
+    !> Logical b
+    logical, intent(in) :: b
+
+    equals = ( trim( a%val_ ) .eq. "true"  .and.       b ) .or.                &
+             ( trim( a%val_ ) .eq. "false" .and. .not. b )
+
+  end function string_equals_logical
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a string to a string for equality
+  logical elemental function string_not_equals_string( a, b )                 &
+      result( not_equals )
+
+    !> String a
+    class(string_t), intent(in) :: a
+    !> String b
+    class(string_t), intent(in) :: b
+
+    not_equals = .not. a .eq. b
+
+  end function string_not_equals_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a string to a character array for equality
+  logical elemental function string_not_equals_char( a, b )                   &
+      result( not_equals )
+
+    !> String a
+    class(string_t), intent(in) :: a
+    !> Character array b
+    character(len=*), intent(in) :: b
+
+    not_equals = .not. a .eq. b
+
+  end function string_not_equals_char
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a string to a integer for equality
+  logical elemental function string_not_equals_int( a, b )                    &
+      result( not_equals )
+
+    !> String a
+    class(string_t), intent(in) :: a
+    !> Integer b
+    integer(kind=musica_ik), intent(in) :: b
+
+    not_equals = .not. a .eq. b
+
+  end function string_not_equals_int
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a string to a real number for equality
+  logical elemental function string_not_equals_real( a, b )                   &
+      result( not_equals )
+
+    !> String a
+    class(string_t), intent(in) :: a
+    !> Real number b
+    real(kind=musica_rk), intent(in) :: b
+
+    not_equals = .not. a .eq. b
+
+  end function string_not_equals_real
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a string to a double-precision real number for equality
+  logical elemental function string_not_equals_double( a, b )                 &
+      result( not_equals )
+
+    !> String a
+    class(string_t), intent(in) :: a
+    !> Double-precition real number b
+    real(kind=musica_dk), intent(in) :: b
+
+    not_equals = .not. a .eq. b
+
+  end function string_not_equals_double
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a string to a logical for equality
+  logical elemental function string_not_equals_logical( a, b )                &
+      result( not_equals )
+
+    !> String a
+    class(string_t), intent(in) :: a
+    !> Logical b
+    logical, intent(in) :: b
+
+    not_equals = .not. a .eq. b
+
+  end function string_not_equals_logical
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Write a string
+  subroutine write_string_unformatted( this, unit, iostat, iomsg )
+
+    !> String to read into
+    class(string_t), intent(in) :: this
+    !> File unit
+    integer(kind=musica_ik), intent(in) :: unit
+    !> I/O status
+    integer(kind=musica_ik), intent(out) :: iostat
+    !> I/O error message
+    character(len=*), intent(inout) :: iomsg
+
+    write( unit, iostat=iostat, iomsg=iomsg ) this%val_
+
+  end subroutine write_string_unformatted
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Write a string
+  subroutine write_string_formatted( this, unit, iotype, v_list, iostat,      &
+      iomsg )
+
+    !> String to read into
+    class(string_t), intent(in) :: this
+    !> File unit
+    integer(kind=musica_ik), intent(in) :: unit
+    !> Format string
+    character(len=*), intent(in) :: iotype
+    !> V list
+    integer(kind=musica_ik), intent(in) :: v_list(:)
+    !> I/O status
+    integer(kind=musica_ik), intent(out) :: iostat
+    !> I/O error message
+    character(len=*), intent(inout) :: iomsg
+
+    write( unit, fmt=*, iostat=iostat, iomsg=iomsg ) this%val_
+
+  end subroutine write_string_formatted
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get the length of the string
+  elemental integer function length( this )
+
+    !> String
+    class(string_t), intent(in) :: this
+
+    length = len( this%val_ )
+
+  end function length
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Convert a string to upper case
+  !!
+  !! Adapted from http://www.star.le.ac.uk/~cgp/fortran.html (25 May 2012)
+  !! Original author: Clive Page
+  function  to_upper( this ) result( cap_string )
+
+    !> Converted string
+    type(string_t) :: cap_string
+    !> String to convert
+    class(string_t), intent(in) :: this
+
+    character(26), parameter :: cap = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    character(26), parameter :: low = 'abcdefghijklmnopqrstuvwxyz'
+    integer :: i_str, i_char
+
+    cap_string%val_ = this%val_
+    do i_str = 1, len( cap_string%val_ )
+      i_char = index( low, cap_string%val_(i_str:i_str) )
+      if( i_char .gt. 0 ) cap_string%val_(i_str:i_str) = cap(i_char:i_char)
+    end do
+
+  end function to_upper
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Convert a string to lower case
+  !!
+  !! Adapted from http://www.star.le.ac.uk/~cgp/fortran.html (25 May 2012)
+  !! Original author: Clive Page
+  function to_lower( this ) result( low_string )
+
+    !> Converted string
+    type(string_t) :: low_string
+    !> String to convert
+    class(string_t), intent(in) :: this
+
+    character(26), parameter :: cap = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    character(26), parameter :: low = 'abcdefghijklmnopqrstuvwxyz'
+    integer :: i_str, i_char
+
+    low_string%val_ = this%val_
+    do i_str = 1, len( low_string%val_ )
+      i_char = index( cap, low_string%val_(i_str:i_str) )
+      if( i_char .gt. 0 ) low_string%val_(i_str:i_str) = low(i_char:i_char)
+    end do
+
+  end function to_lower
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Return a substring
+  function substring( this, start_index, length )
+
+    !> Substring
+    type(string_t) :: substring
+    !> Full string
+    class(string_t), intent(in) :: this
+    !> Starting character index
+    integer(kind=musica_ik), intent(in) :: start_index
+    !> Length of the substring to return
+    integer(kind=musica_ik), intent(in) :: length
+
+    integer :: l
+
+    if( start_index + length - 1 .gt. len( this%val_ ) ) then
+      l = len( this%val_ ) - start_index + 1
+    else
+      l = length
+    end if
+    substring%val_ = this%val_(start_index:l+start_index-1)
+
+  end function substring
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Split a string on a substring
+  function split( this, splitter, compress ) result( sub_strings )
+
+    !> Split string
+    type(string_t), allocatable :: sub_strings(:)
+    !> Full string
+    class(string_t), intent(in) :: this
+    !> String to split on
+    character(len=*), intent(in) :: splitter
+    !> Compress (default = false)
+    !!
+    !! No 0-length substrings will be returned (adjacent tokens will be
+    !! merged; tokens at the beginning and end of the original string will be
+    !! ignored)
+    logical, intent(in), optional :: compress
+
+    integer :: i, start_str, i_substr, sl, count
+    logical :: l_comp, is_string
+
+    if( .not. allocated( this%val_ ) ) return
+    if( present( compress ) ) then
+      l_comp = compress
+    else
+      l_comp = .false.
+    end if
+
+    sl        = len( splitter )
+    if( sl .eq. 0 ) then
+      allocate( sub_strings( 1 ) )
+      sub_strings(1)%val_ = this%val_
+      return
+    end if
+
+    count     = 0
+    i         = 1
+    start_str = 1
+    is_string = .not. l_comp
+    do while( i .le. len( this%val_ ) - sl + 1 )
+      if( this%val_(i:i+sl-1) .eq. splitter ) then
+        if( is_string ) then
+          count = count + 1
+        end if
+        i = i + sl
+        is_string = .not. l_comp
+      else
+        i = i + 1
+        is_string = .true.
+      end if
+    end do
+    if( is_string ) count = count + 1
+
+    allocate( sub_strings( count ) )
+
+    i         = 1
+    start_str = 1
+    i_substr  = 1
+    is_string = .not. l_comp
+    do while( i .le. len( this%val_ ) - sl + 1 )
+      if( this%val_(i:i+sl-1) .eq. splitter ) then
+        if( is_string ) then
+          if( i .eq. start_str ) then
+            sub_strings( i_substr ) = ""
+          else
+            sub_strings( i_substr ) = this%val_(start_str:i-1)
+          end if
+          i_substr = i_substr + 1
+        end if
+        i = i + sl
+        start_str = i
+        is_string = .not. l_comp
+      else
+        i = i + 1
+        is_string = .true.
+      end if
+    end do
+
+    if( is_string ) then
+      if( i .eq. start_str ) then
+        sub_strings( i_substr ) = ""
+      else
+        sub_strings( i_substr ) = this%val_( start_str:len( this%val_ ) )
+      end if
+    end if
+
+  end function split
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Convert the string to a character array
+  function string_to_char( this ) result( char_array )
+
+    !> Converted string
+    character(len=:), allocatable :: char_array
+    !> String to convert
+    class(string_t), intent(in) :: this
+
+    char_array = this%val_
+
+  end function string_to_char
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Join a character array to a string
+  elemental function char_join_string( a, b ) result( c )
+
+    !> Joined string
+    type(string_t) :: c
+    !> Character array to join
+    character(len=*), intent(in) :: a
+    !> String to join
+    class(string_t), intent(in) :: b
+
+    c%val_ = trim( a )//b%val_
+
+  end function char_join_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Join an integer to a string
+  elemental function int_join_string( a, b ) result( c )
+
+    !> Joined string
+    type(string_t) :: c
+    !> Integer to join
+    integer(kind=musica_ik), intent(in) :: a
+    !> String to join
+    class(string_t), intent(in) :: b
+
+    character(len=30) :: new_val
+
+    write( new_val, '(i30)' ) a
+    c%val_ = trim( adjustl( new_val ) )//b%val_
+
+  end function int_join_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Join a real number to a string
+  elemental function real_join_string( a, b ) result( c )
+
+    !> Joined string
+    type(string_t) :: c
+    !> Real number to join
+    real(kind=musica_rk), intent(in) :: a
+    !> String to join
+    class(string_t), intent(in) :: b
+
+    character(len=60) :: new_val
+
+    write( new_val, '(g30.20)' ) a
+    c%val_ = trim( adjustl( new_val ) )//b%val_
+
+  end function real_join_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Join a double precision real number to a string
+  elemental function double_join_string( a, b ) result( c )
+
+    !> Joined string
+    type(string_t) :: c
+    !> Double precision real number to join
+    real(kind=musica_dk), intent(in) :: a
+    !> String to join
+    class(string_t), intent(in) :: b
+
+    character(len=60) :: new_val
+
+    write( new_val, '(g30.20)' ) a
+    c%val_ = trim( adjustl( new_val ) )//b%val_
+
+  end function double_join_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Join a logical to a string
+  elemental function logical_join_string( a, b ) result( c )
+
+    !> Joined string
+    type(string_t) :: c
+    !> Logical to join
+    logical, intent(in) :: a
+    !> String to join
+    class(string_t), intent(in) :: b
+
+    if( a ) then
+      c%val_ = "true"//b%val_
+    else
+      c%val_ = "false"//b%val_
+    end if
+
+  end function logical_join_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a character array to a string for equality
+  logical elemental function char_equals_string( a, b ) result( equals )
+
+    !> Character array a
+    character(len=*), intent(in) :: a
+    !> String b
+    class(string_t), intent(in) :: b
+
+    equals = b .eq. a
+
+  end function char_equals_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare an integer to a string for equality
+  logical elemental function int_equals_string( a, b ) result( equals )
+
+    !> Integer a
+    integer(kind=musica_ik), intent(in) :: a
+    !> String b
+    class(string_t), intent(in) :: b
+
+    equals = b .eq. a
+
+  end function int_equals_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a real number to a string for equality
+  logical elemental function real_equals_string( a, b ) result( equals )
+
+    !> Real number a
+    real(kind=musica_rk), intent(in) :: a
+    !> String b
+    class(string_t), intent(in) :: b
+
+    equals = b .eq. a
+
+  end function real_equals_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a double-precision real number to a string for equality
+  logical elemental function double_equals_string( a, b ) result( equals )
+
+    !> Double-precision real number a
+    real(kind=musica_dk), intent(in) :: a
+    !> String b
+    class(string_t), intent(in) :: b
+
+    equals = b .eq. a
+
+  end function double_equals_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a logical to a string for equality
+  logical elemental function logical_equals_string( a, b ) result( equals )
+
+    !> Logical a
+    logical, intent(in) :: a
+    !> String b
+    class(string_t), intent(in) :: b
+
+    equals = b .eq. a
+
+  end function logical_equals_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a character array to a string for equality
+  logical elemental function char_not_equals_string( a, b )                   &
+      result( not_equals )
+
+    !> Character array a
+    character(len=*), intent(in) :: a
+    !> String b
+    class(string_t), intent(in) :: b
+
+    not_equals = .not. b .eq. a
+
+  end function char_not_equals_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare an integer to a string for equality
+  logical elemental function int_not_equals_string( a, b )                    &
+      result( not_equals )
+
+    !> Integer a
+    integer(kind=musica_ik), intent(in) :: a
+    !> String b
+    class(string_t), intent(in) :: b
+
+    not_equals = .not. b .eq. a
+
+  end function int_not_equals_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a real number to a string for equality
+  logical elemental function real_not_equals_string( a, b )                   &
+      result( not_equals )
+
+    !> Real number a
+    real(kind=musica_rk), intent(in) :: a
+    !> String b
+    class(string_t), intent(in) :: b
+
+    not_equals = .not. b .eq. a
+
+  end function real_not_equals_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a double-precision real number to a string for equality
+  logical elemental function double_not_equals_string( a, b )                 &
+      result( not_equals )
+
+    !> Double-precition real number a
+    real(kind=musica_dk), intent(in) :: a
+    !> String b
+    class(string_t), intent(in) :: b
+
+    not_equals = .not. b .eq. a
+
+  end function double_not_equals_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Compare a logical to a string for equality
+  logical elemental function logical_not_equals_string( a, b )                &
+      result( not_equals )
+
+    !> Logical a
+    logical, intent(in) :: a
+    !> String b
+    class(string_t), intent(in) :: b
+
+    not_equals = .not. b .eq. a
+
+  end function logical_not_equals_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Convert an integer to a char array
+  character(len=CONVERT_CHAR_LENGTH) function int_to_char( val )              &
+      result( ret_val )
+
+    !> Value to convert
+    integer(kind=musica_ik), intent(in) :: val
+
+    write( ret_val, '(i30)' ) val
+    ret_val = adjustl( ret_val )
+
+  end function int_to_char
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Convert a real number to a char array
+  character(len=CONVERT_CHAR_LENGTH) function real_to_char( val )             &
+      result( ret_val )
+
+    !> Value to convert
+    real(kind=musica_rk), intent(in) :: val
+
+    write( ret_val, '(g30.20)' ) val
+    ret_val = adjustl( ret_val )
+
+  end function real_to_char
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Convert a double-precision real number to a char array
+  character(len=CONVERT_CHAR_LENGTH) function double_to_char( val )           &
+      result( ret_val )
+
+    !> Value to convert
+    real(kind=musica_dk), intent(in) :: val
+
+    write( ret_val, '(g30.20)' ) val
+    ret_val = adjustl( ret_val )
+
+  end function double_to_char
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Convert a logical to a char array
+  character(len=CONVERT_CHAR_LENGTH) function logical_to_char( val )          &
+      result( ret_val )
+
+    !> Value to convert
+    logical, intent(in) :: val
+
+    if( val ) then
+      write( ret_val, '(a4)' ) "true"
+    else
+      write( ret_val, '(a5)' ) "false"
+    end if
+
+  end function logical_to_char
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+end module musica_string
