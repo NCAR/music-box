@@ -2,4 +2,6 @@
 build/
 CMakeCache.txt
 CMakeFiles/
-doc/build/
+doc/html/
+doc/latex/
+

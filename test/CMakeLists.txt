@@ -1,13 +1,27 @@
 ################################################################################
+# Link musicalib to a test and add it to the suite
+
+macro(add_std_test test_name)
+  target_include_directories(${test_name} PUBLIC ${CMAKE_BINARY_DIR}/src)
+  target_link_libraries(${test_name} musicalib)
+  add_test(NAME ${test_name} COMMAND ${test_name})
+endmacro(add_std_test)
+
+################################################################################
+# Copy test data
+add_custom_target(copy_test_data ALL ${CMAKE_COMMAND} -E copy_directory
+  ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/test/data)
+
+################################################################################
 # MusicBox tests
 
 add_executable(util_string util/string.F90)
-target_include_directories(util_string PUBLIC ${CMAKE_BINARY_DIR}/src)
-target_link_libraries(util_string musicboxlib)
-add_test(NAME util_string COMMAND util_string)
+add_std_test(util_string)
 
 add_executable(util_convert util/convert.F90)
-target_include_directories(util_convert PUBLIC ${CMAKE_BINARY_DIR}/src)
-target_link_libraries(util_convert musicboxlib)
-add_test(NAME util_convert COMMAND util_convert)
+add_std_test(util_convert)
 
+add_executable(config config.F90)
+add_std_test(config)
+
+################################################################################

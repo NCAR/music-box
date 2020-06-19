@@ -36,5 +36,5 @@ doxygen
 ```
 Then, open `MusicBox/doc/build/html/index.html` in a browser.
 
-Then documentation includes more detailed instructions for configuring the model, along with developer resources.
+The documentation includes more detailed instructions for configuring the model, along with developer resources.
 
