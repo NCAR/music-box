@@ -1,0 +1,20 @@
+{
+  "my integer" : 12,
+  "this real" : 23.4,
+  "is it?" : false,
+  "some time [min]" : 24.5,
+  "my sub object" : {
+    "sub int" : 42,
+    "sub real" : 87.3,
+    "a bunch of strings" : [ "bar", "foo", "barfoo" ],
+    "really?" : true
+  },
+  "that real" : 52.3e-4,
+  "another int" : 31,
+  "a bunch of strings" : [ "foo", "bar", "foobar" ],
+  "a string" : "foo",
+  "another bunch of strings" : [ "boo", "far" ],
+  "another string" : "bar",
+  "is it really?" : true,
+  "some pressure [atm]" : 0.94
+}

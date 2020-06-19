@@ -14,7 +14,7 @@ RUN dnf -y update \
         ncview \
     && dnf clean all
 
-# Copy the MusicBox code
+# copy the MusicBox code
 COPY . /MusicBox/
 
 # python modules needed in scripts
@@ -23,13 +23,23 @@ RUN pip3 install requests
 # nodejs modules needed Mechanism-To-Code
 RUN npm install express helmet
 
+# install json-fortran
+RUN curl -LO https://github.com/jacobwilliams/json-fortran/archive/6.1.0.tar.gz \
+    && tar -zxvf 6.1.0.tar.gz \
+    && cd json-fortran-6.1.0 \
+    && export FC=gfortran \
+    && mkdir build \
+    && cd build \
+    && cmake -D SKIP_DOC_GEN:BOOL=TRUE .. \
+    && make install
+
 # clone the Mechanism-To-Code tool
 RUN git clone https://github.com/NCAR/MechanismToCode.git
 
-# Command line arguments
+# command line arguments
 ARG TAG_ID=false
 
-# Get a tag and build the model
+# get a tag and build the model
 RUN if [ "$TAG_ID" = "false" ] ; then \
       echo "No mechanism specified" ; else \
       echo "Grabbing mechanism $TAG_ID" \
@@ -42,9 +52,7 @@ RUN if [ "$TAG_ID" = "false" ] ; then \
       && cd .. \
       && mkdir build \
       && cd build \
-      && cmake -D NETCDF_LIBRARIES="/usr/lib64/libnetcdff.so;/usr/lib64/libnetcdf.so" \
-               -D NETCDF_INCLUDES_F90="/usr/lib64/gfortran/modules" \
-               -D NETCDF_INCLUDES="/usr/lib64/gfortran/modules" \
-               ../MusicBox \
+      && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-6.1.0" \
+      && cmake ../MusicBox \
       && make \
       ; fi

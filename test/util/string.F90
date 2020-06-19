@@ -190,6 +190,14 @@ contains
     call assert( 853182732, split_string(1) .eq. "foo" )
     call assert( 737505614, split_string(2) .eq. "bar" )
 
+    ! replace
+
+    a = "foobar1foobar2foo"
+    b = a%replace( "foo", "bar" )
+    call assert( 282451682, b .eq. "barbar1barbar2bar" )
+    b = a%replace( "bar", "foo" )
+    call assert( 331667161, b .eq. "foofoo1foofoo2foo" )
+
     ! convert to character array
     a = "string to convert"
     aca = a%to_char( )

@@ -58,10 +58,57 @@ module musica_convert
 
   !> Constructor for a conversion
   interface convert_t
-    procedure :: constructor, constructor_char
+    procedure :: constructor, constructor_char, constructor_str_char,         &
+                 constructor_char_str
   end interface convert_t
 
 contains
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Constructor that accepts character arrays
+  function constructor_char_str( standard_units, non_standard_units )         &
+      result( new_obj )
+
+    use musica_string,                 only : string_t
+
+    !> New conversion
+    type(convert_t) :: new_obj
+    !> Standard units
+    character(len=*), intent(in) :: standard_units
+    !> Non-standard units
+    type(string_t), intent(in) :: non_standard_units
+
+    type(string_t) :: std
+
+    std = standard_units
+
+    new_obj = constructor( std, non_standard_units )
+
+  end function constructor_char_str
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Constructor that accepts character arrays
+  function constructor_str_char( standard_units, non_standard_units )         &
+      result( new_obj )
+
+    use musica_string,                 only : string_t
+
+    !> New conversion
+    type(convert_t) :: new_obj
+    !> Standard units
+    type(string_t), intent(in) :: standard_units
+    !> Non-standard units
+    character(len=*), intent(in) :: non_standard_units
+
+    type(string_t) :: non_std
+
+    non_std = non_standard_units
+
+    new_obj = constructor( standard_units, non_std )
+
+  end function constructor_str_char
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

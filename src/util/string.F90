@@ -9,15 +9,13 @@ module musica_string
   implicit none
   private
 
-  public :: string_t, assignment(=), operator(//), operator(==),              &
-            operator(/=), to_char
+  public :: string_t, operator(//), operator(==), operator(/=), to_char
 
   !> Length of character array for to_char conversions
   integer(kind=musica_ik), parameter :: CONVERT_CHAR_LENGTH = 100
 
   !> Generic tring type
   type :: string_t
-  private
     !> the string
     character(len=:), allocatable :: val_
   contains
@@ -35,39 +33,65 @@ module musica_string
     !> @}
     !> @name Join a string
     !! @{
-    procedure, private :: string_join_string
-    procedure, private :: string_join_char
-    procedure, private :: string_join_int
-    procedure, private :: string_join_real
-    procedure, private :: string_join_double
-    procedure, private :: string_join_logical
+    procedure, private, pass(a) :: string_join_string
+    procedure, private, pass(a) :: string_join_char
+    procedure, private, pass(a) :: string_join_int
+    procedure, private, pass(a) :: string_join_real
+    procedure, private, pass(a) :: string_join_double
+    procedure, private, pass(a) :: string_join_logical
+    procedure, private, pass(b) :: char_join_string
+    procedure, private, pass(b) :: int_join_string
+    procedure, private, pass(b) :: real_join_string
+    procedure, private, pass(b) :: double_join_string
+    procedure, private, pass(b) :: logical_join_string
     generic :: operator(//) => string_join_string, string_join_char,          &
                                string_join_int, string_join_real,             &
-                               string_join_double, string_join_logical
+                               string_join_double, string_join_logical,       &
+                               char_join_string, int_join_string,             &
+                               real_join_string, double_join_string,          &
+                               logical_join_string
     !> @}
     !> @name String equality
     !! @{
-    procedure, private :: string_equals_string
-    procedure, private :: string_equals_char
-    procedure, private :: string_equals_int
-    procedure, private :: string_equals_real
-    procedure, private :: string_equals_double
-    procedure, private :: string_equals_logical
+    procedure, private, pass(a) :: string_equals_string
+    procedure, private, pass(a) :: string_equals_char
+    procedure, private, pass(a) :: string_equals_int
+    procedure, private, pass(a) :: string_equals_real
+    procedure, private, pass(a) :: string_equals_double
+    procedure, private, pass(a) :: string_equals_logical
+    procedure, private, pass(b) :: char_equals_string
+    procedure, private, pass(b) :: int_equals_string
+    procedure, private, pass(b) :: real_equals_string
+    procedure, private, pass(b) :: double_equals_string
+    procedure, private, pass(b) :: logical_equals_string
     generic :: operator(==) => string_equals_string, string_equals_char,      &
                                string_equals_int, string_equals_real,         &
-                               string_equals_double, string_equals_logical
-    procedure, private :: string_not_equals_string
-    procedure, private :: string_not_equals_char
-    procedure, private :: string_not_equals_int
-    procedure, private :: string_not_equals_real
-    procedure, private :: string_not_equals_double
-    procedure, private :: string_not_equals_logical
+                               string_equals_double, string_equals_logical,   &
+                               char_equals_string, int_equals_string,         &
+                               real_equals_string, double_equals_string,      &
+                               logical_equals_string
+    procedure, private, pass(a) :: string_not_equals_string
+    procedure, private, pass(a) :: string_not_equals_char
+    procedure, private, pass(a) :: string_not_equals_int
+    procedure, private, pass(a) :: string_not_equals_real
+    procedure, private, pass(a) :: string_not_equals_double
+    procedure, private, pass(a) :: string_not_equals_logical
+    procedure, private, pass(b) :: char_not_equals_string
+    procedure, private, pass(b) :: int_not_equals_string
+    procedure, private, pass(b) :: real_not_equals_string
+    procedure, private, pass(b) :: double_not_equals_string
+    procedure, private, pass(b) :: logical_not_equals_string
     generic :: operator(/=) => string_not_equals_string,                      &
                                string_not_equals_char,                        &
                                string_not_equals_int,                         &
                                string_not_equals_real,                        &
                                string_not_equals_double,                      &
-                               string_not_equals_logical
+                               string_not_equals_logical,                     &
+                               char_not_equals_string,                        &
+                               int_not_equals_string,                         &
+                               real_not_equals_string,                        &
+                               double_not_equals_string,                      &
+                               logical_not_equals_string
     !> @}
     !> @name String Output
     !! @{
@@ -86,36 +110,11 @@ module musica_string
     procedure :: substring
     !> Split a string on a sub-string
     procedure :: split
+    !> Replace substrings withing a string
+    procedure :: replace
     !> Convert the string to a character array
     procedure :: to_char => string_to_char
   end type string_t
-
-  !> Join with string
-  interface operator(//)
-    module procedure char_join_string
-    module procedure int_join_string
-    module procedure real_join_string
-    module procedure double_join_string
-    module procedure logical_join_string
-  end interface
-
-  !> String equality
-  interface operator(==)
-    module procedure char_equals_string
-    module procedure int_equals_string
-    module procedure real_equals_string
-    module procedure double_equals_string
-    module procedure logical_equals_string
-  end interface
-
-  !> String inequality
-  interface operator(/=)
-    module procedure char_not_equals_string
-    module procedure int_not_equals_string
-    module procedure real_not_equals_string
-    module procedure double_not_equals_string
-    module procedure logical_not_equals_string
-  end interface
 
   !> Converts values to character arrays
   interface to_char
@@ -782,6 +781,49 @@ contains
     end if
 
   end function split
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Replace substrings within a string
+  function replace( this, from, to )
+
+    !> String with replacements
+    type(string_t) :: replace
+    !> Original string
+    class(string_t) :: this
+    !> Sub-string to replace
+    character(len=*), intent(in) :: from
+    !> Replacement string
+    character(len=*), intent(in) :: to
+
+    integer :: i_char, start_str, s
+    logical :: is_string
+
+    start_str = 1
+    s = len( from )
+    is_string = .false.
+    replace = ""
+    i_char = 1
+    do while( i_char .le. len( this%val_ ) - s + 1 )
+      if( this%val_( i_char:i_char+s-1 ) .eq. from ) then
+        if( is_string .and. i_char .gt. start_str ) then
+          replace%val_ = replace%val_//this%val_( start_str:i_char-1 )
+        end if
+        replace = replace//to
+        i_char = i_char + s
+        start_str = i_char
+        is_string = .false.
+      else
+        i_char = i_char + 1
+        is_string = .true.
+      end if
+    end do
+
+    if( is_string .and. i_char .gt. start_str ) then
+      replace%val_ = replace%val_//this%val_( start_str:len( this%val_ ) )
+    end if
+
+  end function replace
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
