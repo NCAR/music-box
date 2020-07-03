@@ -21,7 +21,7 @@ cd build
 From here, you can specify model parameters and initial conditions, or use one of the test configurations provided in `/examples`, such as:
 
 ```
-./musicbox ../MusicBox2/examples/272/dark_chamber.json
+./musicbox ../MusicBox2/examples/dark_chamber/config.json
 ```
 
 The results will be in a file named `output.nc`.

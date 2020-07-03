@@ -1,0 +1,3 @@
+[submodule "libs/MICM_chemistry"]
+	path = libs/MICM_chemistry
+	url = https://github.com/mattldawson/MICM_chemistry.git

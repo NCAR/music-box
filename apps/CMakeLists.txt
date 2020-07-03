@@ -1,8 +1,7 @@
 ################################################################################
 # MusicBox application
 
-add_executable(musicbox MusicBox.F90)
+add_executable(music_box music_box.F90 music_box_core.F90)
 
-target_include_directories(musicbox PUBLIC ${CMAKE_BINARY_DIR}/src)
-target_link_libraries(musicbox musicalib)
+target_link_libraries(music_box musicalib)
 

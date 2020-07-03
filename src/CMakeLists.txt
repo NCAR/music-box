@@ -1,7 +1,15 @@
 ######################################################################
 # MUSICA library
 
-file(GLOB MUSICA_SRC *.F90 util/*.F90)
+set(MUSICA_SRC config.F90
+               domain.F90
+               domain_factory.F90
+               domains/cell.F90
+               util/assert.F90
+               util/constants.F90
+               util/convert.F90
+               util/iterator.F90
+               util/string.F90)
 
 add_library(musicalib ${MUSICA_SRC})
 
