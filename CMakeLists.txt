@@ -55,13 +55,20 @@ find_library(JSON_LIB jsonfortran
   PATHS
     $ENV{JSON_FORTRAN_HOME}/lib
     /opt/local/lib
-    /usr/local/lib)
+    /usr/local/lib
+    /usr/local/lib64)
 include_directories(${JSON_INCLUDE_DIR})
 
 ################################################################################
 # MUSICA library
 
 add_subdirectory(src)
+include_directories(${CMAKE_BINARY_DIR}/src)
+
+################################################################################
+# MICM library
+
+add_subdirectory(libs/MICM_chemistry/src)
 
 ################################################################################
 # MusicBox application

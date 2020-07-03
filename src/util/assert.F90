@@ -95,6 +95,18 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+  !> Error immediately
+  subroutine die( code )
+
+    !> Unique code for the failure
+    integer, intent(in) :: code
+
+    call die_msg( code, "Internal error" )
+
+  end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   !> Determine whether two real numbers are equal within a provided or
   !! standard tolerance
   logical function almost_equal_real( a, b, relative_tolerance,               &

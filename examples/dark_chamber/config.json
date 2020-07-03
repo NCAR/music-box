@@ -1,0 +1,19 @@
+{
+  "box model options" : {
+    "grid"                      : "box",
+    "chemistry time step [min]" : 5.0,
+    "output time step [hr]"     : 1.0,
+    "simulation length [hr]"    : 2.5
+  },
+  "chemical species" : {
+    "NO2"  : { "initial value [mol m-3]" : 2.0e-7 },
+    "NO"   : { "initial value [mol m-3]" : 1.0e-7 },
+    "O3"   : { "initial value [mol m-3]" : 1.0e-6 },
+    "ISOP" : { "initial value [mol m-3]" : 5.0e-5 }
+  },
+  "environmental conditions" : {
+    "temperature" : { "initial value [K]"   : 298.0 },
+    "pressure"    : { "initial value [atm]" : 1.0   }
+  }
+}
+
