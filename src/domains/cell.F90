@@ -266,7 +266,7 @@ contains
                                   this%property_units_( property_id ),      &
                        "Unit mismatch for property '"//trim( variable_name )&
                        //"': '"//trim( units )//"' != '"//                  &
-                       this%property_units_( property_id ) )
+                       this%property_units_( property_id )%to_char( ) )
     else
       call add_string_to_array( this%properties_, variable_name )
       call add_string_to_array( this%property_units_, units )
@@ -334,9 +334,10 @@ contains
                            property_id ) ) then
             call assert_msg( 526855940, units .eq.                            &
                                         this%property_units_( property_id ),  &
-                             "Unit mismatch for property '"//full_name//      &
-                             "': '"//trim( units )//"' != '"//                &
-                             this%property_units_( property_id ) )
+                             "Unit mismatch for property '"//                 &
+                             full_name%to_char( )//"': '"//trim( units )//    &
+                             "' != '"//                &
+                             this%property_units_( property_id )%to_char( ) )
           else
             call add_string_to_array( this%properties_, full_name%to_char( ) )
             call add_string_to_array( this%property_units_, units )
@@ -491,7 +492,7 @@ contains
           ! find the property or return an error if not found
           if( .not. find_string( this%properties_, full_name%to_char( ),      &
                                  property_id ) )                              &
-            call die_msg( 556955404, "Property '"//full_name//                &
+            call die_msg( 556955404, "Property '"//full_name%to_char( )//     &
                        "' requested by '"//trim( requestor )//"' not found." )
 
           ! register the accessor
