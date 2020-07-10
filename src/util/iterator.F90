@@ -13,11 +13,9 @@ module musica_iterator
   type, abstract :: iterator_t
   contains
     !> Advance the iterator
-    procedure(next_default), deferred, private :: next_default
-    generic :: next => next_default
+    procedure(next), deferred :: next
     !> Reset the iterator
-    procedure(reset_default), deferred, private  :: reset_default
-    procedure :: reset => reset_default
+    procedure(reset), deferred :: reset
   end type iterator_t
 
 interface
@@ -26,20 +24,20 @@ interface
   !> Advance the iterator
   !!
   !! Returns false if the end of the collection has been reached
-  logical function next_default( this )
+  logical function next( this )
     import iterator_t
     !> Iterator
     class(iterator_t), intent(inout) :: this
-  end function next_default
+  end function next
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Reset the iterator
-  subroutine reset_default( this )
+  subroutine reset( this )
     import iterator_t
     !> Iterator
     class(iterator_t), intent(inout) :: this
-  end subroutine reset_default
+  end subroutine reset
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 end interface

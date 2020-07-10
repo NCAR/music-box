@@ -10,7 +10,9 @@ module musica_domain
   private
 
   public :: domain_t, domain_state_t, domain_state_mutator_t,                 &
-            domain_state_accessor_t, domain_iterator_t
+            domain_state_accessor_t, domain_iterator_t,                       &
+            domain_ptr, domain_state_ptr, domain_state_mutator_ptr,           &
+            domain_state_accessor_ptr, domain_iterator_ptr
 
   !> A model domain of abstract structure
   !!
@@ -46,6 +48,7 @@ module musica_domain
       find_cell_state_variable_set
     !> Find a flag for all cells
     procedure(find_cell_flag), deferred :: find_cell_flag
+
     !> @}
 
     !> @name Iterators over the domain
@@ -53,14 +56,16 @@ module musica_domain
 
     !> Set up an iterator over all domain cells
     procedure(cell_iterator), deferred :: cell_iterator
-    !> Set up an iterator over all domain cells based on a cell flag
-    procedure(flagged_cell_iterator), deferred :: flagged_cell_iterator
+
     !! @}
 
     !> @name Output the domain state
     !! @{
+
+    !> Output the state to text file
     procedure(output_state_text), deferred, private :: output_state_text
     generic :: output_state => output_state_text
+
     !> @}
   end type domain_t
 
@@ -85,6 +90,36 @@ module musica_domain
   type, abstract, extends(iterator_t) :: domain_iterator_t
   end type domain_iterator_t
 
+  !> Pointer types for building arrays of abstract objects
+  !! @{
+
+  !> Domain pointer
+  type domain_ptr
+    class(domain_t), pointer :: val => null( )
+  end type domain_ptr
+
+  !> State pointer
+  type domain_state_ptr
+    class(domain_state_t), pointer :: val => null( )
+  end type domain_state_ptr
+
+  !> Mutator pointer
+  type domain_state_mutator_ptr
+    class(domain_state_mutator_t), pointer :: val => null( )
+  end type domain_state_mutator_ptr
+
+  !> Accessor pointer
+  type domain_state_accessor_ptr
+    class(domain_state_accessor_t), pointer :: val => null( )
+  end type domain_state_accessor_ptr
+
+  !> Iterator pointer
+  type domain_iterator_ptr
+    class(domain_iterator_t), pointer :: val => null( )
+  end type domain_iterator_ptr
+
+  !> @}
+
 interface
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -93,7 +128,7 @@ interface
     import domain_t
     import domain_state_t
     !> New domain state
-    class(domain_state_t), allocatable :: new_state
+    class(domain_state_t), pointer :: new_state
     !> Domain
     class(domain_t), intent(in) :: this
   end function new_state
@@ -106,7 +141,7 @@ interface
     import domain_t
     import domain_state_mutator_t
     !> Mutator for the new state variable
-    class(domain_state_mutator_t), allocatable :: new_mutator
+    class(domain_state_mutator_t), pointer :: new_mutator
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -125,12 +160,12 @@ interface
       component_names, requestor ) result( new_mutators )
     use musica_string,                 only : string_t
     import domain_t
-    import domain_state_mutator_t
+    import domain_state_mutator_ptr
     !> Mutators for the new state variables
     !!
     !! The mutators are in the same order as the component names passed to
     !! this function
-    class(domain_state_mutator_t), allocatable :: new_mutators(:)
+    class(domain_state_mutator_ptr), allocatable :: new_mutators(:)
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -151,7 +186,7 @@ interface
     import domain_t
     import domain_state_mutator_t
     !> Mutator for the new state variable
-    class(domain_state_mutator_t), allocatable :: new_mutator
+    class(domain_state_mutator_t), pointer :: new_mutator
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -168,7 +203,7 @@ interface
     import domain_t
     import domain_state_accessor_t
     !> Accessor for the requested state variable
-    class(domain_state_accessor_t), allocatable :: new_accessor
+    class(domain_state_accessor_t), pointer :: new_accessor
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the variable to find
@@ -187,9 +222,9 @@ interface
       component_names, requestor ) result( new_accessors )
     use musica_string,                 only : string_t
     import domain_t
-    import domain_state_accessor_t
+    import domain_state_accessor_ptr
     !> Accessors for the requested state variable set
-    class(domain_state_accessor_t), allocatable :: new_accessors(:)
+    class(domain_state_accessor_ptr), allocatable :: new_accessors(:)
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the variable to find
@@ -211,7 +246,7 @@ interface
     import domain_t
     import domain_state_accessor_t
     !> Accessor for the requested flag
-    class(domain_state_accessor_t), allocatable :: new_accessor
+    class(domain_state_accessor_t), pointer :: new_accessor
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the flag to find
@@ -227,28 +262,10 @@ interface
     import domain_t
     import domain_iterator_t
     !> New iterator
-    class(domain_iterator_t), allocatable :: cell_iterator
+    class(domain_iterator_t), pointer :: cell_iterator
     !> Domain
     class(domain_t), intent(in) :: this
   end function cell_iterator
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  !> Get an iterator for flagged cells in associated domain_state_t objects
-  function flagged_cell_iterator( this, flag_name, flag_value )
-    import domain_t
-    import domain_iterator_t
-    !> New iterator
-    class(domain_iterator_t), allocatable :: flagged_cell_iterator
-    !> Domain
-    class(domain_t), intent(in) :: this
-    !> Name of the registered cell flag
-    character(len=*), intent(in) :: flag_name
-    !> Flag value to select cells by
-    !!
-    !! Defaults to true
-    logical, intent(in), optional :: flag_value
-  end function flagged_cell_iterator
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

@@ -19,6 +19,7 @@ contains
   !> Build a domain by name
   function domain_builder( config ) result( new_domain )
 
+    use musica_assert,                 only : die_msg
     use musica_config,                 only : config_t
     use musica_string,                 only : string_t
 
