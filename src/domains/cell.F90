@@ -86,13 +86,15 @@ module musica_domain_cell
 
     !> Set up an iterator over all domain cells
     procedure :: cell_iterator
-    !> Set up an iterator over all domain cells based on a cell flag
-    procedure :: flagged_cell_iterator
+
     !! @}
 
     !> @name Output the domain state
     !! @{
+
+    !> Output the state to a text file
     procedure, private :: output_state_text
+
     !> @}
   end type domain_cell_t
 
@@ -170,24 +172,10 @@ module musica_domain_cell
     integer(kind=musica_ik) :: last_cell_
   contains
     !> Advance the iterator
-    procedure :: next_default => domain_cell_iterator_next
+    procedure :: next => domain_cell_iterator_next
     !> Reset the iterator
-    procedure :: reset_default => domain_cell_iterator_reset
+    procedure :: reset => domain_cell_iterator_reset
   end type domain_cell_iterator_t
-
-  !> Domain iterator for flagged cells
-  type, extends(domain_cell_iterator_t) :: domain_cell_iterator_flag_t
-    private
-    !> Index of the flag in domain_cell_t%flags_(:)
-    integer(kind=musica_ik) :: i_flag_
-    !> Flag value to search for
-    logical :: flag_value_ = .true.
-  contains
-    !> Advance the iterator
-    procedure :: next_default => domain_cell_iterator_flag_next
-    procedure :: domain_cell_iterator_flag_next_state
-    generic :: next => domain_cell_iterator_flag_next_state
-  end type domain_cell_iterator_flag_t
 
 contains
 
@@ -204,10 +192,11 @@ contains
     class(config_t), intent(inout) :: config
 
     allocate( new_domain )
-    allocate( new_domain%properties_( 0 ) )
-    allocate( new_domain%flags_(      0 ) )
-    allocate( new_domain%mutators_(   0 ) )
-    allocate( new_domain%accessors_(  0 ) )
+    allocate( new_domain%properties_(     0 ) )
+    allocate( new_domain%property_units_( 0 ) )
+    allocate( new_domain%flags_(          0 ) )
+    allocate( new_domain%mutators_(       0 ) )
+    allocate( new_domain%accessors_(      0 ) )
 
   end function constructor
 
@@ -217,7 +206,7 @@ contains
   function new_state( this )
 
     !> New domain state
-    class(domain_state_t), allocatable :: new_state
+    class(domain_state_t), pointer :: new_state
     !> Domain
     class(domain_cell_t), intent(in) :: this
 
@@ -244,8 +233,10 @@ contains
   function register_cell_state_variable( this, variable_name, units,          &
       requestor ) result( new_mutator )
 
+    use musica_assert,                 only : assert, assert_msg
+
     !> Mutator for the new state variable
-    class(domain_state_mutator_t), allocatable :: new_mutator
+    class(domain_state_mutator_t), pointer :: new_mutator
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -296,14 +287,15 @@ contains
   function register_cell_state_variable_set( this, variable_name, units,      &
       component_names, requestor ) result( new_mutators )
 
-    use musica_assert,                 only : assert
+    use musica_assert,                 only : assert, assert_msg
+    use musica_domain,                 only : domain_state_mutator_ptr
     use musica_string,                 only : string_t
 
     !> Mutators for the new state variable
     !!
     !! The mutators are in the same order as the component names passed to
     !! this function
-    class(domain_state_mutator_t), allocatable :: new_mutators(:)
+    class(domain_state_mutator_ptr), allocatable :: new_mutators(:)
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the variable to create
@@ -321,12 +313,11 @@ contains
 
     call assert( 152214984, len( trim( variable_name ) ) .gt. 0 )
 
-    allocate( domain_cell_state_mutator_property_t ::                         &
-              new_mutators( size( component_names ) ) )
+    allocate( new_mutators( size( component_names ) ) )
 
-    select type( new_mutators )
-      class is( domain_cell_state_mutator_property_t )
-        do i_mutator = 1, size( new_mutators )
+    do i_mutator = 1, size( new_mutators )
+      select type( mutator => new_mutators( i_mutator )%val )
+        class is( domain_cell_state_mutator_property_t )
           full_name = trim( variable_name )//"%"//component_names( i_mutator )
 
           ! find the property or create it if it doesn't exist
@@ -336,7 +327,7 @@ contains
                                         this%property_units_( property_id ),  &
                              "Unit mismatch for property '"//                 &
                              full_name%to_char( )//"': '"//trim( units )//    &
-                             "' != '"//                &
+                             "' != '"//                                       &
                              this%property_units_( property_id )%to_char( ) )
           else
             call add_string_to_array( this%properties_, full_name%to_char( ) )
@@ -351,10 +342,10 @@ contains
           call add_registered_pair_to_array( this%mutators_, new_pair )
 
           ! create the mutator
-          new_mutators( i_mutator )%i_owner_    = size( this%mutators_ )
-          new_mutators( i_mutator )%i_property_ = property_id
-        end do
-    end select
+          mutator%i_owner_    = size( this%mutators_ )
+          mutator%i_property_ = property_id
+      end select
+    end do
 
   end function register_cell_state_variable_set
 
@@ -367,7 +358,7 @@ contains
     use musica_assert,                 only : assert
 
     !> Mutator for the new state variable
-    class(domain_state_mutator_t), allocatable :: new_mutator
+    class(domain_state_mutator_t), pointer :: new_mutator
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -408,11 +399,11 @@ contains
   function find_cell_state_variable( this, variable_name, units, requestor )  &
       result( new_accessor )
 
-    use musica_assert,                 only : assert
+    use musica_assert,                 only : assert, die_msg
     use musica_string,                 only : string_t
 
     !> Accessor for the requested state variable
-    class(domain_state_accessor_t), allocatable :: new_accessor
+    class(domain_state_accessor_t), pointer :: new_accessor
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the variable to find
@@ -457,8 +448,11 @@ contains
   function find_cell_state_variable_set( this, variable_name, units,          &
       component_names, requestor ) result( new_accessors )
 
+    use musica_assert,                 only : assert, die_msg
+    use musica_domain,                 only : domain_state_accessor_ptr
+
     !> Accessors for the requested state variable set
-    class(domain_state_accessor_t), allocatable :: new_accessors(:)
+    class(domain_state_accessor_ptr), allocatable :: new_accessors(:)
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the variable to find
@@ -479,13 +473,11 @@ contains
     call assert( 520075610, allocated( component_names ) )
     call assert( 127187550, len( trim( variable_name ) ) .gt. 0 )
 
-    allocate( domain_cell_state_accessor_property_t ::                        &
-              new_accessors( size( component_names ) ) )
+    allocate( new_accessors( size( component_names ) ) )
 
-    select type( new_accessors )
-      class is( domain_cell_state_accessor_property_t )
-
-        do i_accessor = 1, size( component_names )
+    do i_accessor = 1, size( component_names )
+      select type( accessor => new_accessors( i_accessor )%val )
+        class is( domain_cell_state_accessor_property_t )
           full_name =                                                         &
             trim( variable_name )//"%"//component_names( i_accessor )
 
@@ -502,10 +494,10 @@ contains
           call add_registered_pair_to_array( this%accessors_, new_pair )
 
           ! create the accessor
-          new_accessors( i_accessor )%i_owner_    = size( this%accessors_ )
-          new_accessors( i_accessor )%i_property_ = property_id
-      end do
-    end select
+          accessor%i_owner_    = size( this%accessors_ )
+          accessor%i_property_ = property_id
+      end select
+    end do
 
   end function find_cell_state_variable_set
 
@@ -514,8 +506,10 @@ contains
   !> Find a registered flag for each cell in the domain
   function find_cell_flag( this, flag_name, requestor ) result( new_accessor )
 
+    use musica_assert,                 only : assert, die_msg
+
     !> Accessor for the requested flag
-    class(domain_state_accessor_t), allocatable :: new_accessor
+    class(domain_state_accessor_t), pointer :: new_accessor
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the flag to find
@@ -558,7 +552,7 @@ contains
     use musica_iterator,               only : iterator_t
 
     !> New iterator
-    class(domain_iterator_t), allocatable :: cell_iterator
+    class(domain_iterator_t), pointer :: cell_iterator
     !> Domain
     class(domain_cell_t), intent(in) :: this
 
@@ -571,45 +565,10 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an iterator for flagged cells in domain_cell_state_t objects
-  function flagged_cell_iterator( this, flag_name, flag_value )
-
-    !> New iterator
-    class(domain_iterator_t), allocatable :: flagged_cell_iterator
-    !> Domain
-    class(domain_cell_t), intent(in) :: this
-    !> Flag name
-    character(len=*), intent(in) :: flag_name
-    !> Flag value to select cells by
-    !!
-    !! Defaults to true
-    logical, intent(in), optional :: flag_value
-
-    integer :: flag_id
-    logical :: l_flag
-
-    l_flag = .true.
-    if( present( flag_value ) ) l_flag = flag_value
-
-    call assert_msg( 112159644,                                               &
-                     find_string( this%flags_, flag_name, flag_id ),          &
-                     "Could not find flag '"//trim( flag_name )//             &
-                     "' for use by cell iterator." )
-
-    allocate( domain_cell_iterator_flag_t :: flagged_cell_iterator )
-    select type( flagged_cell_iterator )
-      class is( domain_cell_iterator_flag_t )
-        flagged_cell_iterator%last_cell_  = this%number_of_cells_
-        flagged_cell_iterator%i_flag_     = flag_id
-        flagged_cell_iterator%flag_value_ = l_flag
-    end select
-
-  end function flagged_cell_iterator
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
   !> Output the domain state to a text file
   subroutine output_state_text( this, domain_state )
+
+    use musica_assert,                 only : die_msg
 
     !> Domain
     class(domain_cell_t), intent(inout) :: this
@@ -690,6 +649,8 @@ contains
   !> Update the value of a registered property or state variable
   subroutine state_update( this, iterator, mutator, state_value )
 
+    use musica_assert,                 only : die_msg, die
+
     !> Domain state
     class(domain_cell_state_t), intent(inout) :: this
     !> Domain iterator
@@ -769,56 +730,6 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Advance the iterator
-  !!
-  !! Flag iterators require the domain state to find the next cell, so the
-  !! standard next function is disabled
-  logical function domain_cell_iterator_flag_next( this )
-
-    !> Iterator
-    class(domain_cell_iterator_flag_t), intent(inout) :: this
-
-    call die_msg( 119612683, "The domain state must be passed to "//          &
-                  "domain_cell_iterator_cell_t%next()" )
-    domain_cell_iterator_flag_next = .false.
-
-  end function domain_cell_iterator_flag_next
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  !> Advance the iterator
-  !!
-  !! Returns false if the end of the collection has been reached
-  logical function domain_cell_iterator_flag_next_state( this, state )
-
-    !> Iterator
-    class(domain_cell_iterator_flag_t), intent(inout) :: this
-    !> Domain state
-    class(domain_cell_state_t), intent(in) :: state
-
-    select type( state )
-      class is( domain_cell_state_t )
-
-        this%current_cell_ = this%current_cell_ + 1
-        do while( .not. state%flags_( this%current_cell_, this%i_flag_ ) .eqv.    &
-                  this%flag_value_ )
-          this%current_cell_ = this%current_cell_ + 1
-          if( this%current_cell_ .gt. this%last_cell_ ) exit
-        end do
-
-        if( this%current_cell_ .gt. this%last_cell_ ) then
-          domain_cell_iterator_flag_next_state = .false.
-        else
-          domain_cell_iterator_flag_next_state = .true.
-        end if
-      class default
-        call die_msg( 956987708, "Wrong state sent to domain iterator" )
-    end select
-
-  end function domain_cell_iterator_flag_next_state
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
   !> @}
 
   !> @name Private functions of the musica_domain_cell module
@@ -829,6 +740,8 @@ contains
 
   !> Add a registered pair to an array of registered pairs
   subroutine add_registered_pair_to_array( array, new_pair )
+
+    use musica_assert,                 only : assert
 
     !> Array to add to
     type(registered_pair_t), allocatable, intent(inout)  :: array(:)
@@ -853,6 +766,8 @@ contains
 
   !> Add a string to an array of string
   subroutine add_string_to_array( array, new_string )
+
+    use musica_assert,                 only : assert
 
     !> Array to add to
     type(string_t), allocatable, intent(inout) :: array(:)
