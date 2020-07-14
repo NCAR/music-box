@@ -6,6 +6,7 @@ module musica_config
 
   use json_module,                     only : json_file, json_value, json_core
   use musica_constants,                only : musica_ik, musica_rk, musica_dk
+  use musica_iterator,                 only : iterator_t
 
   implicit none
   private
@@ -30,6 +31,10 @@ module musica_config
     procedure :: empty
     !> Load a configuration with data from a file
     procedure :: from_file => construct_from_file
+    !> Get an iterator for the configuration data
+    procedure :: get_iterator
+    !> Get the key name for a key-value pair
+    procedure :: key
     !> Get some configuration data
     !!
     !! Each function includes optional \c found and \c default arguments. If
@@ -52,9 +57,13 @@ module musica_config
     procedure, private :: get_double
     procedure, private :: get_logical
     procedure, private :: get_string_array
+    procedure, private :: get_from_iterator
+    procedure, private :: get_property_from_iterator
+    procedure, private :: get_array_from_iterator
     generic :: get => get_config, get_string, get_string_string_default,      &
                       get_property, get_int, get_float, get_double,           &
-                      get_logical, get_string_array
+                      get_logical, get_string_array, get_from_iterator,       &
+                      get_property_from_iterator, get_array_from_iterator
     !> @}
     !> Add a named piece of configuration data
     !! @{
@@ -88,6 +97,19 @@ module musica_config
     !> Find a JSON key by prefix
     procedure, private :: find_by_prefix
   end type config_t
+
+  !> Configuration data iterator
+  type, extends(iterator_t) :: config_iterator_t
+    !> Pointer to the configuration data
+    class(config_t), pointer :: config_ => null( )
+    !> Current index in the data set
+    integer(kind=musica_ik) :: id_ = 0
+  contains
+    !> Advance to the next key-value pair
+    procedure :: next => iterator_next
+    !> Reset the iterator
+    procedure :: reset => iterator_reset
+  end type config_iterator_t
 
 contains
 
@@ -145,6 +167,56 @@ contains
     call file%destroy( )
 
   end subroutine construct_from_file
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get an interator for the configuration data
+  function get_iterator( this )
+
+    !> Pointer to the iterator
+    class(iterator_t), pointer :: get_iterator
+    !> Configuration
+    class(config_t), intent(inout), target :: this
+
+    allocate( config_iterator_t :: get_iterator )
+    select type( iter => get_iterator )
+      type is( config_iterator_t )
+        iter%config_ => this
+    end select
+
+  end function get_iterator
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get the key name using an iterator
+  function key( this, iterator )
+
+    use json_module,                   only : json_ck, json_ik
+    use musica_assert,                 only : die_msg
+    use musica_string,                 only : string_t
+
+    !> Key name
+    type(string_t) :: key
+    !> Configuration
+    class(config_t), intent(inout) :: this
+    !> Configuration iterator
+    class(iterator_t), intent(in) :: iterator
+
+    type(json_value), pointer :: j_obj
+    character(kind=json_ck, len=:), allocatable :: j_key
+
+    select type( iterator )
+      class is( config_iterator_t )
+        call this%core_%get_child( this%value_,                               &
+                                   int( iterator%id_, kind=json_ik ), j_obj )
+        call this%core_%info( j_obj, name = j_key )
+        key = j_key
+      class default
+        call die_msg( 789668190, "Iterator type mismatch. Expected "//        &
+                      "config_iterator_t" )
+    end select
+
+  end function key
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -541,6 +613,137 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+  !> Get a value using an iterator
+  !!
+  !! \todo the get functions should be changed so that the search by name
+  !!       functions call search by index functions
+  subroutine get_from_iterator( this, iterator, value, caller )
+
+    use json_module,                   only : json_ck
+    use musica_assert,                 only : die_msg
+    use musica_string,                 only : string_t
+
+    !> Configuration
+    class(config_t), intent(inout) :: this
+    !> Iterator to use to find value
+    class(iterator_t), intent(in) :: iterator
+    !> Returned value
+    class(*), intent(out) :: value
+    !> Name of the calling function (only for use in error messages)
+    character(len=*), intent(in) :: caller
+
+    type(json_value), pointer :: j_obj
+    character(kind=json_ck, len=:), allocatable :: key
+
+    select type( iterator )
+      class is( config_iterator_t )
+        call this%core_%get_child( this%value_, iterator%id_, j_obj )
+        call this%core_%info( j_obj, name = key )
+        select type( value )
+          type is( config_t )
+            call this%get_config( key, value, caller )
+          type is( integer( musica_ik ) )
+            call this%get_int( key, value, caller )
+          type is( real( musica_rk ) )
+            call this%get_float( key, value, caller )
+          type is( real( musica_dk ) )
+            call this%get_double( key, value, caller )
+          type is( logical )
+            call this%get_logical( key, value, caller )
+          type is( string_t )
+            call this%get_string( key, value, caller )
+          class default
+            call die_msg( 898465007, "Unknown type for get function." )
+        end select
+      class default
+        call die_msg( 888551443, "Iterator type mismatch. Expected "//        &
+                      "config_iterator_t" )
+    end select
+
+  end subroutine get_from_iterator
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get a property value using an iterator
+  !!
+  !! \todo the get functions should be changed so that the search by name
+  !!       functions call search by index functions
+  subroutine get_property_from_iterator( this, iterator, units, ret_val,      &
+      caller )
+
+    use json_module,                   only : json_ck, json_rk
+    use musica_assert,                 only : die_msg
+    use musica_convert,                only : convert_t
+    use musica_string,                 only : string_t
+
+    !> Configuration
+    class(config_t), intent(inout) :: this
+    !> Iterator to use to find value
+    class(iterator_t), intent(in) :: iterator
+    !> Standard units for the property
+    character(len=*), intent(in) :: units
+    !> Returned value
+    real(kind=musica_dk), intent(out) :: ret_val
+    !> Name of the calling function (only used for error messages)
+    character(len=*), intent(in) :: caller
+
+    type(json_value), pointer :: j_obj
+    character(kind=json_ck, len=:), allocatable :: key
+    real(json_rk) :: tmp_val
+    type(convert_t) :: convert
+
+    select type( iterator )
+      class is( config_iterator_t )
+        call this%core_%get_child( this%value_, iterator%id_, j_obj )
+        call this%core_%info( j_obj, name = key )
+        call this%core_%get( j_obj, tmp_val )
+        convert = convert_t( units, get_property_units( key ) )
+        ret_val = convert%to_standard( tmp_val )
+      class default
+        call die_msg( 946966665, "Iterator type mismatch. Expected "//        &
+                      "config_iterator_t" )
+    end select
+
+  end subroutine get_property_from_iterator
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get an array value using an iterator
+  !!
+  !! \todo the get functions should be changed so that the search by name
+  !!       functions call search by index functions
+  subroutine get_array_from_iterator( this, iterator, value, caller )
+
+    use json_module,                   only : json_ck
+    use musica_assert,                 only : die_msg
+    use musica_string,                 only : string_t
+
+    !> Configuration
+    class(config_t), intent(inout) :: this
+    !> Iterator to use to find value
+    class(iterator_t), intent(in) :: iterator
+    !> Returned value
+    type(string_t), allocatable, intent(out) :: value(:)
+    !> Name of the calling function (only for use in error messages)
+    character(len=*), intent(in) :: caller
+
+    type(json_value), pointer :: j_obj
+    character(kind=json_ck, len=:), allocatable :: key
+
+    select type( iterator )
+      class is( config_iterator_t )
+        call this%core_%get_child( this%value_, iterator%id_, j_obj )
+        call this%core_%info( j_obj, name = key )
+        call this%get_string_array( key, value, caller )
+      class default
+        call die_msg( 858322486, "Iterator type mismatch. Expected "//        &
+                      "config_iterator_t" )
+    end select
+
+  end subroutine get_array_from_iterator
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   !> Add a subset of configuration data
   subroutine add_config( this, key, value, caller )
 
@@ -925,6 +1128,42 @@ contains
     full_key = ""
 
   end subroutine find_by_prefix
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Advance the iterator
+  !!
+  !! Returns false if the end of the collection has been reached
+  logical function iterator_next( this )
+
+    use json_module,                   only : json_ik
+
+    !> Iterator
+    class(config_iterator_t), intent(inout) :: this
+
+    integer(kind=json_ik) :: n_children
+
+    this%id_ = this%id_ + 1
+    call this%config_%core_%info( this%config_%value_, n_children = n_children )
+    if( this%id_ .le. n_children ) then
+      iterator_next = .true.
+    else
+      iterator_next = .false.
+    end if
+
+  end function iterator_next
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Reset the iterator
+  subroutine iterator_reset( this )
+
+    !> Iterator
+    class(config_iterator_t), intent(inout) :: this
+
+    this%id_ = 0
+
+  end subroutine iterator_reset
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

@@ -70,15 +70,28 @@ module musica_domain_cell
 
     !> @}
 
-    !> @name Find registered domain properties and state variables
+    !> @name Get mutators for registered domain properties and state
+    !! variables
     !! @{
 
-    !> Find a state variable for all cells
-    procedure :: find_cell_state_variable
-    !> Find a named collection of state variables for all cells
-    procedure :: find_cell_state_variable_set
-    !> Find a flag for all cells
-    procedure :: find_cell_flag
+    !> Get an mutator for a state variable for all cells
+    procedure :: cell_state_mutator
+    !> Get mutators for a named collection of state variables for all cells
+    procedure :: cell_state_set_mutator
+    !> Get an mutator for a flag for all cells
+    procedure :: cell_flag_mutator
+    !> @}
+
+    !> @name Get accessors for registered domain properties and state
+    !! variables
+    !! @{
+
+    !> Get an accessor for a state variable for all cells
+    procedure :: cell_state_accessor
+    !> Get accessors for a named collection of state variables for all cells
+    procedure :: cell_state_set_accessor
+    !> Get an accessor for a flag for all cells
+    procedure :: cell_flag_accessor
     !> @}
 
     !> @name Iterators over the domain
@@ -395,8 +408,161 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Find a registered state variable for each cell in the domain
-  function find_cell_state_variable( this, variable_name, units, requestor )  &
+  !> Get an mutator for a registered state variable for each cell in the
+  !! domain
+  function cell_state_mutator( this, variable_name, units, requestor )        &
+      result( new_mutator )
+
+    use musica_assert,                 only : assert, die_msg
+    use musica_string,                 only : string_t
+
+    !> Accessor for the requested state variable
+    class(domain_state_mutator_t), pointer :: new_mutator
+    !> Domain
+    class(domain_cell_t), intent(inout) :: this
+    !> Name of the variable to find
+    character(len=*), intent(in) :: variable_name
+    !> Units for the state variable
+    character(len=*), intent(in) :: units
+    !> Name of the model component requesting the mutator
+    character(len=*), intent(in) :: requestor
+
+    integer :: property_id
+    type(registered_pair_t) :: new_pair
+
+    call assert( 680476255, len( trim( variable_name ) ) .gt. 0 )
+
+    ! find the property or return an error if not found
+    if( .not. find_string( this%properties_, variable_name, property_id ) )   &
+      then
+      call die_msg( 905112945, "Property '"//trim( variable_name )//          &
+                    "' requested by '"//trim( requestor )//"' not found." )
+    end if
+
+    ! register the mutator
+    new_pair%owner_    = requestor
+    new_pair%property_ = this%properties_( property_id )
+    new_pair%type_     = ALL_CELL_PROPERTY
+    call add_registered_pair_to_array( this%mutators_, new_pair )
+
+    ! create the mutator
+    allocate( domain_cell_state_mutator_property_t :: new_mutator )
+    select type( new_mutator )
+      class is( domain_cell_state_mutator_property_t )
+        new_mutator%i_owner_    = size( this%mutators_ )
+        new_mutator%i_property_ = property_id
+    end select
+
+  end function cell_state_mutator
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get mutators for a set of state variables for each cell in the domain
+  function cell_state_set_mutator( this, variable_name, units,                &
+      component_names, requestor ) result( new_mutators )
+
+    use musica_assert,                 only : assert, die_msg
+    use musica_domain,                 only : domain_state_mutator_ptr
+
+    !> Accessors for the requested state variable set
+    class(domain_state_mutator_ptr), allocatable :: new_mutators(:)
+    !> Domain
+    class(domain_cell_t), intent(inout) :: this
+    !> Name of the variable to find
+    character(len=*), intent(in) :: variable_name
+    !> Units for the state variable
+    character(len=*), intent(in) :: units
+    !> Names of each component of the variable set
+    !!
+    !! The names are in the same order as the returned mutators
+    type(string_t), allocatable, intent(out) :: component_names(:)
+    !> Name of the model component requesting the mutator
+    character(len=*), intent(in) :: requestor
+
+    type(registered_pair_t) :: new_pair
+    type(string_t) :: full_name
+    integer :: i_mutator, property_id
+
+    call assert( 899848638, allocated( component_names ) )
+    call assert( 394642233, len( trim( variable_name ) ) .gt. 0 )
+
+    allocate( new_mutators( size( component_names ) ) )
+
+    do i_mutator = 1, size( component_names )
+      select type( mutator => new_mutators( i_mutator )%val )
+        class is( domain_cell_state_mutator_property_t )
+          full_name =                                                         &
+            trim( variable_name )//"%"//component_names( i_mutator )
+
+          ! find the property or return an error if not found
+          if( .not. find_string( this%properties_, full_name%to_char( ),      &
+                                 property_id ) )                              &
+            call die_msg( 842010079, "Property '"//full_name%to_char( )//     &
+                       "' requested by '"//trim( requestor )//"' not found." )
+
+          ! register the mutator
+          new_pair%owner_    = requestor
+          new_pair%property_ = this%properties_( property_id )
+          new_pair%type_     = ALL_CELL_PROPERTY
+          call add_registered_pair_to_array( this%mutators_, new_pair )
+
+          ! create the mutator
+          mutator%i_owner_    = size( this%mutators_ )
+          mutator%i_property_ = property_id
+      end select
+    end do
+
+  end function cell_state_set_mutator
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get an mutator for a domain cell flag
+  function cell_flag_mutator( this, flag_name, requestor )                    &
+      result( new_mutator )
+
+    use musica_assert,                 only : assert, die_msg
+
+    !> Accessor for the requested flag
+    class(domain_state_mutator_t), pointer :: new_mutator
+    !> Domain
+    class(domain_cell_t), intent(inout) :: this
+    !> Name of the flag to find
+    character(len=*), intent(in) :: flag_name
+    !> Name of the model component requesting the mutator
+    character(len=*), intent(in) :: requestor
+
+    integer :: flag_id
+    type(registered_pair_t) :: new_pair
+
+    call assert( 284229422, len( trim( flag_name ) ) .gt. 0 )
+
+    ! find the flag or return an error if not found
+    if( .not. find_string( this%flags_, flag_name, flag_id ) ) then
+      call die_msg( 614014616, "Flag '"//trim( flag_name )//                  &
+                    "' requested by '"//trim( requestor )//"' not found." )
+    end if
+
+    ! register the mutator
+    new_pair%owner_    = requestor
+    new_pair%property_ = this%flags_( flag_id )
+    new_pair%type_     = ALL_CELL_FLAG
+    call add_registered_pair_to_array( this%mutators_, new_pair )
+
+    ! create the mutator
+    allocate( domain_cell_state_mutator_flag_t :: new_mutator )
+    select type( new_mutator )
+      class is( domain_cell_state_mutator_flag_t )
+        new_mutator%i_owner_ = size( this%mutators_ )
+        new_mutator%i_flag_  = flag_id
+    end select
+
+  end function cell_flag_mutator
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get an accessor for a registered state variable for each cell in the
+  !! domain
+  function cell_state_accessor( this, variable_name, units, requestor )       &
       result( new_accessor )
 
     use musica_assert,                 only : assert, die_msg
@@ -439,13 +605,12 @@ contains
         new_accessor%i_property_ = property_id
     end select
 
-  end function find_cell_state_variable
+  end function cell_state_accessor
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Find a registered named set of state variables for each cell in the
-  !! domain
-  function find_cell_state_variable_set( this, variable_name, units,          &
+  !> Get accessors for a set of state variables for each cell in the domain
+  function cell_state_set_accessor( this, variable_name, units,               &
       component_names, requestor ) result( new_accessors )
 
     use musica_assert,                 only : assert, die_msg
@@ -499,12 +664,13 @@ contains
       end select
     end do
 
-  end function find_cell_state_variable_set
+  end function cell_state_set_accessor
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Find a registered flag for each cell in the domain
-  function find_cell_flag( this, flag_name, requestor ) result( new_accessor )
+  !> Get an accessor for a domain cell flag
+  function cell_flag_accessor( this, flag_name, requestor )                   &
+      result( new_accessor )
 
     use musica_assert,                 only : assert, die_msg
 
@@ -542,7 +708,7 @@ contains
         new_accessor%i_flag_  = flag_id
     end select
 
-  end function find_cell_flag
+  end function cell_flag_accessor
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

@@ -208,9 +208,9 @@ contains
     ! get accessors
 
     this%accessors_( kTemperature )%val =>                                    &
-      this%domain_%find_cell_state_variable( "temperature", "K", my_name )
+      this%domain_%cell_state_accessor( "temperature", "K", my_name )
     this%accessors_( kPressure    )%val =>                                    &
-      this%domain_%find_cell_state_variable( "pressure",   "Pa", my_name )
+      this%domain_%cell_state_accessor( "pressure",   "Pa", my_name )
 
   end subroutine register_standard_state_variables
 
