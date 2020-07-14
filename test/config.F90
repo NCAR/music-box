@@ -19,6 +19,7 @@ contains
   subroutine test_config_t( )
 
     use musica_constants,              only : musica_rk, musica_dk, musica_ik
+    use musica_iterator,               only : iterator_t
     use musica_string,                 only : string_t
 
     type(config_t) :: a, a_file, b, c
@@ -29,6 +30,7 @@ contains
     type(string_t) :: sa, sb
     type(string_t), allocatable :: saa(:), sab(:)
     character(len=*), parameter :: my_name = "config tests"
+    class(iterator_t), pointer :: iterator
 
     ! constructors
 
@@ -277,6 +279,55 @@ contains
     call a_file%finalize( )
     call b%finalize( )
     call c%finalize( )
+
+    ! iterator
+    a = '{ "my int" : 2,'//&
+        '  "my real" : 4.2,'//&
+        '  "my double" : 5.2,'//&
+        '  "my logical" : true,'//&
+        '  "my string" : "foo bar",'//&
+        '  "my sub config" : { "an int" : 3, "a double" : 6.7 },'//&
+        '  "my property [K]" : 295.6,'//&
+        '  "my string array" : [ "foo", "bar", "foobar" ] }'
+    iterator => a%get_iterator( )
+    call assert( 909667855, iterator%next( ) )
+    call a%get( iterator, ia, my_name )
+    call assert( 227587000, ia .eq. 2 )
+    call assert( 217058386, iterator%next( ) )
+    call a%get( iterator, ra, my_name )
+    call assert( 391026358, almost_equal( ra, 4.2 ) )
+    call assert( 270084933, iterator%next( ) )
+    call a%get( iterator, da, my_name )
+    call assert( 384308812, almost_equal( da, 5.2d0 ) )
+    call assert( 826412351, iterator%next( ) )
+    call a%get( iterator, la, my_name )
+    call assert( 258103080, la )
+    call assert( 147690269, iterator%next( ) )
+    call a%get( iterator, sa, my_name )
+    call assert( 361110121, sa .eq. "foo bar" )
+    call assert( 468164159, iterator%next( ) )
+    call a%get( iterator, b, my_name )
+    call b%get( "a double", da, my_name )
+    call assert( 749186169, almost_equal( da, 6.7d0 ) )
+    call b%get( "an int", ia, my_name )
+    call assert( 915984300, ia .eq. 3 )
+    call assert( 182782432, iterator%next( ) )
+    call a%get( iterator, "K", da, my_name )
+    call assert( 739109850, almost_equal( da, 295.6d0 ) )
+    call assert( 846163888, iterator%next( ) )
+    call a%get( iterator, saa, my_name )
+    call assert( 902549208, saa(1) .eq. "foo" )
+    call assert( 334239937, saa(2) .eq. "bar" )
+    call assert( 164083033, saa(3) .eq. "foobar" )
+    call assert( 441293975, .not. iterator%next( ) )
+    call iterator%reset( )
+    call assert( 102885701, iterator%next( ) )
+    call a%get( iterator, ia, my_name )
+    call assert( 162629794, ia .eq. 2 )
+
+    call a%finalize( )
+    call b%finalize( )
+    deallocate( iterator )
 
   end subroutine test_config_t
 

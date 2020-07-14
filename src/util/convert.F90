@@ -6,6 +6,7 @@
 module musica_convert
 
   use musica_constants,                only : musica_dk
+  use musica_string,                   only : string_t
 
   implicit none
   private
@@ -39,11 +40,15 @@ module musica_convert
     real(kind=musica_dk) :: scale_factor_ = 1.0d0
     !> Offset
     real(kind=musica_dk) :: offset_ = 0.0d0
+    !> Standard units
+    type(string_t) :: standard_units_
   contains
     !> Convert to the standard units
     procedure, public :: to_standard
     !> Convert to the non-standard units
     procedure, public :: to_non_standard
+    !> Return the standard units for this conversion
+    procedure, public :: standard_units
     !> @name Private setup functions
     !! @{
     procedure :: set_up_for_UTC
@@ -70,7 +75,6 @@ contains
   function constructor_char_str( standard_units, non_standard_units )         &
       result( new_obj )
 
-    use musica_string,                 only : string_t
 
     !> New conversion
     type(convert_t) :: new_obj
@@ -93,7 +97,6 @@ contains
   function constructor_str_char( standard_units, non_standard_units )         &
       result( new_obj )
 
-    use musica_string,                 only : string_t
 
     !> New conversion
     type(convert_t) :: new_obj
@@ -116,7 +119,6 @@ contains
   function constructor_char( standard_units, non_standard_units )             &
       result( new_obj )
 
-    use musica_string,                 only : string_t
 
     !> New conversion
     type(convert_t) :: new_obj
@@ -140,7 +142,6 @@ contains
   function constructor( standard_units, non_standard_units ) result( new_obj )
 
     use musica_assert,                 only : die_msg
-    use musica_string,                 only : string_t
 
     !> New conversion
     type(convert_t) :: new_obj
@@ -153,6 +154,8 @@ contains
 
     std     = standard_units%to_lower( )
     non_std = non_standard_units%to_lower( )
+
+    new_obj%standard_units_ = std
 
     if( std .eq. "utc" ) then
       call new_obj%set_up_for_UTC( non_std )
@@ -271,12 +274,25 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+  !> Return the standard units for this conversion
+  function standard_units( this )
+
+    !> Standard units
+    type(string_t) :: standard_units
+    !> Conversion
+    class(convert_t), intent(in) :: this
+
+    standard_units = this%standard_units_
+
+  end function standard_units
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   !> Set up a conversion for datetime [UTC]
   subroutine set_up_for_UTC( this, non_standard )
 
     use musica_assert,                 only : die_msg
     use musica_constants,              only : PI
-    use musica_string,                 only : string_t
 
     !> Converter
     class(convert_t), intent(inout) :: this
@@ -310,7 +326,6 @@ contains
   subroutine set_up_for_K( this, non_standard )
 
     use musica_assert,                 only : die_msg
-    use musica_string,                 only : string_t
 
     !> Converter
     class(convert_t), intent(inout) :: this
@@ -350,7 +365,6 @@ contains
   subroutine set_up_for_Pa( this, non_standard )
 
     use musica_assert,                 only : die_msg
-    use musica_string,                 only : string_t
 
     !> Converter
     class(convert_t), intent(inout) :: this
@@ -392,7 +406,6 @@ contains
 
     use musica_assert,                 only : die_msg
     use musica_constants,              only : AVAGADRO
-    use musica_string,                 only : string_t
 
     !> Converter
     class(convert_t), intent(inout) :: this
@@ -447,7 +460,6 @@ contains
   subroutine set_up_for_s( this, non_standard )
 
     use musica_assert,                 only : die_msg
-    use musica_string,                 only : string_t
 
     !> Converter
     class(convert_t), intent(inout) :: this
@@ -488,7 +500,6 @@ contains
 
     use musica_assert,                 only : die_msg, assert_msg
     use musica_constants,              only : AVAGADRO
-    use musica_string
 
     !> Converter
     class(convert_t), intent(inout) :: this
@@ -561,7 +572,6 @@ contains
   subroutine set_up_for_per_s( this, non_standard )
 
     use musica_assert,                 only : die_msg, assert_msg
-    use musica_string,                 only : string_t
 
     !> Converter
     class(convert_t), intent(inout) :: this

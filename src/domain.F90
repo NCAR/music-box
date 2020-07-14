@@ -37,17 +37,31 @@ module musica_domain
 
     !> @}
 
-    !> @name Find registered domain properties and state variables
+    !> @name Get mutators for registered domain properties and state
+    !! variables
     !! @{
 
-    !> Find a state variable for all cells
-    procedure(find_cell_state_variable), deferred ::                          &
-      find_cell_state_variable
-    !> Find a named collection of state variables for all cells
-    procedure(find_cell_state_variable_set), deferred ::                      &
-      find_cell_state_variable_set
-    !> Find a flag for all cells
-    procedure(find_cell_flag), deferred :: find_cell_flag
+    !> Get an mutator for a state variable for all cells
+    procedure(cell_state_mutator), deferred :: cell_state_mutator
+    !> Get mutators for a named collection of state variables for all
+    !! cells
+    procedure(cell_state_set_mutator), deferred :: cell_state_set_mutator
+    !> Get an mutator for a flag for all cells
+    procedure(cell_flag_mutator), deferred :: cell_flag_mutator
+
+    !> @}
+
+    !> @name Get accessors for registered domain properties and state
+    !! variables
+    !! @{
+
+    !> Get an accessor for a state variable for all cells
+    procedure(cell_state_accessor), deferred :: cell_state_accessor
+    !> Get accessors for a named collection of state variables for all
+    !! cells
+    procedure(cell_state_set_accessor), deferred :: cell_state_set_accessor
+    !> Get an accessor for a flag for all cells
+    procedure(cell_flag_accessor), deferred :: cell_flag_accessor
 
     !> @}
 
@@ -197,8 +211,71 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Find a registered state variable for each cell in the domain
-  function find_cell_state_variable( this, variable_name, units, requestor )  &
+  !> Get an mutator for a registered state variable for each cell in the
+  !! domain
+  function cell_state_mutator( this, variable_name, units, requestor )  &
+      result( new_mutator )
+    import domain_t
+    import domain_state_mutator_t
+    !> Accessor for the requested state variable
+    class(domain_state_mutator_t), pointer :: new_mutator
+    !> Domain
+    class(domain_t), intent(inout) :: this
+    !> Name of the variable to find
+    character(len=*), intent(in) :: variable_name
+    !> Units for the state variable
+    character(len=*), intent(in) :: units
+    !> Name of the model component requesting the mutator
+    character(len=*), intent(in) :: requestor
+  end function cell_state_mutator
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get an mutator for a registered named set of state variables for each
+  !! cell in the domain
+  function cell_state_set_mutator( this, variable_name, units,          &
+      component_names, requestor ) result( new_mutators )
+    use musica_string,                 only : string_t
+    import domain_t
+    import domain_state_mutator_ptr
+    !> Accessors for the requested state variable set
+    class(domain_state_mutator_ptr), allocatable :: new_mutators(:)
+    !> Domain
+    class(domain_t), intent(inout) :: this
+    !> Name of the variable to find
+    character(len=*), intent(in) :: variable_name
+    !> Units for the state variable
+    character(len=*), intent(in) :: units
+    !> Names of each component of the variable set
+    !!
+    !! The names are in the same order as the returned mutators
+    type(string_t), allocatable, intent(out) :: component_names(:)
+    !> Name of the model component requesting the mutator
+    character(len=*), intent(in) :: requestor
+  end function cell_state_set_mutator
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get an mutator for a registered flag for each cell in the domain
+  function cell_flag_mutator( this, flag_name, requestor )                    &
+      result( new_mutator )
+    import domain_t
+    import domain_state_mutator_t
+    !> Accessor for the requested flag
+    class(domain_state_mutator_t), pointer :: new_mutator
+    !> Domain
+    class(domain_t), intent(inout) :: this
+    !> Name of the flag to find
+    character(len=*), intent(in) :: flag_name
+    !> Name of the model component requesting the mutator
+    character(len=*), intent(in) :: requestor
+  end function cell_flag_mutator
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get an accessor for a registered state variable for each cell in the
+  !! domain
+  function cell_state_accessor( this, variable_name, units, requestor )  &
       result( new_accessor )
     import domain_t
     import domain_state_accessor_t
@@ -212,13 +289,13 @@ interface
     character(len=*), intent(in) :: units
     !> Name of the model component requesting the accessor
     character(len=*), intent(in) :: requestor
-  end function find_cell_state_variable
+  end function cell_state_accessor
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Find a registered named set of state variables for each cell in the
-  !! domain
-  function find_cell_state_variable_set( this, variable_name, units,          &
+  !> Get an accessor for a registered named set of state variables for each
+  !! cell in the domain
+  function cell_state_set_accessor( this, variable_name, units,          &
       component_names, requestor ) result( new_accessors )
     use musica_string,                 only : string_t
     import domain_t
@@ -237,12 +314,13 @@ interface
     type(string_t), allocatable, intent(out) :: component_names(:)
     !> Name of the model component requesting the accessor
     character(len=*), intent(in) :: requestor
-  end function find_cell_state_variable_set
+  end function cell_state_set_accessor
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Find a registered flag for each cell in the domain
-  function find_cell_flag( this, flag_name, requestor ) result( new_accessor )
+  !> Get an accessor for a registered flag for each cell in the domain
+  function cell_flag_accessor( this, flag_name, requestor )                   &
+      result( new_accessor )
     import domain_t
     import domain_state_accessor_t
     !> Accessor for the requested flag
@@ -253,7 +331,7 @@ interface
     character(len=*), intent(in) :: flag_name
     !> Name of the model component requesting the accessor
     character(len=*), intent(in) :: requestor
-  end function find_cell_flag
+  end function cell_flag_accessor
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
