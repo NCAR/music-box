@@ -21,11 +21,11 @@ module musica_domain_cell
   !! @{
 
   !> Invalid property type
-  integer(kind=musica_ik), parameter :: INVALID = 0
+  integer(kind=musica_ik), parameter :: kInvalid = 0
   !> Properties for all cells
-  integer(kind=musica_ik), parameter :: ALL_CELL_PROPERTY = 1
+  integer(kind=musica_ik), parameter :: kAllCellProperty = 1
   !> Flags for all cells
-  integer(kind=musica_ik), parameter :: ALL_CELL_FLAG = 2
+  integer(kind=musica_ik), parameter :: kAllCellFlag = 2
 
   !> Registered pairs
   type :: registered_pair_t
@@ -34,7 +34,7 @@ module musica_domain_cell
     !> Name of the registered property or state variable
     type(string_t) :: property_
     !> Property type
-    integer(kind=musica_ik) :: type_ = INVALID
+    integer(kind=musica_ik) :: type_ = kInvalid
   end type registered_pair_t
 
   !> @}
@@ -94,6 +94,14 @@ module musica_domain_cell
     procedure :: cell_flag_accessor
     !> @}
 
+    !> Get units for registered properties
+    !! @{
+
+    !> Get units for a state variable for all cells
+    procedure :: cell_state_units
+
+    !> @}
+
     !> @name Iterators over the domain
     !! @{
 
@@ -102,13 +110,8 @@ module musica_domain_cell
 
     !! @}
 
-    !> @name Output the domain state
-    !! @{
-
-    !> Output the state to a text file
-    procedure, private :: output_state_text
-
-    !> @}
+    !> Output the registered mutators and accessors
+    procedure :: output_registry
   end type domain_cell_t
 
   !> domain_cell_t constructor
@@ -280,7 +283,7 @@ contains
     ! register the mutator
     new_pair%owner_    = requestor
     new_pair%property_ = this%properties_( property_id )
-    new_pair%type_     = ALL_CELL_PROPERTY
+    new_pair%type_     = kAllCellProperty
     call add_registered_pair_to_array( this%mutators_, new_pair )
 
     ! create the mutator
@@ -308,7 +311,7 @@ contains
     !!
     !! The mutators are in the same order as the component names passed to
     !! this function
-    class(domain_state_mutator_ptr), allocatable :: new_mutators(:)
+    class(domain_state_mutator_ptr), pointer :: new_mutators(:)
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the variable to create
@@ -329,6 +332,8 @@ contains
     allocate( new_mutators( size( component_names ) ) )
 
     do i_mutator = 1, size( new_mutators )
+      allocate( domain_cell_state_mutator_property_t ::                       &
+                new_mutators( i_mutator )%val )
       select type( mutator => new_mutators( i_mutator )%val )
         class is( domain_cell_state_mutator_property_t )
           full_name = trim( variable_name )//"%"//component_names( i_mutator )
@@ -351,7 +356,7 @@ contains
           ! register the mutator
           new_pair%owner_    = requestor
           new_pair%property_ = this%properties_( property_id )
-          new_pair%type_     = ALL_CELL_PROPERTY
+          new_pair%type_     = kAllCellProperty
           call add_registered_pair_to_array( this%mutators_, new_pair )
 
           ! create the mutator
@@ -393,7 +398,7 @@ contains
     ! register the mutator
     new_pair%owner_    = requestor
     new_pair%property_ = this%flags_( flag_id )
-    new_pair%type_     = ALL_CELL_FLAG
+    new_pair%type_     = kAllCellFlag
     call add_registered_pair_to_array( this%mutators_, new_pair )
 
     ! create the mutator
@@ -442,7 +447,7 @@ contains
     ! register the mutator
     new_pair%owner_    = requestor
     new_pair%property_ = this%properties_( property_id )
-    new_pair%type_     = ALL_CELL_PROPERTY
+    new_pair%type_     = kAllCellProperty
     call add_registered_pair_to_array( this%mutators_, new_pair )
 
     ! create the mutator
@@ -461,11 +466,11 @@ contains
   function cell_state_set_mutator( this, variable_name, units,                &
       component_names, requestor ) result( new_mutators )
 
-    use musica_assert,                 only : assert, die_msg
+    use musica_assert,                 only : assert, assert_msg, die_msg
     use musica_domain,                 only : domain_state_mutator_ptr
 
     !> Accessors for the requested state variable set
-    class(domain_state_mutator_ptr), allocatable :: new_mutators(:)
+    class(domain_state_mutator_ptr), pointer :: new_mutators(:)
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the variable to find
@@ -480,30 +485,34 @@ contains
     character(len=*), intent(in) :: requestor
 
     type(registered_pair_t) :: new_pair
-    type(string_t) :: full_name
-    integer :: i_mutator, property_id
+    integer :: num_props, i_mutator, property_id
 
-    call assert( 899848638, allocated( component_names ) )
     call assert( 394642233, len( trim( variable_name ) ) .gt. 0 )
 
-    allocate( new_mutators( size( component_names ) ) )
+    num_props = set_length( this%properties_, variable_name )
+    call assert_msg( 291451281, num_props .gt. 0,                             &
+                     "Could not find property set '"//trim( variable_name )// &
+                     "' requested by '"//trim( requestor )//"'" )
+
+    allocate( component_names( num_props ) )
+    allocate( new_mutators(    num_props ) )
 
     do i_mutator = 1, size( component_names )
+      allocate( domain_cell_state_mutator_property_t ::                       &
+                new_mutators( i_mutator )%val )
       select type( mutator => new_mutators( i_mutator )%val )
         class is( domain_cell_state_mutator_property_t )
-          full_name =                                                         &
-            trim( variable_name )//"%"//component_names( i_mutator )
-
-          ! find the property or return an error if not found
-          if( .not. find_string( this%properties_, full_name%to_char( ),      &
-                                 property_id ) )                              &
-            call die_msg( 842010079, "Property '"//full_name%to_char( )//     &
-                       "' requested by '"//trim( requestor )//"' not found." )
+          call assert( 863119325, find_set_element( this%properties_,         &
+                                                    variable_name,            &
+                                                    i_mutator,                &
+                                                    property_id ) )
+          component_names( i_mutator ) =                                      &
+            set_element_name( this%properties_, variable_name, i_mutator )
 
           ! register the mutator
           new_pair%owner_    = requestor
           new_pair%property_ = this%properties_( property_id )
-          new_pair%type_     = ALL_CELL_PROPERTY
+          new_pair%type_     = kAllCellProperty
           call add_registered_pair_to_array( this%mutators_, new_pair )
 
           ! create the mutator
@@ -545,7 +554,7 @@ contains
     ! register the mutator
     new_pair%owner_    = requestor
     new_pair%property_ = this%flags_( flag_id )
-    new_pair%type_     = ALL_CELL_FLAG
+    new_pair%type_     = kAllCellFlag
     call add_registered_pair_to_array( this%mutators_, new_pair )
 
     ! create the mutator
@@ -594,7 +603,7 @@ contains
     ! register the accessor
     new_pair%owner_    = requestor
     new_pair%property_ = this%properties_( property_id )
-    new_pair%type_     = ALL_CELL_PROPERTY
+    new_pair%type_     = kAllCellProperty
     call add_registered_pair_to_array( this%accessors_, new_pair )
 
     ! create the accessor
@@ -613,11 +622,11 @@ contains
   function cell_state_set_accessor( this, variable_name, units,               &
       component_names, requestor ) result( new_accessors )
 
-    use musica_assert,                 only : assert, die_msg
+    use musica_assert,                 only : assert, assert_msg, die_msg
     use musica_domain,                 only : domain_state_accessor_ptr
 
     !> Accessors for the requested state variable set
-    class(domain_state_accessor_ptr), allocatable :: new_accessors(:)
+    class(domain_state_accessor_ptr), pointer :: new_accessors(:)
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the variable to find
@@ -632,30 +641,34 @@ contains
     character(len=*), intent(in) :: requestor
 
     type(registered_pair_t) :: new_pair
-    type(string_t) :: full_name
-    integer :: i_accessor, property_id
+    integer :: num_props, i_accessor, property_id
 
-    call assert( 520075610, allocated( component_names ) )
     call assert( 127187550, len( trim( variable_name ) ) .gt. 0 )
 
-    allocate( new_accessors( size( component_names ) ) )
+    num_props = set_length( this%properties_, variable_name )
+    call assert_msg( 384783104, num_props .gt. 0,                             &
+                     "Could not find property set '"//trim( variable_name )// &
+                     "' requested by '"//trim( requestor )//"'" )
+
+    allocate( component_names( num_props ) )
+    allocate( new_accessors(   num_props ) )
 
     do i_accessor = 1, size( component_names )
+      allocate( domain_cell_state_accessor_property_t ::                      &
+                new_accessors( i_accessor )%val )
       select type( accessor => new_accessors( i_accessor )%val )
         class is( domain_cell_state_accessor_property_t )
-          full_name =                                                         &
-            trim( variable_name )//"%"//component_names( i_accessor )
-
-          ! find the property or return an error if not found
-          if( .not. find_string( this%properties_, full_name%to_char( ),      &
-                                 property_id ) )                              &
-            call die_msg( 556955404, "Property '"//full_name%to_char( )//     &
-                       "' requested by '"//trim( requestor )//"' not found." )
+          call assert( 425375503, find_set_element( this%properties_,         &
+                                                    variable_name,            &
+                                                    i_accessor,               &
+                                                    property_id ) )
+          component_names( i_accessor ) =                                     &
+            set_element_name( this%properties_, variable_name, i_accessor )
 
           ! register the accessor
           new_pair%owner_    = requestor
           new_pair%property_ = this%properties_( property_id )
-          new_pair%type_     = ALL_CELL_PROPERTY
+          new_pair%type_     = kAllCellProperty
           call add_registered_pair_to_array( this%accessors_, new_pair )
 
           ! create the accessor
@@ -697,7 +710,7 @@ contains
     ! register the accessor
     new_pair%owner_    = requestor
     new_pair%property_ = this%flags_( flag_id )
-    new_pair%type_     = ALL_CELL_FLAG
+    new_pair%type_     = kAllCellFlag
     call add_registered_pair_to_array( this%accessors_, new_pair )
 
     ! create the accessor
@@ -709,6 +722,35 @@ contains
     end select
 
   end function cell_flag_accessor
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get the units for a registered state variable for all cells
+  function cell_state_units( this, variable_name )
+
+    use musica_assert,                 only : assert, die_msg
+    use musica_string,                 only : string_t
+
+    !> Units for the state variable
+    type(string_t) :: cell_state_units
+    !> Domain
+    class(domain_cell_t), intent(in) :: this
+    !> Name of the registered state variable
+    character(len=*), intent(in) :: variable_name
+
+    integer :: var_id
+
+    call assert( 425563855, len( trim( variable_name ) ) .gt. 0 )
+
+    ! find the variable or return an error if not found
+    if( .not. find_string( this%properties_, variable_name, var_id ) ) then
+      call die_msg( 790830723, "Variable '"//trim( variable_name )//          &
+                    "' not found" )
+    end if
+
+    cell_state_units = this%property_units_( var_id )
+
+  end function cell_state_units
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -731,34 +773,125 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Output the domain state to a text file
-  subroutine output_state_text( this, domain_state )
-
-    use musica_assert,                 only : die_msg
+  !> Output the registered mutators and accessors
+  subroutine output_registry( this, file_unit )
 
     !> Domain
-    class(domain_cell_t), intent(inout) :: this
-    !> Domain state
-    class(domain_state_t), intent(in) :: domain_state
+    class(domain_cell_t), intent(in) :: this
+    !> File unit to output to
+    integer, intent(in), optional :: file_unit
 
-    integer :: i_cell
+    integer :: f, i_var, i_mut, i_acc
+    integer :: max_name, max_owner, total_length
+    character(len=256) :: fmt_prop, fmt_reg, fmt_div, fmt_blank
+    type(string_t) :: type_name
 
-    select type( domain_state )
-      class is( domain_cell_state_t )
+    if( present( file_unit ) ) then
+      f = file_unit
+    else
+      f = 6
+    end if
 
-        ! just print to the screen for now
-        write(*,*) this%properties_, this%flags_
-        do i_cell = 1, this%number_of_cells_
-          write(*,*) domain_state%properties_( i_cell, : ),                   &
-                     domain_state%flags_( i_cell, : )
-        end do
+    ! Properties
+    max_name = 10
+    do i_var = 1, size( this%properties_ )
+      max_name = max( max_name, this%properties_(i_var)%length( ) )
+    end do
+    do i_var = 1, size( this%flags_ )
+      max_name = max( max_name, this%flags_(i_var)%length( ) )
+    end do
 
-      class default
-        call die_msg( 621916535, "Wrong domain state sent to domain_cell_t "//&
-                      "output function" )
-    end select
+    if( max_name .gt. 80 ) max_name = 80
+    total_length = max_name + 14
+    write(fmt_prop,'(a,i2,a)') '("| ",a',max_name,'," | ",a7," |")'
+    write(fmt_div,'(a,i2,a)') '(',total_length,"('-'))"
+    write(fmt_blank,'(a)') '("")'
 
-  end subroutine output_state_text
+    write(f,fmt_blank)
+    write(f,*) "Registered properties and flags"
+    write(f,fmt_div)
+    write(f,fmt_prop) "Property", "Type"
+    write(f,fmt_div)
+    do i_var = 1, size( this%properties_ )
+      write(f,fmt_prop) this%properties_(i_var)%to_char( ), "double"
+    end do
+    do i_var = 1, size( this%flags_ )
+      write(f,fmt_prop) this%flags_(i_var)%to_char( ), "boolean"
+    end do
+    write(f,fmt_div)
+    write(f,fmt_blank)
+
+    ! Mutators
+    max_owner = 10
+    do i_mut = 1, size( this%mutators_ )
+      max_owner = max( max_owner, this%mutators_(i_mut)%owner_%length( ) )
+    end do
+
+    if( max_owner .gt. 80 ) max_owner = 80
+    write(fmt_prop,'(a,i2,a,i2,a)') '("| ",a',max_owner,'," | ",a',max_name,  &
+                                    '," | ",a7," |")'
+    total_length = max_owner + max_name + 17
+    if( total_length .lt. 100 ) then
+      write(fmt_div,'(a,i2,a)') '(',total_length,"('-'))"
+    else
+      write(fmt_div,'(a,i3,a)') '(',total_length,"('-'))"
+    end if
+
+    write(f,*) "Registered mutators"
+    write(f,fmt_div)
+    write(f,fmt_prop) "Owner", "Property", "Type"
+    write(f,fmt_div)
+    do i_mut = 1, size( this%mutators_ )
+      if( this%mutators_(i_mut)%type_ .eq. kAllCellProperty ) then
+        type_name = "double"
+      else if( this%mutators_(i_mut)%type_ .eq. kAllCellFlag ) then
+        type_name = "boolean"
+      else
+        type_name = "invalid"
+      end if
+      write(f,fmt_prop) this%mutators_(i_mut)%owner_%to_char( ),              &
+                        this%mutators_(i_mut)%property_%to_char( ),           &
+                        type_name%to_char( )
+    end do
+    write(f,fmt_div)
+    write(f,fmt_blank)
+
+    ! Accessors
+    max_owner = 10
+    do i_acc = 1, size( this%accessors_ )
+      max_owner = max( max_owner, this%accessors_(i_acc)%owner_%length( ) )
+    end do
+
+    if( max_owner .gt. 80 ) max_owner = 80
+    write(fmt_prop,'(a,i2,a,i2,a)') '("| ",a',max_owner,'," | ",a',max_name,  &
+                                    '," | ",a7," |")'
+    total_length = max_owner + max_name + 17
+    if( total_length .lt. 100 ) then
+      write(fmt_div,'(a,i2,a)') '(',total_length,"('-'))"
+    else
+      write(fmt_div,'(a,i3,a)') '(',total_length,"('-'))"
+    end if
+
+    write(f,*) "Registered accessors"
+    write(f,fmt_div)
+    write(f,fmt_prop) "Owner", "Property", "Type"
+    write(f,fmt_div)
+    do i_acc = 1, size( this%accessors_ )
+      if( this%accessors_(i_acc)%type_ .eq. kAllCellProperty ) then
+        type_name = "double"
+      else if( this%accessors_(i_acc)%type_ .eq. kAllCellFlag ) then
+        type_name = "boolean"
+      else
+        type_name = "invalid"
+      end if
+      write(f,fmt_prop) this%accessors_(i_acc)%owner_%to_char( ),             &
+                        this%accessors_(i_acc)%property_%to_char( ),          &
+                        type_name%to_char( )
+    end do
+    write(f,fmt_div)
+    write(f,fmt_blank)
+
+  end subroutine output_registry
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -982,6 +1115,90 @@ contains
     end do
 
   end function find_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Find the number of elements in a set
+  integer function set_length( array, set_name )
+
+    !> Array to seach
+    type(string_t), intent(in) :: array(:)
+    !> Set name to search for
+    character(len=*), intent(in) :: set_name
+
+    integer(kind=musica_ik) :: i_elem
+    type(string_t), allocatable :: sub_strings(:)
+
+    set_length = 0
+    do i_elem = 1, size( array )
+      sub_strings = array( i_elem )%split( "%" )
+      if( sub_strings(1) .eq. set_name ) set_length = set_length + 1
+    end do
+
+  end function set_length
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Try to find an element of a set in an array
+  logical function find_set_element( array, set_name, element_id, array_id )
+
+    !> Array to search
+    type(string_t), intent(in) :: array(:)
+    !> Set name to search through
+    character(len=*), intent(in) :: set_name
+    !> Element id to locate
+    integer(kind=musica_ik), intent(in) :: element_id
+    !> Index of the located array element
+    integer(kind=musica_ik), intent(out) :: array_id
+
+    integer(kind=musica_ik) :: curr_elem_id
+    type(string_t), allocatable :: sub_strings(:)
+
+    curr_elem_id = 0
+    find_set_element = .false.
+    do array_id = 1, size( array )
+      sub_strings = array( array_id )%split( "%" )
+      if( sub_strings(1) .eq. set_name ) curr_elem_id = curr_elem_id + 1
+      if( curr_elem_id .eq. element_id ) then
+        find_set_element = .true.
+        return
+      end if
+    end do
+
+  end function find_set_element
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get the name of an element in a set by its index
+  type(string_t) function set_element_name( array, set_name, element_id )
+
+    use musica_assert,                 only : die_msg
+    use musica_string,                 only : to_char
+
+    !> Array to search
+    type(string_t), intent(in) :: array(:)
+    !> Set name to search through
+    character(len=*), intent(in) :: set_name
+    !> Element id to locate
+    integer(kind=musica_ik), intent(in) :: element_id
+
+    integer(kind=musica_ik) :: i_array, curr_elem_id
+    type(string_t), allocatable :: sub_strings(:)
+
+    curr_elem_id = 0
+    do i_array = 1, size( array )
+      sub_strings = array( i_array )%split( "%" )
+      if( sub_strings(1) .eq. set_name ) curr_elem_id = curr_elem_id + 1
+      if( curr_elem_id .eq. element_id ) then
+        set_element_name = sub_strings(2)
+        return
+      end if
+    end do
+    set_element_name = ""
+    call die_msg( 171701569, "Could not find element "//                      &
+                  to_char( element_id )//" in set '"//trim( set_name )//"'" )
+
+  end function set_element_name
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
