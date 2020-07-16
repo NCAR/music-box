@@ -69,6 +69,7 @@ include_directories(${CMAKE_BINARY_DIR}/src)
 # MICM library
 
 add_subdirectory(libs/MICM_chemistry/src)
+include_directories(${CMAKE_BINARY_DIR}/libs/MICM_chemistry/src)
 
 ################################################################################
 # MusicBox application

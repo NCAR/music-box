@@ -5,11 +5,16 @@ set(MUSICA_SRC config.F90
                domain.F90
                domain_factory.F90
                domains/cell.F90
+               initial_conditions.F90
+               output.F90
+               output_factory.F90
+               outputs/text.F90
                util/assert.F90
                util/constants.F90
                util/convert.F90
                util/iterator.F90
-               util/string.F90)
+               util/string.F90
+               util/io.F90)
 
 add_library(musicalib ${MUSICA_SRC})
 

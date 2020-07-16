@@ -4,10 +4,12 @@
 !> The core_t type and related functions
 module music_box_core
 
+  use micm_core,                       only : chemistry_core_t => core_t
   use musica_constants,                only : musica_ik, musica_dk
   use musica_domain,                   only : domain_t, domain_state_t,       &
                                               domain_state_mutator_ptr,       &
                                               domain_state_accessor_ptr
+  use musica_output,                   only : output_t
 
   implicit none
   private
@@ -34,11 +36,17 @@ module music_box_core
     type(domain_state_mutator_ptr), allocatable :: mutators_(:)
     !> Standard state variable accessor
     type(domain_state_accessor_ptr), allocatable :: accessors_(:)
+    !> Chemistry core
+    class(chemistry_core_t), pointer :: chemistry_core_ => null( )
+    !> Output stream
+    class(output_t), pointer :: output_ => null( )
   contains
     !> Run the model
     procedure :: run
     !> Register standard state variables
     procedure, private :: register_standard_state_variables
+    !> Register output variables
+    procedure, private :: register_output_variables
     !> Get the current time step [s]
     procedure, private :: get_current_time_step__s
     !> Output the current model state
@@ -76,6 +84,8 @@ contains
 
     use musica_config,                 only : config_t
     use musica_domain_factory,         only : domain_builder
+    use musica_initial_conditions,     only : set_initial_conditions
+    use musica_output_factory,         only : output_builder
     use musica_string,                 only : string_t
 
     !> New MUSICA Core
@@ -84,26 +94,33 @@ contains
     character(len=*), intent(in) :: config_file_path
 
     character(len=*), parameter :: my_name = "MUSICA core constructor"
-    type(config_t) :: config, model_opts, domain_opts
+    type(config_t) :: config, model_opts, domain_opts, output_opts, chem_opts
     type(string_t) :: domain_type
+    logical :: found
 
     ! load configuration data
-
     call config%from_file( config_file_path )
     call config%get( "box model options", model_opts, my_name )
 
     ! build the domain
-
     call model_opts%get( "grid", domain_type, my_name )
     domain_opts = '{ "type" : "'//domain_type//'" }'
     new_obj%domain_ => domain_builder( domain_opts )
 
     ! register the accessors and mutators for the standard state variables
-
     call new_obj%register_standard_state_variables( )
 
-    ! simulation time parameters
+    ! initialize the chemistry module
+    chem_opts = '{}'
+    new_obj%chemistry_core_ => chemistry_core_t( chem_opts, new_obj%domain_ )
 
+    ! set up the output for the model
+    call config%get( "output file", output_opts, my_name, found = found )
+    if( .not. found ) output_opts = '{ "format" : "CSV" }'
+    new_obj%output_ => output_builder( output_opts )
+    call new_obj%register_output_variables( )
+
+    ! simulation time parameters
     call model_opts%get( "chemistry time step", "s",                          &
                          new_obj%chemistry_time_step__s_, my_name )
     call model_opts%get( "output time step", "s",                             &
@@ -112,14 +129,20 @@ contains
                          new_obj%simulation_length__s_, my_name )
 
     ! get a domain state
-
     new_obj%state_ => new_obj%domain_%new_state( )
 
-    ! clean up
+    ! set the initial conditions
+    call set_initial_conditions( config, new_obj%domain_, new_obj%state_ )
 
+    ! output the registered domain state variables
+    call new_obj%domain_%output_registry( )
+
+    ! clean up
     call config%finalize( )
     call domain_opts%finalize( )
     call model_opts%finalize( )
+    call output_opts%finalize( )
+    call chem_opts%finalize( )
 
   end function constructor
 
@@ -156,15 +179,13 @@ contains
       ! determine the current time step
       time_step__s = this%get_current_time_step__s( sim_time__s )
 
-      ! solve the system for the current time step
-      write(*,*) "Solving chemistry at time ", sim_time__s, " s"
-
       ! iterate over cells in the domain
       call cell_iter%reset( )
       do while( cell_iter%next( ) )
 
         ! solve the system for the current time and cell
-        write(*,*) "Solving domain cell"
+        call this%chemistry_core_%solve( this%state_, cell_iter,              &
+                                         time_step__s )
 
       end do
 
@@ -205,14 +226,20 @@ contains
     this%mutators_( kPressure    )%val =>                                     &
       this%domain_%register_cell_state_variable( "pressure",   "Pa", my_name )
 
-    ! get accessors
-
-    this%accessors_( kTemperature )%val =>                                    &
-      this%domain_%cell_state_accessor( "temperature", "K", my_name )
-    this%accessors_( kPressure    )%val =>                                    &
-      this%domain_%cell_state_accessor( "pressure",   "Pa", my_name )
-
   end subroutine register_standard_state_variables
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Register output variables
+  subroutine register_output_variables( this )
+
+    !> MUSICA Core
+    class(core_t), intent(inout) :: this
+
+    call this%output_%register( this%domain_, "temperature", "K"  )
+    call this%output_%register( this%domain_, "pressure",    "Pa" )
+
+  end subroutine register_output_variables
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -258,7 +285,9 @@ contains
     real(kind=musica_dk), intent(in) :: simulation_time__s
 
     if( mod( simulation_time__s, this%output_time_step__s_ ) .eq. 0.0 ) then
-      write(*,*) "Outputting model state at ", simulation_time__s, " s"
+      call this%output_%output( simulation_time__s,                           &
+                                this%domain_,                                 &
+                                this%state_ )
     end if
 
   end subroutine output
@@ -288,6 +317,8 @@ contains
           deallocate( this%accessors_( i )%val )
       end do
     end if
+    if( associated( this%chemistry_core_ ) ) deallocate( this%chemistry_core_ )
+    if( associated( this%output_         ) ) deallocate( this%output_ )
 
   end subroutine finalize
 

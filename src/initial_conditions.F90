@@ -4,6 +4,9 @@
 !> The set_initial_conditions and related functions
 module musica_initial_conditions
 
+  use musica_config,                   only : config_t
+  use musica_domain,                   only : domain_t, domain_state_t
+
   implicit none
   private
 
@@ -17,13 +20,13 @@ contains
   subroutine set_initial_conditions( config, domain, state )
 
     !> Initial condition configuration data
-    type(config_t), intent(in) :: config
+    type(config_t), intent(inout) :: config
     !> Model domain data
-    class(domain_t), intent(in) :: domain
+    class(domain_t), intent(inout) :: domain
     !> Model domain state
     class(domain_state_t), intent(inout) :: state
 
-    character(len=*), parameter :: my_name = 'intial conditions'
+    character(len=*), parameter :: my_name = 'initial conditions'
     logical :: found
     type(config_t) :: subset
 
@@ -50,10 +53,16 @@ contains
   !> Set initial species concentrations for all domain cells
   subroutine set_chemical_species( config, domain, state )
 
+    use musica_constants,              only : musica_dk
+    use musica_domain,                 only : domain_state_mutator_t,         &
+                                              domain_iterator_t
+    use musica_iterator,               only : iterator_t
+    use musica_string,                 only : string_t
+
     !> Configuration data
-    type(config_t), intent(in) :: config
+    type(config_t), intent(inout) :: config
     !> Model domain data
-    class(domain_t), intent(in) :: domain
+    class(domain_t), intent(inout) :: domain
     !> Model domain state
     class(domain_state_t), intent(inout) :: state
 
@@ -62,20 +71,28 @@ contains
     type(string_t) :: species_name
     real(kind=musica_dk) :: conc
     class(iterator_t), pointer :: species_iter
+    class(domain_iterator_t), pointer :: cell_iter
+    class(domain_state_mutator_t), pointer :: mutator
 
     species_iter => config%get_iterator( )
-    do while( iter%next( ) )
-      chemical_species = "chemical_species%"//config%key( species_iter )
+    cell_iter    => domain%cell_iterator( )
+    do while( species_iter%next( ) )
+      species_name = "chemical_species%"//config%key( species_iter )
       call config%get( species_iter, subset, my_name )
       call subset%get( "initial value", "mol m-3", conc, my_name )
       call subset%finalize( )
-      mutator => domain%cell_state_mutator( species_name, "mol m-3", my_name )
-      call state%update( mutator, conc )
+      mutator => domain%cell_state_mutator( species_name%to_char( ),          &
+                                            "mol m-3", my_name )
+      call cell_iter%reset( )
+      do while( cell_iter%next( ) )
+        call state%update( cell_iter, mutator, conc )
+      end do
       deallocate( mutator )
     end do
 
     ! clean up
     deallocate( species_iter )
+    deallocate( cell_iter    )
 
   end subroutine set_chemical_species
 
@@ -84,10 +101,16 @@ contains
   !> Set environmental conditions for all domain cells
   subroutine set_environmental_conditions( config, domain, state )
 
+    use musica_constants,              only : musica_dk
+    use musica_domain,                 only : domain_state_mutator_t,        &
+                                              domain_iterator_t
+    use musica_iterator,               only : iterator_t
+    use musica_string,                 only : string_t
+
     !> Configuration data
-    type(config_t), intent(in) :: config
+    type(config_t), intent(inout) :: config
     !> Model domain data
-    class(domain_t), intent(in) :: domain
+    class(domain_t), intent(inout) :: domain
     !> Model domain state
     class(domain_state_t), intent(inout) :: state
 
@@ -97,20 +120,30 @@ contains
     type(string_t) :: property_name, units
     real(musica_dk) :: property_value
     class(iterator_t), pointer :: property_iter
+    class(domain_iterator_t), pointer :: cell_iter
+    class(domain_state_mutator_t), pointer :: mutator
 
     property_iter => config%get_iterator( )
-    do while( iter%next( ) )
+    cell_iter     => domain%cell_iterator( )
+    do while( property_iter%next( ) )
       property_name = config%key( property_iter )
-      units         = domain%cell_state_variable_units( property_name )
+      units         = domain%cell_state_units( property_name%to_char( ) )
       call config%get( property_iter, subset, my_name )
-      call subset%get( property_name, units, property_value, my_name )
-      mutator => domain%cell_state_mutator( property_name, units, my_name )
-      call state%update( mutator, property_value )
+      call subset%get( "initial value",  units%to_char( ), property_value,    &
+                      my_name )
+      call subset%finalize( )
+      mutator => domain%cell_state_mutator( property_name%to_char( ),         &
+                                            units%to_char( ), my_name )
+      call cell_iter%reset( )
+      do while( cell_iter%next( ) )
+        call state%update( cell_iter, mutator, property_value )
+      end do
       deallocate( mutator )
     end do
 
     ! clean up
     deallocate( property_iter )
+    deallocate( cell_iter     )
 
   end subroutine set_environmental_conditions
 

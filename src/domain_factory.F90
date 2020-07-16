@@ -33,6 +33,7 @@ contains
 
     new_domain => null( )
     call config%get( 'type', domain_type, my_name )
+    domain_type = domain_type%to_lower( )
 
     if( domain_type .eq. 'box' .or. domain_type .eq. 'cell' ) then
       new_domain => domain_cell_t( config )

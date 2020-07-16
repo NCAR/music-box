@@ -176,7 +176,7 @@ contains
     !> Pointer to the iterator
     class(iterator_t), pointer :: get_iterator
     !> Configuration
-    class(config_t), intent(inout), target :: this
+    class(config_t), intent(in), target :: this
 
     allocate( config_iterator_t :: get_iterator )
     select type( iter => get_iterator )
@@ -231,7 +231,7 @@ contains
     !> Key used to find value
     character(len=*), intent(in) :: key
     !> Returned value
-    class(config_t), intent(out) :: value
+    class(config_t), intent(inout) :: value
     !> Name of the calling function (only for use in error messages)
     character(len=*), intent(in) :: caller
     !> Default value if not found
@@ -243,6 +243,7 @@ contains
     logical(kind=json_lk) :: l_found
     character(kind=json_ck, len=:), allocatable :: str_tmp
 
+    call value%finalize( )
     call this%core_%get( this%value_, key, j_obj, l_found )
 
     call assert_msg( 202757635, l_found .or. present( default )               &
@@ -253,6 +254,7 @@ contains
 
     if( l_found ) then
       call this%core_%print_to_string( j_obj, str_tmp )
+      call this%core_%destroy( value%value_ )
       call this%core_%parse( value%value_, str_tmp )
     else
       if( present( default ) ) then
@@ -945,7 +947,7 @@ contains
     use json_module,                   only : json_ck
 
     !> Configuration to assign to
-    class(config_t), intent(out) :: a
+    class(config_t), intent(inout) :: a
     !> Configuration to assign from
     class(config_t), intent(in) :: b
 
@@ -953,6 +955,7 @@ contains
 
     call a%core_%print_to_string( b%value_, json_string )
     call a%core_%initialize( )
+    call a%core_%destroy( a%value_ )
     call a%core_%parse( a%value_, json_string )
 
   end subroutine config_assign_config
@@ -965,11 +968,12 @@ contains
     use musica_string,                 only : string_t
 
     !> Configuration to assign to
-    class(config_t), intent(out) :: config
+    class(config_t), intent(inout) :: config
     !> String to assign from
     class(string_t), intent(in) :: string
 
     call config%core_%initialize( )
+    call config%core_%destroy( config%value_ )
     call config%core_%parse( config%value_, string%val_ )
 
   end subroutine config_assign_string
@@ -982,11 +986,12 @@ contains
     use musica_string,                 only : string_t
 
     !> Configuration to assign to
-    class(config_t), intent(out) :: config
+    class(config_t), intent(inout) :: config
     !> String to assign from
     character(len=*), intent(in) :: string
 
     call config%core_%initialize( )
+    call config%core_%destroy( config%value_ )
     call config%core_%parse( config%value_, string )
 
   end subroutine config_assign_char

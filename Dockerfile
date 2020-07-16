@@ -24,9 +24,9 @@ RUN pip3 install requests
 RUN npm install express helmet
 
 # install json-fortran
-RUN curl -LO https://github.com/jacobwilliams/json-fortran/archive/6.1.0.tar.gz \
-    && tar -zxvf 6.1.0.tar.gz \
-    && cd json-fortran-6.1.0 \
+RUN curl -LO https://github.com/jacobwilliams/json-fortran/archive/8.1.0.tar.gz \
+    && tar -zxvf 8.1.0.tar.gz \
+    && cd json-fortran-8.1.0 \
     && export FC=gfortran \
     && mkdir build \
     && cd build \
@@ -52,7 +52,7 @@ RUN if [ "$TAG_ID" = "false" ] ; then \
       && cd .. \
       && mkdir build \
       && cd build \
-      && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-6.1.0" \
+      && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-8.1.0" \
       && cmake ../MusicBox \
       && make \
       ; fi

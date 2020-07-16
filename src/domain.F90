@@ -65,6 +65,14 @@ module musica_domain
 
     !> @}
 
+    !> Get units for registered properties
+    !! @{
+
+    !> Get units for a state variable for all cells
+    procedure(cell_state_units), deferred :: cell_state_units
+
+    !> @}
+
     !> @name Iterators over the domain
     !! @{
 
@@ -73,14 +81,8 @@ module musica_domain
 
     !! @}
 
-    !> @name Output the domain state
-    !! @{
-
-    !> Output the state to text file
-    procedure(output_state_text), deferred, private :: output_state_text
-    generic :: output_state => output_state_text
-
-    !> @}
+    !> Output the registered mutators and accessors
+    procedure(output_registry), deferred :: output_registry
   end type domain_t
 
   !> Abstract domain state
@@ -179,7 +181,7 @@ interface
     !!
     !! The mutators are in the same order as the component names passed to
     !! this function
-    class(domain_state_mutator_ptr), allocatable :: new_mutators(:)
+    class(domain_state_mutator_ptr), pointer :: new_mutators(:)
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -239,7 +241,7 @@ interface
     import domain_t
     import domain_state_mutator_ptr
     !> Accessors for the requested state variable set
-    class(domain_state_mutator_ptr), allocatable :: new_mutators(:)
+    class(domain_state_mutator_ptr), pointer :: new_mutators(:)
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the variable to find
@@ -301,7 +303,7 @@ interface
     import domain_t
     import domain_state_accessor_ptr
     !> Accessors for the requested state variable set
-    class(domain_state_accessor_ptr), allocatable :: new_accessors(:)
+    class(domain_state_accessor_ptr), pointer :: new_accessors(:)
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the variable to find
@@ -335,6 +337,20 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+  !> Get the units for a registered state variable for all cells
+  function cell_state_units( this, variable_name )
+    use musica_string,                 only : string_t
+    import domain_t
+    !> Units for the state variable
+    type(string_t) :: cell_state_units
+    !> Domain
+    class(domain_t), intent(in) :: this
+    !> Name of the registered state variable
+    character(len=*), intent(in) :: variable_name
+  end function cell_state_units
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   !> Get an iterator for all cells in associated domain_state_t objects
   function cell_iterator( this )
     import domain_t
@@ -347,15 +363,14 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Output the domain state to a text file
-  subroutine output_state_text( this, domain_state )
+  !> Output the registered mutators and accessors
+  subroutine output_registry( this, file_unit )
     import domain_t
-    import domain_state_t
     !> Domain
-    class(domain_t), intent(inout) :: this
-    !> Domain state
-    class(domain_state_t), intent(in) :: domain_state
-  end subroutine output_state_text
+    class(domain_t), intent(in) :: this
+    !> File unit to output to
+    integer, intent(in), optional :: file_unit
+  end subroutine output_registry
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
