@@ -48,8 +48,12 @@ module musica_domain_cell
     type(string_t), allocatable :: properties_(:)
     !> Units for the properties
     type(string_t), allocatable :: property_units_(:)
+    !> Default property values
+    real(kind=musica_dk), allocatable :: property_default_values_(:)
     !> Names of the registered cell flags
     type(string_t), allocatable :: flags_(:)
+    !> Default flag values
+    logical, allocatable :: flag_default_values_(:)
     !> Registered mutators
     type(registered_pair_t), allocatable :: mutators_(:)
     !> Registered accessors
@@ -208,11 +212,13 @@ contains
     class(config_t), intent(inout) :: config
 
     allocate( new_domain )
-    allocate( new_domain%properties_(     0 ) )
-    allocate( new_domain%property_units_( 0 ) )
-    allocate( new_domain%flags_(          0 ) )
-    allocate( new_domain%mutators_(       0 ) )
-    allocate( new_domain%accessors_(      0 ) )
+    allocate( new_domain%properties_(              0 ) )
+    allocate( new_domain%property_units_(          0 ) )
+    allocate( new_domain%property_default_values_( 0 ) )
+    allocate( new_domain%flags_(                   0 ) )
+    allocate( new_domain%flag_default_values_(     0 ) )
+    allocate( new_domain%mutators_(                0 ) )
+    allocate( new_domain%accessors_(               0 ) )
 
   end function constructor
 
@@ -226,7 +232,7 @@ contains
     !> Domain
     class(domain_cell_t), intent(in) :: this
 
-    integer :: n_prop, n_flag
+    integer :: n_prop, n_flag, i_prop, i_flag
 
     n_prop = size( this%properties_ )
     n_flag = size( this%flags_ )
@@ -238,7 +244,14 @@ contains
 
         allocate( new_state%properties_( this%number_of_cells_, n_prop ) )
         allocate( new_state%flags_(      this%number_of_cells_, n_flag ) )
-
+        do i_prop = 1, n_prop
+          new_state%properties_( :, i_prop ) =                                &
+              this%property_default_values_( i_prop )
+        end do
+        do i_flag = 1, n_flag
+          new_state%flags_( :, i_flag ) =                                     &
+              this%flag_default_values_( i_flag )
+        end do
     end select
 
   end function new_state
@@ -247,9 +260,10 @@ contains
 
   !> Register a variable for each cell in the domain
   function register_cell_state_variable( this, variable_name, units,          &
-      requestor ) result( new_mutator )
+      default_value, requestor ) result( new_mutator )
 
     use musica_assert,                 only : assert, assert_msg
+    use musica_string,                 only : to_char
 
     !> Mutator for the new state variable
     class(domain_state_mutator_t), pointer :: new_mutator
@@ -259,6 +273,8 @@ contains
     character(len=*), intent(in) :: variable_name
     !> Units for the state variable
     character(len=*), intent(in) :: units
+    !> Default value for the variable
+    real(kind=musica_dk), intent(in) :: default_value
     !> Name of the model component requesting the variable
     character(len=*), intent(in) :: requestor
 
@@ -274,9 +290,17 @@ contains
                        "Unit mismatch for property '"//trim( variable_name )&
                        //"': '"//trim( units )//"' != '"//                  &
                        this%property_units_( property_id )%to_char( ) )
+      call assert_msg( 559943613, default_value .eq.                        &
+                        this%property_default_values_( property_id ),       &
+                       "Default value mismatch for property '"//            &
+                       trim( variable_name )//"': '"//trim( units )//       &
+                       "' != '"//                                           &
+                       to_char( this%property_default_values_(              &
+                                                          property_id ) ) )
     else
       call add_string_to_array( this%properties_, variable_name )
       call add_string_to_array( this%property_units_, units )
+      call add_real_to_array( this%property_default_values_, default_value )
       property_id = size( this%properties_ )
     end if
 
@@ -301,11 +325,11 @@ contains
   !> Register a named collection of state variables for each cell in the
   !! domain
   function register_cell_state_variable_set( this, variable_name, units,      &
-      component_names, requestor ) result( new_mutators )
+      default_value, component_names, requestor ) result( new_mutators )
 
     use musica_assert,                 only : assert, assert_msg
     use musica_domain,                 only : domain_state_mutator_ptr
-    use musica_string,                 only : string_t
+    use musica_string,                 only : string_t, to_char
 
     !> Mutators for the new state variable
     !!
@@ -318,6 +342,8 @@ contains
     character(len=*), intent(in) :: variable_name
     !> Units for the state variable
     character(len=*), intent(in) :: units
+    !> Default value for the variables
+    real(kind=musica_dk), intent(in) :: default_value
     !> Names for each component of the new variable set
     type(string_t), intent(in) :: component_names(:)
     !> Name of the model component requesting the variable
@@ -347,9 +373,18 @@ contains
                              full_name%to_char( )//"': '"//trim( units )//    &
                              "' != '"//                                       &
                              this%property_units_( property_id )%to_char( ) )
+            call assert_msg( 148356154, default_value .eq.                    &
+                             this%property_default_values_( property_id ),    &
+                             "Default value mismatch for property '"//        &
+                             trim( variable_name )//"': '"//trim( units )//   &
+                             "' != '"//                                       &
+                             to_char( this%property_default_values_(          &
+                                                             property_id ) ) )
           else
             call add_string_to_array( this%properties_, full_name%to_char( ) )
             call add_string_to_array( this%property_units_, units )
+            call add_real_to_array( this%property_default_values_,            &
+                                    default_value )
             property_id = size( this%properties_ )
           end if
 
@@ -370,10 +405,11 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Register a flag property for each cell in the domain
-  function register_cell_flag( this, flag_name, requestor )                   &
+  function register_cell_flag( this, flag_name, default_value, requestor )    &
       result( new_mutator )
 
-    use musica_assert,                 only : assert
+    use musica_assert,                 only : assert, assert_msg
+    use musica_string,                 only : to_char
 
     !> Mutator for the new state variable
     class(domain_state_mutator_t), pointer :: new_mutator
@@ -381,6 +417,8 @@ contains
     class(domain_cell_t), intent(inout) :: this
     !> Name of the state variable to create
     character(len=*), intent(in) :: flag_name
+    !> Default value for the flag
+    logical, intent(in) :: default_value
     !> Name of the model component requesting the variable
     character(len=*), intent(in) :: requestor
 
@@ -390,8 +428,15 @@ contains
     call assert( 209339722, len( trim( flag_name ) ) .gt. 0 )
 
     ! find the flag or create it if it doesn't exist
-    if( .not. find_string( this%flags_, flag_name, flag_id ) ) then
+    if( find_string( this%flags_, flag_name, flag_id ) ) then
+      call assert_msg( 418849550, default_value .eqv.                         &
+                       this%flag_default_values_( flag_id ),                  &
+                       "Default value mismatch for flag '"//                  &
+                       trim( flag_name )//"' != '"//                          &
+                       to_char( this%flag_default_values_( flag_id ) ) )
+    else
       call add_string_to_array( this%flags_, flag_name )
+      call add_logical_to_array( this%flag_default_values_, default_value )
       flag_id = size( this%flags_ )
     end if
 
@@ -1086,6 +1131,58 @@ contains
     array( size( array ) ) = trim( new_string )
 
   end subroutine add_string_to_array
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Add a real to an array of reals
+  subroutine add_real_to_array( array, new_real )
+
+    use musica_assert,                 only : assert
+
+    !> Array to add to
+    real(kind=musica_dk), allocatable, intent(inout) :: array(:)
+    !> Real number to add to array
+    real(kind=musica_dk), intent(in) :: new_real
+
+    real(kind=musica_dk), allocatable :: temp_reals(:)
+
+    ! this could be made more efficient if necessary
+
+    call assert( 626692375, allocated( array ) )
+    allocate( temp_reals( size( array ) ) )
+    temp_reals(:) = array(:)
+    deallocate( array )
+    allocate( array( size( temp_reals ) + 1 ) )
+    array( :size( temp_reals ) ) = temp_reals(:)
+    array( size( array ) ) = new_real
+
+  end subroutine add_real_to_array
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Add a logical to an array of logicals
+  subroutine add_logical_to_array( array, new_logical )
+
+    use musica_assert,                 only : assert
+
+    !> Array to add to
+    logical, allocatable, intent(inout) :: array(:)
+    !> Logical to add to array
+    logical, intent(in) :: new_logical
+
+    logical, allocatable :: temp_logicals(:)
+
+    ! this could be make more efficient if necessary
+
+    call assert( 217010450, allocated( array ) )
+    allocate( temp_logicals( size( array ) ) )
+    temp_logicals(:) = array(:)
+    deallocate( array )
+    allocate( array( size( temp_logicals ) + 1 ) )
+    array( :size( temp_logicals ) ) = temp_logicals(:)
+    array( size( temp_logicals ) ) = new_logical
+
+  end subroutine add_logical_to_array
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
