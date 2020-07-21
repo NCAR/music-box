@@ -110,15 +110,16 @@ contains
     ! register the accessors and mutators for the standard state variables
     call new_obj%register_standard_state_variables( )
 
-    ! initialize the chemistry module
-    chem_opts = '{}'
-    new_obj%chemistry_core_ => chemistry_core_t( chem_opts, new_obj%domain_ )
-
     ! set up the output for the model
     call config%get( "output file", output_opts, my_name, found = found )
     if( .not. found ) output_opts = '{ "format" : "CSV" }'
     new_obj%output_ => output_builder( output_opts )
     call new_obj%register_output_variables( )
+
+    ! initialize the chemistry module
+    chem_opts = '{}'
+    new_obj%chemistry_core_ => chemistry_core_t( chem_opts, new_obj%domain_,  &
+                                                 new_obj%output_ )
 
     ! simulation time parameters
     call model_opts%get( "chemistry time step", "s",                          &
@@ -170,11 +171,11 @@ contains
     ! reset to initial conditions
     sim_time__s = 0.0d0
 
-    ! output initial conditions
-    call this%output( sim_time__s )
-
     ! start simulation
     do while( sim_time__s .lt. this%simulation_length__s_ )
+
+      ! output initial conditions for this time step
+      call this%output( sim_time__s )
 
       ! determine the current time step
       time_step__s = this%get_current_time_step__s( sim_time__s )
@@ -191,10 +192,10 @@ contains
 
       sim_time__s = sim_time__s + time_step__s
 
-      ! output the model state
-      call this%output( sim_time__s )
-
     end do
+
+    ! output the final model state
+    call this%output( sim_time__s )
 
     ! clean up
     deallocate( cell_iter )
@@ -222,9 +223,15 @@ contains
     ! register variables and get mutators
 
     this%mutators_( kTemperature )%val =>                                     &
-      this%domain_%register_cell_state_variable( "temperature", "K", my_name )
+      this%domain_%register_cell_state_variable( "temperature",               & !<- variable name
+                                                 "K",                         & !<- units
+                                                 298.15d0,                    & !<- default value
+                                                 my_name )
     this%mutators_( kPressure    )%val =>                                     &
-      this%domain_%register_cell_state_variable( "pressure",   "Pa", my_name )
+      this%domain_%register_cell_state_variable( "pressure",                  & !<- variable name
+                                                 "Pa",                        & !<- units
+                                                 101325.0d0,                  & !<- default value
+                                                 my_name )
 
   end subroutine register_standard_state_variables
 
@@ -236,8 +243,14 @@ contains
     !> MUSICA Core
     class(core_t), intent(inout) :: this
 
-    call this%output_%register( this%domain_, "temperature", "K"  )
-    call this%output_%register( this%domain_, "pressure",    "Pa" )
+    call this%output_%register( this%domain_,                                 &
+                                "temperature",                                & !<- variable name
+                                "K",                                          & !<- units
+                                "ENV.temperature"  )                            !<- output name
+    call this%output_%register( this%domain_,                                 &
+                                "pressure",                                   & !<- variable name
+                                "Pa",                                         & !<- units
+                                "ENV.pressure"     )                            !<- output name
 
   end subroutine register_output_variables
 
@@ -284,7 +297,8 @@ contains
     !> Current model simulation time [s]
     real(kind=musica_dk), intent(in) :: simulation_time__s
 
-    if( mod( simulation_time__s, this%output_time_step__s_ ) .eq. 0.0 ) then
+    if( mod( simulation_time__s, this%output_time_step__s_ ) .eq. 0.0 .or.    &
+        simulation_time__s .ge. this%simulation_length__s_ ) then
       call this%output_%output( simulation_time__s,                           &
                                 this%domain_,                                 &
                                 this%state_ )
