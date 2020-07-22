@@ -6,14 +6,23 @@
     "simulation length [hr]"    : 2.5
   },
   "chemical species" : {
-    "NO2"  : { "initial value [mol m-3]" : 2.0e-7 },
-    "NO"   : { "initial value [mol m-3]" : 1.0e-7 },
-    "O3"   : { "initial value [mol m-3]" : 1.0e-6 },
-    "ISOP" : { "initial value [mol m-3]" : 5.0e-5 }
+    "N2"   : { "initial value [mol m-3]" : 3.29e1  },
+    "O2"   : { "initial value [mol m-3]" : 8.84e0  },
+    "Ar"   : { "initial value [mol m-3]" : 3.92e-1 },
+    "CO2"  : { "initial value [mol m-3]" : 1.69e-2 },
+    "O"    : { "initial value [mol m-3]" : 1.0e-5 }
   },
   "environmental conditions" : {
     "temperature" : { "initial value [K]"   : 298.0 },
     "pressure"    : { "initial value [atm]" : 1.0   }
+  },
+  "chemistry" : {
+    "type" : "MICM",
+    "solver" : {
+      "type" : "Rosenbrock",
+      "absolute tolerance" : 1.0e-12,
+      "relative tolerance" : 1.0e-4
+    }
   }
 }
 

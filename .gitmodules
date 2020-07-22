@@ -1,3 +1,9 @@
 [submodule "libs/MICM_chemistry"]
 	path = libs/MICM_chemistry
 	url = https://github.com/mattldawson/MICM_chemistry.git
+[submodule "libs/Mechanism_Collection"]
+	path = libs/Mechanism_Collection
+	url = https://github.com/NCAR/Mechanism_Collection.git
+[submodule "libs/MechanismToCode"]
+	path = libs/MechanismToCode
+	url = https://github.com/NCAR/MechanismToCode.git

@@ -49,6 +49,8 @@ module music_box_core
     procedure, private :: register_output_variables
     !> Get the current time step [s]
     procedure, private :: get_current_time_step__s
+    !> Update the environmental conditions for a new time step
+    procedure, private :: update_environment
     !> Output the current model state
     procedure, private :: output
     !> Clean up the memory
@@ -64,12 +66,14 @@ module music_box_core
   !! @{
 
   !> Number of standard state variables
-  integer, parameter :: kNumberOfStandardVariables = 2
+  integer, parameter :: kNumberOfStandardVariables = 3
 
-  !> Temperature
+  !> Temperature [K]
   integer, parameter :: kTemperature = 1
-  !> Pressuse
+  !> Pressuse [Pa]
   integer, parameter :: kPressure = 2
+  !> Number density of air [mol m-3]
+  integer, parameter :: kNumberDensityAir = 3
 
   !> @}
 
@@ -83,6 +87,7 @@ contains
   function constructor( config_file_path ) result( new_obj )
 
     use musica_config,                 only : config_t
+    use musica_domain,                 only : domain_iterator_t
     use musica_domain_factory,         only : domain_builder
     use musica_initial_conditions,     only : set_initial_conditions
     use musica_output_factory,         only : output_builder
@@ -97,6 +102,9 @@ contains
     type(config_t) :: config, model_opts, domain_opts, output_opts, chem_opts
     type(string_t) :: domain_type
     logical :: found
+    class(domain_iterator_t), pointer :: cell_iter
+
+    call print_header( )
 
     ! load configuration data
     call config%from_file( config_file_path )
@@ -116,11 +124,6 @@ contains
     new_obj%output_ => output_builder( output_opts )
     call new_obj%register_output_variables( )
 
-    ! initialize the chemistry module
-    chem_opts = '{}'
-    new_obj%chemistry_core_ => chemistry_core_t( chem_opts, new_obj%domain_,  &
-                                                 new_obj%output_ )
-
     ! simulation time parameters
     call model_opts%get( "chemistry time step", "s",                          &
                          new_obj%chemistry_time_step__s_, my_name )
@@ -129,11 +132,22 @@ contains
     call model_opts%get( "simulation length", "s",                            &
                          new_obj%simulation_length__s_, my_name )
 
+    ! initialize the chemistry module
+    call config%get( "chemistry", chem_opts, my_name )
+    call chem_opts%add( "chemistry time step", "s",                           &
+                        new_obj%chemistry_time_step__s_, my_name )
+    new_obj%chemistry_core_ => chemistry_core_t( chem_opts, new_obj%domain_,  &
+                                                 new_obj%output_ )
+
     ! get a domain state
     new_obj%state_ => new_obj%domain_%new_state( )
 
     ! set the initial conditions
     call set_initial_conditions( config, new_obj%domain_, new_obj%state_ )
+    cell_iter => new_obj%domain_%cell_iterator( )
+    do while( cell_iter%next( ) )
+      call new_obj%update_environment( new_obj%state_, cell_iter )
+    end do
 
     ! output the registered domain state variables
     call new_obj%domain_%output_registry( )
@@ -144,6 +158,7 @@ contains
     call model_opts%finalize( )
     call output_opts%finalize( )
     call chem_opts%finalize( )
+    deallocate( cell_iter )
 
   end function constructor
 
@@ -184,9 +199,12 @@ contains
       call cell_iter%reset( )
       do while( cell_iter%next( ) )
 
+        ! update environmental conditions
+        call this%update_environment( this%state_, cell_iter )
+
         ! solve the system for the current time and cell
         call this%chemistry_core_%solve( this%state_, cell_iter,              &
-                                         time_step__s )
+                                         sim_time__s, time_step__s )
 
       end do
 
@@ -199,6 +217,9 @@ contains
 
     ! clean up
     deallocate( cell_iter )
+
+    write(*,*) ""
+    write(*,*) "MusicBox simulation complete!"
 
   end subroutine run
 
@@ -222,16 +243,33 @@ contains
 
     ! register variables and get mutators
 
-    this%mutators_( kTemperature )%val =>                                     &
+    ! temperature
+    this%mutators_(  kTemperature      )%val_ =>                              &
       this%domain_%register_cell_state_variable( "temperature",               & !<- variable name
                                                  "K",                         & !<- units
                                                  298.15d0,                    & !<- default value
                                                  my_name )
-    this%mutators_( kPressure    )%val =>                                     &
+    this%accessors_( kTemperature      )%val_ =>                              &
+      this%domain_%cell_state_accessor( "temperature", "K", my_name )
+
+    ! pressure
+    this%mutators_( kPressure          )%val_ =>                              &
       this%domain_%register_cell_state_variable( "pressure",                  & !<- variable name
                                                  "Pa",                        & !<- units
                                                  101325.0d0,                  & !<- default value
                                                  my_name )
+    this%accessors_( kPressure         )%val_ =>                              &
+      this%domain_%cell_state_accessor( "pressure", "Pa", my_name )
+
+    ! number density of air
+    this%mutators_( kNumberDensityAir  )%val_ =>                              &
+      this%domain_%register_cell_state_variable( "number density air",        & !<- variable name
+                                                 "mol m-3",                   & !<- units
+                                                 0.0d0,                       & !<- default value
+                                                 my_name )
+    this%accessors_( kNumberDensityAir )%val_ =>                              &
+      this%domain_%cell_state_accessor( "number density air", "mol m-3",      &
+                                        my_name )
 
   end subroutine register_standard_state_variables
 
@@ -251,6 +289,10 @@ contains
                                 "pressure",                                   & !<- variable name
                                 "Pa",                                         & !<- units
                                 "ENV.pressure"     )                            !<- output name
+    call this%output_%register( this%domain_,                                 &
+                                "number density air",                         & !<- variable name
+                                "mol m-3",                                    & !<- units
+                                "ENV.number_density_air" )                      !<- output name
 
   end subroutine register_output_variables
 
@@ -286,6 +328,35 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+  !> Update environmental conditions for a new time step
+  subroutine update_environment( this, domain_state, cell )
+
+    use musica_constants,              only : kUniversalGasConstant
+    use musica_domain,                 only : domain_state_t,                 &
+                                              domain_iterator_t
+
+    !> MUSICA Core
+    class(core_t), intent(inout) :: this
+    !> Domain state
+    class(domain_state_t), intent(inout) :: domain_state
+    !> Cell to update
+    class(domain_iterator_t), intent(in) :: cell
+
+    real(kind=musica_dk) :: t, p, n
+
+    call domain_state%get( cell, this%accessors_( kTemperature )%val_, t )
+    call domain_state%get( cell, this%accessors_( kPressure )%val_, p )
+
+    ! calculate the number density of air [mol m-3]
+    n = p / t / kUniversalGasConstant
+
+    call domain_state%update( cell, this%mutators_( kNumberDensityAir )%val_, &
+                              n )
+
+  end subroutine update_environment
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   !> Output the model state
   !!
   !! Outputs the model state when the simulation time corresponds to an
@@ -315,26 +386,43 @@ contains
 
     integer :: i
 
-    write(*,*) "Finalizing core"
-
     if( associated( this%domain_ ) ) deallocate( this%domain_ )
     if( associated( this%state_  ) ) deallocate( this%state_  )
     if( allocated( this%mutators_ ) ) then
       do i = 1, size( this%mutators_ )
-        if( associated( this%mutators_( i )%val ) )                           &
-          deallocate( this%mutators_( i )%val )
+        if( associated( this%mutators_( i )%val_ ) )                          &
+          deallocate( this%mutators_( i )%val_ )
       end do
     end if
     if( allocated( this%accessors_ ) ) then
       do i = 1, size( this%accessors_ )
-        if( associated( this%accessors_( i )%val ) )                          &
-          deallocate( this%accessors_( i )%val )
+        if( associated( this%accessors_( i )%val_ ) )                         &
+          deallocate( this%accessors_( i )%val_ )
       end do
     end if
     if( associated( this%chemistry_core_ ) ) deallocate( this%chemistry_core_ )
     if( associated( this%output_         ) ) deallocate( this%output_ )
 
   end subroutine finalize
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Print the MusicBox model header
+  subroutine print_header( )
+
+    write(*,*) ""
+    write(*,*) ",---.    ,---.  ___    _    .-'''-. .-./`)     _______    _______       ,-----.     _____     __   "
+    write(*,*) "|    \  /    |.'   |  | |  / _     \\ .-.')   /   __  \  \  ____  \   .'  .-,  '.   \   _\   /  /  "
+    write(*,*) "|  ,  \/  ,  ||   .'  | | (`' )/`--'/ `-' \  | ,_/  \__) | |    \ |  / ,-.|  \ _ \  .-./ ). /  '   "
+    write(*,*) "|  |\_   /|  |.'  '_  | |(_ o _).    `-'`'`,-./  )       | |____/ / ;  \  '_ /  | : \ '_ .') .'    "
+    write(*,*) "|  _( )_/ |  |'   ( \.-.| (_,_). '.  .---. \  '_ '`)     |   _ _ '. |  _`,/ \ _/  |(_ (_) _) '     "
+    write(*,*) "| (_ o _) |  |' (`. _` /|.---.  \  : |   |  > (_)  )  __ |  ( ' )  \: (  '\_/ \   ;  /    \   \    "
+    write(*,*) "|  (_,_)  |  || (_ (_) _)\    `-'  | |   | (  .  .-'_/  )| (_{;}_) | \ `'/  \  ) /   `-'`-'    \   "
+    write(*,*) "|  |      |  | \ /  . \ / \       /  |   |  `-'`-'     / |  (_,_)  /  '. \_/``'.'   /  /   \    \  "
+    write(*,*) "'--'      '--'  ``-'`-''   `-...-'   '---'    `._____.'  /_______.'     '-----'    '--'     '----' "
+    write(*,*) ""
+
+  end subroutine print_header
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

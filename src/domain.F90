@@ -111,27 +111,27 @@ module musica_domain
 
   !> Domain pointer
   type domain_ptr
-    class(domain_t), pointer :: val => null( )
+    class(domain_t), pointer :: val_ => null( )
   end type domain_ptr
 
   !> State pointer
   type domain_state_ptr
-    class(domain_state_t), pointer :: val => null( )
+    class(domain_state_t), pointer :: val_ => null( )
   end type domain_state_ptr
 
   !> Mutator pointer
   type domain_state_mutator_ptr
-    class(domain_state_mutator_t), pointer :: val => null( )
+    class(domain_state_mutator_t), pointer :: val_ => null( )
   end type domain_state_mutator_ptr
 
   !> Accessor pointer
   type domain_state_accessor_ptr
-    class(domain_state_accessor_t), pointer :: val => null( )
+    class(domain_state_accessor_t), pointer :: val_ => null( )
   end type domain_state_accessor_ptr
 
   !> Iterator pointer
   type domain_iterator_ptr
-    class(domain_iterator_t), pointer :: val => null( )
+    class(domain_iterator_t), pointer :: val_ => null( )
   end type domain_iterator_ptr
 
   !> @}

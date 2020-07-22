@@ -18,7 +18,8 @@ contains
   !> Test convert_t functionality
   subroutine test_convert_t( )
 
-    use musica_constants,              only : musica_dk, PI, AVAGADRO
+    use musica_constants,              only : musica_dk, PI => kPi,           &
+                                              AVAGADRO => kAvagadro
 
     type(convert_t) :: a
     real(kind=musica_dk) :: ra, rb, rc, lon, cell_height

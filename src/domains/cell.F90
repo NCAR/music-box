@@ -359,8 +359,8 @@ contains
 
     do i_mutator = 1, size( new_mutators )
       allocate( domain_cell_state_mutator_property_t ::                       &
-                new_mutators( i_mutator )%val )
-      select type( mutator => new_mutators( i_mutator )%val )
+                new_mutators( i_mutator )%val_ )
+      select type( mutator => new_mutators( i_mutator )%val_ )
         class is( domain_cell_state_mutator_property_t )
           full_name = trim( variable_name )//"%"//component_names( i_mutator )
 
@@ -544,8 +544,8 @@ contains
 
     do i_mutator = 1, size( component_names )
       allocate( domain_cell_state_mutator_property_t ::                       &
-                new_mutators( i_mutator )%val )
-      select type( mutator => new_mutators( i_mutator )%val )
+                new_mutators( i_mutator )%val_ )
+      select type( mutator => new_mutators( i_mutator )%val_ )
         class is( domain_cell_state_mutator_property_t )
           call assert( 863119325, find_set_element( this%properties_,         &
                                                     variable_name,            &
@@ -700,8 +700,8 @@ contains
 
     do i_accessor = 1, size( component_names )
       allocate( domain_cell_state_accessor_property_t ::                      &
-                new_accessors( i_accessor )%val )
-      select type( accessor => new_accessors( i_accessor )%val )
+                new_accessors( i_accessor )%val_ )
+      select type( accessor => new_accessors( i_accessor )%val_ )
         class is( domain_cell_state_accessor_property_t )
           call assert( 425375503, find_set_element( this%properties_,         &
                                                     variable_name,            &
