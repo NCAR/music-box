@@ -60,6 +60,12 @@ find_library(JSON_LIB jsonfortran
 include_directories(${JSON_INCLUDE_DIR})
 
 ################################################################################
+# Create a directory to hold input data
+
+add_custom_target(data-directory ALL COMMAND ${CMAKE_COMMAND} -E make_directory
+  ${CMAKE_BINARY_DIR}/data)
+
+################################################################################
 # MUSICA library
 
 add_subdirectory(src)

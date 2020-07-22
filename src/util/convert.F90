@@ -292,7 +292,7 @@ contains
   subroutine set_up_for_UTC( this, non_standard )
 
     use musica_assert,                 only : die_msg
-    use musica_constants,              only : PI
+    use musica_constants,              only : kPi
 
     !> Converter
     class(convert_t), intent(inout) :: this
@@ -312,7 +312,7 @@ contains
              non_standard .eq. "lst" ) then
       this%conversion_type_ = CONV_SCALE_LONGITUDE_THEN_MOD_OFFSET
       this%offset_ = 24.0d0 * 60.0d0 * 60.0d0 ! 24 hours in seconds
-      this%scale_factor_ = this%offset_ / ( 2.0d0 * PI )
+      this%scale_factor_ = this%offset_ / ( 2.0d0 * kPi )
     else
       call die_msg( 532226526, "Invalid non-standard units for conversion "// &
                     "to UTC: '"//non_standard%to_char( )//"'" )
@@ -405,7 +405,7 @@ contains
   subroutine set_up_for_mol_per_m3( this, non_standard )
 
     use musica_assert,                 only : die_msg
-    use musica_constants,              only : AVAGADRO
+    use musica_constants,              only : kAvagadro
 
     !> Converter
     class(convert_t), intent(inout) :: this
@@ -432,7 +432,7 @@ contains
       else if( base_units(1) .eq. "molec" .or.                                &
                base_units(1) .eq. "molecule" .or.                             &
                base_units(1) .eq. "molecules" ) then
-        num_scale = AVAGADRO
+        num_scale = kAvagadro
       else
         call die_msg( 209497195, "Invalid non-standard units for conversion " &
                       //"to mol m-3: '"//non_standard%to_char( )//"'" )
@@ -499,7 +499,7 @@ contains
   subroutine set_up_for_mol_per_m3_per_s( this, non_standard )
 
     use musica_assert,                 only : die_msg, assert_msg
-    use musica_constants,              only : AVAGADRO
+    use musica_constants,              only : kAvagadro
 
     !> Converter
     class(convert_t), intent(inout) :: this
@@ -533,7 +533,7 @@ contains
     else if( base_units(1) .eq. "molec" .or.                                  &
              base_units(1) .eq. "molecule" .or.                               &
              base_units(1) .eq. "molecules" ) then
-      num_scale = AVAGADRO
+      num_scale = kAvagadro
     else
       call die_msg( 179250665, "Invalid non-standard units for conversion "   &
                     //"to mol m-3: '"//non_standard%to_char( )//"'" )
