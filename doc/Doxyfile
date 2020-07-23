@@ -44,7 +44,7 @@ PROJECT_NUMBER         = "v2.0"
 # for a project that appears at the top of each page and should give viewer a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "MUSICA Box Model"
+PROJECT_BRIEF          = "A MUSICA model for boxes and columns"
 
 # With the PROJECT_LOGO tag one can specify an logo or icon that is included in
 # the documentation. The maximum height of the logo should not exceed 55 pixels
@@ -766,6 +766,7 @@ WARN_LOGFILE           =
 INPUT                  = doxygen_files \
                          ../src \
                          ../apps \
+                         ../libs/MICM_Chemistry/src \
                          ../test
 
 # This tag can be used to specify the character encoding of the source files
