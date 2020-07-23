@@ -1,4 +1,4 @@
-# MusicBox2
+# MusicBox
 A MUSICA model for boxes and columns.
 
 # Install and run
