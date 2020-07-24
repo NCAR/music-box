@@ -1076,7 +1076,7 @@ contains
     character(len=:), allocatable :: key
     !> Property name
     character(len=*), intent(in) :: property_name
-    !> Units
+    !> Property units
     character(len=*), intent(in) :: units
 
     key = trim( property_name )//" ["//trim( units )//"]"

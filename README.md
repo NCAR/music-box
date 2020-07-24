@@ -1,5 +1,10 @@
-# MusicBox
-A MUSICA model for boxes and columns.
+
+MusicBox
+========
+
+MusicBox: A MUSICA model for boxes and columns.
+
+[![License](https://img.shields.io/github/license/NCAR/music-box.svg)](https://github.com/NCAR/music-box/blob/master/LICENSE) [![Build Status](https://travis-ci.com/NCAR/music-box.svg?branch=master)](https://travis-ci.com/NCAR/music-box)
 
 # Install and run
 
@@ -24,7 +29,7 @@ From here, you can specify model parameters and initial conditions, or use one o
 ./musicbox ../MusicBox2/examples/dark_chamber/config.json
 ```
 
-The results will be in a file named `output.nc`.
+The results will be in a file named `output.csv`.
 
 # Documentation
 

@@ -245,27 +245,27 @@ contains
 
     ! temperature
     this%mutators_(  kTemperature      )%val_ =>                              &
-      this%domain_%register_cell_state_variable( "temperature",               & !<- variable name
-                                                 "K",                         & !<- units
-                                                 298.15d0,                    & !<- default value
+      this%domain_%register_cell_state_variable( "temperature",               & !- variable name
+                                                 "K",                         & !- units
+                                                 298.15d0,                    & !- default value
                                                  my_name )
     this%accessors_( kTemperature      )%val_ =>                              &
       this%domain_%cell_state_accessor( "temperature", "K", my_name )
 
     ! pressure
     this%mutators_( kPressure          )%val_ =>                              &
-      this%domain_%register_cell_state_variable( "pressure",                  & !<- variable name
-                                                 "Pa",                        & !<- units
-                                                 101325.0d0,                  & !<- default value
+      this%domain_%register_cell_state_variable( "pressure",                  & !- variable name
+                                                 "Pa",                        & !- units
+                                                 101325.0d0,                  & !- default value
                                                  my_name )
     this%accessors_( kPressure         )%val_ =>                              &
       this%domain_%cell_state_accessor( "pressure", "Pa", my_name )
 
     ! number density of air
     this%mutators_( kNumberDensityAir  )%val_ =>                              &
-      this%domain_%register_cell_state_variable( "number density air",        & !<- variable name
-                                                 "mol m-3",                   & !<- units
-                                                 0.0d0,                       & !<- default value
+      this%domain_%register_cell_state_variable( "number density air",        & !- variable name
+                                                 "mol m-3",                   & !- units
+                                                 0.0d0,                       & !- default value
                                                  my_name )
     this%accessors_( kNumberDensityAir )%val_ =>                              &
       this%domain_%cell_state_accessor( "number density air", "mol m-3",      &
@@ -282,17 +282,17 @@ contains
     class(core_t), intent(inout) :: this
 
     call this%output_%register( this%domain_,                                 &
-                                "temperature",                                & !<- variable name
-                                "K",                                          & !<- units
-                                "ENV.temperature"  )                            !<- output name
+                                "temperature",                                & !- variable name
+                                "K",                                          & !- units
+                                "ENV.temperature"  )                            !- output name
     call this%output_%register( this%domain_,                                 &
-                                "pressure",                                   & !<- variable name
-                                "Pa",                                         & !<- units
-                                "ENV.pressure"     )                            !<- output name
+                                "pressure",                                   & !- variable name
+                                "Pa",                                         & !- units
+                                "ENV.pressure"     )                            !- output name
     call this%output_%register( this%domain_,                                 &
-                                "number density air",                         & !<- variable name
-                                "mol m-3",                                    & !<- units
-                                "ENV.number_density_air" )                      !<- output name
+                                "number density air",                         & !- variable name
+                                "mol m-3",                                    & !- units
+                                "ENV.number_density_air" )                      !- output name
 
   end subroutine register_output_variables
 

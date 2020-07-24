@@ -84,7 +84,7 @@ contains
 
     !> Output stream
     class(output_text_t), intent(inout) :: this
-    !> Domain
+    !> Model domain
     class(domain_t), intent(inout) :: domain
     !> Variable to output
     character(len=*), intent(in) :: variable_name
@@ -125,7 +125,7 @@ contains
     class(output_text_t), intent(inout) :: this
     !> Current simulation time [s]
     real(kind=musica_dk), intent(in) :: time__s
-    !> Domain
+    !> Model domain
     class(domain_t), intent(in) :: domain
     !> Domain state
     class(domain_state_t), intent(in) :: domain_state
