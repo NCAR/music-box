@@ -6,6 +6,8 @@ MusicBox: A MUSICA model for boxes and columns.
 
 [![License](https://img.shields.io/github/license/NCAR/music-box.svg)](https://github.com/NCAR/music-box/blob/master/LICENSE) [![Build Status](https://travis-ci.com/NCAR/music-box.svg?branch=master)](https://travis-ci.com/NCAR/music-box)
 
+Copyright (C) 2020 National Center for Atmospheric Research
+
 # Install and run
 
 The fastest way to get started with MusicBox is with Docker. You will need to have [Docker Desktop](https://www.docker.com/get-started) and [git](https://git-scm.com) installed. Then, from a terminal window run:
