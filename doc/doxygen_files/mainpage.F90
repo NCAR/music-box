@@ -42,7 +42,7 @@
 !! <h3>License</h3>
 !! <hr>
 !! <p>
-!! Copyright <b>2020</b> National Center for Atmospheric Research
+!! Copyright (C) <b>2020</b> National Center for Atmospheric Research
 !! </p><p><small>
 !! Licensed under the Apache License, Version 2.0 (the "License");
 !! you may not use this file except in compliance with the License.

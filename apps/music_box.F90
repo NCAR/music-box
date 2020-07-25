@@ -1,3 +1,6 @@
+! Copyright (C) 2020 National Center for Atmospheric Research
+! SPDX-License-Identifier: Apache-2.0
+!
 !> \file
 !> The MusicBox program
 
