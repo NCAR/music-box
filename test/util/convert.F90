@@ -4,12 +4,10 @@
 !> Test module for the musica_convert module
 program test_util_convert
 
-  use musica_assert
-  use musica_convert
-
   implicit none
 
-  call test_convert_t()
+  call test_convert_t( )
+  call test_example( )
 
 contains
 
@@ -18,8 +16,10 @@ contains
   !> Test convert_t functionality
   subroutine test_convert_t( )
 
+    use musica_assert
     use musica_constants,              only : musica_dk, PI => kPi,           &
                                               AVAGADRO => kAvagadro
+    use musica_convert
 
     type(convert_t) :: a
     real(kind=musica_dk) :: ra, rb, rc, lon, cell_height
@@ -545,6 +545,32 @@ contains
 
 
   end subroutine test_convert_t
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  subroutine test_example( )
+
+use musica_constants,                only : dk => musica_dk
+use musica_convert,                  only : convert_t
+use musica_string,                   only : string_t
+ 
+type(convert_t) :: convert
+type(string_t) :: str
+real(kind=dk) :: a, long
+ 
+convert = convert_t( "Pa", "atm" )     ! convert between [Pa] and [atm]
+a = convert%to_standard( 0.915_dk )
+write(*,*) 0.915, " atm is ", a, " Pa"
+a = convert%to_non_standard( 103657.0_dk )
+write(*,*) 103657.0, " Pa is ", a, " atm"
+ 
+str = "Local solar time"
+convert = convert_t( "UTC", str )      ! converts between [UTC] and [LST]
+long = 2.564_dk                        ! a longitude in radians
+a = convert%to_standard( 6.5_dk, longitude__rad = long )
+write(*,*) 6.5_dk, " UTC [s] is ", a, " LST [s] at ", long / 3.14159265359 * 180.0, " deg W"
+
+  end subroutine test_example
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

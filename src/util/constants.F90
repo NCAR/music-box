@@ -28,9 +28,9 @@ module musica_constants
 
   !> Pi
   real(kind=musica_dk), parameter :: kPi = 3.14159265358979323846d0
-  !> Avagadro's number
+  !> Avagadro's number [molec mol-1]
   real(kind=musica_dk), parameter :: kAvagadro = 6.02214179d23
-  !> Universal gas constant (J mole^{-1} K^{-1}).
+  !> Universal gas constant [J mol-1 K-1].
   real(kind=musica_dk), parameter :: kUniversalGasConstant = 8.314472d0
 
   !> @}

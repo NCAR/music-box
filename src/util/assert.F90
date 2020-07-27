@@ -14,7 +14,7 @@ module musica_assert
   implicit none
 
   !> Error output id
-  integer, parameter :: ERROR_ID = 0
+  integer, parameter :: kErrorId = 0
 
   interface almost_equal
     module procedure almost_equal_real
@@ -25,7 +25,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Assert condition to be true or fail with message
+  !> Asserts condition to be true or fails with provided message
   subroutine assert_msg( code, condition, error_message )
 
     !> Unique code for the assertion
@@ -35,12 +35,12 @@ contains
     !> Message to display on failure
     character(len=*), intent(in) :: error_message
 
-    character(len=50) :: err_code
+    character(len=50) :: str_code
 
     if( .not. condition ) then
-      write( err_code, '(i30)' ) code
-      write(ERROR_ID,*) "ERROR (MusicBox-"//trim( adjustl( err_code ) )//     &
-                        "): "//error_message
+      write(str_code,'(i30)') code
+      write(kErrorId,*) "ERROR (MusicBox-"//trim( adjustl( str_code ) )//"): "&
+                        //error_message
       stop 3
     end if
 
@@ -48,7 +48,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Assert condition to be true or fail
+  !> Asserts condition to be true or fails
   subroutine assert( code, condition )
 
     !> Unique code for the assertion
@@ -62,7 +62,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Assert condition to be true or print a warning message
+  !> Asserts condition to be true or prints a provided warning message
   subroutine assert_warn_msg( code, condition, warning_message )
 
     !> Unique code for the assertion
@@ -72,11 +72,11 @@ contains
     !> Message to display on failure
     character(len=*), intent(in) :: warning_message
 
-    character(len=50) :: err_code
+    character(len=50) :: str_code
 
     if( .not. condition ) then
-      write( err_code, '(i30)' ) code
-      write(ERROR_ID,*) "WARNING (MusicBox-"//trim( adjustl( err_code ) )//   &
+      write(str_code,'(i30)') code
+      write(kErrorId,*) "WARNING (MusicBox-"//trim( adjustl( str_code ) )//   &
                         "): "//warning_message
     end if
 
@@ -84,7 +84,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Error immediately
+  !> Errors immediately and prints a provided message
   subroutine die_msg( code, error_message )
 
     !> Unique code for the failure
@@ -98,7 +98,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Error immediately
+  !> Errors immediately
   subroutine die( code )
 
     !> Unique code for the failure
@@ -110,7 +110,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Determine whether two real numbers are equal within a provided or
+  !> Determines whether two real numbers are equal within a provided or
   !! standard tolerance
   logical function almost_equal_real( a, b, relative_tolerance,               &
       absolute_tolerance ) result( almost_equal )
@@ -148,7 +148,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Determine whether two real numbers are equal within a provided or
+  !> Determines whether two real numbers are equal within a provided or
   !! standard tolerance
   logical function almost_equal_double( a, b, relative_tolerance,             &
       absolute_tolerance ) result( almost_equal )
