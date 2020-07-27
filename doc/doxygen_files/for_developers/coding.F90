@@ -416,9 +416,16 @@
 !! the file).
 !! \code{f90}
 !! if( condition ) then      ! no space after if, while, select, etc.
-!!   do_something( )         ! always space after ( and before )
+!!   do_something( )         ! always space after( and before )
 !! end if                    ! space after end (end if, end do, etc.)
 !! x = 5 + ( 3 / 12.0 )      ! spaces around operators and () in equations
+!!
+!! function foo( this, bar ) result( foo_result ) ! spaces after( and before )
+!!
+!! ! exceptions to spacing rules
+!! integer(kind=dk), intent(in) :: foo(12)   ! variable definitions
+!! foo(:) = 12                               ! implicit loops over arrays
+!! write(file_id,*) "foo"                    ! write statements
 !! \endcode
 !!
 !! \anchor coding_format_vertical_whitespace

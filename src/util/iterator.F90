@@ -13,18 +13,42 @@ module musica_iterator
   public :: iterator_t
 
   !> An abstract iterator
+  !!
+  !! Extending types should provide a constructor that returns a pointer to a
+  !! iterator_t that references a newly allocated iterator of the extending
+  !! type. The iterator must be in the state is it would be in after a call to
+  !! \c reset.
+  !!
+  !! Example usage:
+  !! \code{f90}
+  !!   use musica_foo_iterator,             only : foo_iterator_t
+  !!   use musica_iterator,                 only : iterator_t
+  !!
+  !!   class(iterator), pointer :: my_iterator
+  !!
+  !!   my_iterator => foo_iterator_t( )    ! can accept arguments if necessary
+  !!   do while( my_iterator%next( ) )
+  !!     some_function( my_iterator, ... ) ! use a function that uses a foo_iterator_t
+  !!   end do
+  !!   call my_iterator%reset( )           ! reset the iterator
+  !!   do while( my_iterator%next( ) )
+  !!     some_other_function( my_iterator, ... )
+  !!   end do
+  !!   deallocate( my_iterator )
+  !! \endcode
+  !!
   type, abstract :: iterator_t
   contains
-    !> Advance the iterator
+    !> Advances the iterator
     procedure(next), deferred :: next
-    !> Reset the iterator
+    !> Resets the iterator
     procedure(reset), deferred :: reset
   end type iterator_t
 
 interface
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Advance the iterator
+  !> Advances the iterator
   !!
   !! Returns false if the end of the collection has been reached
   logical function next( this )
@@ -35,7 +59,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Reset the iterator
+  !> Resets the iterator
   subroutine reset( this )
     import iterator_t
     !> Iterator

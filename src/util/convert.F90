@@ -8,7 +8,7 @@
 !! and non-standard MUSICA units
 module musica_convert
 
-  use musica_constants,                only : musica_dk
+  use musica_constants,                only : dk => musica_dk
   use musica_string,                   only : string_t
 
   implicit none
@@ -22,35 +22,81 @@ module musica_convert
   !! @{
 
   !> An unspecified conversion
-  integer, parameter :: CONV_INVALID = 0
+  integer, parameter :: kInvalid = 0
   !> \f$ nonStd = (std + offset) * scale \f$
-  integer, parameter :: CONV_OFFSET_THEN_SCALE = 1
+  integer, parameter :: kOffsetThenScale = 1
   !> \f$ nonStd = std * scale + offset \f$
-  integer, parameter :: CONV_SCALE_THEN_OFFSET = 2
+  integer, parameter :: kScaleThenOffset = 2
   !> \f$ nonStd = ( longitude * scale ) + std \f$
-  integer, parameter :: CONV_SCALE_LONGITUDE_THEN_MOD_OFFSET = 3
+  integer, parameter :: kScaleLongitudeThenOffset = 3
   !> \f$ nonStd = ( std * cellHeight * scale ) + offset \f$
-  integer, parameter :: CONV_SCALE_WITH_HEIGHT_THEN_OFFSET = 4
+  integer, parameter :: kScaleWithHeightThenOffset = 4
 
   !> @}
 
-  !> Conversion to and from standard MUSICA units
+  !> Converts values to and from standard MUSICA units (mks units)
+  !!
+  !! Create a convert object by providing the standard MUSICA unit for the
+  !! property and the unit to convert from (can be standard or non-standard).
+  !! Units can be provided as character arrays or \c string_t objects. Units
+  !! are case-insensitive.
+  !!
+  !! Use a convert object by calling the \c to_standard and \c to_non_standard
+  !! type-bound functions.
+  !!
+  !! Convert objects can be used multiple times with different values and can
+  !! be re-built for different combinations of units.
+  !!
+  !! Some conversions require additional information (e.g., conversion between
+  !! UTC and local solar time requires a longitude). This information must be
+  !! provided or the conversion will fail with an error.
+  !!
+  !! Example:
+  !! \code{F90}
+  !!   use musica_constants,                only : dk => musica_dk
+  !!   use musica_convert,                  only : convert_t
+  !!   use musica_string,                   only : string_t
+  !!
+  !!   type(convert_t) :: convert
+  !!   type(string_t) :: str
+  !!   real(kind=dk) :: a, long
+  !!
+  !!   convert = convert_t( "Pa", "atm" )     ! convert between [Pa] and [atm]
+  !!   a = convert%to_standard( 0.915_dk )
+  !!   write(*,*) 0.915, " atm is ", a, " Pa"
+  !!   a = convert%to_non_standard( 103657.0_dk )
+  !!   write(*,*) 103657.0, " Pa is ", a, " atm"
+  !!
+  !!   str = "Local solar time"
+  !!   convert = convert_t( "UTC", str )      ! converts between [UTC] and [LST]
+  !!   long = 2.564_dk                        ! a longitude in radians
+  !!   a = convert%to_standard( 6.5_dk, longitude__rad = long )
+  !!   write(*,*) 6.5_dk, " UTC [s] is ", a, " LST [s] at ", long / 3.14159265359 * 180.0, " deg W"
+  !! \endcode
+  !! Output:
+  !! \code{bash}
+  !!   0.915000021      atm is    92712.375000000000       Pa
+  !!   103657.000      Pa is    1.0230150505798175       atm
+  !!   6.5000000000000000       UTC [s] is    51148.969118829657       LST [s] at    146.90637458350079       deg W
+  !! \endcode
+  !!
   type :: convert_t
     private
     !> Conversion type
-    integer :: conversion_type_ = CONV_INVALID
+    integer :: conversion_type_ = kInvalid
     !> Scaling factor
-    real(kind=musica_dk) :: scale_factor_ = 1.0d0
+    real(kind=dk) :: scale_factor_ = 1.0_dk
     !> Offset
-    real(kind=musica_dk) :: offset_ = 0.0d0
+    real(kind=dk) :: offset_ = 0.0_dk
     !> Standard units
     type(string_t) :: standard_units_
   contains
-    !> Convert to the standard units
+    private
+    !> Converts to the standard units
     procedure, public :: to_standard
-    !> Convert to the non-standard units
+    !> Converts to the non-standard units
     procedure, public :: to_non_standard
-    !> Return the standard units for this conversion
+    !> Returns the standard units for this conversion
     procedure, public :: standard_units
     !> @name Private setup functions
     !! @{
@@ -64,7 +110,7 @@ module musica_convert
     !> @}
   end type convert_t
 
-  !> Constructor for a conversion
+  ! Constructor for a conversion
   interface convert_t
     procedure :: constructor, constructor_char, constructor_str_char,         &
                  constructor_char_str
@@ -88,8 +134,7 @@ contains
 
     type(string_t) :: std
 
-    std = standard_units
-
+    std     = standard_units
     new_obj = constructor( std, non_standard_units )
 
   end function constructor_char_str
@@ -111,7 +156,6 @@ contains
     type(string_t) :: non_std
 
     non_std = non_standard_units
-
     new_obj = constructor( standard_units, non_std )
 
   end function constructor_str_char
@@ -132,9 +176,8 @@ contains
 
     type(string_t) :: std, non_std
 
-    std = standard_units
+    std     = standard_units
     non_std = non_standard_units
-
     new_obj = constructor( std, non_std )
 
   end function constructor_char
@@ -155,11 +198,9 @@ contains
 
     type(string_t) :: std, non_std
 
-    std     = standard_units%to_lower( )
-    non_std = non_standard_units%to_lower( )
-
+    std                     = standard_units%to_lower( )
+    non_std                 = non_standard_units%to_lower( )
     new_obj%standard_units_ = std
-
     if( std .eq. "utc" ) then
       call new_obj%set_up_for_UTC( non_std )
     else if( std .eq. "k" ) then
@@ -184,31 +225,31 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Convert a non-standard value to a standard value
+  !> Converts a non-standard value to a standard value
   function to_standard( this, non_standard_value, longitude__rad,             &
       cell_height__m ) result( standard_value )
 
     use musica_assert,                 only : die_msg
 
     !> Converted value
-    real(kind=musica_dk) :: standard_value
+    real(kind=dk) :: standard_value
     !> Converter
     class(convert_t), intent(in) :: this
     !> Non-standard value to convert
-    real(kind=musica_dk), intent(in) :: non_standard_value
+    real(kind=dk), intent(in) :: non_standard_value
     !> Longitude [radians]
-    real(kind=musica_dk), intent(in), optional :: longitude__rad
+    real(kind=dk), intent(in), optional :: longitude__rad
     !> Surface area [m2]
-    real(kind=musica_dk), intent(in), optional :: cell_height__m
+    real(kind=dk), intent(in), optional :: cell_height__m
 
     select case( this%conversion_type_ )
-      case( CONV_OFFSET_THEN_SCALE )
+      case( kOffsetThenScale )
         standard_value = ( non_standard_value / this%scale_factor_ ) -        &
           this%offset_
-      case( CONV_SCALE_THEN_OFFSET )
+      case( kScaleThenOffset )
         standard_value = ( non_standard_value - this%offset_ ) /              &
           this%scale_factor_
-      case( CONV_SCALE_LONGITUDE_THEN_MOD_OFFSET )
+      case( kScaleLongitudeThenOffset )
         if( present( longitude__rad ) ) then
           standard_value = mod( non_standard_value -                          &
             ( longitude__rad * this%scale_factor_ ) + this%offset_,           &
@@ -216,7 +257,7 @@ contains
         else
           call die_msg( 873956386, "Missing longitude in conversion" )
         end if
-      case( CONV_SCALE_WITH_HEIGHT_THEN_OFFSET )
+      case( kScaleWithHeightThenOffset )
         if( present( cell_height__m ) ) then
           standard_value = ( non_standard_value - this%offset_ ) /            &
             cell_height__m / this%scale_factor_
@@ -231,38 +272,38 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Convert a standard value to a non-standard value
+  !> Converts a standard value to a non-standard value
   function to_non_standard( this, standard_value, longitude__rad,             &
       cell_height__m ) result( non_standard_value )
 
     use musica_assert,                 only : die_msg
 
     !> Converted value
-    real(kind=musica_dk) :: non_standard_value
+    real(kind=dk) :: non_standard_value
     !> Converter
     class(convert_t), intent(in) :: this
     !> Standard value to convert
-    real(kind=musica_dk), intent(in) :: standard_value
+    real(kind=dk), intent(in) :: standard_value
     !> Longitude [radians]
-    real(kind=musica_dk), intent(in), optional :: longitude__rad
+    real(kind=dk), intent(in), optional :: longitude__rad
     !> Surface area [m2]
-    real(kind=musica_dk), intent(in), optional :: cell_height__m
+    real(kind=dk), intent(in), optional :: cell_height__m
 
     select case( this%conversion_type_ )
-      case( CONV_OFFSET_THEN_SCALE )
+      case( kOffsetThenScale )
         non_standard_value = ( standard_value + this%offset_ ) *              &
           this%scale_factor_
-      case( CONV_SCALE_THEN_OFFSET )
+      case( kScaleThenOffset )
         non_standard_value = ( standard_value * this%scale_factor_ ) +        &
           this%offset_
-      case( CONV_SCALE_LONGITUDE_THEN_MOD_OFFSET )
+      case( kScaleLongitudeThenOffset )
         if( present( longitude__rad ) ) then
           non_standard_value = mod( ( longitude__rad * this%scale_factor_ ) + &
             standard_value + this%offset_, this%offset_ )
         else
           call die_msg( 353861650, "Missing longitude in conversion" )
         end if
-      case( CONV_SCALE_WITH_HEIGHT_THEN_OFFSET )
+      case( kScaleWithHeightThenOffset )
         if( present( cell_height__m ) ) then
           non_standard_value = ( standard_value * cell_height__m *            &
             this%scale_factor_ ) + this%offset_
@@ -277,7 +318,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Return the standard units for this conversion
+  !> Returns the standard units for this conversion
   function standard_units( this )
 
     !> Standard units
@@ -291,7 +332,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Set up a conversion for datetime [UTC]
+  !> Sets up a conversion for datetime [UTC]
   subroutine set_up_for_UTC( this, non_standard )
 
     use musica_assert,                 only : die_msg
@@ -302,20 +343,20 @@ contains
     !> Non-standard units
     type(string_t), intent(in) :: non_standard
 
-    real(kind=musica_dk) :: utc_offset
+    real(kind=dk) :: utc_offset
 
     if( non_standard .eq. "utc" ) then
-      this%conversion_type_ = CONV_SCALE_THEN_OFFSET
+      this%conversion_type_ = kScaleThenOffset
       return
     else if( non_standard%substring(1,3) .eq. "utc" ) then
-      this%conversion_type_ = CONV_SCALE_THEN_OFFSET
+      this%conversion_type_ = kScaleThenOffset
       utc_offset = non_standard%substring(4,10)
-      this%offset_ = utc_offset * 3600.0d0
+      this%offset_ = utc_offset * 3600.0_dk
     else if( non_standard .eq. "local solar time" .or.                        &
              non_standard .eq. "lst" ) then
-      this%conversion_type_ = CONV_SCALE_LONGITUDE_THEN_MOD_OFFSET
-      this%offset_ = 24.0d0 * 60.0d0 * 60.0d0 ! 24 hours in seconds
-      this%scale_factor_ = this%offset_ / ( 2.0d0 * kPi )
+      this%conversion_type_ = kScaleLongitudeThenOffset
+      this%offset_ = 24.0_dk * 60.0_dk * 60.0_dk ! 24 hours in seconds
+      this%scale_factor_ = this%offset_ / ( 2.0_dk * kPi )
     else
       call die_msg( 532226526, "Invalid non-standard units for conversion "// &
                     "to UTC: '"//non_standard%to_char( )//"'" )
@@ -325,7 +366,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Set up a conversion for temperature [K]
+  !> Sets up a conversion for temperature [K]
   subroutine set_up_for_K( this, non_standard )
 
     use musica_assert,                 only : die_msg
@@ -336,7 +377,7 @@ contains
     type(string_t), intent(in) :: non_standard
 
     if( non_standard .eq. "k" ) then
-      this%conversion_type_ = CONV_SCALE_THEN_OFFSET
+      this%conversion_type_ = kScaleThenOffset
       return
     else if( non_standard .eq. "degrees c" .or.                               &
              non_standard .eq. "deg_c" .or.                                   &
@@ -344,17 +385,17 @@ contains
              non_standard .eq. "°c" .or.                                      &
              non_standard .eq. "℃" .or.                                       &
              non_standard .eq. "c" ) then
-      this%conversion_type_ = CONV_SCALE_THEN_OFFSET
-      this%offset_ = -273.15d0
+      this%conversion_type_ = kScaleThenOffset
+      this%offset_ = -273.15_dk
     else if( non_standard .eq. "degrees f" .or.                               &
              non_standard .eq. "deg_f" .or.                                   &
              non_standard .eq. "deg f" .or.                                   &
              non_standard .eq. "°f" .or.                                      &
              non_standard .eq. "℉" .or.                                       &
              non_standard .eq. "f" ) then
-      this%conversion_type_ = CONV_SCALE_THEN_OFFSET
-      this%scale_factor_ = 9.0d0 / 5.0d0
-      this%offset_ = -273.15d0 * 9.0d0 / 5.0d0 + 32d0
+      this%conversion_type_ = kScaleThenOffset
+      this%scale_factor_ = 9.0_dk / 5.0_dk
+      this%offset_ = -273.15_dk * 9.0_dk / 5.0_dk + 32_dk
     else
       call die_msg( 565100435, "Invalid non-standard units for conversion "// &
                     "to K: '"//non_standard%to_char( )//"'" )
@@ -364,7 +405,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Set up a conversion for pressure [Pa]
+  !> Sets up a conversion for pressure [Pa]
   subroutine set_up_for_Pa( this, non_standard )
 
     use musica_assert,                 only : die_msg
@@ -375,26 +416,26 @@ contains
     type(string_t), intent(in) :: non_standard
 
     if( non_standard .eq. "pa" ) then
-      this%conversion_type_ = CONV_SCALE_THEN_OFFSET
+      this%conversion_type_ = kScaleThenOffset
       return
     else if( non_standard .eq. "hpa" .or.                                     &
              non_standard .eq. "mbar" ) then
-      this%conversion_type_ = CONV_SCALE_THEN_OFFSET
+      this%conversion_type_ = kScaleThenOffset
       this%scale_factor_ = 1.0d-2
     else if( non_standard .eq. "kpa" ) then
-      this%conversion_type_ = CONV_SCALE_THEN_OFFSET
+      this%conversion_type_ = kScaleThenOffset
       this%scale_factor_ = 1.0d-3
     else if( non_standard .eq. "atm" ) then
-      this%conversion_type_ = CONV_SCALE_THEN_OFFSET
-      this%scale_factor_ = 1.0d0 / 101325.0d0
+      this%conversion_type_ = kScaleThenOffset
+      this%scale_factor_ = 1.0_dk / 101325.0_dk
     else if( non_standard .eq. "bar" ) then
-      this%conversion_type_ = CONV_SCALE_THEN_OFFSET
+      this%conversion_type_ = kScaleThenOffset
       this%scale_factor_ = 1.0d-5
     else if( non_standard .eq. "mmhg" .or.                                    &
              non_standard .eq. "torr" ) then
       !> \bug The conversion between torr/mmHg and Pa is approximate
-      this%conversion_type_ = CONV_SCALE_THEN_OFFSET
-      this%scale_factor_ = 1.0d0 / 133.0d0
+      this%conversion_type_ = kScaleThenOffset
+      this%scale_factor_ = 1.0_dk / 133.0_dk
     else
       call die_msg( 268023978, "Invalid non-standard units for conversion "// &
                     "to Pa: '"//non_standard%to_char( )//"'" )
@@ -404,7 +445,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Set up a conversion for number concentration [mol m-3]
+  !> Sets up a conversion for number concentration [mol m-3]
   subroutine set_up_for_mol_per_m3( this, non_standard )
 
     use musica_assert,                 only : die_msg
@@ -416,7 +457,7 @@ contains
     type(string_t), intent(in) :: non_standard
 
     type(string_t), allocatable :: base_units(:)
-    real(kind=musica_dk) :: num_scale, space_scale
+    real(kind=dk) :: num_scale, space_scale
     logical :: use_slash
 
     use_slash = .false.
@@ -427,11 +468,11 @@ contains
     end if
 
     if( size( base_units ) .eq. 2 ) then
-      this%conversion_type_ = CONV_SCALE_THEN_OFFSET
+      this%conversion_type_ = kScaleThenOffset
       if( base_units(1) .eq. "mol" .or.                                       &
           base_units(1) .eq. "mole" .or.                                      &
           base_units(1) .eq. "moles" ) then
-        num_scale = 1.0d0
+        num_scale = 1.0_dk
       else if( base_units(1) .eq. "molec" .or.                                &
                base_units(1) .eq. "molecule" .or.                             &
                base_units(1) .eq. "molecules" ) then
@@ -442,7 +483,7 @@ contains
       end if
       if( ( base_units(2) .eq. "m-3" .and. .not. use_slash ) .or.             &
           ( base_units(2) .eq. "m3" .and. use_slash ) ) then
-        space_scale = 1.0d0
+        space_scale = 1.0_dk
       else if( ( base_units(2) .eq. "cm-3" .and. .not. use_slash ) .or.       &
                ( base_units(2) .eq. "cm3" .and. use_slash ) ) then
         space_scale = 1.0d6
@@ -459,7 +500,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Set up a conversion for time [s]
+  !> Sets up a conversion for time [s]
   subroutine set_up_for_s( this, non_standard )
 
     use musica_assert,                 only : die_msg
@@ -469,7 +510,7 @@ contains
     !> Non-standard units
     type(string_t), intent(in) :: non_standard
 
-    this%conversion_type_ = CONV_SCALE_THEN_OFFSET
+    this%conversion_type_ = kScaleThenOffset
     if( non_standard .eq. "s" .or.                                            &
         non_standard .eq. "sec" .or.                                          &
         non_standard .eq. "second" .or.                                       &
@@ -479,16 +520,16 @@ contains
              non_standard .eq. "min" .or.                                     &
              non_standard .eq. "minute" .or.                                  &
              non_standard .eq. "minutes" ) then
-      this%scale_factor_ = 1.0d0 / 60.0d0
+      this%scale_factor_ = 1.0_dk / 60.0_dk
     else if( non_standard .eq. "h" .or.                                       &
              non_standard .eq. "hr" .or.                                      &
              non_standard .eq. "hour" .or.                                    &
              non_standard .eq. "hours" ) then
-      this%scale_factor_ = 1.0d0 / 60.0d0 / 60.0d0
+      this%scale_factor_ = 1.0_dk / 60.0_dk / 60.0_dk
     else if( non_standard .eq. "d" .or.                                       &
              non_standard .eq. "day" .or.                                     &
              non_standard .eq. "days" ) then
-      this%scale_factor_ = 1.0d0 / 60.0d0 / 60.0d0 / 24.0d0
+      this%scale_factor_ = 1.0_dk / 60.0_dk / 60.0_dk / 24.0_dk
     else
       call die_msg( 542240061,"Invalid non-standard units for conversion "//  &
                     "to s: '"//non_standard%to_char( )//"'" )
@@ -498,7 +539,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Set up a conversion for emissions rates [mol m-3 s-1]
+  !> Sets up a conversion for emissions rates [mol m-3 s-1]
   subroutine set_up_for_mol_per_m3_per_s( this, non_standard )
 
     use musica_assert,                 only : die_msg, assert_msg
@@ -510,7 +551,7 @@ contains
     type(string_t), intent(in) :: non_standard
 
     type(string_t), allocatable :: base_units(:)
-    real(kind=musica_dk) :: num_scale, space_scale
+    real(kind=dk) :: num_scale, space_scale
     logical :: use_slash
     type(convert_t) :: time_convert
 
@@ -532,7 +573,7 @@ contains
     if( base_units(1) .eq. "mol" .or.                                         &
         base_units(1) .eq. "mole" .or.                                        &
         base_units(1) .eq. "moles" ) then
-      num_scale = 1.0d0
+      num_scale = 1.0_dk
     else if( base_units(1) .eq. "molec" .or.                                  &
              base_units(1) .eq. "molecule" .or.                               &
              base_units(1) .eq. "molecules" ) then
@@ -545,19 +586,19 @@ contains
     ! Space in m or cm (per surface area or air volume)
     if( ( base_units(2) .eq. "m-3" .and. .not. use_slash ) .or.               &
         ( base_units(2) .eq. "m3" .and. use_slash ) ) then
-      this%conversion_type_ = CONV_SCALE_THEN_OFFSET
-      space_scale = 1.0d0
+      this%conversion_type_ = kScaleThenOffset
+      space_scale = 1.0_dk
     else if( ( base_units(2) .eq. "cm-3" .and. .not. use_slash ) .or.         &
              ( base_units(2) .eq. "cm3" .and. use_slash ) ) then
-      this%conversion_type_ = CONV_SCALE_THEN_OFFSET
+      this%conversion_type_ = kScaleThenOffset
       space_scale = 1.0d6
     else if( ( base_units(2) .eq. "m-2" .and. .not. use_slash ) .or.          &
         ( base_units(2) .eq. "m2" .and. use_slash ) ) then
-      this%conversion_type_ = CONV_SCALE_WITH_HEIGHT_THEN_OFFSET
-      space_scale = 1.0d0
+      this%conversion_type_ = kScaleWithHeightThenOffset
+      space_scale = 1.0_dk
     else if( ( base_units(2) .eq. "cm-2" .and. .not. use_slash ) .or.         &
              ( base_units(2) .eq. "cm2" .and. use_slash ) ) then
-      this%conversion_type_ = CONV_SCALE_WITH_HEIGHT_THEN_OFFSET
+      this%conversion_type_ = kScaleWithHeightThenOffset
       space_scale = 1.0d4
     else
       call die_msg( 173986358, "Invalid non-standard units for conversion "   &
@@ -571,7 +612,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Set up a conversion for first order decay rate constants [s-1]
+  !> Sets up a conversion for first order decay rate constants [s-1]
   subroutine set_up_for_per_s( this, non_standard )
 
     use musica_assert,                 only : die_msg, assert_msg
@@ -594,7 +635,7 @@ contains
                     "to per s: '"//non_standard%to_char( )//"'" )
     end if
     call set_up_for_s( this, non_std )
-    this%scale_factor_ = 1.0d0 / this%scale_factor_
+    this%scale_factor_ = 1.0_dk / this%scale_factor_
 
   end subroutine set_up_for_per_s
 

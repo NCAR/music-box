@@ -27,7 +27,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an unused file unit
+  !> Gets an unused file unit
   integer function get_file_unit( )
 
     use musica_assert,                 only : die_msg
@@ -52,7 +52,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Free a file unit
+  !> Frees a file unit
   subroutine free_file_unit( unit )
 
     !> File unit to free

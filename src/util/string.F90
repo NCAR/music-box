@@ -15,7 +15,7 @@ module musica_string
   public :: string_t, operator(//), operator(==), operator(/=), to_char
 
   !> Length of character array for to_char conversions
-  integer(kind=musica_ik), parameter :: CONVERT_CHAR_LENGTH = 100
+  integer(kind=musica_ik), parameter :: kConvertCharLength = 100
 
   !> Generic tring type
   type :: string_t
@@ -1083,7 +1083,7 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Convert an integer to a char array
-  character(len=CONVERT_CHAR_LENGTH) function int_to_char( val )              &
+  character(len=kConvertCharLength) function int_to_char( val )               &
       result( ret_val )
 
     !> Value to convert
@@ -1097,7 +1097,7 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Convert a real number to a char array
-  character(len=CONVERT_CHAR_LENGTH) function real_to_char( val )             &
+  character(len=kConvertCharLength) function real_to_char( val )              &
       result( ret_val )
 
     !> Value to convert
@@ -1111,7 +1111,7 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Convert a double-precision real number to a char array
-  character(len=CONVERT_CHAR_LENGTH) function double_to_char( val )           &
+  character(len=kConvertCharLength) function double_to_char( val )            &
       result( ret_val )
 
     !> Value to convert
@@ -1125,7 +1125,7 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Convert a logical to a char array
-  character(len=CONVERT_CHAR_LENGTH) function logical_to_char( val )          &
+  character(len=kConvertCharLength) function logical_to_char( val )           &
       result( ret_val )
 
     !> Value to convert
