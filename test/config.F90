@@ -10,6 +10,7 @@ program test_config
   implicit none
 
   call test_config_t( )
+  call config_example( )
 
 contains
 
@@ -330,6 +331,80 @@ contains
     deallocate( iterator )
 
   end subroutine test_config_t
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Test the \c config_t example code
+  subroutine config_example( )
+
+use musica_config,                   only : config_t
+use musica_constants,                only : musica_dk, musica_ik
+use musica_iterator,                 only : iterator_t
+use musica_string,                   only : string_t
+ 
+character(len=*), parameter :: my_name = "config file example"
+type(config_t) :: main_config, sub_config, sub_real_config
+real(musica_dk) :: my_real
+integer(musica_ik) :: my_int
+type(string_t) :: my_string
+class(iterator_t), pointer :: iter
+logical :: found
+ 
+call main_config%from_file( 'data/config_example.json' )
+ 
+! this would fail with an error if 'a string' is not found
+call main_config%get( "a string", my_string, my_name )
+write(*,*) "a string value: ", my_string
+ 
+! add the found argument to avoid failure if the pair is not found
+call main_config%get( "my int", my_int, my_name, found = found )
+if( found ) then
+  write(*,*) "my int value: ", my_int
+else
+  write(*,*) "'my int' was not found"
+end if
+ 
+! when you get a subset of the properties, a new config_t object is
+! created containing the subset data. The two config_t objects are
+! independent of one another after this point.
+call main_config%get( "other props", sub_config, my_name )
+call sub_config%get( "an int", my_int, my_name )
+write(*,*) "other props->an int value: ", my_int
+ 
+! property values need a standard unit to convert to.
+! time units must be passed the standard unit 's'
+! (non-standard units may be used in the config file, but you cannot
+!  request non-standard units in the model.)
+call sub_config%get( "some time", "s", my_real, my_name )
+write(*,*) "other props->some time value: ", my_real, " s"
+ 
+! units are case-insensitive
+call sub_config%get( "a pressure", "pa", my_real, my_name )
+write(*,*) "other props->a pressure value: ", my_real, " Pa"
+ 
+! you can iterate over a set of key-value pairs. but remember that
+! the order is always arbitrary. you also must provide the right type
+! of variable for the values.
+call main_config%get( "real props", sub_real_config, my_name )
+iter => sub_real_config%get_iterator( )
+do while( iter%next( ) )
+  my_string = sub_real_config%key( iter )
+  call sub_real_config%get( iter, my_real, my_name )
+  write(*,*) my_string, " value: ", my_real
+end do
+ 
+! you can add key-value pairs with the add function
+call main_config%add( "my new int", 43, my_name )
+call main_config%get( "my new int", my_int, my_name )
+write(*,*) "my new int value: ", my_int
+ 
+! clean up all the config objects when you're done with them
+call main_config%finalize( )
+call sub_config%finalize( )
+call sub_real_config%finalize( )
+deallocate( iter )
+
+  end subroutine config_example
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
