@@ -16,7 +16,7 @@ module musica_convert
 
   public :: convert_t
 
-  !> @defgroup convert_eq_types Conversion equation types
+  !> @name Conversion equation types
   !!
   !! The names describe the conversion from standard to non-standard units.
   !! @{

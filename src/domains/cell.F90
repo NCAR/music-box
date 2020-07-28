@@ -19,8 +19,7 @@ module musica_domain_cell
 
   public :: domain_cell_t, domain_cell_state_t
 
-  !> @defgroup private_domain_cell_types Private types and parameters for cell
-  !! domains
+  !> @name Private types and parameters for cell domains
   !! @{
 
   !> Invalid property type
@@ -62,49 +61,47 @@ module musica_domain_cell
     !> Registered accessors
     type(registered_pair_t), allocatable :: accessors_(:)
   contains
-    !> Create a new state for the domain
+    !> Creates a new state for the domain
     procedure :: new_state
 
-    !> @name Registration of domain properities and state variables
+    !> @name Registers domain properities and state variables
     !! @{
 
-    !> Register a state variable for all cells
+    !> Registers a state variable for all cells
     procedure :: register_cell_state_variable
-    !> Register a named collection of state variables for all cells
+    !> Registers a named collection of state variables for all cells
     procedure :: register_cell_state_variable_set
-    !> Register a flag for all cells
+    !> Registers a flag for all cells
     procedure :: register_cell_flag
 
     !> @}
 
-    !> @name Get mutators for registered domain properties and state
-    !! variables
+    !> @name Returns mutators for registered domain properties and state variables
     !! @{
 
-    !> Get an mutator for a state variable for all cells
+    !> Gets a mutator for a state variable for all cells
     procedure :: cell_state_mutator
-    !> Get mutators for a named collection of state variables for all cells
+    !> Gets mutators for a named collection of state variables for all cells
     procedure :: cell_state_set_mutator
-    !> Get an mutator for a flag for all cells
+    !> Gets a mutator for a flag for all cells
     procedure :: cell_flag_mutator
     !> @}
 
-    !> @name Get accessors for registered domain properties and state
-    !! variables
+    !> @name Gets accessors for registered domain properties and state variables
     !! @{
 
-    !> Get an accessor for a state variable for all cells
+    !> Gets an accessor for a state variable for all cells
     procedure :: cell_state_accessor
-    !> Get accessors for a named collection of state variables for all cells
+    !> Gets accessors for a named collection of state variables for all cells
     procedure :: cell_state_set_accessor
-    !> Get an accessor for a flag for all cells
+    !> Gets an accessor for a flag for all cells
     procedure :: cell_flag_accessor
     !> @}
 
-    !> Get units for registered properties
+    !> Gets units for registered properties
     !! @{
 
-    !> Get units for a state variable for all cells
+    !> Gets units for a state variable for all cells
     procedure :: cell_state_units
 
     !> @}
@@ -112,12 +109,12 @@ module musica_domain_cell
     !> @name Iterators over the domain
     !! @{
 
-    !> Set up an iterator over all domain cells
+    !> Sets up an iterator over all domain cells
     procedure :: cell_iterator
 
     !! @}
 
-    !> Output the registered mutators and accessors
+    !> Outputs the registered mutators and accessors
     procedure :: output_registry
   end type domain_cell_t
 
@@ -133,9 +130,9 @@ module musica_domain_cell
     !> Cell flags (cell, flag)
     logical, allocatable :: flags_(:,:)
   contains
-    !> Get the value of a state variable
+    !> Gets the value of a state variable
     procedure :: get => state_get
-    !> Update the value of a state variable
+    !> Updates the value of a state variable
     procedure :: update => state_update
   end type domain_cell_state_t
 
@@ -194,9 +191,9 @@ module musica_domain_cell
     !> Last cell id
     integer(kind=musica_ik) :: last_cell_
   contains
-    !> Advance the iterator
+    !> Advances the iterator
     procedure :: next => domain_cell_iterator_next
-    !> Reset the iterator
+    !> Resets the iterator
     procedure :: reset => domain_cell_iterator_reset
   end type domain_cell_iterator_t
 
@@ -227,7 +224,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Create a new domain state object
+  !> Creates a new domain state object
   function new_state( this )
 
     !> New domain state
@@ -261,7 +258,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Register a variable for each cell in the domain
+  !> Registers a variable for each cell in the domain
   function register_cell_state_variable( this, variable_name, units,          &
       default_value, requestor ) result( new_mutator )
 
@@ -325,7 +322,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Register a named collection of state variables for each cell in the
+  !> Registers a named collection of state variables for each cell in the
   !! domain
   function register_cell_state_variable_set( this, variable_name, units,      &
       default_value, component_names, requestor ) result( new_mutators )
@@ -407,7 +404,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Register a flag property for each cell in the domain
+  !> Registers a flag property for each cell in the domain
   function register_cell_flag( this, flag_name, default_value, requestor )    &
       result( new_mutator )
 
@@ -461,7 +458,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an mutator for a registered state variable for each cell in the
+  !> Gets a mutator for a registered state variable for each cell in the
   !! domain
   function cell_state_mutator( this, variable_name, units, requestor )        &
       result( new_mutator )
@@ -510,7 +507,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get mutators for a set of state variables for each cell in the domain
+  !> Gets mutators for a set of state variables for each cell in the domain
   function cell_state_set_mutator( this, variable_name, units,                &
       component_names, requestor ) result( new_mutators )
 
@@ -573,7 +570,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an mutator for a domain cell flag
+  !> Gets a mutator for a domain cell flag
   function cell_flag_mutator( this, flag_name, requestor )                    &
       result( new_mutator )
 
@@ -617,7 +614,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an accessor for a registered state variable for each cell in the
+  !> Gets an accessor for a registered state variable for each cell in the
   !! domain
   function cell_state_accessor( this, variable_name, units, requestor )       &
       result( new_accessor )
@@ -666,7 +663,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get accessors for a set of state variables for each cell in the domain
+  !> Gets accessors for a set of state variables for each cell in the domain
   function cell_state_set_accessor( this, variable_name, units,               &
       component_names, requestor ) result( new_accessors )
 
@@ -729,7 +726,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an accessor for a domain cell flag
+  !> Gets an accessor for a domain cell flag
   function cell_flag_accessor( this, flag_name, requestor )                   &
       result( new_accessor )
 
@@ -773,7 +770,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get the units for a registered state variable for all cells
+  !> Gets the units for a registered state variable for all cells
   function cell_state_units( this, variable_name )
 
     use musica_assert,                 only : assert, die_msg
@@ -802,7 +799,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an iterator for all cells in domain_cell_state_t objects
+  !> Gets an iterator for all cells in domain_cell_state_t objects
   function cell_iterator( this )
 
     use musica_iterator,               only : iterator_t
@@ -821,7 +818,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Output the registered mutators and accessors
+  !> Outputs the registered mutators and accessors
   subroutine output_registry( this, file_unit )
 
     !> Domain
@@ -949,7 +946,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get the value of a registered property or state variable
+  !> Gets the value of a registered property or state variable
   subroutine state_get( this, iterator, accessor, state_value )
 
     use musica_assert,                 only : die, die_msg
@@ -993,7 +990,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Update the value of a registered property or state variable
+  !> Updates the value of a registered property or state variable
   subroutine state_update( this, iterator, mutator, state_value )
 
     use musica_assert,                 only : die_msg, die
@@ -1045,7 +1042,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Advance the iterator
+  !> Advances the iterator
   !!
   !! Returns false if the end of the collection has been reached
   logical function domain_cell_iterator_next( this )
@@ -1065,7 +1062,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Reset the iterator
+  !> Resets the iterator
   subroutine domain_cell_iterator_reset( this )
 
     !> Iterator
@@ -1085,7 +1082,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Add a registered pair to an array of registered pairs
+  !> Adds a registered pair to an array of registered pairs
   subroutine add_registered_pair_to_array( array, new_pair )
 
     use musica_assert,                 only : assert
@@ -1111,7 +1108,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Add a string to an array of string
+  !> Adds a string to an array of string
   subroutine add_string_to_array( array, new_string )
 
     use musica_assert,                 only : assert
@@ -1137,7 +1134,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Add a real to an array of reals
+  !> Adds a real to an array of reals
   subroutine add_real_to_array( array, new_real )
 
     use musica_assert,                 only : assert
@@ -1163,7 +1160,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Add a logical to an array of logicals
+  !> Adds a logical to an array of logicals
   subroutine add_logical_to_array( array, new_logical )
 
     use musica_assert,                 only : assert
@@ -1183,13 +1180,13 @@ contains
     deallocate( array )
     allocate( array( size( temp_logicals ) + 1 ) )
     array( :size( temp_logicals ) ) = temp_logicals(:)
-    array( size( temp_logicals ) ) = new_logical
+    array( size( array ) ) = new_logical
 
   end subroutine add_logical_to_array
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Find a string in a string array (case insensitive)
+  !> Finds a string in a string array (case insensitive)
   logical function find_string( array, string, id )
 
     !> Array to search
@@ -1218,7 +1215,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Find the number of elements in a set
+  !> Finds the number of elements in a set
   integer function set_length( array, set_name )
 
     !> Array to seach
@@ -1239,7 +1236,9 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Try to find an element of a set in an array
+  !> Find an element of a set in an array
+  !!
+  !! Returns true if the element is found, false otherwise.
   logical function find_set_element( array, set_name, element_id, array_id )
 
     !> Array to search
@@ -1269,7 +1268,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get the name of an element in a set by its index
+  !> Gets the name of an element in a set by its index
   type(string_t) function set_element_name( array, set_name, element_id )
 
     use musica_assert,                 only : die_msg

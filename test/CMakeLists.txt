@@ -24,4 +24,7 @@ add_std_test(util_convert)
 add_executable(config config.F90)
 add_std_test(config)
 
+add_executable(domain_cell domains/cell.F90)
+add_std_test(domain_cell)
+
 ################################################################################

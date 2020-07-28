@@ -20,58 +20,80 @@ module musica_domain
   !> A model domain of abstract structure
   !!
   !! Extending classes of domain_t define the structure of the domain and can
-  !! be used to build domain state objects and related accessors/mutators
+  !! be used to build domain state objects and related accessors/mutators.
+  !!
+  !! The general usage of \c domain_t objects is to:
+  !! - create a domain_t object using the
+  !!   \c musica_domain_factory::domain_builder function
+  !! - register any needed state variables and properies using the \c domain_t
+  !!   type-bound \c register \c mutator and \c accessor functions for the
+  !!   domain subset you are interested in (e.g., all cells, surface cells,
+  !!   columns)
+  !! - use the \c domain_t type-bound \c new_state function to get a state
+  !!   object to use for the domain
+  !! - during solving, use the accessors and mutators registered during
+  !!   initialization with the \c domain_state_t::get and
+  !!   \c domain_state_t::update functions to access or modify the current
+  !!   values of state variables
+  !!
+  !! Although the structure of the abstract domain types permits run-time
+  !! registration of state parameters and variables, it is compatible with
+  !! models that use a fixed set of parameters. In this case the domain
+  !! registration, accessor and mutator functions would check to make sure
+  !! a state variable that is requested is present in the model, and return
+  !! an error or warning if they are not found.
+  !!
+  !! \todo develop a complete set of \c domain_t examples
+  !!
   type, abstract :: domain_t
   contains
-    !> Create a new state for the domain
+    !> Creates a new state for the domain
     procedure(new_state), deferred :: new_state
 
-    !> @name Registration of domain properities and state variables
+    !> @name Registers domain properities and state variables
     !! @{
 
-    !> Register a state variable for all cells
+    !> Registers a state variable for all cells
     procedure(register_cell_state_variable), deferred ::                      &
       register_cell_state_variable
-    !> Register a named collection of state variables for all cells
+    !> Registers a named collection of state variables for all cells
     procedure(register_cell_state_variable_set), deferred ::                  &
       register_cell_state_variable_set
-    !> Register a flag for all cells
+    !> Registers a flag for all cells
     procedure(register_cell_flag), deferred :: register_cell_flag
 
     !> @}
 
-    !> @name Get mutators for registered domain properties and state
-    !! variables
+    !> @name Returns mutators for registered domain properties and state variables
     !! @{
 
-    !> Get an mutator for a state variable for all cells
+    !> Gets a mutator for a state variable for all cells
     procedure(cell_state_mutator), deferred :: cell_state_mutator
-    !> Get mutators for a named collection of state variables for all
+    !> Gets mutators for a named collection of state variables for all
     !! cells
     procedure(cell_state_set_mutator), deferred :: cell_state_set_mutator
-    !> Get an mutator for a flag for all cells
+    !> Gets a mutator for a flag for all cells
     procedure(cell_flag_mutator), deferred :: cell_flag_mutator
 
     !> @}
 
-    !> @name Get accessors for registered domain properties and state
-    !! variables
+    !> @name Returns accessors for registered domain properties and state variables
     !! @{
 
-    !> Get an accessor for a state variable for all cells
+    !> Gets an accessor for a state variable for all cells
     procedure(cell_state_accessor), deferred :: cell_state_accessor
-    !> Get accessors for a named collection of state variables for all
+    !> Gets accessors for a named collection of state variables for all
     !! cells
     procedure(cell_state_set_accessor), deferred :: cell_state_set_accessor
-    !> Get an accessor for a flag for all cells
+    !> Gets an accessor for a flag for all cells
     procedure(cell_flag_accessor), deferred :: cell_flag_accessor
 
     !> @}
 
-    !> Get units for registered properties
+    !> Gets units for registered properties
     !! @{
 
-    !> Get units for a state variable for all cells
+    !> Gets units for a state variable for all cells
     procedure(cell_state_units), deferred :: cell_state_units
 
     !> @}
@@ -79,21 +101,21 @@ module musica_domain
     !> @name Iterators over the domain
     !! @{
 
-    !> Set up an iterator over all domain cells
+    !> Sets up an iterator over all domain cells
     procedure(cell_iterator), deferred :: cell_iterator
 
     !! @}
 
-    !> Output the registered mutators and accessors
+    !> Outputs the registered mutators and accessors
     procedure(output_registry), deferred :: output_registry
   end type domain_t
 
   !> Abstract domain state
   type, abstract :: domain_state_t
   contains
-    !> Get the value of a state variable
+    !> Gets the value of a state variable
     procedure(state_get), deferred :: get
-    !> Update the value of a state variable
+    !> Updates the value of a state variable
     procedure(state_update), deferred :: update
   end type domain_state_t
 
@@ -142,7 +164,7 @@ module musica_domain
 interface
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Create a new domain state object
+  !> Creates a new domain state object
   function new_state( this )
     import domain_t
     import domain_state_t
@@ -154,7 +176,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Register a state variable for each cell in the domain
+  !> Registers a state variable for each cell in the domain
   function register_cell_state_variable( this, variable_name, units,          &
       default_value, requestor ) result( new_mutator )
     use musica_constants,              only : musica_dk
@@ -176,7 +198,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Register a named collection of state variables for each cell in the
+  !> Registers a named collection of state variables for each cell in the
   !! domain
   function register_cell_state_variable_set( this, variable_name, units,      &
       default_value, component_names, requestor ) result( new_mutators )
@@ -205,7 +227,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Register a flag property for each cell in the domain
+  !> Registers a flag property for each cell in the domain
   function register_cell_flag( this, flag_name, default_value, requestor )    &
       result( new_mutator )
     import domain_t
@@ -224,7 +246,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an mutator for a registered state variable for each cell in the
+  !> Gets a mutator for a registered state variable for each cell in the
   !! domain
   function cell_state_mutator( this, variable_name, units, requestor )  &
       result( new_mutator )
@@ -244,7 +266,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an mutator for a registered named set of state variables for each
+  !> Gets a mutator for a registered named set of state variables for each
   !! cell in the domain
   function cell_state_set_mutator( this, variable_name, units,          &
       component_names, requestor ) result( new_mutators )
@@ -269,7 +291,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an mutator for a registered flag for each cell in the domain
+  !> Gets a mutator for a registered flag for each cell in the domain
   function cell_flag_mutator( this, flag_name, requestor )                    &
       result( new_mutator )
     import domain_t
@@ -286,7 +308,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an accessor for a registered state variable for each cell in the
+  !> Gets an accessor for a registered state variable for each cell in the
   !! domain
   function cell_state_accessor( this, variable_name, units, requestor )  &
       result( new_accessor )
@@ -306,7 +328,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an accessor for a registered named set of state variables for each
+  !> Gets accessors for a registered named set of state variables for each
   !! cell in the domain
   function cell_state_set_accessor( this, variable_name, units,          &
       component_names, requestor ) result( new_accessors )
@@ -331,7 +353,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an accessor for a registered flag for each cell in the domain
+  !> Gets an accessor for a registered flag for each cell in the domain
   function cell_flag_accessor( this, flag_name, requestor )                   &
       result( new_accessor )
     import domain_t
@@ -348,7 +370,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get the units for a registered state variable for all cells
+  !> Gets the units for a registered state variable for all cells
   function cell_state_units( this, variable_name )
     use musica_string,                 only : string_t
     import domain_t
@@ -362,7 +384,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an iterator for all cells in associated domain_state_t objects
+  !> Gets an iterator for all cells in associated domain_state_t objects
   function cell_iterator( this )
     import domain_t
     import domain_iterator_t
@@ -374,7 +396,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Output the registered mutators and accessors
+  !> Outputs the registered mutators and accessors
   subroutine output_registry( this, file_unit )
     import domain_t
     !> Domain
@@ -385,7 +407,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get the value of a registered property or state variable
+  !> Gets the value of a registered property or state variable
   !!
   !! The value returned will be in the units specified when the accessor was
   !! created.
@@ -405,7 +427,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Update the value of a registered property or state variable
+  !> Updates the value of a registered property or state variable
   !!
   !! The units for the value passed to this function must be the same as
   !! those specified when the mutator was created.

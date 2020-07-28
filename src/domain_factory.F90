@@ -20,6 +20,40 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Build a domain by name
+  !!
+  !! At minimum, the \c config argument must include a top-level key-value
+  !! pair "type" whose value is a valid domain type name. Currently, these
+  !! are:
+  !! - "cell" (or "box")
+  !!
+  !! The \c config argument should also include any additional information
+  !! required by the specific domain constructor.
+  !!
+  !! Example:
+  !! \code{f90}
+  !!   use musica_config,                   only : config_t
+  !!   use musica_domain,                   only : domain_t
+  !!   use musica_domain_factory,           only : domain_builder
+  !!
+  !!   class(domain_t), pointer :: domain
+  !!   type(config_t) :: config
+  !!
+  !!   call config%from_file( 'domain_config.json' )
+  !!
+  !!   domain => domain_builder( config )
+  !!
+  !!   ! use the domain
+  !!
+  !!   deallocate( domain )
+  !! \endcode
+  !!
+  !! `domain_config.json`:
+  !! \code{json}
+  !!   {
+  !!     "type" : "cell"
+  !!   }
+  !! \endcode
+  !!
   function domain_builder( config ) result( new_domain )
 
     use musica_assert,                 only : die_msg
