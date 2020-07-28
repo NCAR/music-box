@@ -16,13 +16,147 @@ module musica_config
 
   public :: config_t
 
-  !> Wrapper for configuration data
+  !> Model configuration data
+  !!
+  !! Instances of type \c config_t can be used to access model configuration
+  !! data in \c json format. If there is a need to use model configuration
+  !! in another format (e.g., XML) in the future, an abstract \c config_t
+  !! type could be set up, that this type and an XML-based type could extend.
+  !! The rest of the model code would be unaffected.
   !!
   !! It is assumed that most configuration datasets will be small enough that
-  !! returning subsets of configuration data can just make a copy of the original
+  !! returned subsets of configuration data can just be a copy of the original
   !! data (instead of using a pointer to the start of the subset in the original
   !! dataset, or something like this). This avoids ownership problems with
-  !! cleaning up the memory after a config_t object goes out of scope.
+  !! cleaning up the memory after a \c config_t object goes out of scope.
+  !!
+  !! Only use \c config_t objects during initialization. They are not designed
+  !! for efficiency.
+  !!
+  !! **IMPORTANT:** The order of elements is arbitrary. No user of a \c config_t
+  !! object can assume anything by the order of key-value pairs in the data.
+  !! This dataset:
+  !! \code{json}
+  !!   {
+  !!     "foo" : 1,
+  !!     "bar" : 2,
+  !!     "foobar" : 3
+  !!   }
+  !! \endcode
+  !! ... is the same as:
+  !! \code{json}
+  !!   {
+  !!     "bar" : 2,
+  !!     "foobar" : 3,
+  !!     "foo" : 1
+  !!   }
+  !! \endcode
+  !!
+  !! There is no guarantee that an iterator over the elements of a config_t
+  !! object will return them in the same order they exist in the original
+  !! file or string.
+  !!
+  !! Example of a config_t object generated from a file:
+  !! \code{f90}
+  !!   use musica_config,                   only : config_t
+  !!   use musica_constants,                only : musica_dk, musica_ik
+  !!   use musica_iterator,                 only : iterator_t
+  !!   use musica_string,                   only : string_t
+  !!
+  !!   character(len=*), parameter :: my_name = "config file example"
+  !!   type(config_t) :: main_config, sub_config, sub_real_config
+  !!   real(musica_dk) :: my_real
+  !!   integer(musica_ik) :: my_int
+  !!   type(string_t) :: my_string
+  !!   class(iterator_t), pointer :: iter
+  !!   logical :: found
+  !!
+  !!   call main_config%from_file( 'data/config_example.json' )
+  !!
+  !!   ! this would fail with an error if 'a string' is not found
+  !!   call main_config%get( "a string", my_string, my_name )
+  !!   write(*,*) "a string value: ", my_string
+  !!
+  !!   ! add the found argument to avoid failure if the pair is not found
+  !!   call main_config%get( "my int", my_int, my_name, found = found )
+  !!   if( found ) then
+  !!     write(*,*) "my int value: ", my_int
+  !!   else
+  !!     write(*,*) "'my int' was not found"
+  !!   end if
+  !!
+  !!   ! when you get a subset of the properties, a new config_t object is
+  !!   ! created containing the subset data. The two config_t objects are
+  !!   ! independent of one another after this point.
+  !!   call main_config%get( "other props", sub_config, my_name )
+  !!   call sub_config%get( "an int", my_int, my_name )
+  !!   write(*,*) "other props->an int value: ", my_int
+  !!
+  !!   ! property values need a standard unit to convert to.
+  !!   ! time units must be passed the standard unit 's'
+  !!   ! (non-standard units may be used in the config file, but you cannot
+  !!   !  request non-standard units in the model.)
+  !!   call sub_config%get( "some time", "s", my_real, my_name )
+  !!   write(*,*) "other props->some time value: ", my_real, " s"
+  !!
+  !!   ! units are case-insensitive
+  !!   call sub_config%get( "a pressure", "pa", my_real, my_name )
+  !!   write(*,*) "other props->a pressure value: ", my_real, " Pa"
+  !!
+  !!   ! you can iterate over a set of key-value pairs. but remember that
+  !!   ! the order is always arbitrary. you also must provide the right type
+  !!   ! of variable for the values.
+  !!   call main_config%get( "real props", sub_real_config, my_name )
+  !!   iter => sub_real_config%get_iterator( )
+  !!   do while( iter%next( ) )
+  !!     my_string = sub_real_config%key( iter )
+  !!     call sub_real_config%get( iter, my_real, my_name )
+  !!     write(*,*) my_string, " value: ", my_real
+  !!   end do
+  !!
+  !!   ! you can add key-value pairs with the add function
+  !!   call main_config%add( "my new int", 43, my_name )
+  !!   call main_config%get( "my new int", my_int, my_name )
+  !!   write(*,*) "my new int value: ", my_int
+  !!
+  !!   ! clean up all the config objects when you're done with them
+  !!   call main_config%finalize( )
+  !!   call sub_config%finalize( )
+  !!   call sub_real_config%finalize( )
+  !!   deallocate( iter )
+  !! \endcode
+  !!
+  !! `data/config_example.json`:
+  !! \code{json}
+  !!   {
+  !!     "my int" : 12,
+  !!     "other props" : {
+  !!       "some time [min]" : 12,
+  !!       "a pressure [bar]" : 103.4,
+  !!       "an int" : 45
+  !!     },
+  !!     "real props" : {
+  !!       "foo" : 14.2,
+  !!       "bar" : 64.2,
+  !!       "foobar" : 920.4
+  !!     },
+  !!     "a string" : "foo"
+  !!   }
+  !! \endcode
+  !!
+  !! Output:
+  !! \code{bash}
+  !!  a string value:   foo
+  !!  my int value:           12
+  !!  other props->an int value:           45
+  !!  other props->some time value:    720.00000000000000       s
+  !!  other props->a pressure value:    10340000.000000000       Pa
+  !!   foo  value:    14.199999999999999
+  !!   bar  value:    64.200000000000003
+  !!   foobar  value:    920.39999999999998
+  !!  my new int value:           43
+  !! \endcode
+  !!
   type :: config_t
     private
     !> JSON core
@@ -30,15 +164,15 @@ module musica_config
     !> JSON value
     type(json_value), pointer :: value_ => null( )
   contains
-    !> Empty the configuration
+    !> Empties the configuration
     procedure :: empty
-    !> Load a configuration with data from a file
+    !> Loads a configuration with data from a file
     procedure :: from_file => construct_from_file
-    !> Get an iterator for the configuration data
+    !> Gets an iterator for the configuration data
     procedure :: get_iterator
-    !> Get the key name for a key-value pair
+    !> Gets the key name for a key-value pair
     procedure :: key
-    !> Get some configuration data
+    !> @name Gets some configuration data
     !!
     !! Each function includes optional \c found and \c default arguments. If
     !! neither is included and the data are not found, execution is stopped
@@ -68,7 +202,7 @@ module musica_config
                       get_logical, get_string_array, get_from_iterator,       &
                       get_property_from_iterator, get_array_from_iterator
     !> @}
-    !> Add a named piece of configuration data
+    !> @name Adds a named piece of configuration data
     !! @{
     procedure, private :: add_config
     procedure, private :: add_char_array
@@ -83,7 +217,7 @@ module musica_config
                       add_int, add_float, add_double, add_logical,           &
                       add_string_array
     !> @}
-    !> Assignment
+    !> @name Assignment
     !! @{
     procedure, private :: config_assign_config
     procedure, private :: config_assign_string
@@ -92,10 +226,10 @@ module musica_config
     generic :: assignment(=) => config_assign_config, config_assign_string,   &
                                 config_assign_char, string_assign_config
     !> @}
-    !> Clean up memory
+    !> Cleans up memory
     !! \bug There is a compiler bug in gfortran preventing this from being a
     !! final procedure. (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=91648)
-    !! Update once fixed and add constructors
+    !! \todo Update once fixed and add constructors
     procedure :: finalize
     !> Find a JSON key by prefix
     procedure, private :: find_by_prefix
@@ -108,9 +242,9 @@ module musica_config
     !> Current index in the data set
     integer(kind=musica_ik) :: id_ = 0
   contains
-    !> Advance to the next key-value pair
+    !> Advances to the next key-value pair
     procedure :: next => iterator_next
-    !> Reset the iterator
+    !> Resets the iterator
     procedure :: reset => iterator_reset
   end type config_iterator_t
 
@@ -118,7 +252,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Empty the configuration
+  !> Empties the configuration
   subroutine empty( this )
 
     !> Configuration
@@ -132,7 +266,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Construct a configuration from a file
+  !> Constructs a configuration from a file
   subroutine construct_from_file( this, file_name )
 
     use json_module,                   only : json_ck
@@ -173,7 +307,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an interator for the configuration data
+  !> Gets an interator for the configuration data
   function get_iterator( this )
 
     !> Pointer to the iterator
@@ -191,7 +325,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get the key name using an iterator
+  !> Gets the key name using an iterator
   function key( this, iterator )
 
     use json_module,                   only : json_ck, json_ik
@@ -223,7 +357,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get a subset of the configuration data
+  !> Gets a subset of the configuration data
   subroutine get_config( this, key, value, caller, default, found )
 
     use json_module,                   only : json_lk, json_ck
@@ -271,7 +405,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get a string from the configuration data
+  !> Gets a string from the configuration data
   subroutine get_string_string_default( this, key, value, caller, default,    &
       found )
 
@@ -296,7 +430,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get a string from the configuration data
+  !> Gets a string from the configuration data
   subroutine get_string( this, key, value, caller, default, found )
 
     use json_module,                   only : json_lk
@@ -339,7 +473,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get a property from the configuration data
+  !> Gets a property from the configuration data
   subroutine get_property( this, key, units, value, caller, default, found )
 
     use json_module,                   only : json_ck, json_lk, json_rk
@@ -395,7 +529,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an integer from the configuration data
+  !> Gets an integer from the configuration data
   subroutine get_int( this, key, value, caller, default, found )
 
     use json_module,                   only : json_lk
@@ -436,7 +570,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get a single-precision real number from the configuration data
+  !> Gets a single-precision real number from the configuration data
   subroutine get_float( this, key, value, caller, default, found )
 
     use json_module,                   only : json_lk, json_rk
@@ -479,7 +613,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-!> Get a double-precision real number from the configuration data
+  !> Gets a double-precision real number from the configuration data
   subroutine get_double( this, key, value, caller, default, found )
 
     use json_module,                   only : json_lk
@@ -520,7 +654,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get a boolean value from the configuration data
+  !> Gets a boolean value from the configuration data
   subroutine get_logical( this, key, value, caller, default, found )
 
     use json_module,                   only : json_lk
@@ -561,7 +695,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an array of strings from the configuration data
+  !> Gets an array of strings from the configuration data
   subroutine get_string_array( this, key, value, caller, default, found )
 
     use json_module,                   only : json_ik, json_lk
@@ -618,7 +752,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get a value using an iterator
+  !> Gets a value using an iterator
   !!
   !! \todo the get functions should be changed so that the search by name
   !!       functions call search by index functions
@@ -669,7 +803,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get a property value using an iterator
+  !> Gets a property value using an iterator
   !!
   !! \todo the get functions should be changed so that the search by name
   !!       functions call search by index functions
@@ -713,7 +847,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get an array value using an iterator
+  !> Gets an array value using an iterator
   !!
   !! \todo the get functions should be changed so that the search by name
   !!       functions call search by index functions
@@ -749,7 +883,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Add a subset of configuration data
+  !> Adds a subset of configuration data
   subroutine add_config( this, key, value, caller )
 
     use json_module,                   only : json_ck
@@ -775,7 +909,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Add a string to the configuration data
+  !> Adds a string to the configuration data
   subroutine add_char_array( this, key, value, caller )
 
     use musica_string,                 only : string_t
@@ -795,7 +929,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Add a string to the configuration data
+  !> Adds a string to the configuration data
   subroutine add_string( this, key, value, caller )
 
     use musica_string,                 only : string_t
@@ -815,7 +949,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Add a property to the configuration data
+  !> Adds a property to the configuration data
   subroutine add_property( this, key, units, value, caller )
 
     use json_module,                   only : json_ck
@@ -840,7 +974,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Add an integer to the configuration data
+  !> Adds an integer to the configuration data
   subroutine add_int( this, key, value, caller )
 
     !> Configuration
@@ -858,7 +992,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Add a single-precision real number to the configuration data
+  !> Adds a single-precision real number to the configuration data
   subroutine add_float( this, key, value, caller )
 
     use json_module,                   only : json_rk
@@ -881,7 +1015,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Add a double-precision real number to the configuration data
+  !> Adds a double-precision real number to the configuration data
   subroutine add_double( this, key, value, caller )
 
     !> Configuration
@@ -899,7 +1033,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Add a boolean to the configuration data
+  !> Adds a boolean to the configuration data
   subroutine add_logical( this, key, value, caller )
 
     !> Configuration
@@ -917,7 +1051,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Add a string array to the configuration data
+  !> Adds a string array to the configuration data
   subroutine add_string_array( this, key, value, caller )
 
     use musica_string,                 only : string_t
@@ -944,7 +1078,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Assign a config_t from a config_t
+  !> Assigns a config_t from a config_t
   subroutine config_assign_config( a, b )
 
     use json_module,                   only : json_ck
@@ -965,7 +1099,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Assign a config_t from a string
+  !> Assigns a config_t from a string
   subroutine config_assign_string( config, string )
 
     use musica_string,                 only : string_t
@@ -983,7 +1117,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Assign a config_t from a character array
+  !> Assigns a config_t from a character array
   subroutine config_assign_char( config, string )
 
     use musica_string,                 only : string_t
@@ -1001,7 +1135,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Assign a string from a configuration
+  !> Assigns a string from a configuration
   subroutine string_assign_config( string, config )
 
     use musica_string,                 only : string_t
@@ -1020,7 +1154,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Clean up memory
+  !> Cleans up memory
   subroutine finalize( this )
 
     !> Configuration
@@ -1033,7 +1167,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get the property name from a key
+  !> Gets the property name from a key
   function get_property_name( key ) result( prop_name )
 
     use musica_string,                 only : string_t
@@ -1052,7 +1186,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get the property units from a key
+  !> Gets the property units from a key
   function get_property_units( key ) result( units )
 
     use musica_string,                 only : string_t
@@ -1072,7 +1206,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get a full to use for a property
+  !> Gets a full key to use for a property
   function get_full_key( property_name, units ) result( key )
 
     !> Full key
@@ -1088,7 +1222,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Find a full key name by a prefix
+  !> Finds a full key name by a prefix
   !!
   !! Returns the first instance of the prefix if found
   subroutine find_by_prefix( this, prefix, parent, child, full_key, found )
@@ -1139,7 +1273,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Advance the iterator
+  !> Advances the iterator
   !!
   !! Returns false if the end of the collection has been reached
   logical function iterator_next( this )
@@ -1163,7 +1297,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Reset the iterator
+  !> Resets the iterator
   subroutine iterator_reset( this )
 
     !> Iterator

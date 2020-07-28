@@ -10,7 +10,10 @@ program test_util_string
 
   implicit none
 
-  call test_string_t()
+  call test_string_t( )
+  call replace_example( )
+  call substring_example( )
+  call split_example( )
 
 contains
 
@@ -328,6 +331,52 @@ contains
 
 
   end subroutine test_string_t
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Replace example from documentation
+  subroutine replace_example( )
+
+type(string_t) :: my_string
+my_string = "foo bar foobar"
+my_string = my_string%replace( 'foo', 'bar' )
+write(*,*) my_string
+
+  end subroutine replace_example
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Split example from documentation
+  subroutine split_example( )
+
+type(string_t) :: my_string
+type(string_t), allocatable :: sub_strings(:)
+integer :: i
+my_string = "my original    string"
+sub_strings = my_string%split( ' ' )
+do i = 1, size( sub_strings )
+  write(*,*) i, sub_strings( i )
+end do
+sub_strings = my_string%split( ' ', .true. )
+do i = 1, size( sub_strings )
+  write(*,*) i, sub_strings( i )
+end do
+
+  end subroutine split_example
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Substring example from documentation
+  subroutine substring_example( )
+
+type(string_t) :: my_string, sub_string
+my_string = "Hi there!"
+sub_string = my_string%substring( 4, 5 )
+write(*,*) sub_string
+sub_string = my_string%substring( 9, 50 )
+write(*,*) sub_string
+
+  end subroutine substring_example
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

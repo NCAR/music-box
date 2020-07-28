@@ -16,7 +16,7 @@ module musica_iterator
   !!
   !! Extending types should provide a constructor that returns a pointer to a
   !! iterator_t that references a newly allocated iterator of the extending
-  !! type. The iterator must be in the state is it would be in after a call to
+  !! type. The iterator must be in the state it would be in after a call to
   !! \c reset.
   !!
   !! Example usage:
@@ -41,7 +41,7 @@ module musica_iterator
   contains
     !> Advances the iterator
     procedure(next), deferred :: next
-    !> Resets the iterator
+    !> Resets the iterator to the beginning of the collection
     procedure(reset), deferred :: reset
   end type iterator_t
 
@@ -50,7 +50,8 @@ interface
 
   !> Advances the iterator
   !!
-  !! Returns false if the end of the collection has been reached
+  !! Returns true if the iterator was advanced to the next record, returns
+  !! false if the end of the collection has been reached.
   logical function next( this )
     import iterator_t
     !> Iterator
@@ -59,7 +60,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Resets the iterator
+  !> Resets the iterator to the beginning of the collection
   subroutine reset( this )
     import iterator_t
     !> Iterator

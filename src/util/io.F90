@@ -37,7 +37,7 @@ contains
 
     found = .false.
     do i = 1, kMaxFileUnits
-      if( .not. units_used(i) ) then
+      if( .not. units_used( i ) ) then
         found = .true.
         exit
       end if
@@ -45,7 +45,7 @@ contains
     if( .not. found ) then
       call die_msg( 895680497, "Maximum number of open file units reached" )
     end if
-    units_used(i) = .true.
+    units_used( i ) = .true.
     get_file_unit = i + kMinFileUnit
 
   end function get_file_unit

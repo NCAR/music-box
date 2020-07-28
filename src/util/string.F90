@@ -34,7 +34,7 @@ module musica_string
                                 string_assign_real, string_assign_double,     &
                                 string_assign_logical, assign_string
     !> @}
-    !> @name Join a string
+    !> @name Joins to a string
     !! @{
     procedure, private, pass(a) :: string_join_string
     procedure, private, pass(a) :: string_join_char
@@ -96,26 +96,26 @@ module musica_string
                                double_not_equals_string,                      &
                                logical_not_equals_string
     !> @}
-    !> @name String Output
+    !> @name Outputs a string
     !! @{
     procedure :: write_string_unformatted
     procedure :: write_string_formatted
     generic :: write(unformatted) => write_string_unformatted
     generic :: write(formatted) => write_string_formatted
     !> @}
-    !> String length
+    !> Returns the string length
     procedure :: length
-    !> Convert a string to upper case
+    !> Converts a string to upper case
     procedure :: to_upper
-    !> Convert a string to lower case
+    !> Converts a string to lower case
     procedure :: to_lower
-    !> Substring
+    !> Gets a substring
     procedure :: substring
-    !> Split a string on a sub-string
+    !> Splits a string on a sub-string
     procedure :: split
-    !> Replace substrings withing a string
+    !> Replaces substrings within a string
     procedure :: replace
-    !> Convert the string to a character array
+    !> Converts a string to a character array
     procedure :: to_char => string_to_char
   end type string_t
 
@@ -131,7 +131,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Assign a string from a character array
+  !> Assigns a string from a character array
   subroutine string_assign_char( to, from )
 
     !> String to assign
@@ -145,7 +145,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Assign a string from an integer
+  !> Assigns a string from an integer
   subroutine string_assign_int( to, from )
 
     !> String to assign
@@ -162,7 +162,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Assign a string from an real number
+  !> Assigns a string from a real number
   subroutine string_assign_real( to, from )
 
     !> String to assign
@@ -179,7 +179,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Assign a string from an double precision real number
+  !> Assigns a string from a double precision real number
   subroutine string_assign_double( to, from )
 
     !> String to assign
@@ -196,7 +196,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Assign a string from a logical
+  !> Assigns a string from a logical
   subroutine string_assign_logical( to, from )
 
     !> String to assign
@@ -214,7 +214,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Assign from a string
+  !> Assigns from a string
   subroutine assign_string( to, from )
 
     use musica_assert,                 only : die_msg, assert_msg
@@ -278,7 +278,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Join a string to a string
+  !> Joins a string to a string
   elemental function string_join_string( a, b ) result( c )
 
     !> Joined string
@@ -294,7 +294,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Join a string to a character array
+  !> Joins a string to a character array
   elemental function string_join_char( a, b ) result( c )
 
     !> Joined string
@@ -310,7 +310,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Join a string to an integer
+  !> Joins a string to an integer
   elemental function string_join_int( a, b ) result( c )
 
     !> Joined string
@@ -329,7 +329,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Join a string to a real number
+  !> Joins a string to a real number
   elemental function string_join_real( a, b ) result( c )
 
     !> Joined string
@@ -348,7 +348,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Join a string to a double precision real number
+  !> Joins a string to a double precision real number
   elemental function string_join_double( a, b ) result( c )
 
     !> Joined string
@@ -367,7 +367,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Join a string to a logical
+  !> Joins a string to a logical
   elemental function string_join_logical( a, b ) result( c )
 
     !> Joined string
@@ -387,7 +387,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a string to a string for equality
+  !> Compares a string to a string for equality
   logical elemental function string_equals_string( a, b ) result( equals )
 
     !> String a
@@ -401,7 +401,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a string to a character array for equality
+  !> Compares a string to a character array for equality
   logical elemental function string_equals_char( a, b ) result( equals )
 
     !> String a
@@ -415,7 +415,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a string to a integer for equality
+  !> Compares a string to a integer for equality
   logical elemental function string_equals_int( a, b ) result( equals )
 
     !> String a
@@ -432,7 +432,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a string to a real number for equality
+  !> Compares a string to a real number for equality
   logical elemental function string_equals_real( a, b ) result( equals )
 
     !> String a
@@ -449,7 +449,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a string to a double-precision real number for equality
+  !> Compares a string to a double-precision real number for equality
   logical elemental function string_equals_double( a, b ) result( equals )
 
     !> String a
@@ -466,7 +466,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a string to a logical for equality
+  !> Compares a string to a logical for equality
   logical elemental function string_equals_logical( a, b ) result( equals )
 
     !> String a
@@ -481,7 +481,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a string to a string for equality
+  !> Compares a string to a string for equality
   logical elemental function string_not_equals_string( a, b )                 &
       result( not_equals )
 
@@ -496,7 +496,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a string to a character array for equality
+  !> Compares a string to a character array for equality
   logical elemental function string_not_equals_char( a, b )                   &
       result( not_equals )
 
@@ -511,7 +511,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a string to a integer for equality
+  !> Compares a string to a integer for equality
   logical elemental function string_not_equals_int( a, b )                    &
       result( not_equals )
 
@@ -526,7 +526,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a string to a real number for equality
+  !> Compares a string to a real number for equality
   logical elemental function string_not_equals_real( a, b )                   &
       result( not_equals )
 
@@ -541,7 +541,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a string to a double-precision real number for equality
+  !> Compares a string to a double-precision real number for equality
   logical elemental function string_not_equals_double( a, b )                 &
       result( not_equals )
 
@@ -556,7 +556,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a string to a logical for equality
+  !> Compares a string to a logical for equality
   logical elemental function string_not_equals_logical( a, b )                &
       result( not_equals )
 
@@ -571,7 +571,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Write a string
+  !> Writes a string
   subroutine write_string_unformatted( this, unit, iostat, iomsg )
 
     !> String to read into
@@ -589,7 +589,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Write a string
+  !> Writes a string
   subroutine write_string_formatted( this, unit, iotype, v_list, iostat,      &
       iomsg )
 
@@ -612,7 +612,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get the length of the string
+  !> Returns the length of the string
   elemental integer function length( this )
 
     !> String
@@ -624,7 +624,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Convert a string to upper case
+  !> Converts a string to upper case
   !!
   !! Adapted from http://www.star.le.ac.uk/~cgp/fortran.html (25 May 2012)
   !! Original author: Clive Page
@@ -649,7 +649,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Convert a string to lower case
+  !> Converts a string to lower case
   !!
   !! Adapted from http://www.star.le.ac.uk/~cgp/fortran.html (25 May 2012)
   !! Original author: Clive Page
@@ -674,7 +674,24 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Return a substring
+  !> Returns a substring
+  !!
+  !! Example:
+  !! \code{f90}
+  !!   type(string_t) :: my_string, sub_string
+  !!   my_string = "Hi there!"
+  !!   sub_string = my_string%substring( 4, 5 )
+  !!   write(*,*) sub_string
+  !!   sub_string = my_string%substring( 9, 50 )
+  !!   write(*,*) sub_string
+  !! \endcode
+  !!
+  !! Output:
+  !! \code{bash}
+  !!   there
+  !!   !
+  !! \endcode
+  !!
   function substring( this, start_index, length )
 
     !> Substring
@@ -699,7 +716,37 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Split a string on a substring
+  !> Splits a string on a substring
+  !!
+  !! Example:
+  !! \code{f90}
+  !!   type(string_t) :: my_string
+  !!   type(string_t), allocatable :: sub_strings(:)
+  !!   integer :: i
+  !!   my_string = "my original    string"
+  !!   sub_strings = my_string%split( ' ' )
+  !!   do i = 1, size( sub_strings )
+  !!     write(*,*) i, sub_strings( i )
+  !!   end do
+  !!   sub_strings = my_string%split( ' ', .true. )
+  !!   do i = 1, size( sub_strings )
+  !!     write(*,*) i, sub_strings( i )
+  !!   end do
+  !! \endcode
+  !!
+  !! Output:
+  !! \code{bash}
+  !!            1  my
+  !!            2  original
+  !!            3
+  !!            4
+  !!            5
+  !!            6  string
+  !!            1  my
+  !!            2  original
+  !!            3  string
+  !! \endcode
+  !!
   function split( this, splitter, compress ) result( sub_strings )
 
     !> Split string
@@ -787,7 +834,21 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Replace substrings within a string
+  !> Replaces substrings within a string
+  !!
+  !! Example:
+  !! \code{f90}
+  !!   type(string_t) :: my_string
+  !!   my_string = "foo bar foobar"
+  !!   my_string = my_string%replace( 'foo', 'bar' )
+  !!   write(*,*) my_string
+  !! \endcode
+  !!
+  !! Output:
+  !! \code{bash}
+  !!   bar bar barbar
+  !! \endcode
+  !!
   function replace( this, from, to )
 
     !> String with replacements
@@ -830,7 +891,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Convert the string to a character array
+  !> Converts a string to a character array
   function string_to_char( this ) result( char_array )
 
     !> Converted string
@@ -844,7 +905,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Join a character array to a string
+  !> Joins a character array to a string
   elemental function char_join_string( a, b ) result( c )
 
     !> Joined string
@@ -860,7 +921,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Join an integer to a string
+  !> Joins an integer to a string
   elemental function int_join_string( a, b ) result( c )
 
     !> Joined string
@@ -879,7 +940,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Join a real number to a string
+  !> Joins a real number to a string
   elemental function real_join_string( a, b ) result( c )
 
     !> Joined string
@@ -898,7 +959,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Join a double precision real number to a string
+  !> Joins a double precision real number to a string
   elemental function double_join_string( a, b ) result( c )
 
     !> Joined string
@@ -917,7 +978,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Join a logical to a string
+  !> Joins a logical to a string
   elemental function logical_join_string( a, b ) result( c )
 
     !> Joined string
@@ -937,7 +998,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a character array to a string for equality
+  !> Compares a character array to a string for equality
   logical elemental function char_equals_string( a, b ) result( equals )
 
     !> Character array a
@@ -951,7 +1012,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare an integer to a string for equality
+  !> Compares an integer to a string for equality
   logical elemental function int_equals_string( a, b ) result( equals )
 
     !> Integer a
@@ -965,7 +1026,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a real number to a string for equality
+  !> Compares a real number to a string for equality
   logical elemental function real_equals_string( a, b ) result( equals )
 
     !> Real number a
@@ -979,7 +1040,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a double-precision real number to a string for equality
+  !> Compares a double-precision real number to a string for equality
   logical elemental function double_equals_string( a, b ) result( equals )
 
     !> Double-precision real number a
@@ -993,7 +1054,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a logical to a string for equality
+  !> Compares a logical to a string for equality
   logical elemental function logical_equals_string( a, b ) result( equals )
 
     !> Logical a
@@ -1007,7 +1068,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a character array to a string for equality
+  !> Compares a character array to a string for equality
   logical elemental function char_not_equals_string( a, b )                   &
       result( not_equals )
 
@@ -1022,7 +1083,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare an integer to a string for equality
+  !> Compares an integer to a string for equality
   logical elemental function int_not_equals_string( a, b )                    &
       result( not_equals )
 
@@ -1037,7 +1098,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a real number to a string for equality
+  !> Compares a real number to a string for equality
   logical elemental function real_not_equals_string( a, b )                   &
       result( not_equals )
 
@@ -1052,7 +1113,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a double-precision real number to a string for equality
+  !> Compares a double-precision real number to a string for equality
   logical elemental function double_not_equals_string( a, b )                 &
       result( not_equals )
 
@@ -1067,7 +1128,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Compare a logical to a string for equality
+  !> Compares a logical to a string for equality
   logical elemental function logical_not_equals_string( a, b )                &
       result( not_equals )
 
@@ -1082,7 +1143,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Convert an integer to a char array
+  !> Converts an integer to a char array
   character(len=kConvertCharLength) function int_to_char( val )               &
       result( ret_val )
 
@@ -1096,7 +1157,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Convert a real number to a char array
+  !> Converts a real number to a char array
   character(len=kConvertCharLength) function real_to_char( val )              &
       result( ret_val )
 
@@ -1110,7 +1171,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Convert a double-precision real number to a char array
+  !> Converts a double-precision real number to a char array
   character(len=kConvertCharLength) function double_to_char( val )            &
       result( ret_val )
 
@@ -1124,7 +1185,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Convert a logical to a char array
+  !> Converts a logical to a char array
   character(len=kConvertCharLength) function logical_to_char( val )           &
       result( ret_val )
 
