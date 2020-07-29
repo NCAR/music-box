@@ -38,8 +38,8 @@ contains
     call config%get( "chemical species", subset, my_name, found = found )
     if( found ) then
       call set_chemical_species( subset, domain, state )
-      call subset%finalize( )
     end if
+    call subset%finalize( )
 
     ! set all domain cell environmental conditions to specified values
     call config%get( "environmental conditions", subset, my_name,             &

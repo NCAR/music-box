@@ -395,8 +395,10 @@ contains
       call this%core_%parse( value%value_, str_tmp )
     else
       if( present( default ) ) then
+        call value%finalize( )
         value = default
       else
+        call value%finalize( )
         value = ""
       end if
     end if
