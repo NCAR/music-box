@@ -2,91 +2,167 @@
 ! SPDX-License-Identifier: Apache-2.0
 !
 !> \file
-!> The musica_output_text module
+!> The musica_io_text module
 
-!> The output_text_t type and related functions
-module musica_output_text
+!> The io_text_t type and related functions
+module musica_io_text
 
+  use musica_constants,                only : musica_dk
   use musica_domain,                   only : domain_state_accessor_t,        &
                                               domain_iterator_t
   use musica_string,                   only : string_t
-  use musica_output,                   only : output_t
+  use musica_io,                       only : io_t
 
   implicit none
   private
 
-  public :: output_text_t
+  public :: io_text_t
 
-  !> Private output variable type
-  type :: output_var_t
+  !> Private input/output variable type
+  type :: io_var_t
+    !> Mutator for variable
+    class(domain_state_accessor_t), pointer :: mutator_ => null( )
     !> Accessor for variable
-    class(domain_state_accessor_t), pointer :: accessor_
+    class(domain_state_accessor_t), pointer :: accessor_ => null( )
+    !> Time series
+    real(kind=musica_dk), allocatable :: time_series_(:)
     !> Variable name
     type(string_t) :: name_
     !> Variable units
     type(string_t) :: units_
-  end type output_var_t
+  end type io_var_t
 
-  !> Output to a text file
-  type, extends(output_t) :: output_text_t
+  !> Text file input/output
+  !!
+  !! Sets up a text file for input and/or output.
+  !!
+  !! \todo add example for \c io_test_t usage
+  !!
+  type, extends(io_t) :: io_text_t
     private
     !> Flag indicating whether file is open
     logical :: is_open_ = .false.
-    !> Output file path
+    !> Flag indicating whether file is for input
+    logical :: is_input_ = .false.
+    !> Flag indicating whether file is for output
+    logical :: is_output_ = .false.
+    !> File path
     type(string_t) :: file_path_
     !> File pointer
     integer :: file_unit_
-    !> Set of registered variables for output
-    type(output_var_t), allocatable :: variables_(:)
+    !> Set of registered variables for input/output
+    type(io_var_t), allocatable :: variables_(:)
     !> Iterator over domain cells
     class(domain_iterator_t), pointer :: iterator_
   contains
-    !> Register a state variable for output
+    !> Auto-maps input/output variables to model state variables
+    procedure :: auto_map_variables
+    !> Registers a state variable for input/output
     procedure :: register
-    !> Output the current domain state
+    !> Updates the model state with input data
+    procedure :: update_state
+    !> Outputs the current domain state
     procedure :: output
-    !> Close the file stream
+    !> Closes the file stream
     procedure :: close
-    !> Finalize the output
+    !> Finalizes the output
     final :: finalize
-  end type output_text_t
+  end type io_text_t
 
   !> Constructor
-  interface output_text_t
+  interface io_text_t
     module procedure :: constructor
-  end interface output_text_t
+  end interface io_text_t
 
 contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+  !> Creates a connection to a text input/output file
+  !!
+  !! At minimum, \c config must include a top-level key-value pair "intent",
+  !! which can be any of: "input", "output", or "input/output".
+  !!
+  !! A "file name" is also required for files opened for input or
+  !! input/output. This is optional for output files, with the default name
+  !! being "output.csv".
+  !!
   function constructor( config ) result( new_obj )
 
+    use musica_assert,                 only : die_msg
     use musica_config,                 only : config_t
 
     !> New output file
-    type(output_text_t), pointer :: new_obj
+    type(io_text_t), pointer :: new_obj
     !> Configuration data
     class(config_t), intent(inout) :: config
 
     character(len=*), parameter :: my_name = 'output constructor'
     logical :: found
+    type(string_t) :: temp_str
 
     allocate( new_obj )
+
+    ! file intent
+    call config%get( "intent", temp_str, my_name )
+    if( temp_str .eq. "input" ) then
+      new_obj%is_input_ = .true.
+    else if( temp_str .eq. "output" ) then
+      new_obj%is_output_ = .true.
+    else if( temp_str .eq. "input/output" ) then
+      new_obj%is_input_ = .true.
+      new_obj%is_output_ = .true.
+    else
+      call die_msg( 162615120, "Invalid type specified for text file: "//     &
+                               temp_str%to_char( ) )
+    end if
+
+    ! file name
     call config%get( "file name", new_obj%file_path_, my_name, found = found )
-    if( .not. found ) new_obj%file_path_ = "output.csv"
+    if( .not. found ) then
+      if( new_obj%is_input_ ) then
+        call die_msg( 652480899, "A 'file name' must be provided for "//      &
+                      "input text files" )
+      else
+        new_obj%file_path_ = "output.csv"
+      end if
+    end if
+
+    ! initialize io variables
     allocate( new_obj%variables_( 0 ) )
 
   end function constructor
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  subroutine register( this, domain, variable_name, units, output_name )
+  !> Auto-maps input/output variables to model state variables
+  subroutine auto_map_variables( this, domain )
+
+    use musica_assert,                 only : assert_msg, die_msg
+    use musica_domain,                 only : domain_t
+
+    !> Text file
+    class(io_text_t), intent(inout) :: this
+    !> Model domain
+    class(domain_t), intent(inout) :: domain
+
+    call assert_msg( 974120905, .not. this%is_output_, "Auto-mapping of "//   &
+                     "text files is only available for input or "//           &
+                     "input/output files." )
+
+    call die_msg( 431967997, "Input text files are not set up yet." )
+
+  end subroutine auto_map_variables
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Registers a state variable for input/output
+  subroutine register( this, domain, variable_name, units, io_name )
 
     use musica_domain,                 only : domain_t
 
-    !> Output stream
-    class(output_text_t), intent(inout) :: this
+    !> Text file
+    class(io_text_t), intent(inout) :: this
     !> Model domain
     class(domain_t), intent(inout) :: domain
     !> Variable to output
@@ -94,10 +170,10 @@ contains
     !> Units for output variable
     character(len=*), intent(in) :: units
     !> Optional custom output name
-    character(len=*), intent(in), optional :: output_name
+    character(len=*), intent(in), optional :: io_name
 
     character(len=*), parameter :: my_name = "output text file"
-    type(output_var_t), allocatable :: temp_vars(:)
+    type(io_var_t), allocatable :: temp_vars(:)
 
     allocate( temp_vars( size( this%variables_ ) ) )
     temp_vars(:) = this%variables_(:)
@@ -107,8 +183,8 @@ contains
     deallocate( temp_vars )
     this%variables_( size( this%variables_ ) )%accessor_ =>                   &
         domain%cell_state_accessor( variable_name, units, my_name )
-    if( present( output_name ) ) then
-      this%variables_( size( this%variables_ ) )%name_ = output_name
+    if( present( io_name ) ) then
+      this%variables_( size( this%variables_ ) )%name_ = io_name
     else
       this%variables_( size( this%variables_ ) )%name_ = variable_name
     end if
@@ -118,14 +194,39 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+  !> Updates the model state with input data
+  !!
+  !! \todo finish input data functions for text files
+  subroutine update_state( this, time__s, domain, domain_state )
+
+    use musica_assert,                 only : die_msg
+    use musica_constants,              only : musica_dk
+    use musica_domain,                 only : domain_t, domain_state_t
+
+    !> Text file
+    class(io_text_t), intent(inout) :: this
+    !> Current simulation time [s]
+    real(kind=musica_dk), intent(in) :: time__s
+    !> Model domain
+    class(domain_t), intent(in) :: domain
+    !> Domain state to update
+    class(domain_state_t), intent(inout) :: domain_state
+
+    call die_msg( 287515161, "Input text files are not set up yet." )
+
+  end subroutine update_state
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Outputs the current domain state
   subroutine output( this, time__s, domain, domain_state )
 
     use musica_constants,              only : musica_dk
     use musica_domain,                 only : domain_t, domain_state_t
     use musica_io,                     only : get_file_unit
 
-    !> Output stream
-    class(output_text_t), intent(inout) :: this
+    !> Text file
+    class(io_text_t), intent(inout) :: this
     !> Current simulation time [s]
     real(kind=musica_dk), intent(in) :: time__s
     !> Model domain
@@ -187,13 +288,13 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Close the file stream
+  !> Closes the text file
   subroutine close( this )
 
     use musica_io,                     only : free_file_unit
 
-    !> Output stream
-    class(output_text_t), intent(inout) :: this
+    !> Text file
+    class(io_text_t), intent(inout) :: this
 
     if( this%is_open_ ) then
       close( this%file_unit_ )
@@ -206,11 +307,11 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Finalize the output stream
+  !> Finalizes the text file object, including closing the file if needed.
   subroutine finalize( this )
 
-    !> Output stream
-    type(output_text_t), intent(inout) :: this
+    !> Text file
+    type(io_text_t), intent(inout) :: this
 
     call this%close( )
 
@@ -218,4 +319,4 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-end module musica_output_text
+end module musica_io_text
