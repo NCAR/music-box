@@ -22,7 +22,7 @@ To set up the box model with the Chapman chemistry mechanism from the [Public Ch
 ```
 docker build -t music-box-test . --build-arg TAG_ID=chapman
 docker run -it music-box-test bash
-cd music-box/build
+cd build
 ```
 
 From here, you can specify model parameters and initial conditions, or use one of the test configurations provided in `/examples`, such as:
