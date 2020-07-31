@@ -29,7 +29,7 @@ This scenario is the same as Use Case 1, except that the user has decided to add
 
 In the input data file, the `CONC.` prefix indicates that the property is a chemical species concentration and `ENV.` indicates that the property is an environmental property.
 
-The `use_case_2.json` file includes the configuration data for this scenario.
+The `use_case_2.json` file includes the configuration data for this scenario. The `use_case_2_initial
 
 **NOTES:**
 

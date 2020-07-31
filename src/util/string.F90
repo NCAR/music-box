@@ -111,8 +111,13 @@ module musica_string
     procedure :: to_lower
     !> Gets a substring
     procedure :: substring
-    !> Splits a string on a sub-string
-    procedure :: split
+    !> @name Splits a string on a sub-string
+    !! @{
+    procedure, private :: split_char
+    procedure, private :: split_string
+    generic :: split => split_char, split_string
+    !> @}
+
     !> Replaces substrings within a string
     procedure :: replace
     !> Converts a string to a character array
@@ -747,7 +752,7 @@ contains
   !!            3  string
   !! \endcode
   !!
-  function split( this, splitter, compress ) result( sub_strings )
+  function split_char( this, splitter, compress ) result( sub_strings )
 
     !> Split string
     type(string_t), allocatable :: sub_strings(:)
@@ -830,11 +835,36 @@ contains
       end if
     end if
 
-  end function split
+  end function split_char
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Replaces substrings within a string
+  !> Splits a string on a substring
+  !!
+  !! See \c string_split_char for description and example
+  !!
+  function split_string( this, splitter, compress ) result( sub_strings )
+
+    !> Split string
+    type(string_t), allocatable :: sub_strings(:)
+    !> Full string
+    class(string_t), intent(in) :: this
+    !> String to split on
+    type(string_t), intent(in) :: splitter
+    !> Compress (default = false)
+    !!
+    !! No 0-length substrings will be returned (adjacent tokens will be
+    !! merged; tokens at the beginning and end of the original string will be
+    !! ignored)
+    logical, intent(in), optional :: compress
+
+    sub_strings = this%split_char( splitter%to_char( ), compress )
+
+  end function split_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!> Replaces substrings within a string
   !!
   !! Example:
   !! \code{f90}
@@ -883,7 +913,7 @@ contains
       end if
     end do
 
-    if( is_string .and. i_char .gt. start_str ) then
+    if( start_str .le. len( this%val_ ) ) then
       replace%val_ = replace%val_//this%val_( start_str:len( this%val_ ) )
     end if
 

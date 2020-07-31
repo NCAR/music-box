@@ -116,6 +116,18 @@ contains
     temp_str = domain%cell_state_units( "my set%var 3" )
     call assert( 724383590, temp_str .eq. "Pa" )
 
+    ! check for variables and flags
+    call assert( 392097426, domain%is_cell_state_variable( "ra" ) )
+    call assert( 169366270, domain%is_cell_state_variable( "rb" ) )
+    call assert( 846635113, domain%is_cell_state_variable( "my set%var 1" ) )
+    call assert( 341428708, domain%is_cell_state_variable( "my set%var 2" ) )
+    call assert( 388738653, domain%is_cell_state_variable( "my set%var 3" ) )
+    call assert( 501056998, .not. domain%is_cell_state_variable(              &
+                                                              "not there" ) )
+    call assert( 895850592, domain%is_cell_flag( "la" ) )
+    call assert( 390644187, domain%is_cell_flag( "lb" ) )
+    call assert( 102904631, .not. domain%is_cell_flag( "not there" ) )
+
     ! get an iterator
     iter => domain%cell_iterator( )
 
