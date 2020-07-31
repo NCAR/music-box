@@ -7,6 +7,7 @@
 !> Builder of input/output object
 module musica_io_factory
 
+  use musica_domain,                   only : domain_t
   use musica_io,                       only : io_t
   use musica_io_text,                  only : io_text_t
 
@@ -28,6 +29,9 @@ contains
   !!
   !! The \c config argument should also include any additional information
   !! required by the specific io constructor.
+  !!
+  !! Input files also require that the initialized domain be passed to the
+  !! constructor for mapping between file and domain variables.
   !!
   !! Example:
   !! \code{f90}
@@ -54,7 +58,7 @@ contains
   !!   }
   !! \endcode
   !!
-  function io_builder( config ) result( new_io )
+  function io_builder( config, domain ) result( new_io )
 
     use musica_assert,                 only : die_msg
     use musica_config,                 only : config_t
@@ -64,18 +68,20 @@ contains
     class(io_t), pointer :: new_io
     !> Input/output object configration data
     class(config_t), intent(inout) :: config
+    !> Model domain
+    class(domain_t), intent(inout), optional :: domain
 
     type(string_t) :: io_type
     character(len=*), parameter :: my_name = 'input/output builder'
 
     new_io => null( )
-    call config%get( 'format', io_type, my_name )
+    call config%get( 'type', io_type, my_name )
     io_type = io_type%to_lower( )
 
     if( io_type .eq. 'txt' .or.                                               &
         io_type .eq. 'text' .or.                                              &
         io_type .eq. 'csv' ) then
-      new_io => io_text_t( config )
+      new_io => io_text_t( config, domain )
     else
       call die_msg( 690482624, "Invalid input/output type: '"//               &
                                io_type%to_char( )//"'" )

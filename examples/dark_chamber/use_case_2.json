@@ -6,7 +6,7 @@
     "simulation length [hr]"    : 2.5
   },
   "initial conditions" : {
-    "use_case_2_initial.csv" : {
+    "data/use_case_2_initial.csv" : {
       "properties" : {
         "ENV.pressure" : { "units" : "atm" }
       }

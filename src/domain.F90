@@ -90,6 +90,16 @@ module musica_domain
 
     !> @}
 
+    !> Check if a property has been registered
+    !! @{
+
+    !> Check for a state variable for all cells
+    procedure(is_cell_state_variable), deferred :: is_cell_state_variable
+    !> Check for a flag for all cells
+    procedure(is_cell_flag), deferred :: is_cell_flag
+
+    !> @}
+
     !> Gets units for registered properties
     !! @{
 
@@ -367,6 +377,30 @@ interface
     !> Name of the model component requesting the accessor
     character(len=*), intent(in) :: requestor
   end function cell_flag_accessor
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Returns whether a state variable has been registered for all cells
+  logical function is_cell_state_variable( this, variable_name )
+    use musica_string,                 only : string_t
+    import domain_t
+    !> Domain
+    class(domain_t), intent(in) :: this
+    !> Name of the variable to look for
+    character(len=*), intent(in) :: variable_name
+  end function is_cell_state_variable
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Returns whether a flag has been registered for all cells
+  logical function is_cell_flag( this, flag_name )
+    use musica_string,                 only : string_t
+    import domain_t
+    !> Domain
+    class(domain_t), intent(in) :: this
+    !> Name of the flag to look for
+    character(len=*), intent(in) :: flag_name
+  end function is_cell_flag
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

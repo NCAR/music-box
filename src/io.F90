@@ -22,39 +22,19 @@ module musica_io
   !> An abstract input/output
   type, abstract :: io_t
   contains
-    !> Auto-maps input/output variables to model state variables
-    procedure(auto_map_variables), deferred :: auto_map_variables
-    !> Registers a state variable for input/output
+    !> Registers a state variable for output
     procedure(register), deferred :: register
     !> Updates the model state with input data
     procedure(update_state), deferred :: update_state
     !> Outputs the current domain state
     procedure(output), deferred :: output
+    !> Print the input/output configuration information
+    procedure(do_print), deferred :: print
     !> Closes the output stream
     procedure(close), deferred :: close
   end type io_t
 
 interface
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  !> Auto-maps input/output variables to model state variables
-  !!
-  !! Extending types can determine how to map to model state variables, but
-  !! \c io_t types should try to match by model state variable name and do
-  !! standard unit conversions using \c convert_t objects.
-  !!
-  !! Any scaling, conversion, or interpolation for the variable should be
-  !! set up by extending types when this function is called.
-  !!
-  subroutine auto_map_variables( this, domain )
-    use musica_domain,                 only : domain_t
-    import io_t
-    !> Input/output
-    class(io_t), intent(inout) :: this
-    !> Model domain
-    class(domain_t), intent(inout) :: domain
-  end subroutine auto_map_variables
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -82,22 +62,25 @@ interface
 
   !> Updates the model state with input data
   !!
-  !! Input data for the specified time (with any necessary interpolation)
-  !! will be used to update domain state variables registered with the
-  !! \c io_t type during intialization.
+  !! If a time is included, input data for the specified time (with any
+  !! necessary interpolation) will be used to update domain state variables
+  !! registered with the \c io_t type during intialization.
   !!
-  subroutine update_state( this, time__s, domain, domain_state )
+  !! If no time is provided the first entry in the input data will be used
+  !! to update the domain state (used for initial conditions).
+  !!
+  subroutine update_state( this, domain, domain_state, time__s )
     use musica_constants,              only : musica_dk
     use musica_domain,                 only : domain_t, domain_state_t
     import io_t
     !> Input/output
     class(io_t), intent(inout) :: this
-    !> Current simulation time [s]
-    real(kind=musica_dk), intent(in) :: time__s
     !> Model domain
     class(domain_t), intent(in) :: domain
     !> Domain state to update
     class(domain_state_t), intent(inout) :: domain_state
+    !> Current simulation time [s]
+    real(kind=musica_dk), intent(in), optional :: time__s
   end subroutine update_state
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -120,6 +103,15 @@ interface
     !> Domain state
     class(domain_state_t), intent(in) :: domain_state
   end subroutine output
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Print the input/output configuration information
+  subroutine do_print( this )
+    import io_t
+    !> Input/output
+    class(io_t), intent(in) :: this
+  end subroutine do_print
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

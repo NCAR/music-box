@@ -123,7 +123,7 @@ contains
 
     ! set up the output for the model
     call config%get( "output file", output_opts, my_name, found = found )
-    if( .not. found ) output_opts = '{ "format" : "CSV" }'
+    if( .not. found ) output_opts = '{ "type" : "CSV" }'
     call output_opts%add( "intent", "output", my_name )
     new_obj%output_ => io_builder( output_opts )
     call new_obj%register_output_variables( )
@@ -333,6 +333,9 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Update environmental conditions for a new time step
+  !!
+  !! Updates diagnosed environmental conditions.
+  !!
   subroutine update_environment( this, domain_state, cell )
 
     use musica_constants,              only : kUniversalGasConstant
