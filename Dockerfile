@@ -21,7 +21,8 @@ COPY . /music-box/
 RUN pip3 install requests
 
 # nodejs modules needed Mechanism-To-Code
-RUN npm install express helmet
+RUN cd /music-box/libs/MechanismToCode; \
+    npm install
 
 # install json-fortran
 RUN curl -LO https://github.com/jacobwilliams/json-fortran/archive/8.1.0.tar.gz \
