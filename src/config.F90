@@ -226,6 +226,8 @@ module musica_config
     generic :: assignment(=) => config_assign_config, config_assign_string,   &
                                 config_assign_char, string_assign_config
     !> @}
+    !> Print the raw contents of the configuration
+    procedure :: print => do_print
     !> Cleans up memory
     !! \bug There is a compiler bug in gfortran preventing this from being a
     !! final procedure. (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=91648)
@@ -381,7 +383,7 @@ contains
     character(kind=json_ck, len=:), allocatable :: str_tmp
 
     call value%finalize( )
-    call this%core_%get( this%value_, key, j_obj, l_found )
+    call this%core_%get_child( this%value_, key, j_obj, l_found )
 
     call assert_msg( 202757635, l_found .or. present( default )               &
                      .or. present( found ), "Key '"//trim( key )//            &
@@ -395,9 +397,8 @@ contains
       call this%core_%parse( value%value_, str_tmp )
     else
       if( present( default ) ) then
+        call value%finalize( )
         value = default
-      else
-        value = ""
       end if
     end if
 
@@ -767,7 +768,7 @@ contains
     !> Iterator to use to find value
     class(iterator_t), intent(in) :: iterator
     !> Returned value
-    class(*), intent(out) :: value
+    class(*), intent(inout) :: value
     !> Name of the calling function (only for use in error messages)
     character(len=*), intent(in) :: caller
 
@@ -1270,6 +1271,23 @@ contains
     full_key = ""
 
   end subroutine find_by_prefix
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Print out the raw contents of the configuration
+  subroutine do_print( this )
+
+    use musica_string
+
+    !> Configuration
+    class(config_t), intent(inout) :: this
+
+    type(string_t) :: str
+
+    call this%core_%serialize( this%value_, str%val_ )
+    write(*,*) str
+
+  end subroutine do_print
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

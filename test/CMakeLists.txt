@@ -15,11 +15,14 @@ add_custom_target(copy_test_data ALL ${CMAKE_COMMAND} -E copy_directory
 ################################################################################
 # MusicBox tests
 
-add_executable(util_string util/string.F90)
-add_std_test(util_string)
+add_executable(util_array util/array.F90)
+add_std_test(util_array)
 
 add_executable(util_convert util/convert.F90)
 add_std_test(util_convert)
+
+add_executable(util_string util/string.F90)
+add_std_test(util_string)
 
 add_executable(config config.F90)
 add_std_test(config)
