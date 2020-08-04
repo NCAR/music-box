@@ -154,7 +154,8 @@ contains
     ! split
 
     a = "foobar1foofoobar2foofoo"
-    split_string = a%split( "foo" )
+    b = "foo"
+    split_string = a%split( b )
     call assert( 106051866, size( split_string ) .eq. 6 )
     call assert( 815260865, split_string(1) .eq. ""     )
     call assert( 432478287, split_string(2) .eq. "bar1" )
@@ -163,7 +164,7 @@ contains
     call assert( 417108498, split_string(5) .eq. ""     )
     call assert( 742081680, split_string(6) .eq. ""     )
 
-    split_string = a%split( "foo", compress = .true. )
+    split_string = a%split( b, compress = .true. )
     call assert( 413749725, size( split_string ) .eq. 2 )
     call assert( 238328514, split_string(1) .eq. "bar1" )
     call assert( 456247658, split_string(2) .eq. "bar2" )
@@ -195,11 +196,11 @@ contains
 
     ! replace
 
-    a = "foobar1foobar2foo"
+    a = "foobar1foobar2foo1"
     b = a%replace( "foo", "bar" )
-    call assert( 282451682, b .eq. "barbar1barbar2bar" )
+    call assert( 282451682, b .eq. "barbar1barbar2bar1" )
     b = a%replace( "bar", "foo" )
-    call assert( 331667161, b .eq. "foofoo1foofoo2foo" )
+    call assert( 331667161, b .eq. "foofoo1foofoo2foo1" )
 
     ! convert to character array
     a = "string to convert"

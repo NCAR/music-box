@@ -12,7 +12,7 @@ module music_box_core
   use musica_domain,                   only : domain_t, domain_state_t,       &
                                               domain_state_mutator_ptr,       &
                                               domain_state_accessor_ptr
-  use musica_output,                   only : output_t
+  use musica_io,                       only : io_t
 
   implicit none
   private
@@ -41,8 +41,8 @@ module music_box_core
     type(domain_state_accessor_ptr), allocatable :: accessors_(:)
     !> Chemistry core
     class(chemistry_core_t), pointer :: chemistry_core_ => null( )
-    !> Output stream
-    class(output_t), pointer :: output_ => null( )
+    !> Output
+    class(io_t), pointer :: output_ => null( )
   contains
     !> Run the model
     procedure :: run
@@ -93,7 +93,7 @@ contains
     use musica_domain,                 only : domain_iterator_t
     use musica_domain_factory,         only : domain_builder
     use musica_initial_conditions,     only : set_initial_conditions
-    use musica_output_factory,         only : output_builder
+    use musica_io_factory,             only : io_builder
     use musica_string,                 only : string_t
 
     !> New MUSICA Core
@@ -123,8 +123,9 @@ contains
 
     ! set up the output for the model
     call config%get( "output file", output_opts, my_name, found = found )
-    if( .not. found ) output_opts = '{ "format" : "CSV" }'
-    new_obj%output_ => output_builder( output_opts )
+    if( .not. found ) output_opts = '{ "type" : "CSV" }'
+    call output_opts%add( "intent", "output", my_name )
+    new_obj%output_ => io_builder( output_opts )
     call new_obj%register_output_variables( )
 
     ! simulation time parameters
@@ -332,6 +333,9 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Update environmental conditions for a new time step
+  !!
+  !! Updates diagnosed environmental conditions.
+  !!
   subroutine update_environment( this, domain_state, cell )
 
     use musica_constants,              only : kUniversalGasConstant
