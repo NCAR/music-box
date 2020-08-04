@@ -16,6 +16,9 @@ module musica_assert
   !> Error output id
   integer, parameter :: kErrorId = 0
 
+  !> Error file name
+  character(len=*), parameter :: kErrorFile = 'MODEL_FAILURE'
+
   interface almost_equal
     module procedure almost_equal_real
     module procedure almost_equal_double
@@ -41,6 +44,10 @@ contains
       write(str_code,'(i30)') code
       write(kErrorId,*) "ERROR (MusicBox-"//trim( adjustl( str_code ) )//"): "&
                         //error_message
+      open(unit=10, file=kErrorFile)
+      write(10,*) "ERROR (MusicBox-"//trim( adjustl( str_code ) )//"): "      &
+                  //error_message
+      close(10)
       stop 3
     end if
 

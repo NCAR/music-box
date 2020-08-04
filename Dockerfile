@@ -9,6 +9,11 @@ RUN dnf -y update \
         make \
         wget \
         python \
+        python3 \
+        texlive-scheme-basic \
+        'tex(type1cm.sty)' \
+        'tex(type1ec.sty)' \
+        dvipng \
         git \
         nodejs \
         ncview \
@@ -18,7 +23,7 @@ RUN dnf -y update \
 COPY . /music-box/
 
 # python modules needed in scripts
-RUN pip3 install requests
+RUN pip3 install requests numpy scipy matplotlib ipython jupyter pandas nose Django pillow django-crispy-forms
 
 # nodejs modules needed Mechanism-To-Code
 RUN cd /music-box/libs/MechanismToCode; \
@@ -54,3 +59,11 @@ RUN if [ "$TAG_ID" = "false" ] ; then \
       && cmake ../music-box \
       && make \
       ; fi
+
+# Prepare the music-box-interactive web server
+RUN mv music-box/libs/music-box-interactive .
+ENV MUSIC_BOX_BUILD_DIR=/build
+
+EXPOSE 8000
+
+CMD ["python3", "music-box-interactive/interactive/manage.py", "runserver", "0.0.0.0:8000" ]

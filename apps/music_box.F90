@@ -16,6 +16,9 @@ program music_box
   ! Path to the configuration file
   character(len=256) :: config_file_name
 
+  character(len=*), parameter :: kDoneFile = 'MODEL_RUN_COMPLETE'
+  character(len=*), parameter :: kRunningFile = 'MODEL_RUNNING'
+
   ! Get the model configuration file from the command line
   if( command_argument_count( ) .ne. 1 ) then
     write(*,*) "Usage: ./musicbox configuration_file.json"
@@ -23,8 +26,16 @@ program music_box
   end if
   call get_command_argument( 1, config_file_name )
 
+  open(unit=10, file=kRunningFile)
+  write(10,*) "running"
+  close(10)
+
   core = core_t( config_file_name )
 
   call core%run( )
+
+  open(unit=10, file=kDoneFile)
+  write(10,*) "complete"
+  close(10)
 
 end program music_box
