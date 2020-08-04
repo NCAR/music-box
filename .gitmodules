@@ -7,3 +7,6 @@
 [submodule "libs/MechanismToCode"]
 	path = libs/MechanismToCode
 	url = https://github.com/NCAR/MechanismToCode.git
+[submodule "libs/music-box-interactive"]
+	path = libs/music-box-interactive
+	url = https://github.com/NCAR/music-box-interactive.git
