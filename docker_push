@@ -1,4 +1,4 @@
 #!/bin/bash
 echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-docker build -t ncar/music-box . --build-arg TAG_ID=272
+docker build -t ncar/music-box . --build-arg TAG_ID=chapman
 docker push ncar/music-box
