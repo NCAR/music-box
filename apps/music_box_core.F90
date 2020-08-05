@@ -41,6 +41,8 @@ module music_box_core
     type(domain_state_accessor_ptr), allocatable :: accessors_(:)
     !> Chemistry core
     class(chemistry_core_t), pointer :: chemistry_core_ => null( )
+    !> Solve chemistry during the simulation
+    logical :: solve_chemistry_ = .true.
     !> Output
     class(io_t), pointer :: output_ => null( )
   contains
@@ -137,11 +139,16 @@ contains
                          new_obj%simulation_length__s_, my_name )
 
     ! initialize the chemistry module
-    call config%get( "chemistry", chem_opts, my_name )
-    call chem_opts%add( "chemistry time step", "s",                           &
-                        new_obj%chemistry_time_step__s_, my_name )
-    new_obj%chemistry_core_ => chemistry_core_t( chem_opts, new_obj%domain_,  &
-                                                 new_obj%output_ )
+    call config%get( "chemistry", chem_opts, my_name, found = found )
+    if( found ) then
+      call chem_opts%add( "chemistry time step", "s",                         &
+                          new_obj%chemistry_time_step__s_, my_name )
+      new_obj%chemistry_core_ => chemistry_core_t( chem_opts,                 &
+                                                   new_obj%domain_,           &
+                                                   new_obj%output_ )
+      call chem_opts%get( "solve", new_obj%solve_chemistry_, my_name,         &
+                          default = .true. )
+    end if
 
     ! get a domain state
     new_obj%state_ => new_obj%domain_%new_state( )
@@ -207,8 +214,11 @@ contains
         call this%update_environment( this%state_, cell_iter )
 
         ! solve the system for the current time and cell
-        call this%chemistry_core_%solve( this%state_, cell_iter,              &
-                                         sim_time__s, time_step__s )
+        if( associated( this%chemistry_core_ ) .and.                          &
+            this%solve_chemistry_ ) then
+          call this%chemistry_core_%solve( this%state_, cell_iter,            &
+                                           sim_time__s, time_step__s )
+        end if
 
       end do
 
