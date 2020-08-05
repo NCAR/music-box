@@ -12,7 +12,7 @@ program music_box
   implicit none
 
   ! MusicBox Core
-  type(core_t) :: core
+  type(core_t), allocatable :: core
   ! Path to the configuration file
   character(len=256) :: config_file_name
 
@@ -23,8 +23,9 @@ program music_box
   end if
   call get_command_argument( 1, config_file_name )
 
+  allocate( core )
   core = core_t( config_file_name )
-
   call core%run( )
+  deallocate( core )
 
 end program music_box
