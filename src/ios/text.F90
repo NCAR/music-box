@@ -293,16 +293,22 @@ contains
     class(iterator_t), pointer :: iter
     type(config_t) :: vars, var
     type(string_t) :: temp_str, var_name
+    type(string_t), allocatable :: var_split(:)
     integer(kind=musica_ik) :: i_var
     logical :: found
 
-    ! make standard name conversions for text files
+    ! make standard name conversions for text files and get specified units
     do i_var = 1, size( this%domain_variable_names_ )
       this%domain_variable_names_( i_var ) =                                  &
           this%domain_variable_names_( i_var )%replace( "ENV.", "" )
       this%domain_variable_names_( i_var ) =                                  &
           this%domain_variable_names_( i_var )%replace( "CONC.",              &
                                                         "chemical_species%" )
+      var_split = this%domain_variable_names_( i_var )%split( "." )
+      if( size( var_split ) .gt. 1 ) then
+        this%domain_variable_names_( i_var ) = var_split(1)
+        this%file_variable_units_(   i_var ) = var_split(2)
+      end if
     end do
 
     ! update matching based on specified configuration data

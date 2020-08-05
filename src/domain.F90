@@ -147,26 +147,36 @@ module musica_domain
   !> Domain pointer
   type domain_ptr
     class(domain_t), pointer :: val_ => null( )
+  contains
+    final :: domain_ptr_finalize
   end type domain_ptr
 
   !> State pointer
   type domain_state_ptr
     class(domain_state_t), pointer :: val_ => null( )
+  contains
+    final :: domain_state_ptr_finalize
   end type domain_state_ptr
 
   !> Mutator pointer
   type domain_state_mutator_ptr
     class(domain_state_mutator_t), pointer :: val_ => null( )
+  contains
+    final :: domain_state_mutator_ptr_finalize
   end type domain_state_mutator_ptr
 
   !> Accessor pointer
   type domain_state_accessor_ptr
     class(domain_state_accessor_t), pointer :: val_ => null( )
+  contains
+    final :: domain_state_accessor_ptr_finalize
   end type domain_state_accessor_ptr
 
   !> Iterator pointer
   type domain_iterator_ptr
     class(domain_iterator_t), pointer :: val_ => null( )
+  contains
+    final :: domain_iterator_ptr_finalize
   end type domain_iterator_ptr
 
   !> @}
@@ -481,5 +491,69 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 end interface
+
+contains
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Finalize pointer
+  subroutine domain_ptr_finalize( this )
+
+    !> Domain pointer
+    type(domain_ptr), intent(inout) :: this
+
+    if( associated( this%val_ ) ) deallocate( this%val_ )
+
+  end subroutine domain_ptr_finalize
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Finalize pointer
+  subroutine domain_state_ptr_finalize( this )
+
+    !> Domain pointer
+    type(domain_state_ptr), intent(inout) :: this
+
+    if( associated( this%val_ ) ) deallocate( this%val_ )
+
+  end subroutine domain_state_ptr_finalize
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Finalize pointer
+  subroutine domain_state_mutator_ptr_finalize( this )
+
+    !> Domain pointer
+    type(domain_state_mutator_ptr), intent(inout) :: this
+
+    if( associated( this%val_ ) ) deallocate( this%val_ )
+
+  end subroutine domain_state_mutator_ptr_finalize
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Finalize pointer
+  subroutine domain_state_accessor_ptr_finalize( this )
+
+    !> Domain pointer
+    type(domain_state_accessor_ptr), intent(inout) :: this
+
+    if( associated( this%val_ ) ) deallocate( this%val_ )
+
+  end subroutine domain_state_accessor_ptr_finalize
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Finalize pointer
+  subroutine domain_iterator_ptr_finalize( this )
+
+    !> Domain pointer
+    type(domain_iterator_ptr), intent(inout) :: this
+
+    if( associated( this%val_ ) ) deallocate( this%val_ )
+
+  end subroutine domain_iterator_ptr_finalize
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 end module musica_domain

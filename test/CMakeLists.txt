@@ -9,8 +9,12 @@ endmacro(add_std_test)
 
 ################################################################################
 # Copy test data
-add_custom_target(copy_test_data ALL ${CMAKE_COMMAND} -E copy_directory
+
+add_custom_target(copy_unit_data ALL ${CMAKE_COMMAND} -E copy_directory
   ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/test/data)
+
+add_custom_target(copy_integration_data ALL ${CMAKE_COMMAND} -E copy_directory
+  ${CMAKE_CURRENT_SOURCE_DIR}/integration ${CMAKE_BINARY_DIR}/test/integration)
 
 ################################################################################
 # MusicBox tests
@@ -29,5 +33,9 @@ add_std_test(config)
 
 add_executable(domain_cell domains/cell.F90)
 add_std_test(domain_cell)
+
+add_test(NAME input_use_case_1 COMMAND integration/input_use_cases/1/run.sh)
+add_test(NAME input_use_case_2 COMMAND integration/input_use_cases/2/run.sh)
+add_test(NAME input_use_case_3 COMMAND integration/input_use_cases/3/run.sh)
 
 ################################################################################
