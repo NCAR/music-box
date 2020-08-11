@@ -44,5 +44,6 @@ add_executable(integration_input_4_check
 target_include_directories(integration_input_4_check PUBLIC ${CMAKE_BINARY_DIR}/src)
 target_link_libraries(integration_input_4_check musicalib)
 add_test(NAME input_use_case_4 COMMAND integration/input_use_cases/4/run.sh)
+add_test(NAME input_use_case_4b COMMAND integration/input_use_cases/4/run_b.sh)
 
 ################################################################################
