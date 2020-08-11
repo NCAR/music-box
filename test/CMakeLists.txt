@@ -37,5 +37,6 @@ add_std_test(domain_cell)
 add_test(NAME input_use_case_1 COMMAND integration/input_use_cases/1/run.sh)
 add_test(NAME input_use_case_2 COMMAND integration/input_use_cases/2/run.sh)
 add_test(NAME input_use_case_3 COMMAND integration/input_use_cases/3/run.sh)
+add_test(NAME input_use_case_4 COMMAND integration/input_use_cases/4/run.sh)
 
 ################################################################################
