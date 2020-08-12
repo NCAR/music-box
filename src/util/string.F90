@@ -243,18 +243,18 @@ contains
           to = from%val_
         end if
       type is( real )
-        call assert_msg( 621504169, len( from%val_ ) .le. 30,                 &
+        call assert_msg( 621504169, len( from%val_ ) .le. 40,                 &
                          "Error converting '"//from%val_//"' to real: "//     &
                          "string too long" )
-        read( from%val_, '(f30.0)', iostat=ios ) to
+        read( from%val_, '(f40.0)', iostat=ios ) to
         call assert_msg( 102862672, ios .eq. 0,                               &
                          "Error converting '"//from%val_//"' to real: "//     &
                          "IOSTAT = "//trim( to_char( ios ) ) )
       type is( double precision)
-        call assert_msg( 156176342, len( from%val_ ) .le. 30,                 &
+        call assert_msg( 156176342, len( from%val_ ) .le. 40,                 &
                          "Error converting '"//from%val_//"' to double: "//   &
                          "string too long" )
-        read( from%val_, '(f30.0)', iostat=ios ) to
+        read( from%val_, '(f40.0)', iostat=ios ) to
         call assert_msg( 445821432, ios .eq. 0,                               &
                          "Error converting '"//from%val_//"' to double: "//   &
                          "IOSTAT = "//trim( to_char( ios ) ) )
