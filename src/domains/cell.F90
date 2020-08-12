@@ -44,6 +44,8 @@ module musica_domain_cell
   !> Model domain for a collection of unrelated cells or boxes
   type, extends(domain_t) :: domain_cell_t
     private
+    !> Flag indicating that no more properties can be registered
+    logical :: is_locked = .false.
     !> Number of cells in the domain
     integer(kind=musica_ik) :: number_of_cells_ = 1
     !> Names of the registered cell properties
@@ -240,9 +242,12 @@ contains
     !> New domain state
     class(domain_state_t), pointer :: new_state
     !> Domain
-    class(domain_cell_t), intent(in) :: this
+    class(domain_cell_t), intent(inout) :: this
 
     integer :: n_prop, n_flag, i_prop, i_flag
+
+    ! make sure no properties can be registered after a state has been created
+    this%is_locked = .true.
 
     n_prop = size( this%properties_ )
     n_flag = size( this%flags_ )
@@ -295,20 +300,24 @@ contains
 
     call assert( 600322248, len( trim( variable_name ) ) .gt. 0 )
 
+    call assert_msg( 366771761, .not. this%is_locked, "Attempting to "//      &
+                     "register state variable '"//trim( variable_name )//     &
+                     "' after a domain state has been created." )
+
     ! find the property or create it if it doesn't exist
-    if( find_string_in_array( this%properties_,                             &
+    if( find_string_in_array( this%properties_,                               &
                               variable_name, property_id ) ) then
-      call assert_msg( 526855940, units .eq.                                &
-                                  this%property_units_( property_id ),      &
-                       "Unit mismatch for property '"//trim( variable_name )&
-                       //"': '"//trim( units )//"' != '"//                  &
+      call assert_msg( 526855940, units .eq.                                  &
+                                  this%property_units_( property_id ),        &
+                       "Unit mismatch for property '"//trim( variable_name )  &
+                       //"': '"//trim( units )//"' != '"//                    &
                        this%property_units_( property_id )%to_char( ) )
-      call assert_msg( 559943613, default_value .eq.                        &
-                        this%property_default_values_( property_id ),       &
-                       "Default value mismatch for property '"//            &
-                       trim( variable_name )//"': '"//trim( units )//       &
-                       "' != '"//                                           &
-                       to_char( this%property_default_values_(              &
+      call assert_msg( 559943613, default_value .eq.                          &
+                        this%property_default_values_( property_id ),         &
+                       "Default value mismatch for property '"//              &
+                       trim( variable_name )//"': '"//trim( units )//         &
+                       "' != '"//                                             &
+                       to_char( this%property_default_values_(                &
                                                           property_id ) ) )
     else
       call add_to_array( this%properties_, variable_name )
@@ -369,6 +378,10 @@ contains
     type(string_t) :: full_name
 
     call assert( 152214984, len( trim( variable_name ) ) .gt. 0 )
+
+    call assert_msg( 298856883, .not. this%is_locked, "Attempting to "//      &
+                     "register state variable set '"//trim( variable_name )// &
+                     "' after a domain state has been created." )
 
     allocate( new_mutators( size( component_names ) ) )
 
@@ -443,6 +456,10 @@ contains
     type(registered_pair_t) :: new_pair
 
     call assert( 209339722, len( trim( flag_name ) ) .gt. 0 )
+
+    call assert_msg( 242923858, .not. this%is_locked, "Attempting to "//      &
+                     "regsiter state flag '"//trim( flag_name )//             &
+                     "' after a domain state has been created." )
 
     ! find the flag or create it if it doesn't exist
     if( find_string_in_array( this%flags_, flag_name, flag_id ) ) then
@@ -561,9 +578,6 @@ contains
     call assert( 394642233, len( trim( variable_name ) ) .gt. 0 )
 
     num_props = set_length( this%properties_, variable_name )
-    call assert_msg( 291451281, num_props .gt. 0,                             &
-                     "Could not find property set '"//trim( variable_name )// &
-                     "' requested by '"//trim( requestor )//"'" )
 
     allocate( component_names( num_props ) )
     allocate( new_mutators(    num_props ) )
@@ -735,9 +749,6 @@ contains
     call assert( 127187550, len( trim( variable_name ) ) .gt. 0 )
 
     num_props = set_length( this%properties_, variable_name )
-    call assert_msg( 384783104, num_props .gt. 0,                             &
-                     "Could not find property set '"//trim( variable_name )// &
-                     "' requested by '"//trim( requestor )//"'" )
 
     allocate( component_names( num_props ) )
     allocate( new_accessors(   num_props ) )

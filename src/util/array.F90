@@ -12,7 +12,7 @@ module musica_array
   implicit none
   private
 
-  public :: add_to_array, find_string_in_array
+  public :: add_to_array, find_string_in_array, find_string_in_split_array
 
   !> Add to array interface
   interface add_to_array
@@ -29,6 +29,12 @@ module musica_array
     module procedure :: find_string_in_array_string
     module procedure :: find_string_in_array_char
   end interface find_string_in_array
+
+  ! Find a string in an array of split strings
+  interface find_string_in_split_array
+    module procedure :: find_string_in_split_array_string
+    module procedure :: find_string_in_split_array_char
+  end interface find_string_in_split_array
 
 contains
 
@@ -197,7 +203,7 @@ contains
     !> Do a case sensitive search
     logical, intent(in), optional :: case_sensitive
 
-    type(string_t) :: temp_string
+    type(string_t) :: temp_string, array_string
     integer :: i_str
     logical :: is_case_sensitive
 
@@ -210,7 +216,9 @@ contains
     temp_string = trim( string )
     if( .not. is_case_sensitive ) temp_string = temp_string%to_lower( )
     do i_str = 1, size( array )
-      if( temp_string .eq. array( i_str )%to_lower( ) ) then
+      array_string = array( i_str )
+      if( .not. is_case_sensitive ) array_string = array_string%to_lower( )
+      if( temp_string .eq. array_string ) then
         id = i_str
         find_string_in_array_char = .true.
         exit
@@ -223,7 +231,7 @@ contains
 
   !> Finds a string in an array ( case insensitive by default)
   logical function find_string_in_array_string( array, string, id,            &
-    case_sensitive )
+      case_sensitive )
 
     use musica_string,                 only : string_t
 
@@ -240,6 +248,89 @@ contains
         string%to_char( ), id, case_sensitive )
 
   end function find_string_in_array_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Find a string in an array of strings after splitting the array elements
+  !!
+  !! Case insensitive by default
+  logical function find_string_in_split_array_char( array, string, splitter,  &
+      element_id, id, case_sensitive )
+
+    use musica_string,                 only : string_t
+
+    !> Array to search
+    type(string_t), intent(in) :: array(:)
+    !> String to search for
+    character(len=*), intent(in) :: string
+    !> Splitting characters
+    character(len=*), intent(in) :: splitter
+    !> Element to compare in split strings
+    integer(kind=musica_ik), intent(in) :: element_id
+    !> Index of located string
+    integer(kind=musica_ik), intent(out) :: id
+    !> Do a case sensitive search
+    logical, intent(in), optional :: case_sensitive
+
+    type(string_t) :: temp_string, array_string
+    type(string_t), allocatable :: split_string(:)
+    integer :: i_str
+    logical :: is_case_sensitive
+
+    is_case_sensitive = .false.
+    if( present( case_sensitive ) ) then
+      is_case_sensitive = case_sensitive
+    end if
+    id = 0
+    find_string_in_split_array_char = .false.
+    temp_string = trim( string )
+    if( .not. is_case_sensitive ) temp_string = temp_string%to_lower( )
+    do i_str = 1, size( array )
+      array_string = array( i_str )
+      if( .not. is_case_sensitive ) array_string = array_string%to_lower( )
+      split_string = array_string%split( splitter )
+      if( size( split_string ) .ge. element_id ) then
+        array_string = split_string( element_id )
+      else
+        cycle
+      end if
+      if( temp_string .eq. array_string ) then
+        id = i_str
+        find_string_in_split_array_char = .true.
+        exit
+      end if
+    end do
+
+  end function find_string_in_split_array_char
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Find a string in an array of strings after splitting the array elements
+  !!
+  !! Case insensitive by default
+  logical function find_string_in_split_array_string( array, string, splitter, &
+      element_id, id, case_sensitive )
+
+    use musica_string,                 only : string_t
+
+    !> Array to search
+    type(string_t), intent(in) :: array(:)
+    !> String to search for
+    type(string_t), intent(in) :: string
+    !> Splitting characters
+    character(len=*), intent(in) :: splitter
+    !> Element to compare in split strings
+    integer(kind=musica_ik), intent(in) :: element_id
+    !> Index of located string
+    integer(kind=musica_ik), intent(out) :: id
+    !> Do a case sensitive search
+    logical, intent(in), optional :: case_sensitive
+
+    find_string_in_split_array_string =                                       &
+        find_string_in_split_array_char( array, string%to_char( ), splitter,  &
+                                         element_id, id, case_sensitive )
+
+  end function find_string_in_split_array_string
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

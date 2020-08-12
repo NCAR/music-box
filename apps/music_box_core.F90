@@ -12,6 +12,8 @@ module music_box_core
   use musica_domain,                   only : domain_t, domain_state_t,       &
                                               domain_state_mutator_ptr,       &
                                               domain_state_accessor_ptr
+  use musica_emissions,                only : emissions_t
+  use musica_evolving_conditions,      only : evolving_conditions_t
   use musica_io,                       only : io_t
 
   implicit none
@@ -27,8 +29,8 @@ module music_box_core
     private
     !> Model domain
     class(domain_t), pointer :: domain_ => null( )
-    !> Chemistry time step [s]
-    real(kind=musica_dk) :: chemistry_time_step__s_
+    !> Chemistry solve times [s]
+    real(kind=musica_dk), allocatable :: simulation_times__s_(:)
     !> Output time step [s]
     real(kind=musica_dk) :: output_time_step__s_
     !> Simulation length [s]
@@ -39,8 +41,12 @@ module music_box_core
     type(domain_state_mutator_ptr), allocatable :: mutators_(:)
     !> Standard state variable accessor
     type(domain_state_accessor_ptr), allocatable :: accessors_(:)
+    !> Evolving model conditions
+    class(evolving_conditions_t), pointer :: evolving_conditions_ => null( )
     !> Chemistry core
     class(chemistry_core_t), pointer :: chemistry_core_ => null( )
+    !> Emissions handler
+    class(emissions_t), pointer :: emissions_ => null( )
     !> Solve chemistry during the simulation
     logical :: solve_chemistry_ = .true.
     !> Output
@@ -52,8 +58,6 @@ module music_box_core
     procedure, private :: register_standard_state_variables
     !> Register output variables
     procedure, private :: register_output_variables
-    !> Get the current time step [s]
-    procedure, private :: get_current_time_step__s
     !> Update the environmental conditions for a new time step
     procedure, private :: update_environment
     !> Output the current model state
@@ -104,10 +108,14 @@ contains
     character(len=*), intent(in) :: config_file_path
 
     character(len=*), parameter :: my_name = "MUSICA core constructor"
-    type(config_t) :: config, model_opts, domain_opts, output_opts, chem_opts
+    type(config_t) :: config, model_opts, domain_opts, output_opts, chem_opts,&
+                      evolving_opts
     type(string_t) :: domain_type
     logical :: found
     class(domain_iterator_t), pointer :: cell_iter
+    real(kind=musica_dk) :: time_step
+    real(kind=musica_dk), allocatable :: update_times(:)
+    integer(kind=musica_ik) :: i_step, n_time_steps
 
     call print_header( )
 
@@ -132,22 +140,54 @@ contains
 
     ! simulation time parameters
     call model_opts%get( "chemistry time step", "s",                          &
-                         new_obj%chemistry_time_step__s_, my_name )
+                         time_step, my_name )
     call model_opts%get( "output time step", "s",                             &
                          new_obj%output_time_step__s_, my_name )
     call model_opts%get( "simulation length", "s",                            &
                          new_obj%simulation_length__s_, my_name )
 
+    ! set the default chemistry times
+    n_time_steps = ceiling( new_obj%simulation_length__s_ / time_step ) + 1
+    allocate( new_obj%simulation_times__s_( n_time_steps ) )
+    do i_step = 1, n_time_steps
+      new_obj%simulation_times__s_( i_step ) =                                 &
+        min( ( i_step - 1 ) * time_step, new_obj%simulation_length__s_ )
+    end do
+
+    ! include output times in solver times
+    n_time_steps = ceiling( new_obj%simulation_length__s_ /                   &
+                            new_obj%output_time_step__s_ ) + 1
+    allocate( update_times( n_time_steps ) )
+    do i_step = 1, n_time_steps
+      update_times( i_step ) =                                                &
+        min( ( i_step - 1 ) * new_obj%output_time_step__s_,                   &
+             new_obj%simulation_length__s_ )
+    end do
+    new_obj%simulation_times__s_ =                                            &
+      merge_series( new_obj%simulation_times__s_, update_times )
+
     ! initialize the chemistry module
     call config%get( "chemistry", chem_opts, my_name, found = found )
     if( found ) then
-      call chem_opts%add( "chemistry time step", "s",                         &
-                          new_obj%chemistry_time_step__s_, my_name )
+      call chem_opts%add( "chemistry time step", "s", time_step, my_name )
       new_obj%chemistry_core_ => chemistry_core_t( chem_opts,                 &
                                                    new_obj%domain_,           &
                                                    new_obj%output_ )
       call chem_opts%get( "solve", new_obj%solve_chemistry_, my_name,         &
                           default = .true. )
+      call chem_opts%finalize( )
+    end if
+
+    ! set up the evolving conditions
+    call config%get( "evolving conditions", evolving_opts, my_name,           &
+                     found = found )
+    if( found ) then
+      new_obj%evolving_conditions_ => evolving_conditions_t( evolving_opts,   &
+                                                             new_obj%domain_ )
+      update_times = new_obj%evolving_conditions_%get_update_times__s( )
+      new_obj%simulation_times__s_ =                                          &
+        merge_series( new_obj%simulation_times__s_, update_times )
+      call evolving_opts%finalize( )
     end if
 
     ! get a domain state
@@ -160,6 +200,10 @@ contains
       call new_obj%update_environment( new_obj%state_, cell_iter )
     end do
 
+    ! set up the emissions handler
+    ! (chemical species and emissions rates must all be registered by now)
+    new_obj%emissions_ => emissions_t( new_obj%domain_ )
+
     ! output the registered domain state variables
     call new_obj%domain_%output_registry( )
 
@@ -168,7 +212,6 @@ contains
     call domain_opts%finalize( )
     call model_opts%finalize( )
     call output_opts%finalize( )
-    call chem_opts%finalize( )
     deallocate( cell_iter )
 
   end function constructor
@@ -191,20 +234,32 @@ contains
     ! domain iterator over every cell
     class(domain_iterator_t), pointer :: cell_iter
 
+    integer(kind=musica_ik) :: i_step
+
     ! set up the domain iterators
     cell_iter => this%domain_%cell_iterator( )
 
     ! reset to initial conditions
-    sim_time__s = 0.0d0
+    sim_time__s = this%simulation_times__s_( 1 )
 
     ! start simulation
-    do while( sim_time__s .lt. this%simulation_length__s_ )
+    do i_step = 2, size( this%simulation_times__s_ )
 
       ! output initial conditions for this time step
       call this%output( sim_time__s )
 
       ! determine the current time step
-      time_step__s = this%get_current_time_step__s( sim_time__s )
+      time_step__s = this%simulation_times__s_( i_step ) -                    &
+                     this%simulation_times__s_( i_step - 1 )
+
+      write(*,*) "Solving for time:", sim_time__s, "s"
+
+      ! update evolving conditions from input data
+      if( associated( this%evolving_conditions_ ) ) then
+        call this%evolving_conditions_%update_state( this%domain_,            &
+                                                     this%state_,             &
+                                                     sim_time__s )
+      end if
 
       ! iterate over cells in the domain
       call cell_iter%reset( )
@@ -212,6 +267,9 @@ contains
 
         ! update environmental conditions
         call this%update_environment( this%state_, cell_iter )
+
+        ! emit chemical species
+        call this%emissions_%emit( this%state_, cell_iter, time_step__s )
 
         ! solve the system for the current time and cell
         if( associated( this%chemistry_core_ ) .and.                          &
@@ -222,7 +280,8 @@ contains
 
       end do
 
-      sim_time__s = sim_time__s + time_step__s
+      ! advance the simulation time
+      sim_time__s  = this%simulation_times__s_( i_step )
 
     end do
 
@@ -312,36 +371,6 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Get the current time step [s]
-  function get_current_time_step__s( this, simulation_time__s )               &
-      result( time_step )
-
-    !> Calculated time step [s]
-    real(kind=musica_dk) :: time_step
-    !> MUSICA Core
-    class(core_t), intent(in) :: this
-    !> Current model simulation time [s]
-    real(kind=musica_dk), intent(in) :: simulation_time__s
-
-    real(kind=musica_dk) :: tmp_step
-
-    ! chemistry
-    time_step = this%chemistry_time_step__s_ -                                &
-                mod( simulation_time__s, this%chemistry_time_step__s_ )
-
-    ! output
-    tmp_step  = this%output_time_step__s_ -                                   &
-                mod( simulation_time__s, this%output_time_step__s_ )
-    if( tmp_step .lt. time_step ) time_step = tmp_step
-
-    ! total simulation time
-    tmp_step  = this%simulation_length__s_ - simulation_time__s
-    if( tmp_step .lt. time_step ) time_step = tmp_step
-
-  end function get_current_time_step__s
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
   !> Update environmental conditions for a new time step
   !!
   !! Updates diagnosed environmental conditions.
@@ -417,8 +446,11 @@ contains
           deallocate( this%accessors_( i )%val_ )
       end do
     end if
+    if( associated( this%evolving_conditions_ ) )                             &
+        deallocate( this%evolving_conditions_ )
     if( associated( this%chemistry_core_ ) ) deallocate( this%chemistry_core_ )
-    if( associated( this%output_         ) ) deallocate( this%output_ )
+    if( associated( this%emissions_      ) ) deallocate( this%emissions_      )
+    if( associated( this%output_         ) ) deallocate( this%output_         )
 
   end subroutine finalize
 
@@ -440,6 +472,82 @@ contains
     write(*,*) ""
 
   end subroutine print_header
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Merge to sets of values into a single set without duplicates
+  !!
+  !! Both sets must be arranged in increasing order
+  !!
+  function merge_series( a, b ) result( new_set )
+
+    !> New series
+    real(kind=musica_dk), allocatable :: new_set(:)
+    !> First series
+    real(kind=musica_dk), intent(in) :: a(:)
+    !> Second series
+    real(kind=musica_dk), intent(in) :: b(:)
+
+    real(kind=musica_dk) :: curr_val, val_a, val_b
+    integer :: n_total, i_a, i_b, i_c, n_a, n_b
+
+    n_a = size( a )
+    n_b = size( b )
+    if( n_a + n_b .eq. 0 ) then
+      allocate( new_set( 0 ) )
+      return
+    end if
+
+    curr_val = huge( 1.0_musica_dk )
+    if( n_a .gt. 0 ) curr_val = a( 1 )
+    if( n_b .gt. 0 ) then
+      if( b( 1 ) .lt. curr_val ) curr_val = b( 1 )
+    end if
+
+    i_a = 1
+    i_b = 1
+    n_total = 0
+    do while( i_a .le. n_a .or. i_b .le. n_b )
+      if( i_a .le. n_a ) then
+        val_a = a( i_a )
+      else
+        val_a = huge( 1.0_musica_dk )
+      end if
+      if( i_b .le. n_b ) then
+        val_b = b( i_b )
+      else
+        val_b = huge( 1.0_musica_dk )
+      end if
+      curr_val = min( val_a, val_b )
+      n_total = n_total + 1
+      if( val_a .le. curr_val ) i_a = i_a + 1
+      if( val_b .le. curr_val ) i_b = i_b + 1
+    end do
+
+    allocate( new_set( n_total ) )
+
+    i_a = 1
+    i_b = 1
+    n_total = 0
+    do while( i_a .le. n_a .or. i_b .le. n_b )
+      if( i_a .le. n_a ) then
+        val_a = a( i_a )
+      else
+        val_a = huge( 1.0_musica_dk )
+      end if
+      if( i_b .le. n_b ) then
+        val_b = b( i_b )
+      else
+        val_b = huge( 1.0_musica_dk )
+      end if
+      curr_val = min( val_a, val_b )
+      n_total = n_total + 1
+      new_set( n_total ) = curr_val
+      if( val_a .le. curr_val ) i_a = i_a + 1
+      if( val_b .le. curr_val ) i_b = i_b + 1
+    end do
+
+  end function merge_series
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

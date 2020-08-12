@@ -94,6 +94,8 @@ module musica_io_text
     procedure, private :: auto_map_variables
     !> Registers a state variable for input/output
     procedure :: register
+    !> Get the times corresponding to entries (for input data) [s]
+    procedure :: entry_times__s
     !> Updates the model state with input data
     procedure :: update_state
     !> Outputs the current domain state
@@ -302,6 +304,9 @@ contains
       this%domain_variable_names_( i_var ) =                                  &
           this%domain_variable_names_( i_var )%replace( "ENV.", "" )
       this%domain_variable_names_( i_var ) =                                  &
+          this%domain_variable_names_( i_var )%replace( "EMIS.",              &
+                                                        "emission_rates%" )
+      this%domain_variable_names_( i_var ) =                                  &
           this%domain_variable_names_( i_var )%replace( "CONC.",              &
                                                         "chemical_species%" )
       var_split = this%domain_variable_names_( i_var )%split( "." )
@@ -338,23 +343,39 @@ contains
   !> Auto-maps input/output variables to model state variables
   subroutine auto_map_variables( this, domain )
 
-    use musica_array,                  only : find_string_in_array
+    use musica_array,                  only : find_string_in_split_array
     use musica_assert,                 only : assert_msg, die_msg
-    use musica_domain,                 only : domain_t
+    use musica_domain,                 only : domain_t,                       &
+                                              domain_state_mutator_t
 
     !> Text file
     class(io_text_t), intent(inout) :: this
     !> Model domain
     class(domain_t), intent(inout) :: domain
 
+    character(len=*), parameter :: my_name = "auto map text file variables"
     type(string_t) :: var_name
+    type(string_t), allocatable :: split_name(:)
     integer :: i_col
+    class(domain_state_mutator_t), pointer :: mutator
 
     call assert_msg( 974120905, .not. this%is_output_, "Auto-mapping of "//   &
                      "text files is only available for input files." )
 
     do i_col = 1, size( this%domain_variable_names_ )
-    var_name = this%domain_variable_names_( i_col )
+      var_name = this%domain_variable_names_( i_col )
+
+      ! create state variables for emissions rates
+      if( var_name%substring( 1, 15 ) .eq. "emission_rates%" ) then
+        if( this%file_variable_units_( i_col ) .eq. "unknown" ) then
+          this%file_variable_units_( i_col ) = "mol m-3 s-1"
+        end if
+        mutator => domain%register_cell_state_variable( var_name%to_char( ),  & !- state variable name
+                                                        "mol m-3 s-1",        & !- MUSICA units
+                                                        0.0d0,                & !- default value
+                                                        my_name )
+        deallocate( mutator )
+      end if
       if( domain%is_cell_state_variable( var_name%to_char( ) ) ) then
         ! assume variables are in standard units if not otherwise specified
         if( this%file_variable_units_( i_col ) .eq. "unknown" ) then
@@ -369,8 +390,14 @@ contains
     end do
 
     ! add time index and conversion
-    if( find_string_in_array( this%file_variable_names_, "time", i_col ) ) then
-      call this%register( domain, "time", "s" )
+    if( find_string_in_split_array( this%file_variable_names_, "time", ".",   &
+                                    1, i_col ) ) then
+      split_name = this%file_variable_names_( i_col )%split( "." )
+      if( size( split_name ) .eq. 1 ) then
+        call this%register( domain, "time", "s" )
+      else
+        call this%register( domain, "time", split_name(2)%to_char( ) )
+      end if
     end if
 
   end subroutine auto_map_variables
@@ -381,7 +408,8 @@ contains
   subroutine register( this, domain, variable_name, units, io_name )
 
     use musica_array,                  only : add_to_array,                   &
-                                              find_string_in_array
+                                              find_string_in_array,           &
+                                              find_string_in_split_array
     use musica_assert,                 only : assert_msg
     use musica_domain,                 only : domain_t
 
@@ -410,12 +438,12 @@ contains
       io_var_name = variable_name
     end if
 
-    ! if the variable is time, it does not required accessors or mutators
+    ! if the variable is time, it does not require accessors or mutators
     ! it just needs to have the column identified
     if( variable_name .eq. "time" ) then
       call assert_msg( 701920734,                                             &
-                       find_string_in_array( this%file_variable_names_,       &
-                                             io_var_name, col_id ),           &
+                       find_string_in_split_array( this%file_variable_names_, &
+                           io_var_name, ".", 1, col_id ),                     &
                        "Cannot find time column in file '"//                  &
                        this%file_path_%to_char( )//"'" )
       this%time_column_index_ = col_id
@@ -439,8 +467,9 @@ contains
     ! register an accessor for output
     if( this%is_output_ ) then
       this%variables_( var_id )%accessor_ =>                                  &
-          domain%cell_state_accessor( variable_name,                          &
-                                      std_units%to_char( ), my_name )
+          domain%cell_state_accessor( variable_name,                          & !- state variable name
+                                      std_units%to_char( ),                   & !- MUSICA units
+                                      my_name )
       col_id = var_id
       call add_to_array( this%file_variable_names_, io_var_name )
       call add_to_array( this%file_variable_units_, units )
@@ -455,14 +484,43 @@ contains
                        "Could not find '"//io_var_name%to_char( )//           &
                        "' in input file '"//this%file_path_%to_char( )//"'" )
       this%variables_( var_id )%mutator_ =>                                   &
-          domain%cell_state_mutator( variable_name,                           &
-                                     std_units%to_char( ), my_name )
+        domain%cell_state_mutator( variable_name,                             & !- state variable name
+                                   std_units%to_char( ),                      & !- MUSICA units
+                                   my_name )
     end if
 
     this%variables_( var_id )%file_column_index_ = col_id
     this%variables_( var_id )%domain_variable_name_ = variable_name
 
   end subroutine register
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get the times corresponding to entries (for input data) [s]
+  function entry_times__s( this )
+
+    use musica_assert,                 only : assert
+    use musica_constants,              only : musica_dk
+
+    !> Input data entry times [s]
+    real(kind=musica_dk), allocatable :: entry_times__s(:)
+    !> Text file
+    class(io_text_t), intent(inout) :: this
+
+    integer(kind=musica_ik) :: i_time
+
+    call assert( 806233948, this%time_column_index_ .gt. 0 )
+    call assert( 180086118, allocated( this%file_data_ ) )
+
+    allocate( entry_times__s( size( this%file_data_, 1 ) ) )
+
+    do i_time = 1, size( entry_times__s )
+      entry_times__s( i_time ) =                                              &
+          this%time_converter_%to_standard(                                   &
+                          this%file_data_( i_time, this%time_column_index_ ) )
+    end do
+
+  end function entry_times__s
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -482,12 +540,12 @@ contains
     !> Current simulation time [s]
     real(kind=musica_dk), intent(in), optional :: time__s
 
-    logical :: found
+    logical :: is_update_time
     integer(kind=musica_ik) :: i_line, i_var, n_rows
-    real(kind=musica_dk) :: file_time, last_time, scale_factor, new_value
+    real(kind=musica_dk) :: file_time, new_value
 
     call assert_msg( 240742292, this%is_input_ .neqv. this%is_output_,        &
-                     "Input/output text files are not yet supported." )
+                     "Input/output text files are not supported." )
 
     call assert_msg( 127971652, this%is_input_, "Trying to read data from "// &
                      "output file '"//this%file_path_%to_char( )//"'" )
@@ -502,55 +560,33 @@ contains
       this%iterator_ => domain%cell_iterator( )
     end if
 
-    ! get the row index in the input data for this time and the interpolation
-    ! factor
-    i_line = 1
-    scale_factor = 1.0
+    ! determine if a new value exists for this time, and find the row index
+    ! for the update
     if( present( time__s ) ) then
+      i_line = 0
       n_rows = size( this%file_data_, 1 )
-      found = .false.
-      file_time = this%time_converter_%to_standard(                           &
-                      this%file_data_( 1, this%time_column_index_ ) )
-      if( file_time .ge. time__s ) then
-        i_line = 1
-        scale_factor = 1.0
-        found = .true.
-      end if
-      if( .not. found ) then
-        file_time = this%time_converter_%to_standard(                         &
-                        this%file_data_( n_rows, this%time_column_index_ ) )
-        if( file_time .le. time__s ) then
-          i_line = n_rows
-          scale_factor = 1.0
-          found = .true.
-        end if
-      end if
-      do while( .not. found )
+      is_update_time = .false.
+      do while( .not. is_update_time .and. i_line .lt. n_rows )
+        i_line = i_line + 1
         file_time = this%time_converter_%to_standard(                         &
                       this%file_data_( i_line, this%time_column_index_ ) )
         if( file_time .eq. time__s ) then
-          scale_factor = 1.0
-          exit
+          is_update_time = .true.
         end if
-        if( file_time .gt. time__s ) then
-          scale_factor = ( time__s - last_time ) / ( file_time - last_time )
-          exit
-        end if
-        last_time = file_time
       end do
+    else
+      i_line = 1
+      is_update_time = .true.
     end if
+
+    if( .not. is_update_time ) return
 
     ! update the state variables
     do i_var = 1, size( this%variables_ )
       call assert( 739231151,                                                 &
                    associated( this%variables_( i_var )%mutator_ ) )
-      if( scale_factor .eq. 1.0 ) then
-        new_value = this%file_data_( i_line, i_var )
-      else
-        new_value = this%file_data_( i_line, i_var ) * scale_factor +         &
-                    this%file_data_( i_line - 1, i_var ) *                    &
-                        ( scale_factor - 1.0 )
-      end if
+      new_value = this%file_data_( i_line,                                    &
+                                 this%variables_( i_var )%file_column_index_ )
       new_value = this%variables_( i_var )%converter_%to_standard( new_value )
       call this%iterator_%reset( )
       do while( this%iterator_%next( ) )

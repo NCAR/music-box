@@ -24,6 +24,8 @@ module musica_io
   contains
     !> Registers a state variable for output
     procedure(register), deferred :: register
+    !> Get the times corresponding to entries (for input data) [s]
+    procedure(entry_times__s), deferred :: entry_times__s
     !> Updates the model state with input data
     procedure(update_state), deferred :: update_state
     !> Outputs the current domain state
@@ -57,6 +59,18 @@ interface
     !> Optional custom name for input/output variable
     character(len=*), intent(in), optional :: io_name
   end subroutine register
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Get the times corresponding to entries (for input data) [s]
+  function entry_times__s( this )
+    use musica_constants,              only : musica_dk
+    import io_t
+    !> Entry times [s]
+    real(kind=musica_dk), allocatable :: entry_times__s(:)
+    !> Input/output
+    class(io_t), intent(inout) :: this
+  end function entry_times__s
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -115,7 +129,7 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Closes any input/output streams/files/servies/etc.
+  !> Closes any input/output streams/files/services/etc.
   subroutine close( this )
     import io_t
     !> Input/output

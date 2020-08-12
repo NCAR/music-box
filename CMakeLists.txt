@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
+set(CMAKE_USER_MAKE_RULES_OVERRIDE "SetDefaults.cmake")
 project(MUSICA)
 enable_language(Fortran)
 
