@@ -7,7 +7,7 @@ set -v
 # make sure that the current directory is the once where this script is
 cd ${0%/*}
 
-exec_str="../../../../music_box config.json"
+exec_str="../../../../music_box config_b.json"
 check_str="../../../../integration_input_4_check"
 
 if ! $exec_str; then
