@@ -5,6 +5,8 @@ set(MUSICA_SRC config.F90
                domain.F90
                domain_factory.F90
                domains/cell.F90
+               emissions.F90
+               evolving_conditions.F90
                initial_conditions.F90
                io.F90
                io_factory.F90

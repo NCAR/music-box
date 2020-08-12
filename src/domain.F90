@@ -191,7 +191,7 @@ interface
     !> New domain state
     class(domain_state_t), pointer :: new_state
     !> Domain
-    class(domain_t), intent(in) :: this
+    class(domain_t), intent(inout) :: this
   end function new_state
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

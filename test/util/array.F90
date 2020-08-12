@@ -37,12 +37,12 @@ contains
     str = "bar"
     call add_to_array( str_array, "foo"      )
     call add_to_array( str_array, str        )
-    call add_to_array( str_array, "foo"//str )
+    call add_to_array( str_array, "foO"//str )
 
     call assert( 301097835, size( str_array ) .eq. 3 )
     call assert( 184681299, find_string_in_array( str_array, "foo", idx ) )
     call assert( 360841928, idx .eq. 1 )
-    call assert( 520470218, find_string_in_array( str_array, "foobar", idx,   &
+    call assert( 520470218, find_string_in_array( str_array, "foObar", idx,   &
                                                   case_sensitive = .true. ) )
     call assert( 745106908, idx .eq. 3 )
     call assert( 239900503, .not. find_string_in_array( str_array, "fooBar",  &
@@ -56,6 +56,25 @@ contains
                                                    case_sensitive = .true. ) )
     str = "not there"
     call assert( 231277423, .not. find_string_in_array( str_array, str, idx ) )
+
+    deallocate( str_array )
+    allocate( str_array( 3 ) )
+
+    str_array( 1 ) = "foo.BaR"
+    str_array( 2 ) = "Bar.foO"
+    str_array( 3 ) = "justfoo"
+
+    call assert( 100527721, find_string_in_split_array( str_array, "foo", ".",&
+                                                        1, idx ) )
+    call assert( 253438465, idx .eq. 1 )
+    call assert( 192693428, find_string_in_split_array( str_array, "foo", ".",&
+                                                        2, idx ) )
+    call assert( 522478622, idx .eq. 2 )
+    call assert( 634796967, .not. find_string_in_split_array( str_array,      &
+                              "foo", ".", 2, idx, case_sensitive = .true. ) )
+    call assert( 747115312, find_string_in_split_array( str_array, "BaR", ".",&
+                              2, idx, case_sensitive = .true. ) )
+    call assert( 859433657, idx .eq. 1 )
 
     call add_to_array( dbl_array, 43.0_musica_dk )
     call add_to_array( dbl_array, 31.5_musica_dk )
