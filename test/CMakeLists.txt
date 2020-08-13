@@ -37,7 +37,15 @@ add_std_test(domain_cell)
 add_test(NAME input_use_case_1 COMMAND integration/input_use_cases/1/run.sh)
 add_test(NAME input_use_case_2 COMMAND integration/input_use_cases/2/run.sh)
 add_test(NAME input_use_case_3 COMMAND integration/input_use_cases/3/run.sh)
+
+add_executable(integration_input_4_check
+               integration/input_use_cases/4/check_output.F90
+               test_common/output.F90)
+target_include_directories(integration_input_4_check PUBLIC ${CMAKE_BINARY_DIR}/src)
+target_link_libraries(integration_input_4_check musicalib)
 add_test(NAME input_use_case_4 COMMAND integration/input_use_cases/4/run.sh)
+add_test(NAME input_use_case_4b COMMAND integration/input_use_cases/4/run_b.sh)
+
 add_test(NAME input_use_case_5 COMMAND integration/input_use_cases/5/run.sh)
 
 ################################################################################
