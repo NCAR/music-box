@@ -15,6 +15,7 @@ module music_box_core
   use musica_emissions,                only : emissions_t
   use musica_evolving_conditions,      only : evolving_conditions_t
   use musica_io,                       only : io_t
+  use musica_loss,                     only : loss_t
 
   implicit none
   private
@@ -47,6 +48,8 @@ module music_box_core
     class(chemistry_core_t), pointer :: chemistry_core_ => null( )
     !> Emissions handler
     class(emissions_t), pointer :: emissions_ => null( )
+    !> First-order loss handler
+    class(loss_t), pointer :: loss_ => null( )
     !> Solve chemistry during the simulation
     logical :: solve_chemistry_ = .true.
     !> Output
@@ -95,6 +98,7 @@ contains
   !! Loads input data and initializes model components.
   function constructor( config_file_path ) result( new_obj )
 
+    use musica_array,                  only : merge_series
     use musica_config,                 only : config_t
     use musica_domain,                 only : domain_iterator_t
     use musica_domain_factory,         only : domain_builder
@@ -204,6 +208,10 @@ contains
     ! (chemical species and emissions rates must all be registered by now)
     new_obj%emissions_ => emissions_t( new_obj%domain_ )
 
+    ! set up the first-order loss handler
+    ! (chemical species and loss rate constants must all be registered by now)
+    new_obj%loss_ => loss_t( new_obj%domain_ )
+
     ! output the registered domain state variables
     call new_obj%domain_%output_registry( )
 
@@ -270,6 +278,9 @@ contains
 
         ! emit chemical species
         call this%emissions_%emit( this%state_, cell_iter, time_step__s )
+
+        ! remove chemical species
+        call this%loss_%do_loss( this%state_, cell_iter, time_step__s )
 
         ! solve the system for the current time and cell
         if( associated( this%chemistry_core_ ) .and.                          &
@@ -454,6 +465,7 @@ contains
         deallocate( this%evolving_conditions_ )
     if( associated( this%chemistry_core_ ) ) deallocate( this%chemistry_core_ )
     if( associated( this%emissions_      ) ) deallocate( this%emissions_      )
+    if( associated( this%loss_           ) ) deallocate( this%loss_           )
     if( associated( this%output_         ) ) deallocate( this%output_         )
 
   end subroutine finalize
@@ -476,82 +488,6 @@ contains
     write(*,*) ""
 
   end subroutine print_header
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  !> Merge to sets of values into a single set without duplicates
-  !!
-  !! Both sets must be arranged in increasing order
-  !!
-  function merge_series( a, b ) result( new_set )
-
-    !> New series
-    real(kind=musica_dk), allocatable :: new_set(:)
-    !> First series
-    real(kind=musica_dk), intent(in) :: a(:)
-    !> Second series
-    real(kind=musica_dk), intent(in) :: b(:)
-
-    real(kind=musica_dk) :: curr_val, val_a, val_b
-    integer :: n_total, i_a, i_b, i_c, n_a, n_b
-
-    n_a = size( a )
-    n_b = size( b )
-    if( n_a + n_b .eq. 0 ) then
-      allocate( new_set( 0 ) )
-      return
-    end if
-
-    curr_val = huge( 1.0_musica_dk )
-    if( n_a .gt. 0 ) curr_val = a( 1 )
-    if( n_b .gt. 0 ) then
-      if( b( 1 ) .lt. curr_val ) curr_val = b( 1 )
-    end if
-
-    i_a = 1
-    i_b = 1
-    n_total = 0
-    do while( i_a .le. n_a .or. i_b .le. n_b )
-      if( i_a .le. n_a ) then
-        val_a = a( i_a )
-      else
-        val_a = huge( 1.0_musica_dk )
-      end if
-      if( i_b .le. n_b ) then
-        val_b = b( i_b )
-      else
-        val_b = huge( 1.0_musica_dk )
-      end if
-      curr_val = min( val_a, val_b )
-      n_total = n_total + 1
-      if( val_a .le. curr_val ) i_a = i_a + 1
-      if( val_b .le. curr_val ) i_b = i_b + 1
-    end do
-
-    allocate( new_set( n_total ) )
-
-    i_a = 1
-    i_b = 1
-    n_total = 0
-    do while( i_a .le. n_a .or. i_b .le. n_b )
-      if( i_a .le. n_a ) then
-        val_a = a( i_a )
-      else
-        val_a = huge( 1.0_musica_dk )
-      end if
-      if( i_b .le. n_b ) then
-        val_b = b( i_b )
-      else
-        val_b = huge( 1.0_musica_dk )
-      end if
-      curr_val = min( val_a, val_b )
-      n_total = n_total + 1
-      new_set( n_total ) = curr_val
-      if( val_a .le. curr_val ) i_a = i_a + 1
-      if( val_b .le. curr_val ) i_b = i_b + 1
-    end do
-
-  end function merge_series
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

@@ -12,7 +12,8 @@ module musica_array
   implicit none
   private
 
-  public :: add_to_array, find_string_in_array, find_string_in_split_array
+  public :: add_to_array, find_string_in_array, find_string_in_split_array,   &
+            merge_series
 
   !> Add to array interface
   interface add_to_array
@@ -331,6 +332,82 @@ contains
                                          element_id, id, case_sensitive )
 
   end function find_string_in_split_array_string
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Merge to sets of values into a single set without duplicates
+  !!
+  !! Both sets must be arranged in increasing order
+  !!
+  function merge_series( a, b ) result( new_set )
+
+    !> New series
+    real(kind=musica_dk), allocatable :: new_set(:)
+    !> First series
+    real(kind=musica_dk), intent(in) :: a(:)
+    !> Second series
+    real(kind=musica_dk), intent(in) :: b(:)
+
+    real(kind=musica_dk) :: curr_val, val_a, val_b
+    integer :: n_total, i_a, i_b, i_c, n_a, n_b
+
+    n_a = size( a )
+    n_b = size( b )
+    if( n_a + n_b .eq. 0 ) then
+      allocate( new_set( 0 ) )
+      return
+    end if
+
+    curr_val = huge( 1.0_musica_dk )
+    if( n_a .gt. 0 ) curr_val = a( 1 )
+    if( n_b .gt. 0 ) then
+      if( b( 1 ) .lt. curr_val ) curr_val = b( 1 )
+    end if
+
+    i_a = 1
+    i_b = 1
+    n_total = 0
+    do while( i_a .le. n_a .or. i_b .le. n_b )
+      if( i_a .le. n_a ) then
+        val_a = a( i_a )
+      else
+        val_a = huge( 1.0_musica_dk )
+      end if
+      if( i_b .le. n_b ) then
+        val_b = b( i_b )
+      else
+        val_b = huge( 1.0_musica_dk )
+      end if
+      curr_val = min( val_a, val_b )
+      n_total = n_total + 1
+      if( val_a .le. curr_val ) i_a = i_a + 1
+      if( val_b .le. curr_val ) i_b = i_b + 1
+    end do
+
+    allocate( new_set( n_total ) )
+
+    i_a = 1
+    i_b = 1
+    n_total = 0
+    do while( i_a .le. n_a .or. i_b .le. n_b )
+      if( i_a .le. n_a ) then
+        val_a = a( i_a )
+      else
+        val_a = huge( 1.0_musica_dk )
+      end if
+      if( i_b .le. n_b ) then
+        val_b = b( i_b )
+      else
+        val_b = huge( 1.0_musica_dk )
+      end if
+      curr_val = min( val_a, val_b )
+      n_total = n_total + 1
+      new_set( n_total ) = curr_val
+      if( val_a .le. curr_val ) i_a = i_a + 1
+      if( val_b .le. curr_val ) i_b = i_b + 1
+    end do
+
+  end function merge_series
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
