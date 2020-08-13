@@ -197,13 +197,10 @@ interface
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Registers a state variable for each cell in the domain
-  function register_cell_state_variable( this, variable_name, units,          &
-      default_value, requestor ) result( new_mutator )
+  subroutine register_cell_state_variable( this, variable_name, units,        &
+      default_value, requestor )
     use musica_constants,              only : musica_dk
     import domain_t
-    import domain_state_mutator_t
-    !> Mutator for the new state variable
-    class(domain_state_mutator_t), pointer :: new_mutator
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -214,23 +211,17 @@ interface
     real(kind=musica_dk), intent(in) :: default_value
     !> Name of the model component requesting the variable
     character(len=*), intent(in) :: requestor
-  end function register_cell_state_variable
+  end subroutine register_cell_state_variable
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Registers a named collection of state variables for each cell in the
   !! domain
-  function register_cell_state_variable_set( this, variable_name, units,      &
-      default_value, component_names, requestor ) result( new_mutators )
+  subroutine register_cell_state_variable_set( this, variable_name, units,    &
+      default_value, component_names, requestor )
     use musica_constants,              only : musica_dk
     use musica_string,                 only : string_t
     import domain_t
-    import domain_state_mutator_ptr
-    !> Mutators for the new state variables
-    !!
-    !! The mutators are in the same order as the component names passed to
-    !! this function
-    class(domain_state_mutator_ptr), pointer :: new_mutators(:)
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -243,17 +234,13 @@ interface
     type(string_t), intent(in) :: component_names(:)
     !> Name of the model component requesting the variable
     character(len=*), intent(in) :: requestor
-  end function register_cell_state_variable_set
+  end subroutine register_cell_state_variable_set
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Registers a flag property for each cell in the domain
-  function register_cell_flag( this, flag_name, default_value, requestor )    &
-      result( new_mutator )
+  subroutine register_cell_flag( this, flag_name, default_value, requestor )
     import domain_t
-    import domain_state_mutator_t
-    !> Mutator for the new state variable
-    class(domain_state_mutator_t), pointer :: new_mutator
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -262,7 +249,7 @@ interface
     logical, intent(in) :: default_value
     !> Name of the model component requesting the variable
     character(len=*), intent(in) :: requestor
-  end function register_cell_flag
+  end subroutine register_cell_flag
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
