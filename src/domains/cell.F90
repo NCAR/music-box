@@ -274,16 +274,14 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Registers a variable for each cell in the domain
-  function register_cell_state_variable( this, variable_name, units,          &
-      default_value, requestor ) result( new_mutator )
+  subroutine register_cell_state_variable( this, variable_name, units,        &
+      default_value, requestor )
 
     use musica_array,                  only : add_to_array,                   &
                                               find_string_in_array
     use musica_assert,                 only : assert, assert_msg
     use musica_string,                 only : to_char
 
-    !> Mutator for the new state variable
-    class(domain_state_mutator_t), pointer :: new_mutator
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -296,7 +294,6 @@ contains
     character(len=*), intent(in) :: requestor
 
     integer :: property_id
-    type(registered_pair_t) :: new_pair
 
     call assert( 600322248, len( trim( variable_name ) ) .gt. 0 )
 
@@ -326,40 +323,20 @@ contains
       property_id = size( this%properties_ )
     end if
 
-    ! register the mutator
-    new_pair%owner_    = requestor
-    new_pair%property_ = this%properties_( property_id )
-    new_pair%type_     = kAllCellProperty
-    call add_registered_pair_to_array( this%mutators_, new_pair )
-
-    ! create the mutator
-    allocate( domain_cell_state_mutator_property_t :: new_mutator )
-    select type( new_mutator )
-      class is( domain_cell_state_mutator_property_t )
-        new_mutator%i_owner_    = size( this%mutators_ )
-        new_mutator%i_property_ = property_id
-    end select
-
-  end function register_cell_state_variable
+  end subroutine register_cell_state_variable
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Registers a named collection of state variables for each cell in the
   !! domain
-  function register_cell_state_variable_set( this, variable_name, units,      &
-      default_value, component_names, requestor ) result( new_mutators )
+  subroutine register_cell_state_variable_set( this, variable_name, units,    &
+      default_value, component_names, requestor )
 
     use musica_array,                  only : add_to_array,                   &
                                               find_string_in_array
     use musica_assert,                 only : assert, assert_msg
-    use musica_domain,                 only : domain_state_mutator_ptr
     use musica_string,                 only : string_t, to_char
 
-    !> Mutators for the new state variable
-    !!
-    !! The mutators are in the same order as the component names passed to
-    !! this function
-    class(domain_state_mutator_ptr), pointer :: new_mutators(:)
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the variable to create
@@ -373,8 +350,7 @@ contains
     !> Name of the model component requesting the variable
     character(len=*), intent(in) :: requestor
 
-    integer :: i_mutator, property_id
-    type(registered_pair_t) :: new_pair
+    integer :: i_prop, property_id
     type(string_t) :: full_name
 
     call assert( 152214984, len( trim( variable_name ) ) .gt. 0 )
@@ -383,66 +359,45 @@ contains
                      "register state variable set '"//trim( variable_name )// &
                      "' after a domain state has been created." )
 
-    allocate( new_mutators( size( component_names ) ) )
+    do i_prop = 1, size( component_names )
+      full_name = trim( variable_name )//"%"//component_names( i_prop )
 
-    do i_mutator = 1, size( new_mutators )
-      allocate( domain_cell_state_mutator_property_t ::                       &
-                new_mutators( i_mutator )%val_ )
-      select type( mutator => new_mutators( i_mutator )%val_ )
-        class is( domain_cell_state_mutator_property_t )
-          full_name = trim( variable_name )//"%"//component_names( i_mutator )
-
-          ! find the property or create it if it doesn't exist
-          if( find_string_in_array( this%properties_, full_name%to_char( ),   &
-                           property_id ) ) then
-            call assert_msg( 526855940, units .eq.                            &
-                                        this%property_units_( property_id ),  &
-                             "Unit mismatch for property '"//                 &
-                             full_name%to_char( )//"': '"//trim( units )//    &
-                             "' != '"//                                       &
-                             this%property_units_( property_id )%to_char( ) )
-            call assert_msg( 148356154, default_value .eq.                    &
-                             this%property_default_values_( property_id ),    &
-                             "Default value mismatch for property '"//        &
-                             trim( variable_name )//"': '"//trim( units )//   &
-                             "' != '"//                                       &
-                             to_char( this%property_default_values_(          &
-                                                             property_id ) ) )
-          else
-            call add_to_array( this%properties_, full_name%to_char( ) )
-            call add_to_array( this%property_units_, units )
-            call add_to_array( this%property_default_values_,            &
-                                    default_value )
-            property_id = size( this%properties_ )
-          end if
-
-          ! register the mutator
-          new_pair%owner_    = requestor
-          new_pair%property_ = this%properties_( property_id )
-          new_pair%type_     = kAllCellProperty
-          call add_registered_pair_to_array( this%mutators_, new_pair )
-
-          ! create the mutator
-          mutator%i_owner_    = size( this%mutators_ )
-          mutator%i_property_ = property_id
-      end select
+      ! find the property or create it if it doesn't exist
+      if( find_string_in_array( this%properties_, full_name%to_char( ),       &
+                                property_id ) ) then
+        call assert_msg( 526855940, units .eq.                                &
+                                    this%property_units_( property_id ),      &
+                         "Unit mismatch for property '"//                     &
+                         full_name%to_char( )//"': '"//trim( units )//        &
+                         "' != '"//                                           &
+                         this%property_units_( property_id )%to_char( ) )
+        call assert_msg( 148356154, default_value .eq.                        &
+                         this%property_default_values_( property_id ),        &
+                         "Default value mismatch for property '"//            &
+                         trim( variable_name )//"': '"//trim( units )//       &
+                         "' != '"//                                           &
+                         to_char( this%property_default_values_(              &
+                                                         property_id ) ) )
+      else
+        call add_to_array( this%properties_, full_name%to_char( ) )
+        call add_to_array( this%property_units_, units )
+        call add_to_array( this%property_default_values_, default_value )
+        property_id = size( this%properties_ )
+      end if
     end do
 
-  end function register_cell_state_variable_set
+  end subroutine register_cell_state_variable_set
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Registers a flag property for each cell in the domain
-  function register_cell_flag( this, flag_name, default_value, requestor )    &
-      result( new_mutator )
+  subroutine register_cell_flag( this, flag_name, default_value, requestor )
 
     use musica_array,                  only : add_to_array,                   &
                                               find_string_in_array
     use musica_assert,                 only : assert, assert_msg
     use musica_string,                 only : to_char
 
-    !> Mutator for the new state variable
-    class(domain_state_mutator_t), pointer :: new_mutator
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -453,7 +408,6 @@ contains
     character(len=*), intent(in) :: requestor
 
     integer :: flag_id
-    type(registered_pair_t) :: new_pair
 
     call assert( 209339722, len( trim( flag_name ) ) .gt. 0 )
 
@@ -474,21 +428,7 @@ contains
       flag_id = size( this%flags_ )
     end if
 
-    ! register the mutator
-    new_pair%owner_    = requestor
-    new_pair%property_ = this%flags_( flag_id )
-    new_pair%type_     = kAllCellFlag
-    call add_registered_pair_to_array( this%mutators_, new_pair )
-
-    ! create the mutator
-    allocate( domain_cell_state_mutator_flag_t :: new_mutator )
-    select type( new_mutator )
-      class is( domain_cell_state_mutator_flag_t )
-        new_mutator%i_owner_ = size( this%mutators_ )
-        new_mutator%i_flag_  = flag_id
-    end select
-
-  end function register_cell_flag
+  end subroutine register_cell_flag
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

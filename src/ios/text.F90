@@ -360,7 +360,6 @@ contains
     type(string_t) :: var_name
     type(string_t), allocatable :: split_name(:)
     integer :: i_col
-    class(domain_state_mutator_t), pointer :: mutator
 
     call assert_msg( 974120905, .not. this%is_output_, "Auto-mapping of "//   &
                      "text files is only available for input files." )
@@ -373,11 +372,10 @@ contains
         if( this%file_variable_units_( i_col ) .eq. "unknown" ) then
           this%file_variable_units_( i_col ) = "mol m-3 s-1"
         end if
-        mutator => domain%register_cell_state_variable( var_name%to_char( ),  & !- state variable name
-                                                        "mol m-3 s-1",        & !- MUSICA units
-                                                        0.0d0,                & !- default value
-                                                        my_name )
-        deallocate( mutator )
+        call domain%register_cell_state_variable( var_name%to_char( ),        & !- state variable name
+                                                  "mol m-3 s-1",              & !- MUSICA units
+                                                  0.0d0,                      & !- default value
+                                                  my_name )
       end if
       if( domain%is_cell_state_variable( var_name%to_char( ) ) ) then
         ! assume variables are in standard units if not otherwise specified
