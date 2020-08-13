@@ -3,6 +3,7 @@
 
 # whitelist things to copy
 !CMakeLists.txt
+!SetDefaults.cmake
 !src/
 !apps/
 !libs/
