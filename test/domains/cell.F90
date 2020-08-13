@@ -56,17 +56,21 @@ contains
     var_set_names(3) = "var 3"
 
     ! register
-    mut_ra  => domain%register_cell_state_variable( "ra", "s", 12.3_dk,       &
-                                                    my_name )
-    mut_rb  => domain%register_cell_state_variable( "rb", "K", 1.54_dk,       &
-                                                    my_name )
-    mut_set => domain%register_cell_state_variable_set( "my set",             &
-                                                        "Pa",                 &
-                                                        13.2_dk,              &
-                                                        var_set_names,        &
-                                                        my_name )
-    mut_la  => domain%register_cell_flag( "la", .true.,  my_name )
-    mut_lb  => domain%register_cell_flag( "lb", .false., my_name )
+    call domain%register_cell_state_variable( "ra", "s", 12.3_dk, my_name )
+    mut_ra => domain%cell_state_mutator( "ra", "s", my_name )
+    call domain%register_cell_state_variable( "rb", "K", 1.54_dk, my_name )
+    mut_rb => domain%cell_state_mutator( "rb", "K", my_name )
+    call domain%register_cell_state_variable_set( "my set",                   &
+                                                  "Pa",                       &
+                                                  13.2_dk,                    &
+                                                  var_set_names,              &
+                                                  my_name )
+    mut_set => domain%cell_state_set_mutator( "my set", "Pa", set_names,      &
+                                               my_name )
+    call domain%register_cell_flag( "la", .true.,  my_name )
+    mut_la  => domain%cell_flag_mutator( "la", my_name )
+    call domain%register_cell_flag( "lb", .false., my_name )
+    mut_lb  => domain%cell_flag_mutator( "lb", my_name )
 
     ! get mutators
     mut_ra2  => domain%cell_state_mutator( "ra", "s", my_name )

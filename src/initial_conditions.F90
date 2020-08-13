@@ -4,7 +4,7 @@
 !> \file
 !> The musica_initial_conditions module
 
-!> The set_initial_conditions and related functions
+!> set_initial_conditions and related functions
 module musica_initial_conditions
 
   use musica_config,                   only : config_t
