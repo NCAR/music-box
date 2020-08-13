@@ -309,6 +309,9 @@ contains
       this%domain_variable_names_( i_var ) =                                  &
           this%domain_variable_names_( i_var )%replace( "CONC.",              &
                                                         "chemical_species%" )
+      this%domain_variable_names_( i_var ) =                                  &
+          this%domain_variable_names_( i_var )%replace( "PHOT.",              &
+                                               "photolysis_rate_constants%" )
       var_split = this%domain_variable_names_( i_var )%split( "." )
       if( size( var_split ) .gt. 1 ) then
         this%domain_variable_names_( i_var ) = var_split(1)
