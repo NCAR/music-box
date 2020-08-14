@@ -44,6 +44,8 @@ module musica_domain_cell
   !> Model domain for a collection of unrelated cells or boxes
   type, extends(domain_t) :: domain_cell_t
     private
+    !> Flag indicating that no more properties can be registered
+    logical :: is_locked = .false.
     !> Number of cells in the domain
     integer(kind=musica_ik) :: number_of_cells_ = 1
     !> Names of the registered cell properties
@@ -96,6 +98,16 @@ module musica_domain_cell
     procedure :: cell_state_set_accessor
     !> Gets an accessor for a flag for all cells
     procedure :: cell_flag_accessor
+    !> @}
+
+    !> Checks whether properties have been registered
+    !! @{
+
+    !> Returns whether a state variable has been registered for all cells
+    procedure :: is_cell_state_variable
+    !> Returns whether a flag has been registered for all cells
+    procedure :: is_cell_flag
+
     !> @}
 
     !> Gets units for registered properties
@@ -230,9 +242,12 @@ contains
     !> New domain state
     class(domain_state_t), pointer :: new_state
     !> Domain
-    class(domain_cell_t), intent(in) :: this
+    class(domain_cell_t), intent(inout) :: this
 
     integer :: n_prop, n_flag, i_prop, i_flag
+
+    ! make sure no properties can be registered after a state has been created
+    this%is_locked = .true.
 
     n_prop = size( this%properties_ )
     n_flag = size( this%flags_ )
@@ -259,14 +274,14 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Registers a variable for each cell in the domain
-  function register_cell_state_variable( this, variable_name, units,          &
-      default_value, requestor ) result( new_mutator )
+  subroutine register_cell_state_variable( this, variable_name, units,        &
+      default_value, requestor )
 
+    use musica_array,                  only : add_to_array,                   &
+                                              find_string_in_array
     use musica_assert,                 only : assert, assert_msg
     use musica_string,                 only : to_char
 
-    !> Mutator for the new state variable
-    class(domain_state_mutator_t), pointer :: new_mutator
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -279,63 +294,49 @@ contains
     character(len=*), intent(in) :: requestor
 
     integer :: property_id
-    type(registered_pair_t) :: new_pair
 
     call assert( 600322248, len( trim( variable_name ) ) .gt. 0 )
 
+    call assert_msg( 366771761, .not. this%is_locked, "Attempting to "//      &
+                     "register state variable '"//trim( variable_name )//     &
+                     "' after a domain state has been created." )
+
     ! find the property or create it if it doesn't exist
-    if( find_string( this%properties_, variable_name, property_id ) ) then
-      call assert_msg( 526855940, units .eq.                                &
-                                  this%property_units_( property_id ),      &
-                       "Unit mismatch for property '"//trim( variable_name )&
-                       //"': '"//trim( units )//"' != '"//                  &
+    if( find_string_in_array( this%properties_,                               &
+                              variable_name, property_id ) ) then
+      call assert_msg( 526855940, units .eq.                                  &
+                                  this%property_units_( property_id ),        &
+                       "Unit mismatch for property '"//trim( variable_name )  &
+                       //"': '"//trim( units )//"' != '"//                    &
                        this%property_units_( property_id )%to_char( ) )
-      call assert_msg( 559943613, default_value .eq.                        &
-                        this%property_default_values_( property_id ),       &
-                       "Default value mismatch for property '"//            &
-                       trim( variable_name )//"': '"//trim( units )//       &
-                       "' != '"//                                           &
-                       to_char( this%property_default_values_(              &
+      call assert_msg( 559943613, default_value .eq.                          &
+                        this%property_default_values_( property_id ),         &
+                       "Default value mismatch for property '"//              &
+                       trim( variable_name )//"': '"//trim( units )//         &
+                       "' != '"//                                             &
+                       to_char( this%property_default_values_(                &
                                                           property_id ) ) )
     else
-      call add_string_to_array( this%properties_, variable_name )
-      call add_string_to_array( this%property_units_, units )
-      call add_real_to_array( this%property_default_values_, default_value )
+      call add_to_array( this%properties_, variable_name )
+      call add_to_array( this%property_units_, units )
+      call add_to_array( this%property_default_values_, default_value )
       property_id = size( this%properties_ )
     end if
 
-    ! register the mutator
-    new_pair%owner_    = requestor
-    new_pair%property_ = this%properties_( property_id )
-    new_pair%type_     = kAllCellProperty
-    call add_registered_pair_to_array( this%mutators_, new_pair )
-
-    ! create the mutator
-    allocate( domain_cell_state_mutator_property_t :: new_mutator )
-    select type( new_mutator )
-      class is( domain_cell_state_mutator_property_t )
-        new_mutator%i_owner_    = size( this%mutators_ )
-        new_mutator%i_property_ = property_id
-    end select
-
-  end function register_cell_state_variable
+  end subroutine register_cell_state_variable
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Registers a named collection of state variables for each cell in the
   !! domain
-  function register_cell_state_variable_set( this, variable_name, units,      &
-      default_value, component_names, requestor ) result( new_mutators )
+  subroutine register_cell_state_variable_set( this, variable_name, units,    &
+      default_value, component_names, requestor )
 
+    use musica_array,                  only : add_to_array,                   &
+                                              find_string_in_array
     use musica_assert,                 only : assert, assert_msg
-    use musica_domain,                 only : domain_state_mutator_ptr
     use musica_string,                 only : string_t, to_char
 
-    !> Mutators for the new state variable
-    !!
-    !! The mutators are in the same order as the component names passed to
-    !! this function
-    class(domain_state_mutator_ptr), pointer :: new_mutators(:)
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the variable to create
@@ -349,70 +350,54 @@ contains
     !> Name of the model component requesting the variable
     character(len=*), intent(in) :: requestor
 
-    integer :: i_mutator, property_id
-    type(registered_pair_t) :: new_pair
+    integer :: i_prop, property_id
     type(string_t) :: full_name
 
     call assert( 152214984, len( trim( variable_name ) ) .gt. 0 )
 
-    allocate( new_mutators( size( component_names ) ) )
+    call assert_msg( 298856883, .not. this%is_locked, "Attempting to "//      &
+                     "register state variable set '"//trim( variable_name )// &
+                     "' after a domain state has been created." )
 
-    do i_mutator = 1, size( new_mutators )
-      allocate( domain_cell_state_mutator_property_t ::                       &
-                new_mutators( i_mutator )%val_ )
-      select type( mutator => new_mutators( i_mutator )%val_ )
-        class is( domain_cell_state_mutator_property_t )
-          full_name = trim( variable_name )//"%"//component_names( i_mutator )
+    do i_prop = 1, size( component_names )
+      full_name = trim( variable_name )//"%"//component_names( i_prop )
 
-          ! find the property or create it if it doesn't exist
-          if( find_string( this%properties_, full_name%to_char( ),            &
-                           property_id ) ) then
-            call assert_msg( 526855940, units .eq.                            &
-                                        this%property_units_( property_id ),  &
-                             "Unit mismatch for property '"//                 &
-                             full_name%to_char( )//"': '"//trim( units )//    &
-                             "' != '"//                                       &
-                             this%property_units_( property_id )%to_char( ) )
-            call assert_msg( 148356154, default_value .eq.                    &
-                             this%property_default_values_( property_id ),    &
-                             "Default value mismatch for property '"//        &
-                             trim( variable_name )//"': '"//trim( units )//   &
-                             "' != '"//                                       &
-                             to_char( this%property_default_values_(          &
-                                                             property_id ) ) )
-          else
-            call add_string_to_array( this%properties_, full_name%to_char( ) )
-            call add_string_to_array( this%property_units_, units )
-            call add_real_to_array( this%property_default_values_,            &
-                                    default_value )
-            property_id = size( this%properties_ )
-          end if
-
-          ! register the mutator
-          new_pair%owner_    = requestor
-          new_pair%property_ = this%properties_( property_id )
-          new_pair%type_     = kAllCellProperty
-          call add_registered_pair_to_array( this%mutators_, new_pair )
-
-          ! create the mutator
-          mutator%i_owner_    = size( this%mutators_ )
-          mutator%i_property_ = property_id
-      end select
+      ! find the property or create it if it doesn't exist
+      if( find_string_in_array( this%properties_, full_name%to_char( ),       &
+                                property_id ) ) then
+        call assert_msg( 526855940, units .eq.                                &
+                                    this%property_units_( property_id ),      &
+                         "Unit mismatch for property '"//                     &
+                         full_name%to_char( )//"': '"//trim( units )//        &
+                         "' != '"//                                           &
+                         this%property_units_( property_id )%to_char( ) )
+        call assert_msg( 148356154, default_value .eq.                        &
+                         this%property_default_values_( property_id ),        &
+                         "Default value mismatch for property '"//            &
+                         trim( variable_name )//"': '"//trim( units )//       &
+                         "' != '"//                                           &
+                         to_char( this%property_default_values_(              &
+                                                         property_id ) ) )
+      else
+        call add_to_array( this%properties_, full_name%to_char( ) )
+        call add_to_array( this%property_units_, units )
+        call add_to_array( this%property_default_values_, default_value )
+        property_id = size( this%properties_ )
+      end if
     end do
 
-  end function register_cell_state_variable_set
+  end subroutine register_cell_state_variable_set
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Registers a flag property for each cell in the domain
-  function register_cell_flag( this, flag_name, default_value, requestor )    &
-      result( new_mutator )
+  subroutine register_cell_flag( this, flag_name, default_value, requestor )
 
+    use musica_array,                  only : add_to_array,                   &
+                                              find_string_in_array
     use musica_assert,                 only : assert, assert_msg
     use musica_string,                 only : to_char
 
-    !> Mutator for the new state variable
-    class(domain_state_mutator_t), pointer :: new_mutator
     !> Domain
     class(domain_cell_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -423,38 +408,27 @@ contains
     character(len=*), intent(in) :: requestor
 
     integer :: flag_id
-    type(registered_pair_t) :: new_pair
 
     call assert( 209339722, len( trim( flag_name ) ) .gt. 0 )
 
+    call assert_msg( 242923858, .not. this%is_locked, "Attempting to "//      &
+                     "regsiter state flag '"//trim( flag_name )//             &
+                     "' after a domain state has been created." )
+
     ! find the flag or create it if it doesn't exist
-    if( find_string( this%flags_, flag_name, flag_id ) ) then
+    if( find_string_in_array( this%flags_, flag_name, flag_id ) ) then
       call assert_msg( 418849550, default_value .eqv.                         &
                        this%flag_default_values_( flag_id ),                  &
                        "Default value mismatch for flag '"//                  &
                        trim( flag_name )//"' != '"//                          &
                        to_char( this%flag_default_values_( flag_id ) ) )
     else
-      call add_string_to_array( this%flags_, flag_name )
-      call add_logical_to_array( this%flag_default_values_, default_value )
+      call add_to_array( this%flags_, flag_name )
+      call add_to_array( this%flag_default_values_, default_value )
       flag_id = size( this%flags_ )
     end if
 
-    ! register the mutator
-    new_pair%owner_    = requestor
-    new_pair%property_ = this%flags_( flag_id )
-    new_pair%type_     = kAllCellFlag
-    call add_registered_pair_to_array( this%mutators_, new_pair )
-
-    ! create the mutator
-    allocate( domain_cell_state_mutator_flag_t :: new_mutator )
-    select type( new_mutator )
-      class is( domain_cell_state_mutator_flag_t )
-        new_mutator%i_owner_ = size( this%mutators_ )
-        new_mutator%i_flag_  = flag_id
-    end select
-
-  end function register_cell_flag
+  end subroutine register_cell_flag
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -463,7 +437,8 @@ contains
   function cell_state_mutator( this, variable_name, units, requestor )        &
       result( new_mutator )
 
-    use musica_assert,                 only : assert, die_msg
+    use musica_array,                  only : find_string_in_array
+    use musica_assert,                 only : assert, assert_msg, die_msg
     use musica_string,                 only : string_t
 
     !> Accessor for the requested state variable
@@ -483,11 +458,19 @@ contains
     call assert( 680476255, len( trim( variable_name ) ) .gt. 0 )
 
     ! find the property or return an error if not found
-    if( .not. find_string( this%properties_, variable_name, property_id ) )   &
-      then
+    if( .not. find_string_in_array( this%properties_,                         &
+                                    variable_name, property_id ) ) then
       call die_msg( 905112945, "Property '"//trim( variable_name )//          &
                     "' requested by '"//trim( requestor )//"' not found." )
     end if
+
+    ! make sure the units match
+    call assert_msg( 520682967,                                               &
+                     units .eq. this%property_units_( property_id ),          &
+                     "Try to register mutator for '"//                        &
+                     this%properties_( property_id )%to_char( )//"' ['"//     &
+                     this%property_units_( property_id )%to_char( )//         &
+                     "] with non-standard units '"//trim( units )//"'" )
 
     ! register the mutator
     new_pair%owner_    = requestor
@@ -535,9 +518,6 @@ contains
     call assert( 394642233, len( trim( variable_name ) ) .gt. 0 )
 
     num_props = set_length( this%properties_, variable_name )
-    call assert_msg( 291451281, num_props .gt. 0,                             &
-                     "Could not find property set '"//trim( variable_name )// &
-                     "' requested by '"//trim( requestor )//"'" )
 
     allocate( component_names( num_props ) )
     allocate( new_mutators(    num_props ) )
@@ -553,6 +533,14 @@ contains
                                                     property_id ) )
           component_names( i_mutator ) =                                      &
             set_element_name( this%properties_, variable_name, i_mutator )
+
+          ! make sure the units match
+          call assert_msg( 728525792,                                         &
+                     units .eq. this%property_units_( property_id ),          &
+                     "Try to register mutator for '"//                        &
+                     this%properties_( property_id )%to_char( )//"' ['"//     &
+                     this%property_units_( property_id )%to_char( )//         &
+                     "] with non-standard units '"//trim( units )//"'" )
 
           ! register the mutator
           new_pair%owner_    = requestor
@@ -574,6 +562,7 @@ contains
   function cell_flag_mutator( this, flag_name, requestor )                    &
       result( new_mutator )
 
+    use musica_array,                  only : find_string_in_array
     use musica_assert,                 only : assert, die_msg
 
     !> Accessor for the requested flag
@@ -591,7 +580,7 @@ contains
     call assert( 284229422, len( trim( flag_name ) ) .gt. 0 )
 
     ! find the flag or return an error if not found
-    if( .not. find_string( this%flags_, flag_name, flag_id ) ) then
+    if( .not. find_string_in_array( this%flags_, flag_name, flag_id ) ) then
       call die_msg( 614014616, "Flag '"//trim( flag_name )//                  &
                     "' requested by '"//trim( requestor )//"' not found." )
     end if
@@ -619,7 +608,8 @@ contains
   function cell_state_accessor( this, variable_name, units, requestor )       &
       result( new_accessor )
 
-    use musica_assert,                 only : assert, die_msg
+    use musica_array,                  only : find_string_in_array
+    use musica_assert,                 only : assert, assert_msg, die_msg
     use musica_string,                 only : string_t
 
     !> Accessor for the requested state variable
@@ -639,11 +629,19 @@ contains
     call assert( 245885124, len( trim( variable_name ) ) .gt. 0 )
 
     ! find the property or return an error if not found
-    if( .not. find_string( this%properties_, variable_name, property_id ) )   &
-      then
+    if( .not. find_string_in_array( this%properties_,                         &
+                                    variable_name, property_id ) ) then
       call die_msg( 458539961, "Property '"//trim( variable_name )//          &
                     "' requested by '"//trim( requestor )//"' not found." )
     end if
+
+    ! make sure the units match
+    call assert_msg( 330373425,                                               &
+                     units .eq. this%property_units_( property_id ),          &
+                     "Try to register accessor for '"//                       &
+                     this%properties_( property_id )%to_char( )//"' ['"//     &
+                     this%property_units_( property_id )%to_char( )//         &
+                     "] with non-standard units '"//trim( units )//"'" )
 
     ! register the accessor
     new_pair%owner_    = requestor
@@ -691,9 +689,6 @@ contains
     call assert( 127187550, len( trim( variable_name ) ) .gt. 0 )
 
     num_props = set_length( this%properties_, variable_name )
-    call assert_msg( 384783104, num_props .gt. 0,                             &
-                     "Could not find property set '"//trim( variable_name )// &
-                     "' requested by '"//trim( requestor )//"'" )
 
     allocate( component_names( num_props ) )
     allocate( new_accessors(   num_props ) )
@@ -709,6 +704,14 @@ contains
                                                     property_id ) )
           component_names( i_accessor ) =                                     &
             set_element_name( this%properties_, variable_name, i_accessor )
+
+          ! make sure the units match
+          call assert_msg( 276345934,                                         &
+                     units .eq. this%property_units_( property_id ),          &
+                     "Try to register accessor for '"//                       &
+                     this%properties_( property_id )%to_char( )//"' ['"//     &
+                     this%property_units_( property_id )%to_char( )//         &
+                     "] with non-standard units '"//trim( units )//"'" )
 
           ! register the accessor
           new_pair%owner_    = requestor
@@ -730,6 +733,7 @@ contains
   function cell_flag_accessor( this, flag_name, requestor )                   &
       result( new_accessor )
 
+    use musica_array,                  only : find_string_in_array
     use musica_assert,                 only : assert, die_msg
 
     !> Accessor for the requested flag
@@ -747,7 +751,7 @@ contains
     call assert( 539062132, len( trim( flag_name ) ) .gt. 0 )
 
     ! find the flag or return an error if not found
-    if( .not. find_string( this%flags_, flag_name, flag_id ) ) then
+    if( .not. find_string_in_array( this%flags_, flag_name, flag_id ) ) then
       call die_msg( 483129107, "Flag '"//trim( flag_name )//                  &
                     "' requested by '"//trim( requestor )//"' not found." )
     end if
@@ -770,9 +774,49 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+  !> Returns whether a state variable has been registered for all cells
+  logical function is_cell_state_variable( this, variable_name )
+
+    use musica_array,                  only : find_string_in_array
+    use musica_string,                 only : string_t
+
+    !> Domain
+    class(domain_cell_t), intent(in) :: this
+    !> Name of the variable to look for
+    character(len=*), intent(in) :: variable_name
+
+    integer(kind=musica_ik) :: var_id
+
+    is_cell_state_variable =                                                  &
+        find_string_in_array( this%properties_, variable_name, var_id )
+
+  end function is_cell_state_variable
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Returns whether a flag has been registered for all cells
+  logical function is_cell_flag( this, flag_name )
+
+    use musica_array,                  only : find_string_in_array
+    use musica_string,                 only : string_t
+
+    !> Domain
+    class(domain_cell_t), intent(in) :: this
+    !> Name of the flag to look for
+    character(len=*), intent(in) :: flag_name
+
+    integer(kind=musica_ik) :: flag_id
+
+    is_cell_flag = find_string_in_array( this%flags_, flag_name, flag_id )
+
+  end function is_cell_flag
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   !> Gets the units for a registered state variable for all cells
   function cell_state_units( this, variable_name )
 
+    use musica_array,                  only : find_string_in_array
     use musica_assert,                 only : assert, die_msg
     use musica_string,                 only : string_t
 
@@ -788,7 +832,8 @@ contains
     call assert( 425563855, len( trim( variable_name ) ) .gt. 0 )
 
     ! find the variable or return an error if not found
-    if( .not. find_string( this%properties_, variable_name, var_id ) ) then
+    if( .not. find_string_in_array( this%properties_,                         &
+                                    variable_name, var_id ) ) then
       call die_msg( 790830723, "Variable '"//trim( variable_name )//          &
                     "' not found" )
     end if
@@ -814,6 +859,7 @@ contains
       class is( domain_cell_iterator_t )
         cell_iterator%last_cell_ = this%number_of_cells_
     end select
+
   end function cell_iterator
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1105,113 +1151,6 @@ contains
     array( size( array ) )       = new_pair
 
   end subroutine add_registered_pair_to_array
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  !> Adds a string to an array of string
-  subroutine add_string_to_array( array, new_string )
-
-    use musica_assert,                 only : assert
-
-    !> Array to add to
-    type(string_t), allocatable, intent(inout) :: array(:)
-    !> String to add to array
-    character(len=*), intent(in) :: new_string
-
-    type(string_t), allocatable :: temp_strings(:)
-
-    ! this could be made more efficient if necessary
-
-    call assert( 229830677, allocated( array ) )
-    allocate( temp_strings( size( array ) ) )
-    temp_strings(:) = array(:)
-    deallocate( array )
-    allocate( array( size( temp_strings ) + 1 ) )
-    array( :size( temp_strings ) ) = temp_strings(:)
-    array( size( array ) ) = trim( new_string )
-
-  end subroutine add_string_to_array
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  !> Adds a real to an array of reals
-  subroutine add_real_to_array( array, new_real )
-
-    use musica_assert,                 only : assert
-
-    !> Array to add to
-    real(kind=musica_dk), allocatable, intent(inout) :: array(:)
-    !> Real number to add to array
-    real(kind=musica_dk), intent(in) :: new_real
-
-    real(kind=musica_dk), allocatable :: temp_reals(:)
-
-    ! this could be made more efficient if necessary
-
-    call assert( 626692375, allocated( array ) )
-    allocate( temp_reals( size( array ) ) )
-    temp_reals(:) = array(:)
-    deallocate( array )
-    allocate( array( size( temp_reals ) + 1 ) )
-    array( :size( temp_reals ) ) = temp_reals(:)
-    array( size( array ) ) = new_real
-
-  end subroutine add_real_to_array
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  !> Adds a logical to an array of logicals
-  subroutine add_logical_to_array( array, new_logical )
-
-    use musica_assert,                 only : assert
-
-    !> Array to add to
-    logical, allocatable, intent(inout) :: array(:)
-    !> Logical to add to array
-    logical, intent(in) :: new_logical
-
-    logical, allocatable :: temp_logicals(:)
-
-    ! this could be make more efficient if necessary
-
-    call assert( 217010450, allocated( array ) )
-    allocate( temp_logicals( size( array ) ) )
-    temp_logicals(:) = array(:)
-    deallocate( array )
-    allocate( array( size( temp_logicals ) + 1 ) )
-    array( :size( temp_logicals ) ) = temp_logicals(:)
-    array( size( array ) ) = new_logical
-
-  end subroutine add_logical_to_array
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  !> Finds a string in a string array (case insensitive)
-  logical function find_string( array, string, id )
-
-    !> Array to search
-    type(string_t), intent(in) :: array(:)
-    !> String to search for
-    character(len=*), intent(in) :: string
-    !> Index of located string
-    integer(kind=musica_ik), intent(out) :: id
-
-    type(string_t) :: temp_string
-    integer :: i_str
-
-    id = 0
-    find_string = .false.
-    temp_string = trim( string )
-    temp_string = temp_string%to_lower( )
-    do i_str = 1, size( array )
-      if( temp_string .eq. array( i_str )%to_lower( ) ) then
-        id = i_str
-        find_string = .true.
-        exit
-      end if
-    end do
-
-  end function find_string
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

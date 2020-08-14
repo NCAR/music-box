@@ -90,6 +90,16 @@ module musica_domain
 
     !> @}
 
+    !> Check if a property has been registered
+    !! @{
+
+    !> Check for a state variable for all cells
+    procedure(is_cell_state_variable), deferred :: is_cell_state_variable
+    !> Check for a flag for all cells
+    procedure(is_cell_flag), deferred :: is_cell_flag
+
+    !> @}
+
     !> Gets units for registered properties
     !! @{
 
@@ -137,26 +147,36 @@ module musica_domain
   !> Domain pointer
   type domain_ptr
     class(domain_t), pointer :: val_ => null( )
+  contains
+    final :: domain_ptr_finalize
   end type domain_ptr
 
   !> State pointer
   type domain_state_ptr
     class(domain_state_t), pointer :: val_ => null( )
+  contains
+    final :: domain_state_ptr_finalize
   end type domain_state_ptr
 
   !> Mutator pointer
   type domain_state_mutator_ptr
     class(domain_state_mutator_t), pointer :: val_ => null( )
+  contains
+    final :: domain_state_mutator_ptr_finalize
   end type domain_state_mutator_ptr
 
   !> Accessor pointer
   type domain_state_accessor_ptr
     class(domain_state_accessor_t), pointer :: val_ => null( )
+  contains
+    final :: domain_state_accessor_ptr_finalize
   end type domain_state_accessor_ptr
 
   !> Iterator pointer
   type domain_iterator_ptr
     class(domain_iterator_t), pointer :: val_ => null( )
+  contains
+    final :: domain_iterator_ptr_finalize
   end type domain_iterator_ptr
 
   !> @}
@@ -171,19 +191,16 @@ interface
     !> New domain state
     class(domain_state_t), pointer :: new_state
     !> Domain
-    class(domain_t), intent(in) :: this
+    class(domain_t), intent(inout) :: this
   end function new_state
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Registers a state variable for each cell in the domain
-  function register_cell_state_variable( this, variable_name, units,          &
-      default_value, requestor ) result( new_mutator )
+  subroutine register_cell_state_variable( this, variable_name, units,        &
+      default_value, requestor )
     use musica_constants,              only : musica_dk
     import domain_t
-    import domain_state_mutator_t
-    !> Mutator for the new state variable
-    class(domain_state_mutator_t), pointer :: new_mutator
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -194,23 +211,17 @@ interface
     real(kind=musica_dk), intent(in) :: default_value
     !> Name of the model component requesting the variable
     character(len=*), intent(in) :: requestor
-  end function register_cell_state_variable
+  end subroutine register_cell_state_variable
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Registers a named collection of state variables for each cell in the
   !! domain
-  function register_cell_state_variable_set( this, variable_name, units,      &
-      default_value, component_names, requestor ) result( new_mutators )
+  subroutine register_cell_state_variable_set( this, variable_name, units,    &
+      default_value, component_names, requestor )
     use musica_constants,              only : musica_dk
     use musica_string,                 only : string_t
     import domain_t
-    import domain_state_mutator_ptr
-    !> Mutators for the new state variables
-    !!
-    !! The mutators are in the same order as the component names passed to
-    !! this function
-    class(domain_state_mutator_ptr), pointer :: new_mutators(:)
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -223,17 +234,13 @@ interface
     type(string_t), intent(in) :: component_names(:)
     !> Name of the model component requesting the variable
     character(len=*), intent(in) :: requestor
-  end function register_cell_state_variable_set
+  end subroutine register_cell_state_variable_set
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Registers a flag property for each cell in the domain
-  function register_cell_flag( this, flag_name, default_value, requestor )    &
-      result( new_mutator )
+  subroutine register_cell_flag( this, flag_name, default_value, requestor )
     import domain_t
-    import domain_state_mutator_t
-    !> Mutator for the new state variable
-    class(domain_state_mutator_t), pointer :: new_mutator
     !> Domain
     class(domain_t), intent(inout) :: this
     !> Name of the state variable to create
@@ -242,7 +249,7 @@ interface
     logical, intent(in) :: default_value
     !> Name of the model component requesting the variable
     character(len=*), intent(in) :: requestor
-  end function register_cell_flag
+  end subroutine register_cell_flag
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -370,6 +377,30 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+  !> Returns whether a state variable has been registered for all cells
+  logical function is_cell_state_variable( this, variable_name )
+    use musica_string,                 only : string_t
+    import domain_t
+    !> Domain
+    class(domain_t), intent(in) :: this
+    !> Name of the variable to look for
+    character(len=*), intent(in) :: variable_name
+  end function is_cell_state_variable
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Returns whether a flag has been registered for all cells
+  logical function is_cell_flag( this, flag_name )
+    use musica_string,                 only : string_t
+    import domain_t
+    !> Domain
+    class(domain_t), intent(in) :: this
+    !> Name of the flag to look for
+    character(len=*), intent(in) :: flag_name
+  end function is_cell_flag
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   !> Gets the units for a registered state variable for all cells
   function cell_state_units( this, variable_name )
     use musica_string,                 only : string_t
@@ -447,5 +478,69 @@ interface
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 end interface
+
+contains
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Finalize pointer
+  subroutine domain_ptr_finalize( this )
+
+    !> Domain pointer
+    type(domain_ptr), intent(inout) :: this
+
+    if( associated( this%val_ ) ) deallocate( this%val_ )
+
+  end subroutine domain_ptr_finalize
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Finalize pointer
+  subroutine domain_state_ptr_finalize( this )
+
+    !> Domain pointer
+    type(domain_state_ptr), intent(inout) :: this
+
+    if( associated( this%val_ ) ) deallocate( this%val_ )
+
+  end subroutine domain_state_ptr_finalize
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Finalize pointer
+  subroutine domain_state_mutator_ptr_finalize( this )
+
+    !> Domain pointer
+    type(domain_state_mutator_ptr), intent(inout) :: this
+
+    if( associated( this%val_ ) ) deallocate( this%val_ )
+
+  end subroutine domain_state_mutator_ptr_finalize
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Finalize pointer
+  subroutine domain_state_accessor_ptr_finalize( this )
+
+    !> Domain pointer
+    type(domain_state_accessor_ptr), intent(inout) :: this
+
+    if( associated( this%val_ ) ) deallocate( this%val_ )
+
+  end subroutine domain_state_accessor_ptr_finalize
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Finalize pointer
+  subroutine domain_iterator_ptr_finalize( this )
+
+    !> Domain pointer
+    type(domain_iterator_ptr), intent(inout) :: this
+
+    if( associated( this%val_ ) ) deallocate( this%val_ )
+
+  end subroutine domain_iterator_ptr_finalize
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 end module musica_domain
