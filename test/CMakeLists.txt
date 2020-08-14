@@ -47,5 +47,6 @@ add_test(NAME input_use_case_4 COMMAND integration/input_use_cases/4/run.sh)
 add_test(NAME input_use_case_4b COMMAND integration/input_use_cases/4/run_b.sh)
 
 add_test(NAME input_use_case_5 COMMAND integration/input_use_cases/5/run.sh)
+add_test(NAME input_use_case_6 COMMAND integration/input_use_cases/6/run.sh)
 
 ################################################################################

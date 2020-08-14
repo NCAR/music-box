@@ -22,6 +22,10 @@ module musica_io_text
 
   !> Maximum length of a text file line
   integer, parameter :: kMaxFileLine = 5000
+  !> Flag for rows
+  integer, parameter :: kRows = 1
+  !> Flag for columns
+  integer, parameter :: kColumns = 2
 
   !> Private input/output variable type
   type :: io_var_t
@@ -61,6 +65,8 @@ module musica_io_text
     integer :: file_unit_ = -1
     !> Delimiter for text file
     type(string_t) :: delimiter_
+    !> Indicator of whether the time axis is along rows or columns
+    integer :: time_axis_ = kRows
     !> File variable names
     type(string_t), allocatable :: file_variable_names_(:)
     !> File variable units
@@ -162,8 +168,6 @@ contains
                                temp_str%to_char( ) )
     end if
 
-    call config%get( "delimiter", new_obj%delimiter_, my_name, default = "," )
-
     ! file name
     call config%get( "file name", new_obj%file_path_, my_name, found = found )
     if( .not. found ) then
@@ -173,6 +177,18 @@ contains
       else
         new_obj%file_path_ = "output.csv"
       end if
+    end if
+
+    ! file structure
+    call config%get( "delimiter", new_obj%delimiter_, my_name, default = "," )
+    call config%get( "time axis", temp_str, my_name, default = "rows" )
+    if( temp_str .eq. "rows" ) then
+      new_obj%time_axis_ = kRows
+    else if( temp_str .eq. "columns" ) then
+      new_obj%time_axis_ = kColumns
+    else
+      call die_msg( 935743676, "Invalid time axis specified for text file "// &
+                    new_obj%file_path_%to_char( )//": "//temp_str%to_char( ) )
     end if
 
     ! initialize io variables
@@ -200,7 +216,7 @@ contains
   !> Load input data variable names, units and data
   subroutine load_input_file_data( this, config )
 
-    use musica_assert,                 only : assert_msg
+    use musica_assert,                 only : assert, assert_msg, die
     use musica_config,                 only : config_t
     use musica_io,                     only : get_file_unit, free_file_unit
 
@@ -211,31 +227,42 @@ contains
 
     character(len=kMaxFileLine) :: line
     logical :: found
-    integer(kind=musica_ik) :: io, i_var, i_line, n_lines, n_var
+    integer(kind=musica_ik) :: io, i_var, i_time, n_times, n_var
     type(string_t) :: temp_str
     type(string_t), allocatable :: values(:)
 
-    ! read column (variable) names
+    ! read variable names
     this%file_unit_ = get_file_unit( )
     open( unit = this%file_unit_, file = this%file_path_%to_char( ),          &
           action = 'READ', iostat = io )
     call assert_msg( 708186002, io .eq. 0, "Error opening file '"//           &
                      this%file_path_%to_char( ) )
     this%is_open_ = .true.
-    read( this%file_unit_, '(a)', iostat = io ) line
-    call assert_msg( 196262051, io .eq. 0, "Error reading header of file '"// &
+    if( this%time_axis_ .eq. kRows ) then
+      read( this%file_unit_, '(a)', iostat = io ) line
+      call assert_msg( 196262051, io .eq. 0, "Error reading header of file '"// &
                      this%file_path_%to_char( ) )
-    temp_str = line
-    this%file_variable_names_   = temp_str%split( this%delimiter_ )
-    do i_var = 1, size( this%file_variable_names_ )
+      temp_str = line
+      this%file_variable_names_   = temp_str%split( this%delimiter_ )
+    else if( this%time_axis_ .eq. kColumns ) then
+      n_var = count_lines( this )
+      allocate( this%file_variable_names_( n_var ) )
+      do i_var = 1, n_var
+        read( this%file_unit_, '(a)', iostat = io ) line
+        call assert( 242420386, io .eq. 0 )
+        temp_str = line
+        values = temp_str%split( this%delimiter_ )
+        n_times = size( values ) - 1
+        this%file_variable_names_( i_var ) = values(1)
+      end do
+      rewind( this%file_unit_ )
+    else
+      call die( 727926448 )
+    end if
+    n_var = size( this%file_variable_names_ )
+    do i_var = 1, n_var
       this%file_variable_names_( i_var ) =                                    &
         adjustl( trim( this%file_variable_names_( i_var )%to_char( ) ) )
-    end do
-    this%domain_variable_names_ = this%file_variable_names_
-    n_var = size( this%file_variable_names_ )
-    allocate( this%file_variable_units_( n_var ) )
-    do i_var = 1, n_var
-      this%file_variable_units_( i_var ) = "unknown"
     end do
 
     ! update matching criteria (specified names, units, etc.,
@@ -243,26 +270,37 @@ contains
     call this%update_matching_criteria( config )
 
     ! read the data
-    n_lines = 0
-    do
-      read( this%file_unit_, *, iostat=io )
-      if( io .ne. 0 ) exit
-      n_lines = n_lines + 1
-    end do
-    rewind( this%file_unit_ )
-    read( this%file_unit_, * )
-    allocate( this%file_data_( n_lines, n_var ) )
-    do i_line = 1, n_lines
-      read( this%file_unit_, '(a)' ) line
-      temp_str = line
-      values = temp_str%split( this%delimiter_ )
-      call assert_msg( 429572998, size( values ) .eq. n_var, "Bad "//         &
-                       "structure in file '"//this%file_path_%to_char( )//    &
-                       "'" )
-      do i_var = 1, n_var
-        this%file_data_( i_line, i_var ) = values( i_var )
+    if( this%time_axis_ .eq. kRows ) then
+      n_times = count_lines( this ) - 1
+      read( this%file_unit_, * )
+      allocate( this%file_data_( n_times, n_var ) )
+      do i_time = 1, n_times
+        read( this%file_unit_, '(a)' ) line
+        temp_str = line
+        values = temp_str%split( this%delimiter_ )
+        call assert_msg( 429572998, size( values ) .eq. n_var, "Bad "//         &
+                         "structure in file '"//this%file_path_%to_char( )//    &
+                         "'" )
+        do i_var = 1, n_var
+          this%file_data_( i_time, i_var ) = values( i_var )
+        end do
       end do
-    end do
+    else if( this%time_axis_ .eq. kColumns ) then
+      allocate( this%file_data_( n_times, n_var ) )
+      do i_var = 1, n_var
+        read( this%file_unit_, '(a)' ) line
+        temp_str = line
+        values = temp_str%split( this%delimiter_ )
+        call assert_msg( 261145382, size( values ) .eq. n_times + 1,          &
+                         "Bad structure in file '"//this%file_path_%to_char( )&
+                         //"'" )
+        do i_time = 1, n_times
+          this%file_data_( i_time, i_var ) = values( i_time + 1 )
+        end do
+      end do
+    else
+      call die( 838339259 )
+    end if
     close( this%file_unit_ )
     this%is_open_ = .false.
     call free_file_unit( this%file_unit_ )
@@ -291,24 +329,75 @@ contains
     type(config_t), intent(inout) :: config
 
     character(len=*), parameter :: my_name =                                  &
-        "Text file update matching criteria"
+        "text file update matching criteria"
     class(iterator_t), pointer :: iter
     type(config_t) :: vars, var
-    type(string_t) :: temp_str, var_name
+    type(string_t) :: temp_str, var_name, general_replacement
     type(string_t), allocatable :: var_split(:)
-    integer(kind=musica_ik) :: i_var
+    integer(kind=musica_ik) :: i_var, n_var
     logical :: found
+
+    ! set the default domain names and units
+    n_var = size( this%file_variable_names_ )
+    this%domain_variable_names_ = this%file_variable_names_
+    allocate( this%file_variable_units_( n_var ) )
+    do i_var = 1, n_var
+      this%file_variable_units_( i_var ) = "unknown"
+    end do
+
+    ! update matching based on specified configuration data
+    call config%get( "properties", vars, my_name, found = found )
+    if( found ) then
+
+      ! first look for a '*' entry
+      call vars%get( "*", var, my_name, found = found )
+      if( found ) then
+        call var%get( "MusicBox name", general_replacement, my_name,          &
+                      default = "*" )
+        call var%get( "units", temp_str, my_name, default = "unknown" )
+        do i_var = 1, n_var
+          this%domain_variable_names_( i_var ) =                              &
+              general_replacement%replace( "*",                               &
+                              this%domain_variable_names_( i_var )%to_char( ) )
+          this%file_variable_units_( i_var ) = temp_str
+        end do
+      end if
+
+      ! update the remaining properties
+      iter => vars%get_iterator( )
+      do while( iter%next( ) )
+        var_name = vars%key( iter )
+        if( var_name .eq. "*" ) cycle
+        call vars%get( iter, var, my_name )
+        call assert_msg( 501546480,                                           &
+                         find_string_in_array( this%file_variable_names_,     &
+                                               var_name, i_var ),             &
+                         "Cannot find variable '"//var_name%to_char( )//      &
+                         "' in input file '"//this%file_path_%to_char( )//"'" )
+        call var%get( "MusicBox name", this%domain_variable_names_( i_var ),  &
+                    my_name,                                                  &
+                    default = this%domain_variable_names_( i_var )%to_char( ) )
+        call var%get( "units", temp_str, my_name, found = found )
+        if( found ) this%file_variable_units_( i_var ) = temp_str
+        call var%finalize( )
+      end do
+      deallocate( iter )
+      call vars%finalize( )
+    end if
 
     ! make standard name conversions for text files and get specified units
     do i_var = 1, size( this%domain_variable_names_ )
+      this%domain_variable_names_( i_var ) =                                  &
+          this%domain_variable_names_( i_var )%replace( "CONC.",              &
+                                                        "chemical_species%" )
       this%domain_variable_names_( i_var ) =                                  &
           this%domain_variable_names_( i_var )%replace( "ENV.", "" )
       this%domain_variable_names_( i_var ) =                                  &
           this%domain_variable_names_( i_var )%replace( "EMIS.",              &
                                                         "emission_rates%" )
       this%domain_variable_names_( i_var ) =                                  &
-          this%domain_variable_names_( i_var )%replace( "CONC.",              &
-                                                        "chemical_species%" )
+          this%domain_variable_names_( i_var )%replace( "LOSS.",              &
+                                                       "loss_rate_constants%" )
       this%domain_variable_names_( i_var ) =                                  &
           this%domain_variable_names_( i_var )%replace( "PHOT.",              &
                                                "photolysis_rate_constants%" )
@@ -318,27 +407,6 @@ contains
         this%file_variable_units_(   i_var ) = var_split(2)
       end if
     end do
-
-    ! update matching based on specified configuration data
-    call config%get( "properties", vars, my_name, found = found )
-    if( found ) then
-      iter => vars%get_iterator( )
-      do while( iter%next( ) )
-        var_name = vars%key( iter )
-        call vars%get( iter, var, my_name )
-        call assert_msg( 501546480,                                           &
-                         find_string_in_array( this%file_variable_names_,     &
-                                               var_name, i_var ),             &
-                         "Cannot find variable '"//var_name%to_char( )//      &
-                         "' in input file '"//this%file_path_%to_char( )//"'" )
-        call var%get( "units", temp_str, my_name, found = found )
-        if( found ) this%file_variable_units_( i_var ) = temp_str
-        call var%finalize( )
-      end do
-      deallocate( iter )
-      call vars%finalize( )
-    end if
-
   end subroutine update_matching_criteria
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -346,7 +414,8 @@ contains
   !> Auto-maps input/output variables to model state variables
   subroutine auto_map_variables( this, domain )
 
-    use musica_array,                  only : find_string_in_split_array
+    use musica_array,                  only : find_string_in_array,           &
+                                              find_string_in_split_array
     use musica_assert,                 only : assert_msg, die_msg
     use musica_domain,                 only : domain_t,                       &
                                               domain_state_mutator_t
@@ -376,6 +445,14 @@ contains
                                                   "mol m-3 s-1",              & !- MUSICA units
                                                   0.0d0,                      & !- default value
                                                   my_name )
+      else if( var_name%substring( 1, 20 ) .eq. "loss_rate_constants%" )  then
+        if( this%file_variable_units_( i_col ) .eq. "unknown" ) then
+          this%file_variable_units_( i_col ) = "s-1"
+        end if
+        call domain%register_cell_state_variable( var_name%to_char( ),        & !- state variable name
+                                                  "s-1",                      & !- MUSICA units
+                                                  0.0d0,                      & !- default value
+                                                  my_name )
       end if
       if( domain%is_cell_state_variable( var_name%to_char( ) ) ) then
         ! assume variables are in standard units if not otherwise specified
@@ -391,13 +468,13 @@ contains
     end do
 
     ! add time index and conversion
-    if( find_string_in_split_array( this%file_variable_names_, "time", ".",   &
-                                    1, i_col ) ) then
-      split_name = this%file_variable_names_( i_col )%split( "." )
-      if( size( split_name ) .eq. 1 ) then
+    if( find_string_in_array( this%domain_variable_names_, "time", i_col ) )  &
+        then
+      if( this%file_variable_units_( i_col ) .eq. "unknown" ) then
         call this%register( domain, "time", "s" )
       else
-        call this%register( domain, "time", split_name(2)%to_char( ) )
+        call this%register( domain, "time",                                   &
+                            this%file_variable_units_( i_col )%to_char( ) )
       end if
     end if
 
@@ -443,8 +520,8 @@ contains
     ! it just needs to have the column identified
     if( variable_name .eq. "time" ) then
       call assert_msg( 701920734,                                             &
-                       find_string_in_split_array( this%file_variable_names_, &
-                           io_var_name, ".", 1, col_id ),                     &
+                       find_string_in_array( this%domain_variable_names_,     &
+                                             "time", col_id ),                &
                        "Cannot find time column in file '"//                  &
                        this%file_path_%to_char( )//"'" )
       this%time_column_index_ = col_id
@@ -777,6 +854,32 @@ contains
     end if
 
   end subroutine finalize
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Count the lines in a file
+  function count_lines( this ) result( n_lines )
+
+    use musica_assert,                 only : assert
+
+    !> Number of lines in the file
+    integer(kind=musica_ik) :: n_lines
+    !> Text file
+    type(io_text_t), intent(inout) :: this
+
+    integer :: io
+
+    call assert( 776402509, this%is_open_ )
+    rewind( this%file_unit_ )
+    n_lines = 0
+    do
+      read( this%file_unit_, *, iostat=io )
+      if( io .ne. 0 ) exit
+      n_lines = n_lines + 1
+    end do
+    rewind( this%file_unit_ )
+
+  end function count_lines
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

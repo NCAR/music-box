@@ -11,6 +11,7 @@ set(MUSICA_SRC config.F90
                io.F90
                io_factory.F90
                ios/text.F90
+               loss.F90
                util/array.F90
                util/assert.F90
                util/constants.F90

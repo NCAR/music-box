@@ -10,7 +10,7 @@ module musica_io
   implicit none
   private
 
-  public :: io_t, get_file_unit, free_file_unit
+  public :: io_t, io_ptr, get_file_unit, free_file_unit
 
   !> Maximum number of IO units
   integer, parameter :: kMaxFileUnits = 200
@@ -35,6 +35,13 @@ module musica_io
     !> Closes the output stream
     procedure(close), deferred :: close
   end type io_t
+
+  !> Input/output pointer
+  type :: io_ptr
+    class(io_t), pointer :: val_ => null( )
+  contains
+    final :: io_ptr_finalize
+  end type io_ptr
 
 interface
 
@@ -140,6 +147,18 @@ interface
 end interface
 
 contains
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Finalize an input/output pointer
+  subroutine io_ptr_finalize( this )
+
+    !> Input/output pointer
+    type(io_ptr), intent(inout) :: this
+
+    if( associated( this%val_ ) ) deallocate( this%val_ )
+
+  end subroutine io_ptr_finalize
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Gets an unused file unit
