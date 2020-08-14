@@ -8,7 +8,7 @@
 module musica_evolving_conditions
 
   use musica_constants,                only : musica_dk
-  use musica_io,                       only : io_t
+  use musica_io,                       only : io_ptr
 
   implicit none
   private
@@ -18,8 +18,8 @@ module musica_evolving_conditions
   !> Evolving model conditions
   type evolving_conditions_t
     private
-    !> Input file
-    class(io_t), pointer :: input_file_ => null( )
+    !> Input files
+    class(io_ptr), allocatable :: input_files_(:)
   contains
     !> Get suggested output times [s]
     procedure :: get_update_times__s
@@ -60,7 +60,7 @@ contains
     class(iterator_t), pointer :: file_iter
     type(string_t) :: file_name, file_type
     type(string_t), allocatable :: str_array(:)
-    integer :: n_files
+    integer :: i_file, n_files
 
     allocate( new_obj )
 
@@ -69,8 +69,11 @@ contains
     file_iter => config%get_iterator( )
     do while( file_iter%next( ) )
       n_files = n_files + 1
-      call assert_msg( 623782471, n_files .le. 1, "Evolving conditions are "//&
-                       "yet set up for multiple files." )
+    end do
+    allocate( new_obj%input_files_( n_files ) )
+    call file_iter%reset( )
+    i_file = 1
+    do while( file_iter%next( ) )
       call config%get( file_iter, file_config, my_name )
       file_name = config%key( file_iter )
       str_array = file_name%split( "." )
@@ -78,8 +81,9 @@ contains
       call file_config%add( "type", file_type, my_name )
       call file_config%add( "intent", "input", my_name )
       call file_config%add( "file name", file_name, my_name )
-      new_obj%input_file_ => io_builder( file_config, domain )
+      new_obj%input_files_( i_file )%val_ => io_builder( file_config, domain )
       call file_config%finalize( )
+      i_file = i_file + 1
     end do
 
     deallocate( file_iter )
@@ -94,12 +98,20 @@ contains
   !!
   function get_update_times__s( this ) result( times )
 
+    use musica_array,                  only : merge_series
+
     !> Suggested update times
     real(kind=musica_dk), allocatable :: times(:)
     !> Evolving conditions
     class(evolving_conditions_t), intent(inout) :: this
 
-    times = this%input_file_%entry_times__s( )
+    integer :: i_file
+
+    allocate( times( 0 ) )
+    do i_file = 1, size( this%input_files_ )
+      times = merge_series( times,                                            &
+                           this%input_files_( i_file )%val_%entry_times__s( ) )
+    end do
 
   end function get_update_times__s
 
@@ -119,7 +131,12 @@ contains
     !> Current simulation time [s]
     real(kind=musica_dk), intent(in) :: time__s
 
-    call this%input_file_%update_state( domain, state, time__s )
+    integer :: i_file
+
+    do i_file = 1, size( this%input_files_ )
+      call this%input_files_( i_file )%val_%update_state( domain, state,      &
+                                                          time__s )
+    end do
 
   end subroutine update_state
 
@@ -131,7 +148,16 @@ contains
     !> Evolving conditions
     type(evolving_conditions_t), intent(inout) :: this
 
-    if( associated( this%input_file_ ) ) deallocate( this%input_file_ )
+    integer :: i_file
+
+    if( allocated( this%input_files_ ) ) then
+      do i_file = 1, size( this%input_files_ )
+        if( associated( this%input_files_( i_file )%val_ ) ) then
+          deallocate( this%input_files_( i_file )%val_ )
+        end if
+      end do
+      deallocate( this%input_files_ )
+    end if
 
   end subroutine finalize
 
