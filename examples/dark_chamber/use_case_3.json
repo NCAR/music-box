@@ -1,0 +1,22 @@
+{
+  "box model options" : {
+    "grid"                      : "box",
+    "chemistry time step [min]" : 5.0,
+    "output time step [hr]"     : 1.0,
+    "simulation length [hr]"    : 2.5
+  },
+  "initial conditions" : {
+    "data/use_case_3_initial.csv" : {
+      "delimiter" : "&"
+    }
+  },
+  "chemistry" : {
+    "type" : "MICM",
+    "solver" : {
+      "type" : "Rosenbrock",
+      "absolute tolerance" : 1.0e-12,
+      "relative tolerance" : 1.0e-4
+    }
+  }
+}
+

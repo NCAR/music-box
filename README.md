@@ -28,7 +28,7 @@ cd build
 From here, you can specify model parameters and initial conditions, or use one of the test configurations provided in `/examples`, such as:
 
 ```
-./music_box ../music-box/examples/dark_chamber/config.json
+./music_box ../music-box/examples/dark_chamber/use_case_1.json
 ```
 
 The results will be in a file named `output.csv`.
