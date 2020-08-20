@@ -339,7 +339,7 @@ contains
   !!
   !! Both sets must be arranged in increasing order
   !!
-  function merge_series( a, b ) result( new_set )
+  function merge_series( a, b, with_bounds_from ) result( new_set )
 
     !> New series
     real(kind=musica_dk), allocatable :: new_set(:)
@@ -347,9 +347,19 @@ contains
     real(kind=musica_dk), intent(in) :: a(:)
     !> Second series
     real(kind=musica_dk), intent(in) :: b(:)
+    !> Restricts series to bounds in this array
+    real(kind=musica_dk), intent(in), optional :: with_bounds_from(:)
 
-    real(kind=musica_dk) :: curr_val, val_a, val_b
+    real(kind=musica_dk) :: curr_val, val_a, val_b, min_val, max_val
     integer :: n_total, i_a, i_b, i_c, n_a, n_b
+
+    if( present( with_bounds_from ) ) then
+      min_val = with_bounds_from( 1 )
+      max_val = with_bounds_from( size( with_bounds_from ) )
+    else
+      min_val = -huge( 0.0_musica_dk )
+      max_val =  huge( 0.0_musica_dk )
+    endif
 
     n_a = size( a )
     n_b = size( b )
@@ -363,18 +373,36 @@ contains
     if( n_b .gt. 0 ) then
       if( b( 1 ) .lt. curr_val ) curr_val = b( 1 )
     end if
+    if( curr_val .lt. min_val ) curr_val = min_val
+    if( curr_val .gt. max_val ) curr_val = max_val
 
     i_a = 1
     i_b = 1
     n_total = 0
+    do while( i_a .le. n_a )
+      if( a( i_a ) .ge. min_val ) exit
+      i_a = i_a + 1
+    end do
+    do while( i_b .le. n_b )
+      if( b( i_b ) .ge. min_val ) exit
+      i_b = i_b + 1
+    end do
     do while( i_a .le. n_a .or. i_b .le. n_b )
       if( i_a .le. n_a ) then
         val_a = a( i_a )
+        if( val_a .gt. max_val ) then
+          i_a = n_a + 1
+          cycle
+        end if
       else
         val_a = huge( 1.0_musica_dk )
       end if
       if( i_b .le. n_b ) then
         val_b = b( i_b )
+        if( val_b .gt. max_val ) then
+          i_b = n_b + 1
+          cycle
+        end if
       else
         val_b = huge( 1.0_musica_dk )
       end if
@@ -389,14 +417,30 @@ contains
     i_a = 1
     i_b = 1
     n_total = 0
+    do while( i_a .le. n_a )
+      if( a( i_a ) .ge. min_val ) exit
+      i_a = i_a + 1
+    end do
+    do while( i_b .le. n_b )
+      if( b( i_b ) .ge. min_val ) exit
+      i_b = i_b + 1
+    end do
     do while( i_a .le. n_a .or. i_b .le. n_b )
       if( i_a .le. n_a ) then
         val_a = a( i_a )
+        if( val_a .gt. max_val ) then
+          i_a = n_a + 1
+          cycle
+        end if
       else
         val_a = huge( 1.0_musica_dk )
       end if
       if( i_b .le. n_b ) then
         val_b = b( i_b )
+        if( val_b .gt. max_val ) then
+          i_b = n_b + 1
+          cycle
+        end if
       else
         val_b = huge( 1.0_musica_dk )
       end if

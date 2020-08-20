@@ -9,6 +9,7 @@ module music_box_core
 
   use micm_core,                       only : chemistry_core_t => core_t
   use musica_constants,                only : musica_ik, musica_dk
+  use musica_datetime,                 only : datetime_t
   use musica_domain,                   only : domain_t, domain_state_t,       &
                                               domain_state_mutator_ptr,       &
                                               domain_state_accessor_ptr
@@ -34,6 +35,8 @@ module music_box_core
     real(kind=musica_dk), allocatable :: simulation_times__s_(:)
     !> Output time step [s]
     real(kind=musica_dk) :: output_time_step__s_
+    !> Simulation start
+    type(datetime_t) :: simulation_start_
     !> Simulation length [s]
     real(kind=musica_dk) :: simulation_length__s_
     !> Domain state
@@ -113,7 +116,7 @@ contains
 
     character(len=*), parameter :: my_name = "MUSICA core constructor"
     type(config_t) :: config, model_opts, domain_opts, output_opts, chem_opts,&
-                      evolving_opts
+                      evolving_opts, datetime_data
     type(string_t) :: domain_type
     logical :: found
     class(domain_iterator_t), pointer :: cell_iter
@@ -149,12 +152,19 @@ contains
                          new_obj%output_time_step__s_, my_name )
     call model_opts%get( "simulation length", "s",                            &
                          new_obj%simulation_length__s_, my_name )
+    call model_opts%get( "simulation start", datetime_data, my_name,          &
+                         found = found )
+    if( found ) then
+      new_obj%simulation_start_ = datetime_t( datetime_data )
+      call datetime_data%finalize( )
+    end if
 
     ! set the default chemistry times
     n_time_steps = ceiling( new_obj%simulation_length__s_ / time_step ) + 1
     allocate( new_obj%simulation_times__s_( n_time_steps ) )
     do i_step = 1, n_time_steps
-      new_obj%simulation_times__s_( i_step ) =                                 &
+      new_obj%simulation_times__s_( i_step ) =                                &
+        new_obj%simulation_start_%in_seconds( ) +                             &
         min( ( i_step - 1 ) * time_step, new_obj%simulation_length__s_ )
     end do
 
@@ -164,6 +174,7 @@ contains
     allocate( update_times( n_time_steps ) )
     do i_step = 1, n_time_steps
       update_times( i_step ) =                                                &
+        new_obj%simulation_start_%in_seconds( ) +                             &
         min( ( i_step - 1 ) * new_obj%output_time_step__s_,                   &
              new_obj%simulation_length__s_ )
     end do
@@ -190,7 +201,8 @@ contains
                                                              new_obj%domain_ )
       update_times = new_obj%evolving_conditions_%get_update_times__s( )
       new_obj%simulation_times__s_ =                                          &
-        merge_series( new_obj%simulation_times__s_, update_times )
+        merge_series( new_obj%simulation_times__s_, update_times,             &
+                      with_bounds_from = new_obj%simulation_times__s_ )
       call evolving_opts%finalize( )
     end if
 
@@ -230,6 +242,7 @@ contains
   subroutine run( this )
 
     use musica_domain,                 only : domain_iterator_t
+    use musica_logger,                 only : logger_t
 
     !> MUSICA Core
     class(core_t), intent(inout) :: this
@@ -242,7 +255,11 @@ contains
     ! domain iterator over every cell
     class(domain_iterator_t), pointer :: cell_iter
 
+    type(logger_t) :: logger
     integer(kind=musica_ik) :: i_step
+
+    logger = logger_t( this%simulation_times__s_( 1 ),                        &
+            this%simulation_times__s_( size( this%simulation_times__s_ ) ) )
 
     ! set up the domain iterators
     cell_iter => this%domain_%cell_iterator( )
@@ -253,14 +270,14 @@ contains
     ! start simulation
     do i_step = 2, size( this%simulation_times__s_ )
 
+      call logger%progress( sim_time__s )
+
       ! output initial conditions for this time step
       call this%output( sim_time__s )
 
       ! determine the current time step
       time_step__s = this%simulation_times__s_( i_step ) -                    &
                      this%simulation_times__s_( i_step - 1 )
-
-      write(*,*) "Solving for time:", sim_time__s, "s"
 
       ! update evolving conditions from input data
       if( associated( this%evolving_conditions_ ) ) then

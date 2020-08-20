@@ -37,10 +37,12 @@ module musica_io_text
     type(string_t) :: domain_variable_name_
     !> File column index
     integer(kind=musica_ik) :: file_column_index_ = -1
-    !> Scaling factor
+    !> Scaling factor in file units
     real(kind=musica_dk) :: scale_factor_ = 1.0_musica_dk
     !> Conversion
     type(convert_t) :: converter_
+    !> Offset for data set in standard MUSICA units
+    real(kind=musica_dk) :: offset_ = 0.0_musica_dk
   end type io_var_t
 
   !> Text file input/output
@@ -71,6 +73,11 @@ module musica_io_text
     type(string_t), allocatable :: file_variable_names_(:)
     !> File variable units
     type(string_t), allocatable :: file_variable_units_(:)
+    !> Whether to shift the data set for each file variable
+    logical, allocatable :: file_variable_do_shift_(:)
+    !> Value to shift the first entry to for each variable in standard
+    !! MUSICA units
+    real(kind=musica_dk), allocatable :: shift_first_entry_to_(:)
     !> Domain variable names
     !!
     !! For input files, these are the names that will be searched for in the
@@ -85,11 +92,13 @@ module musica_io_text
     integer(musica_ik) :: time_column_index_ = -1
     !> Converter for time to [s]
     type(convert_t) :: time_converter_
+    !> Offset for time [s]
+    real(kind=musica_dk) :: time_offset_ = 0.0_musica_dk
     !> Set of registered model variables for input/output
     type(io_var_t), allocatable :: variables_(:)
     !> Iterator over domain cells
     class(domain_iterator_t), pointer :: iterator_ => null( )
-    !> File data (row, column)
+    !> File data (time, variable)
     real(kind=musica_dk), allocatable :: file_data_(:,:)
   contains
     !> Load input file variable names, units, and data
@@ -98,6 +107,8 @@ module musica_io_text
     procedure, private :: update_matching_criteria
     !> Auto-maps input/output variables to model state variables
     procedure, private :: auto_map_variables
+    !> Set up shifts in the data sets
+    procedure, private :: set_shift
     !> Registers a state variable for input/output
     procedure :: register
     !> Get the times corresponding to entries (for input data) [s]
@@ -141,14 +152,14 @@ contains
     use musica_config,                 only : config_t
     use musica_domain,                 only : domain_t
 
-    !> New output file
+    !> New text file
     type(io_text_t), pointer :: new_obj
     !> Configuration data
     class(config_t), intent(inout) :: config
     !> Model domain
     class(domain_t), intent(inout), optional :: domain
 
-    character(len=*), parameter :: my_name = 'output constructor'
+    character(len=*), parameter :: my_name = 'text file constructor'
     type(string_t) :: temp_str
     logical :: found
 
@@ -156,6 +167,7 @@ contains
 
     ! file intent
     call config%get( "intent", temp_str, my_name )
+    temp_str = temp_str%to_lower( )
     if( temp_str .eq. "input" ) then
       new_obj%is_input_ = .true.
     else if( temp_str .eq. "output" ) then
@@ -163,6 +175,7 @@ contains
     else if( temp_str .eq. "input/output" ) then
       new_obj%is_input_ = .true.
       new_obj%is_output_ = .true.
+      call die_msg( 776288548, "Text input/output files are not supported" )
     else
       call die_msg( 162615120, "Invalid type specified for text file: "//     &
                                temp_str%to_char( ) )
@@ -204,9 +217,11 @@ contains
                                  "during initialization for mapping." )
       end if
     else
-      allocate( new_obj%file_variable_names_(   0 ) )
-      allocate( new_obj%file_variable_units_(   0 ) )
-      allocate( new_obj%domain_variable_names_( 0 ) )
+      allocate( new_obj%file_variable_names_(    0 ) )
+      allocate( new_obj%file_variable_units_(    0 ) )
+      allocate( new_obj%domain_variable_names_(  0 ) )
+      allocate( new_obj%file_variable_do_shift_( 0 ) )
+      allocate( new_obj%shift_first_entry_to_(   0 ) )
     end if
 
   end function constructor
@@ -331,16 +346,20 @@ contains
     character(len=*), parameter :: my_name =                                  &
         "text file update matching criteria"
     class(iterator_t), pointer :: iter
-    type(config_t) :: vars, var
+    type(config_t) :: vars, var, shift_data
     type(string_t) :: temp_str, var_name, general_replacement
     type(string_t), allocatable :: var_split(:)
     integer(kind=musica_ik) :: i_var, n_var
-    logical :: found
+    logical :: found, general_match
 
     ! set the default domain names and units
     n_var = size( this%file_variable_names_ )
     this%domain_variable_names_ = this%file_variable_names_
-    allocate( this%file_variable_units_( n_var ) )
+    allocate( this%file_variable_units_(    n_var ) )
+    allocate( this%file_variable_do_shift_( n_var ) )
+    allocate( this%shift_first_entry_to_(   n_var ) )
+    this%file_variable_do_shift_(:) = .false.
+    this%shift_first_entry_to_(:)   = 0.0_musica_dk
     do i_var = 1, n_var
       this%file_variable_units_( i_var ) = "unknown"
     end do
@@ -348,40 +367,34 @@ contains
     ! update matching based on specified configuration data
     call config%get( "properties", vars, my_name, found = found )
     if( found ) then
-
-      ! first look for a '*' entry
-      call vars%get( "*", var, my_name, found = found )
-      if( found ) then
-        call var%get( "MusicBox name", general_replacement, my_name,          &
-                      default = "*" )
-        call var%get( "units", temp_str, my_name, default = "unknown" )
-        do i_var = 1, n_var
-          this%domain_variable_names_( i_var ) =                              &
-              general_replacement%replace( "*",                               &
-                              this%domain_variable_names_( i_var )%to_char( ) )
-          this%file_variable_units_( i_var ) = temp_str
-        end do
-      end if
-
-      ! update the remaining properties
-      iter => vars%get_iterator( )
-      do while( iter%next( ) )
-        var_name = vars%key( iter )
-        if( var_name .eq. "*" ) cycle
-        call vars%get( iter, var, my_name )
-        call assert_msg( 501546480,                                           &
-                         find_string_in_array( this%file_variable_names_,     &
-                                               var_name, i_var ),             &
-                         "Cannot find variable '"//var_name%to_char( )//      &
-                         "' in input file '"//this%file_path_%to_char( )//"'" )
+      do i_var = 1, size( this%file_variable_names_ )
+        ! look for specific then general entries
+        general_match = .false.
+        call vars%get( this%file_variable_names_( i_var )%to_char( ), var,    &
+                       my_name, found = found )
+        if( .not. found ) then
+          call vars%get( "*", var, my_name, found = found )
+          general_match = .true.
+        end if
+        if( .not. found ) cycle
         call var%get( "MusicBox name", this%domain_variable_names_( i_var ),  &
                     my_name,                                                  &
                     default = this%domain_variable_names_( i_var )%to_char( ) )
         call var%get( "units", temp_str, my_name, found = found )
         if( found ) this%file_variable_units_( i_var ) = temp_str
+        call var%get( "shift first entry to", shift_data, my_name,            &
+                      found = found )
+        if( found ) then
+          call this%set_shift( i_var, shift_data )
+          call shift_data%finalize( )
+        end if
         call var%finalize( )
+        if( general_match ) then
+          this%domain_variable_names_( i_var ) =                              &
+              this%domain_variable_names_( i_var )%replace( "*",              &
+                                this%file_variable_names_( i_var )%to_char( ) )
+        end if
       end do
-      deallocate( iter )
       call vars%finalize( )
     end if
 
@@ -407,7 +420,32 @@ contains
         this%file_variable_units_(   i_var ) = var_split(2)
       end if
     end do
+
   end subroutine update_matching_criteria
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> Sets up a shift in the data values
+  subroutine set_shift( this, variable_id, config )
+
+    use musica_config,                 only : config_t
+    use musica_datetime,               only : datetime_t
+
+    !> Text file
+    class(io_text_t), intent(inout) :: this
+    !> Variable id in file to shift
+    integer(kind=musica_ik), intent(in) :: variable_id
+    !> Configuration data
+    type(config_t) :: config
+
+    type(datetime_t) :: datetime
+    real(kind=musica_dk) :: first_value
+
+    datetime = datetime_t( config )
+    this%file_variable_do_shift_( variable_id ) = .true.
+    this%shift_first_entry_to_(   variable_id ) = datetime%in_seconds( )
+
+  end subroutine set_shift
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -436,7 +474,7 @@ contains
     do i_col = 1, size( this%domain_variable_names_ )
       var_name = this%domain_variable_names_( i_col )
 
-      ! create state variables for emissions rates
+      ! create state variables for emissions and loss rates
       if( var_name%substring( 1, 15 ) .eq. "emission_rates%" ) then
         if( this%file_variable_units_( i_col ) .eq. "unknown" ) then
           this%file_variable_units_( i_col ) = "mol m-3 s-1"
@@ -483,7 +521,8 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Registers a state variable for input/output
-  subroutine register( this, domain, variable_name, units, io_name )
+  subroutine register( this, domain, domain_variable_name, units,             &
+      io_variable_name )
 
     use musica_array,                  only : add_to_array,                   &
                                               find_string_in_array,           &
@@ -495,14 +534,14 @@ contains
     class(io_text_t), intent(inout) :: this
     !> Model domain
     class(domain_t), intent(inout) :: domain
-    !> Variable to output
-    character(len=*), intent(in) :: variable_name
+    !> Variable to register
+    character(len=*), intent(in) :: domain_variable_name
     !> Units used in the file for the variable
     character(len=*), intent(in) :: units
-    !> Optional custom output name
-    character(len=*), intent(in), optional :: io_name
+    !> Optional custom name in file
+    character(len=*), intent(in), optional :: io_variable_name
 
-    character(len=*), parameter :: my_name = "output text file"
+    character(len=*), parameter :: my_name = "register text file variable"
     type(io_var_t), allocatable :: temp_vars(:)
     type(string_t) :: io_var_name, std_units
     integer :: var_id, col_id
@@ -510,15 +549,15 @@ contains
     call assert_msg( 812848624, this%is_input_ .neqv. this%is_output_,        &
                      "Input/output text files are not yet supported." )
 
-    if( present( io_name ) ) then
-      io_var_name = io_name
+    if( present( io_variable_name ) ) then
+      io_var_name = io_variable_name
     else
-      io_var_name = variable_name
+      io_var_name = domain_variable_name
     end if
 
     ! if the variable is time, it does not require accessors or mutators
     ! it just needs to have the column identified
-    if( variable_name .eq. "time" ) then
+    if( domain_variable_name .eq. "time" ) then
       call assert_msg( 701920734,                                             &
                        find_string_in_array( this%domain_variable_names_,     &
                                              "time", col_id ),                &
@@ -526,6 +565,11 @@ contains
                        this%file_path_%to_char( )//"'" )
       this%time_column_index_ = col_id
       this%time_converter_ = convert_t( "s", units )
+      if( this%file_variable_do_shift_( col_id ) ) then
+        this%time_offset_ = this%shift_first_entry_to_( col_id ) -           &
+            this%time_converter_%to_standard(                                &
+                this%file_data_( 1, this%time_column_index_ ) )
+      end if
       return
     end if
 
@@ -539,19 +583,19 @@ contains
     var_id = size( this%variables_ )
 
     ! get the standard units and a converter to the file variable units
-    std_units = domain%cell_state_units( trim( variable_name ) )
+    std_units = domain%cell_state_units( trim( domain_variable_name ) )
     this%variables_( var_id )%converter_ = convert_t( std_units, units )
 
     ! register an accessor for output
     if( this%is_output_ ) then
       this%variables_( var_id )%accessor_ =>                                  &
-          domain%cell_state_accessor( variable_name,                          & !- state variable name
+          domain%cell_state_accessor( domain_variable_name,                   & !- state variable name
                                       std_units%to_char( ),                   & !- MUSICA units
                                       my_name )
       col_id = var_id
       call add_to_array( this%file_variable_names_, io_var_name )
       call add_to_array( this%file_variable_units_, units )
-      call add_to_array( this%domain_variable_names_, variable_name )
+      call add_to_array( this%domain_variable_names_, domain_variable_name )
     end if
 
     ! register a variable for input
@@ -562,13 +606,19 @@ contains
                        "Could not find '"//io_var_name%to_char( )//           &
                        "' in input file '"//this%file_path_%to_char( )//"'" )
       this%variables_( var_id )%mutator_ =>                                   &
-        domain%cell_state_mutator( variable_name,                             & !- state variable name
+        domain%cell_state_mutator( domain_variable_name,                      & !- state variable name
                                    std_units%to_char( ),                      & !- MUSICA units
                                    my_name )
+      if( this%file_variable_do_shift_( col_id ) ) then
+        this%variables_( var_id )%offset_ =                                     &
+            this%shift_first_entry_to_( col_id ) -                              &
+            this%variables_( var_id )%converter_%to_standard(                   &
+                this%file_data_( 1, col_id ) )
+      end if
     end if
 
     this%variables_( var_id )%file_column_index_ = col_id
-    this%variables_( var_id )%domain_variable_name_ = variable_name
+    this%variables_( var_id )%domain_variable_name_ = domain_variable_name
 
   end subroutine register
 
@@ -595,7 +645,8 @@ contains
     do i_time = 1, size( entry_times__s )
       entry_times__s( i_time ) =                                              &
           this%time_converter_%to_standard(                                   &
-                          this%file_data_( i_time, this%time_column_index_ ) )
+                       this%file_data_( i_time, this%time_column_index_ ) ) + &
+          this%time_offset_
     end do
 
   end function entry_times__s
@@ -647,7 +698,8 @@ contains
       do while( .not. is_update_time .and. i_line .lt. n_rows )
         i_line = i_line + 1
         file_time = this%time_converter_%to_standard(                         &
-                      this%file_data_( i_line, this%time_column_index_ ) )
+                      this%file_data_( i_line, this%time_column_index_ ) ) +  &
+                    this%time_offset_
         if( file_time .eq. time__s ) then
           is_update_time = .true.
         end if
@@ -666,6 +718,7 @@ contains
       new_value = this%file_data_( i_line,                                    &
                                  this%variables_( i_var )%file_column_index_ )
       new_value = this%variables_( i_var )%converter_%to_standard( new_value )
+      new_value = new_value + this%variables_( i_var )%offset_
       call this%iterator_%reset( )
       do while( this%iterator_%next( ) )
         call domain_state%update( this%iterator_,                             &
