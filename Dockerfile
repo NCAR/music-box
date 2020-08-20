@@ -53,4 +53,5 @@ RUN if [ "$TAG_ID" = "false" ] ; then \
       && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-8.1.0" \
       && cmake ../music-box \
       && make \
+      && cp ../music-box/libs/Mechanism_Collection/configured_tags/${TAG_ID}/source_mechanism.json . \
       ; fi

@@ -265,7 +265,7 @@ contains
           call die_msg( 171367003, "Missing surface area in conversion" )
         end if
       case default
-        call die_msg( 425135301, "Invalid conversion" )
+        call die_msg( 425135301, "Trying to use uninitialized conversion" )
     end select
 
   end function  to_standard
@@ -326,7 +326,11 @@ contains
     !> Conversion
     class(convert_t), intent(in) :: this
 
-    standard_units = this%standard_units_
+    if( this%conversion_type_ .eq. kInvalid ) then
+      standard_units = "unknown"
+    else
+      standard_units = this%standard_units_
+    end if
 
   end function standard_units
 
