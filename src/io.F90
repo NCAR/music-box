@@ -52,7 +52,8 @@ interface
   !! Any scaling, conversion, or interpolation for the variable should be
   !! set up by extending types when this function is called.
   !!
-  subroutine register( this, domain, variable_name, units, io_name )
+  subroutine register( this, domain, domain_variable_name, units,             &
+      io_variable_name )
     use musica_domain,                 only : domain_t
     import io_t
     !> Input/output
@@ -60,11 +61,11 @@ interface
     !> Model domain
     class(domain_t), intent(inout) :: domain
     !> Variable to register
-    character(len=*), intent(in) :: variable_name
+    character(len=*), intent(in) :: domain_variable_name
     !> Units used for intput/output data
     character(len=*), intent(in) :: units
     !> Optional custom name for input/output variable
-    character(len=*), intent(in), optional :: io_name
+    character(len=*), intent(in), optional :: io_variable_name
   end subroutine register
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

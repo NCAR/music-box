@@ -10,6 +10,7 @@ module musica_io_factory
   use musica_domain,                   only : domain_t
   use musica_io,                       only : io_t
   use musica_io_text,                  only : io_text_t
+  use musica_io_netcdf,                only : io_netcdf_t
 
   implicit none
   private
@@ -82,6 +83,9 @@ contains
         io_type .eq. 'text' .or.                                              &
         io_type .eq. 'csv' ) then
       new_io => io_text_t( config, domain )
+    else if( io_type .eq. 'nc' .or.                                           &
+             io_type .eq. 'netcdf' ) then
+      new_io => io_netcdf_t( config, domain )
     else
       call die_msg( 690482624, "Invalid input/output type: '"//               &
                                io_type%to_char( )//"'" )
