@@ -25,6 +25,9 @@ add_std_test(util_array)
 add_executable(util_convert util/convert.F90)
 add_std_test(util_convert)
 
+add_executable(util_datetime util/datetime.F90)
+add_std_test(util_datetime)
+
 add_executable(util_string util/string.F90)
 add_std_test(util_string)
 
@@ -48,5 +51,6 @@ add_test(NAME input_use_case_4b COMMAND integration/input_use_cases/4/run_b.sh)
 
 add_test(NAME input_use_case_5 COMMAND integration/input_use_cases/5/run.sh)
 add_test(NAME input_use_case_6 COMMAND integration/input_use_cases/6/run.sh)
+add_test(NAME input_use_case_7 COMMAND integration/input_use_cases/7/run.sh)
 
 ################################################################################
