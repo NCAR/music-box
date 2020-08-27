@@ -17,6 +17,13 @@ RUN dnf -y update \
 # copy the MusicBox code
 COPY . /music-box/
 
+# move the change mechanism script to the root folder
+RUN cp /music-box/etc/change_mechanism.sh /
+
+# move the example configurations to the build folder
+RUN mkdir /build \
+    && cp -r /music-box/examples /build/examples
+
 # python modules needed in scripts
 RUN pip3 install requests
 
@@ -48,7 +55,6 @@ RUN if [ "$TAG_ID" = "false" ] ; then \
       && python3 get_tag.py -tag_id $TAG_ID \
       && python3 preprocess_tag.py -mechanism_source_path configured_tags/$TAG_ID -preprocessor localhost:3000 \
       && python3 stage_tag.py -source_dir_kinetics configured_tags/$TAG_ID -target_dir_data /data \
-      && mkdir /build \
       && cd /build \
       && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-8.1.0" \
       && cmake ../music-box \
