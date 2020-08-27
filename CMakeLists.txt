@@ -64,8 +64,8 @@ add_custom_target(data-directory ALL COMMAND ${CMAKE_COMMAND} -E make_directory
 ################################################################################
 # MUSICA library
 
-add_subdirectory(src)
-include_directories(${CMAKE_BINARY_DIR}/src)
+add_subdirectory(libs/musica-core/src)
+include_directories(${CMAKE_BINARY_DIR}/libs/musica-core/src)
 
 ################################################################################
 # MICM library
@@ -76,7 +76,7 @@ include_directories(${CMAKE_BINARY_DIR}/libs/MICM_chemistry/src)
 ################################################################################
 # MusicBox application
 
-add_subdirectory(apps)
+add_subdirectory(src)
 
 ################################################################################
 # MUSICA tests
