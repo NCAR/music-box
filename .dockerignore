@@ -9,6 +9,7 @@
 !libs/
 !test/
 !examples/
+!etc/
 
 # blacklist generated code
 libs/Mechanism_Collection/configured_tags/*
