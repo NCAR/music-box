@@ -70,8 +70,8 @@ include_directories(${CMAKE_BINARY_DIR}/libs/musica-core/src)
 ################################################################################
 # MICM library
 
-add_subdirectory(libs/MICM_chemistry/src)
-include_directories(${CMAKE_BINARY_DIR}/libs/MICM_chemistry/src)
+add_subdirectory(libs/micm/src)
+include_directories(${CMAKE_BINARY_DIR}/libs/micm/src)
 
 ################################################################################
 # MusicBox application
