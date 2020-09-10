@@ -28,7 +28,7 @@ RUN mkdir /build \
 RUN pip3 install requests
 
 # nodejs modules needed Mechanism-To-Code
-RUN cd /music-box/libs/MechanismToCode; \
+RUN cd /music-box/libs/micm-preprocessor; \
     npm install
 
 # install json-fortran
@@ -48,10 +48,10 @@ ARG TAG_ID=false
 RUN if [ "$TAG_ID" = "false" ] ; then \
       echo "No mechanism specified" ; else \
       echo "Grabbing mechanism $TAG_ID" \
-      && cd /music-box/libs/MechanismToCode \
+      && cd /music-box/libs/micm-preprocessor \
       && nohup bash -c "node combined.js &" && sleep 4 \
       && mkdir /data \
-      && cd /music-box/libs/Mechanism_Collection \
+      && cd /music-box/libs/micm-collection \
       && python3 get_tag.py -tag_id $TAG_ID \
       && python3 preprocess_tag.py -mechanism_source_path configured_tags/$TAG_ID -preprocessor localhost:3000 \
       && python3 stage_tag.py -source_dir_kinetics configured_tags/$TAG_ID -target_dir_data /data \
@@ -59,5 +59,5 @@ RUN if [ "$TAG_ID" = "false" ] ; then \
       && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-8.1.0" \
       && cmake ../music-box \
       && make \
-      && cp ../music-box/libs/Mechanism_Collection/configured_tags/${TAG_ID}/source_mechanism.json . \
+      && cp ../music-box/libs/micm-collection/configured_tags/${TAG_ID}/source_mechanism.json . \
       ; fi

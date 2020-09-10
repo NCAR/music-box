@@ -15,7 +15,7 @@ module music_box_core
                                               domain_state_accessor_ptr
   use musica_emissions,                only : emissions_t
   use musica_evolving_conditions,      only : evolving_conditions_t
-  use musica_io,                       only : io_t
+  use musica_input_output_processor,   only : input_output_processor_t
   use musica_loss,                     only : loss_t
 
   implicit none
@@ -56,7 +56,7 @@ module music_box_core
     !> Solve chemistry during the simulation
     logical :: solve_chemistry_ = .true.
     !> Output
-    class(io_t), pointer :: output_ => null( )
+    class(input_output_processor_t), pointer :: output_ => null( )
   contains
     !> Run the model
     procedure :: run
@@ -106,7 +106,6 @@ contains
     use musica_domain,                 only : domain_iterator_t
     use musica_domain_factory,         only : domain_builder
     use musica_initial_conditions,     only : set_initial_conditions
-    use musica_io_factory,             only : io_builder
     use musica_string,                 only : string_t
 
     !> New MUSICA Core
@@ -142,7 +141,7 @@ contains
     call config%get( "output file", output_opts, my_name, found = found )
     if( .not. found ) output_opts = '{ "type" : "CSV" }'
     call output_opts%add( "intent", "output", my_name )
-    new_obj%output_ => io_builder( output_opts )
+    new_obj%output_ => input_output_processor_t( output_opts )
     call new_obj%register_output_variables( )
 
     ! simulation time parameters
@@ -386,18 +385,18 @@ contains
     !> MUSICA Core
     class(core_t), intent(inout) :: this
 
-    call this%output_%register( this%domain_,                                 &
-                                "temperature",                                & !- variable name
-                                "K",                                          & !- units
-                                "ENV.temperature"  )                            !- output name
-    call this%output_%register( this%domain_,                                 &
-                                "pressure",                                   & !- variable name
-                                "Pa",                                         & !- units
-                                "ENV.pressure"     )                            !- output name
-    call this%output_%register( this%domain_,                                 &
-                                "number density air",                         & !- variable name
-                                "mol m-3",                                    & !- units
-                                "ENV.number_density_air" )                      !- output name
+    call this%output_%register_output_variable( this%domain_,                 &
+                                                "temperature",                & !- variable name
+                                                "K",                          & !- units
+                                                "ENV.temperature"  )            !- output name
+    call this%output_%register_output_variable( this%domain_,                 &
+                                                "pressure",                   & !- variable name
+                                                "Pa",                         & !- units
+                                                "ENV.pressure"     )            !- output name
+    call this%output_%register_output_variable( this%domain_,                 &
+                                                "number density air",         & !- variable name
+                                                "mol m-3",                    & !- units
+                                                "ENV.number_density_air" )      !- output name
 
   end subroutine register_output_variables
 
