@@ -3,12 +3,14 @@
 
 # whitelist things to copy
 !CMakeLists.txt
+!SetDefaults.cmake
 !src/
 !apps/
 !libs/
 !test/
 !examples/
+!etc/
 
 # blacklist generated code
-libs/Mechanism_Collection/configured_tags/*
-libs/MICM_Chemistry/src/preprocessor_output/*
+libs/micm-collection/configured_tags/*
+libs/micm/src/preprocessor_output/*
