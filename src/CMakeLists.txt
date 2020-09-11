@@ -1,25 +1,7 @@
-######################################################################
-# MUSICA library
+################################################################################
+# MusicBox application
 
-set(MUSICA_SRC config.F90
-               domain.F90
-               domain_factory.F90
-               domains/cell.F90
-               initial_conditions.F90
-               output.F90
-               output_factory.F90
-               outputs/text.F90
-               util/assert.F90
-               util/constants.F90
-               util/convert.F90
-               util/iterator.F90
-               util/string.F90
-               util/io.F90)
+add_executable(music_box music_box.F90 music_box_core.F90)
 
-add_library(musicalib ${MUSICA_SRC})
+target_link_libraries(music_box musicalib micmlib)
 
-target_link_libraries(musicalib ${JSON_LIB} ${NETCDF_LIB})
-
-set_target_properties(musicalib PROPERTIES OUTPUT_NAME musica)
-
-######################################################################

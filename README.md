@@ -10,28 +10,28 @@ Copyright (C) 2020 National Center for Atmospheric Research
 
 # Install and run
 
-The fastest way to get started with MusicBox is with Docker. You will need to have [Docker Desktop](https://www.docker.com/get-started) and [git](https://git-scm.com) installed. Then, from a terminal window run:
+The fastest way to get started with MusicBox is with Docker. You will need to have [Docker Desktop](https://www.docker.com/get-started) installed. Then, from a terminal window run:
 
 ```
-git clone --recurse-submodules https://github.com/NCAR/music-box
-cd music-box
+docker run -it --rm ncar/music-box bash
 ```
 
-To set up the box model with the Chapman chemistry mechanism from the [Public Chemistry Cafe Mechanism Store](https://www.acom.ucar.edu/cafe), run:
+By default, MusicBox loads the Chapman chemistry mechanism. To run the model with this mechanism under one of the model configurations in the `examples/` folder:
 
 ```
-docker build -t music-box-test . --build-arg TAG_ID=chapman
-docker run -it music-box-test bash
-cd build
-```
-
-From here, you can specify model parameters and initial conditions, or use one of the test configurations provided in `/examples`, such as:
-
-```
-./music_box ../music-box/examples/dark_chamber/config.json
+cd /build
+cp examples/bright_chamber/use_case_4.json .
+cp examples/bright_chamber/use_case_4_initial.csv data/
+./music_box use_case_4.json
 ```
 
 The results will be in a file named `output.csv`.
+
+To set up the box model with a different mechanism from the [Public Chemistry Cafe Mechanism Store](https://www.acom.ucar.edu/cafe), run:
+
+```
+/change_mechanism.sh T1mozcart
+```
 
 # Documentation
 

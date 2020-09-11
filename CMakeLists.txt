@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
+set(CMAKE_USER_MAKE_RULES_OVERRIDE "SetDefaults.cmake")
 project(MUSICA)
 enable_language(Fortran)
 
@@ -7,38 +8,33 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 ################################################################################
 # options
 
-option(ENABLE_NETCDF "Enable NetCDF for input/output" ON)
-
 ################################################################################
 # NetCDF library
 
-if(ENABLE_NETCDF)
-  find_path(NETCDF_INCLUDE_DIR netcdf.mod NETCDF.mod
-    DOC "NetCDF include directory (must contain netcdf.mod)"
-    PATHS
-      $ENV{NETCDF_HOME}/include
-      /usr/lib/gfortran/modules
-      /usr/lib64/gfortran/modules
-      /opt/local/include)
-  find_library(NETCDF_C_LIB netcdf
-    DOC "NetCDF C library"
-    PATHS
-      $ENV{NETCDF_HOME}/lib
-      $ENV{NETCDF_HOME}/lib64
-      opt/local/lib)
-  find_library(NETCDF_FORTRAN_LIB netcdff
-    DOC "NetCDF Fortran library"
-    PATHS
-      $ENV{NETCDF_HOME}/lib
-      $ENV{NETCDF_HOME}/lib64
-      /opt/local/lib)
-  set(NETCDF_LIBS ${NETCDF_C_LIB})
-  if(NETCDF_FORTRAN_LIB)
-    set(NETCDF_LIBS ${NETCDF_LIBS} ${NETCDF_FORTRAN_LIB})
-  endif()
-  include_directories(${NETCDF_INCLUDE_DIR})
-  add_definitions(-DMUSICA_USE_NETCDF)
+find_path(NETCDF_INCLUDE_DIR netcdf.mod NETCDF.mod
+  DOC "NetCDF include directory (must contain netcdf.mod)"
+  PATHS
+    $ENV{NETCDF_HOME}/include
+    /usr/lib/gfortran/modules
+    /usr/lib64/gfortran/modules
+    /opt/local/include)
+find_library(NETCDF_C_LIB netcdf
+  DOC "NetCDF C library"
+  PATHS
+    $ENV{NETCDF_HOME}/lib
+    $ENV{NETCDF_HOME}/lib64
+    opt/local/lib)
+find_library(NETCDF_FORTRAN_LIB netcdff
+  DOC "NetCDF Fortran library"
+  PATHS
+    $ENV{NETCDF_HOME}/lib
+    $ENV{NETCDF_HOME}/lib64
+    /opt/local/lib)
+set(NETCDF_LIBS ${NETCDF_C_LIB})
+if(NETCDF_FORTRAN_LIB)
+  set(NETCDF_LIBS ${NETCDF_LIBS} ${NETCDF_FORTRAN_LIB})
 endif()
+include_directories(${NETCDF_INCLUDE_DIR})
 
 ################################################################################
 # json-fortran library
@@ -68,19 +64,19 @@ add_custom_target(data-directory ALL COMMAND ${CMAKE_COMMAND} -E make_directory
 ################################################################################
 # MUSICA library
 
-add_subdirectory(src)
-include_directories(${CMAKE_BINARY_DIR}/src)
+add_subdirectory(libs/musica-core/src)
+include_directories(${CMAKE_BINARY_DIR}/libs/musica-core/src)
 
 ################################################################################
 # MICM library
 
-add_subdirectory(libs/MICM_chemistry/src)
-include_directories(${CMAKE_BINARY_DIR}/libs/MICM_chemistry/src)
+add_subdirectory(libs/micm/src)
+include_directories(${CMAKE_BINARY_DIR}/libs/micm/src)
 
 ################################################################################
 # MusicBox application
 
-add_subdirectory(apps)
+add_subdirectory(src)
 
 ################################################################################
 # MUSICA tests

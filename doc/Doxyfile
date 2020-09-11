@@ -765,8 +765,8 @@ WARN_LOGFILE           =
 
 INPUT                  = doxygen_files \
                          ../src \
-                         ../apps \
-                         ../libs/MICM_Chemistry/src \
+                         ../libs/micm/src \
+                         ../libs/musica-core/src \
                          ../test
 
 # This tag can be used to specify the character encoding of the source files
