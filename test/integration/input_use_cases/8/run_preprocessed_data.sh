@@ -13,7 +13,7 @@ if ! $exec_str; then
   echo FAIL
   exit 1
 else
-  if cmp -s "output.csv" "../expected_preprocessed_output.csv"; then
+  if cmp -s "output.csv" "../expected_output.csv"; then
     echo PASS
     exit 0
   else
