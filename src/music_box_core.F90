@@ -10,9 +10,9 @@ module music_box_core
   use micm_core,                       only : chemistry_core_t => core_t
   use musica_constants,                only : musica_ik, musica_dk
   use musica_datetime,                 only : datetime_t
-  use musica_domain,                   only : domain_t,                       &
-                                              domain_state_mutator_ptr,       &
-                                              domain_state_accessor_ptr
+  use musica_domain,                   only : domain_t
+  use musica_domain_state_mutator,     only : domain_state_mutator_ptr
+  use musica_domain_state_accessor,    only : domain_state_accessor_ptr
   use musica_emissions,                only : emissions_t
   use musica_evolving_conditions,      only : evolving_conditions_t
   use musica_initial_conditions,       only : initial_conditions_t
@@ -108,7 +108,7 @@ contains
 
     use musica_array,                  only : merge_series
     use musica_config,                 only : config_t
-    use musica_domain,                 only : domain_iterator_t
+    use musica_domain_iterator,        only : domain_iterator_t
     use musica_domain_factory,         only : domain_builder
     use musica_string,                 only : string_t
 
@@ -232,7 +232,9 @@ contains
   !> Run the model
   subroutine run( this )
 
-    use musica_domain,                 only : domain_iterator_t, domain_state_t
+    use musica_domain_iterator,        only : domain_iterator_t
+    use musica_domain_state,           only : domain_state_t
+    use musica_domain_target_cells,    only : domain_target_cells_t
     use musica_logger,                 only : logger_t
 
     !> MusicBox core
@@ -247,6 +249,7 @@ contains
     class(domain_state_t), pointer :: state
 
     ! domain iterator over every cell
+    type(domain_target_cells_t) :: all_cells
     class(domain_iterator_t), pointer :: cell_iter
 
     type(logger_t) :: logger
@@ -256,7 +259,7 @@ contains
             this%simulation_times__s_( size( this%simulation_times__s_ ) ) )
 
     ! set up the domain iterators
-    cell_iter => this%domain_%cell_iterator( )
+    cell_iter => this%domain_%iterator( all_cells )
 
     ! reset to initial conditions
     sim_time__s = this%simulation_times__s_( 1 )
@@ -400,11 +403,16 @@ contains
   subroutine register_standard_state_variables( this )
 
     use musica_assert,                 only : assert
+    use musica_data_type,              only : kDouble
+    use musica_domain_target_cells,    only : domain_target_cells_t
+    use musica_property,               only : property_t
 
     !> MusicBox core
     class(core_t), intent(inout) :: this
 
     character(len=*), parameter :: my_name = "MUSICA core registrar"
+    type(property_t), pointer :: prop
+    type(domain_target_cells_t) :: all_cells
 
     call assert( 943402309, associated( this%domain_ ) )
 
@@ -414,36 +422,31 @@ contains
     ! register variables and get mutators
 
     ! temperature
-    call this%domain_%register_cell_state_variable( "temperature",            & !- variable name
-                                                    "K",                      & !- units
-                                                    298.15d0,                 & !- default value
-                                                    my_name )
-    this%mutators_( kTemperature       )%val_ =>                              &
-      this%domain_%cell_state_mutator( "temperature", "K", my_name )
-    this%accessors_( kTemperature      )%val_ =>                              &
-      this%domain_%cell_state_accessor( "temperature", "K", my_name )
+    prop => property_t( my_name, name = "temperature", units = "K",           &
+                        applies_to = all_cells, data_type = kDouble,          &
+                        default_value = 0.0_musica_dk )
+    call this%domain_%register( prop )
+    this%mutators_(  kTemperature )%val_ => this%domain_%mutator(  prop )
+    this%accessors_( kTemperature )%val_ => this%domain_%accessor( prop )
+    deallocate( prop )
 
     ! pressure
-    call this%domain_%register_cell_state_variable( "pressure",               & !- variable name
-                                                    "Pa",                     & !- units
-                                                     101325.0d0,              & !- default value
-                                                     my_name )
-    this%mutators_( kPressure          )%val_ =>                              &
-      this%domain_%cell_state_mutator( "pressure", "Pa", my_name )
-    this%accessors_( kPressure         )%val_ =>                              &
-      this%domain_%cell_state_accessor( "pressure", "Pa", my_name )
+    prop => property_t( my_name, name = "pressure", units = "Pa",             &
+                        applies_to = all_cells, data_type = kDouble,          &
+                        default_value = 0.0_musica_dk )
+    call this%domain_%register( prop )
+    this%mutators_(  kPressure )%val_ => this%domain_%mutator(  prop )
+    this%accessors_( kPressure )%val_ => this%domain_%accessor( prop )
+    deallocate( prop )
 
     ! number density of air
-    call this%domain_%register_cell_state_variable( "number density air",     & !- variable name
-                                                    "mol m-3",                & !- units
-                                                    0.0d0,                    & !- default value
-                                                    my_name )
-    this%mutators_( kNumberDensityAir  )%val_ =>                              &
-      this%domain_%cell_state_mutator(  "number density air", "mol m-3",      &
-                                        my_name )
-    this%accessors_( kNumberDensityAir )%val_ =>                              &
-      this%domain_%cell_state_accessor( "number density air", "mol m-3",      &
-                                        my_name )
+    prop => property_t( my_name, name = "number density air",                 &
+                        units = "mol m-3", applies_to = all_cells,            &
+                        data_type = kDouble, default_value = 0.0_musica_dk )
+    call this%domain_%register( prop )
+    this%mutators_(  kNumberDensityAir )%val_ => this%domain_%mutator(  prop )
+    this%accessors_( kNumberDensityAir )%val_ => this%domain_%accessor( prop )
+    deallocate( prop )
 
   end subroutine register_standard_state_variables
 
@@ -479,8 +482,8 @@ contains
   subroutine update_environment( this, domain_state, cell )
 
     use musica_constants,              only : kUniversalGasConstant
-    use musica_domain,                 only : domain_state_t,                 &
-                                              domain_iterator_t
+    use musica_domain_state,           only : domain_state_t
+    use musica_domain_iterator,        only : domain_iterator_t
 
     !> MusicBox core
     class(core_t), intent(inout) :: this
@@ -510,7 +513,7 @@ contains
   !! output time
   subroutine output( this, state, simulation_time__s )
 
-    use musica_domain,                 only : domain_state_t
+    use musica_domain_state,           only : domain_state_t
 
     !> MusicBox core
     class(core_t), intent(inout) :: this
@@ -566,17 +569,17 @@ contains
   !> Print the MusicBox model header
   subroutine print_header( )
 
-    write(*,*) ""
-    write(*,*) ",---.    ,---.  ___    _    .-'''-. .-./`)     _______    _______       ,-----.     _____     __   "
-    write(*,*) "|    \  /    |.'   |  | |  / _     \\ .-.')   /   __  \  \  ____  \   .'  .-,  '.   \   _\   /  /  "
-    write(*,*) "|  ,  \/  ,  ||   .'  | | (`' )/`--'/ `-' \  | ,_/  \__) | |    \ |  / ,-.|  \ _ \  .-./ ). /  '   "
-    write(*,*) "|  |\_   /|  |.'  '_  | |(_ o _).    `-'`'`,-./  )       | |____/ / ;  \  '_ /  | : \ '_ .') .'    "
-    write(*,*) "|  _( )_/ |  |'   ( \.-.| (_,_). '.  .---. \  '_ '`)     |   _ _ '. |  _`,/ \ _/  |(_ (_) _) '     "
-    write(*,*) "| (_ o _) |  |' (`. _` /|.---.  \  : |   |  > (_)  )  __ |  ( ' )  \: (  '\_/ \   ;  /    \   \    "
-    write(*,*) "|  (_,_)  |  || (_ (_) _)\    `-'  | |   | (  .  .-'_/  )| (_{;}_) | \ `'/  \  ) /   `-'`-'    \   "
-    write(*,*) "|  |      |  | \ /  . \ / \       /  |   |  `-'`-'     / |  (_,_)  /  '. \_/``'.'   /  /   \    \  "
-    write(*,*) "'--'      '--'  ``-'`-''   `-...-'   '---'    `._____.'  /_______.'     '-----'    '--'     '----' "
-    write(*,*) ""
+    write(*,*)
+    write(*,*) ",---.    ,---.  ___    _    .-'''-. .-./`)     _______    _______       ,-----.     _____     __"
+    write(*,*) "|    \  /    |.'   |  | |  / _     \\ .-.')   /   __  \  \  ____  \   .'  .-,  '.   \   _\   /  /"
+    write(*,*) "|  ,  \/  ,  ||   .'  | | (`' )/`--'/ `-' \  | ,_/  \__) | |    \ |  / ,-.|  \ _ \  .-./ ). /  '"
+    write(*,*) "|  |\_   /|  |.'  '_  | |(_ o _).    `-'`'`,-./  )       | |____/ / ;  \  '_ /  | : \ '_ .') .'"
+    write(*,*) "|  _( )_/ |  |'   ( \.-.| (_,_). '.  .---. \  '_ '`)     |   _ _ '. |  _`,/ \ _/  |(_ (_) _) '"
+    write(*,*) "| (_ o _) |  |' (`. _` /|.---.  \  : |   |  > (_)  )  __ |  ( ' )  \: (  '\_/ \   ;  /    \   \"
+    write(*,*) "|  (_,_)  |  || (_ (_) _)\    `-'  | |   | (  .  .-'_/  )| (_{;}_) | \ `'/  \  ) /   `-'`-'    \"
+    write(*,*) "|  |      |  | \ /  . \ / \       /  |   |  `-'`-'     / |  (_,_)  /  '. \_/``'.'   /  /   \    \"
+    write(*,*) "'--'      '--'  ``-'`-''   `-...-'   '---'    `._____.'  /_______.'     '-----'    '--'     '----'"
+    write(*,*)
 
   end subroutine print_header
 
