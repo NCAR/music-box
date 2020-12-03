@@ -20,6 +20,10 @@
       }
     }
   },
+  "environmental conditions" : {
+    "temperature" : { "initial value [K]"   : 298.15 },
+    "pressure"    : { "initial value [atm]" : 1.0    }
+  },
   "evolving conditions" : {
     "evo_N2_Ar_O2.csv" : {
       "linear combinations" : {
