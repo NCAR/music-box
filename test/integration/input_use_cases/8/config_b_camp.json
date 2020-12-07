@@ -1,0 +1,52 @@
+{
+  "box model options" : {
+    "grid"                    : "box",
+    "chemistry time step [s]" : 1.0,
+    "output time step [s]"    : 10.0,
+    "simulation length [s]"   : 50.0
+  },
+  "initial conditions" : {
+    "init_O_O1D_O3.csv" : {
+      "properties" : {
+        "CONC.O3" : { "variability" : "tethered" }
+      },
+      "linear combinations" : {
+        "atomic oxygen" : {
+          "properties" : {
+            "CONC.O" : { },
+            "CONC.O1D" : { }
+          }
+        }
+      }
+    }
+  },
+  "environmental conditions" : {
+    "temperature" : { "initial value [K]"   : 298.15 },
+    "pressure"    : { "initial value [atm]" : 1.0    }
+  },
+  "evolving conditions" : {
+    "evo_N2_Ar_O2.csv" : {
+      "linear combinations" : {
+        "N2 Ar" : {
+          "properties" : {
+            "CONC.N2" : { },
+            "CONC.Ar" : { }
+          }
+        }
+      }
+    },
+    "emit_all.csv" : { }
+  },
+  "model components" : [
+    {
+      "type" : "CAMP",
+      "configuration file" : "camp_data/config.json",
+      "override species" : {
+        "M" : { "mixing ratio mol mol-1" : 1.0 }
+      },
+      "suppress output" : {
+        "M" : { }
+      }
+    }
+  ]
+}
