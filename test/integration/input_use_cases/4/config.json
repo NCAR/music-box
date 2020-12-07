@@ -15,13 +15,15 @@
     "O3_1" : { "initial value [s-1]" : 1.0e-5 },
     "O3_2" : { "initial value [s-1]" : 1.0e-6 }
   },
-  "chemistry" : {
-    "type" : "MICM",
-    "solver" : {
-      "type" : "Rosenbrock",
-      "absolute tolerance" : 1.0e-12,
-      "relative tolerance" : 1.0e-4
+  "model components" : [
+    {
+      "type" : "MICM",
+      "solver" : {
+        "type" : "Rosenbrock",
+        "chemistry time step [min]" : 5.0,
+        "absolute tolerance" : 1.0e-12,
+        "relative tolerance" : 1.0e-4
+      }
     }
-  }
+  ]
 }
-

@@ -12,14 +12,17 @@
       }
     }
   },
-  "chemistry" : {
-    "type" : "MICM",
-    "solve" : false,
-    "solver" : {
-      "type" : "Rosenbrock",
-      "absolute tolerance" : 1.0e-12,
-      "relative tolerance" : 1.0e-4
+  "model components" : [
+    {
+      "type" : "MICM",
+      "solve" : false,
+      "solver" : {
+        "type" : "Rosenbrock",
+        "chemistry time step [min]" : 5.0,
+        "absolute tolerance" : 1.0e-12,
+        "relative tolerance" : 1.0e-4
+      }
     }
-  }
+  ]
 }
 
