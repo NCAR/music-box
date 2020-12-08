@@ -10,11 +10,12 @@ module music_box_core
   use micm_core,                       only : chemistry_core_t => core_t
   use musica_constants,                only : musica_ik, musica_dk
   use musica_datetime,                 only : datetime_t
-  use musica_domain,                   only : domain_t, domain_state_t,       &
-                                              domain_state_mutator_ptr,       &
-                                              domain_state_accessor_ptr
+  use musica_domain,                   only : domain_t
+  use musica_domain_state_mutator,     only : domain_state_mutator_ptr
+  use musica_domain_state_accessor,    only : domain_state_accessor_ptr
   use musica_emissions,                only : emissions_t
   use musica_evolving_conditions,      only : evolving_conditions_t
+  use musica_initial_conditions,       only : initial_conditions_t
   use musica_input_output_processor,   only : input_output_processor_t
   use musica_loss,                     only : loss_t
 
@@ -23,7 +24,7 @@ module music_box_core
 
   public :: core_t
 
-  !> MUSICA core
+  !> MusicBox core
   !!
   !! Top-level model object. The core manages model initialization, grids,
   !! science packages, output, and finalization.
@@ -31,6 +32,8 @@ module music_box_core
     private
     !> Model domain
     class(domain_t), pointer :: domain_ => null( )
+    !> Chemistry base time step [s]
+    real(kind=musica_dk) :: chemistry_base_time_step__s_
     !> Chemistry solve times [s]
     real(kind=musica_dk), allocatable :: simulation_times__s_(:)
     !> Output time step [s]
@@ -39,12 +42,12 @@ module music_box_core
     type(datetime_t) :: simulation_start_
     !> Simulation length [s]
     real(kind=musica_dk) :: simulation_length__s_
-    !> Domain state
-    class(domain_state_t), pointer :: state_ => null( )
     !> Standard state variable mutators
     type(domain_state_mutator_ptr), allocatable :: mutators_(:)
     !> Standard state variable accessor
     type(domain_state_accessor_ptr), allocatable :: accessors_(:)
+    !> Initial model conditions
+    class(initial_conditions_t), pointer :: initial_conditions_ => null( )
     !> Evolving model conditions
     class(evolving_conditions_t), pointer :: evolving_conditions_ => null( )
     !> Chemistry core
@@ -60,6 +63,8 @@ module music_box_core
   contains
     !> Run the model
     procedure :: run
+    !> Preprocess input data
+    procedure :: preprocess_input
     !> Register standard state variables
     procedure, private :: register_standard_state_variables
     !> Register output variables
@@ -96,30 +101,27 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> MUSICA Core constructor
+  !> MusicBox core constructor
   !!
   !! Loads input data and initializes model components.
   function constructor( config_file_path ) result( new_obj )
 
     use musica_array,                  only : merge_series
     use musica_config,                 only : config_t
-    use musica_domain,                 only : domain_iterator_t
+    use musica_domain_iterator,        only : domain_iterator_t
     use musica_domain_factory,         only : domain_builder
-    use musica_initial_conditions,     only : set_initial_conditions
     use musica_string,                 only : string_t
 
-    !> New MUSICA Core
+    !> New MusicBox core
     type(core_t) :: new_obj
     !> Path to the configuration file
     character(len=*), intent(in) :: config_file_path
 
-    character(len=*), parameter :: my_name = "MUSICA core constructor"
+    character(len=*), parameter :: my_name = "MusicBox core constructor"
     type(config_t) :: config, model_opts, domain_opts, output_opts, chem_opts,&
                       evolving_opts, datetime_data
     type(string_t) :: domain_type
     logical :: found
-    class(domain_iterator_t), pointer :: cell_iter
-    real(kind=musica_dk) :: time_step
     real(kind=musica_dk), allocatable :: update_times(:)
     integer(kind=musica_ik) :: i_step, n_time_steps
 
@@ -146,7 +148,7 @@ contains
 
     ! simulation time parameters
     call model_opts%get( "chemistry time step", "s",                          &
-                         time_step, my_name )
+                         new_obj%chemistry_base_time_step__s_, my_name )
     call model_opts%get( "output time step", "s",                             &
                          new_obj%output_time_step__s_, my_name )
     call model_opts%get( "simulation length", "s",                            &
@@ -155,16 +157,17 @@ contains
                          found = found )
     if( found ) then
       new_obj%simulation_start_ = datetime_t( datetime_data )
-      call datetime_data%finalize( )
     end if
 
     ! set the default chemistry times
-    n_time_steps = ceiling( new_obj%simulation_length__s_ / time_step ) + 1
+    n_time_steps = ceiling( new_obj%simulation_length__s_ /                   &
+                            new_obj%chemistry_base_time_step__s_ ) + 1
     allocate( new_obj%simulation_times__s_( n_time_steps ) )
     do i_step = 1, n_time_steps
       new_obj%simulation_times__s_( i_step ) =                                &
         new_obj%simulation_start_%in_seconds( ) +                             &
-        min( ( i_step - 1 ) * time_step, new_obj%simulation_length__s_ )
+        min( ( i_step - 1 ) * new_obj%chemistry_base_time_step__s_,           &
+             new_obj%simulation_length__s_ )
     end do
 
     ! include output times in solver times
@@ -183,14 +186,18 @@ contains
     ! initialize the chemistry module
     call config%get( "chemistry", chem_opts, my_name, found = found )
     if( found ) then
-      call chem_opts%add( "chemistry time step", "s", time_step, my_name )
+      call chem_opts%add( "chemistry time step", "s",                         &
+                          new_obj%chemistry_base_time_step__s_, my_name )
       new_obj%chemistry_core_ => chemistry_core_t( chem_opts,                 &
                                                    new_obj%domain_,           &
                                                    new_obj%output_ )
       call chem_opts%get( "solve", new_obj%solve_chemistry_, my_name,         &
                           default = .true. )
-      call chem_opts%finalize( )
     end if
+
+    ! set up the initial conditions
+    new_obj%initial_conditions_ => initial_conditions_t( config,              &
+                                                         new_obj%domain_ )
 
     ! set up the evolving conditions
     call config%get( "evolving conditions", evolving_opts, my_name,           &
@@ -202,18 +209,7 @@ contains
       new_obj%simulation_times__s_ =                                          &
         merge_series( new_obj%simulation_times__s_, update_times,             &
                       with_bounds_from = new_obj%simulation_times__s_ )
-      call evolving_opts%finalize( )
     end if
-
-    ! get a domain state
-    new_obj%state_ => new_obj%domain_%new_state( )
-
-    ! set the initial conditions
-    call set_initial_conditions( config, new_obj%domain_, new_obj%state_ )
-    cell_iter => new_obj%domain_%cell_iterator( )
-    do while( cell_iter%next( ) )
-      call new_obj%update_environment( new_obj%state_, cell_iter )
-    end do
 
     ! set up the emissions handler
     ! (chemical species and emissions rates must all be registered by now)
@@ -223,15 +219,11 @@ contains
     ! (chemical species and loss rate constants must all be registered by now)
     new_obj%loss_ => loss_t( new_obj%domain_ )
 
+    ! lock the domain against further changes
+    call new_obj%domain_%lock( )
+
     ! output the registered domain state variables
     call new_obj%domain_%output_registry( )
-
-    ! clean up
-    call config%finalize( )
-    call domain_opts%finalize( )
-    call model_opts%finalize( )
-    call output_opts%finalize( )
-    deallocate( cell_iter )
 
   end function constructor
 
@@ -240,10 +232,12 @@ contains
   !> Run the model
   subroutine run( this )
 
-    use musica_domain,                 only : domain_iterator_t
+    use musica_domain_iterator,        only : domain_iterator_t
+    use musica_domain_state,           only : domain_state_t
+    use musica_domain_target_cells,    only : domain_target_cells_t
     use musica_logger,                 only : logger_t
 
-    !> MUSICA Core
+    !> MusicBox core
     class(core_t), intent(inout) :: this
 
     ! Current model simulation time [s]
@@ -251,7 +245,11 @@ contains
     ! Current model simulation time step [s]
     real(kind=musica_dk) :: time_step__s
 
+    ! model domain state
+    class(domain_state_t), pointer :: state
+
     ! domain iterator over every cell
+    type(domain_target_cells_t) :: all_cells
     class(domain_iterator_t), pointer :: cell_iter
 
     type(logger_t) :: logger
@@ -261,10 +259,22 @@ contains
             this%simulation_times__s_( size( this%simulation_times__s_ ) ) )
 
     ! set up the domain iterators
-    cell_iter => this%domain_%cell_iterator( )
+    cell_iter => this%domain_%iterator( all_cells )
 
     ! reset to initial conditions
     sim_time__s = this%simulation_times__s_( 1 )
+
+    ! get a new model state and set the initial conditions
+    state => this%initial_conditions_%get_state( this%domain_ )
+    if( associated( this%evolving_conditions_ ) ) then
+      call this%evolving_conditions_%update_state( this%domain_,              &
+                                                   state,                     &
+                                                   sim_time__s )
+    end if
+    call cell_iter%reset( )
+    do while( cell_iter%next( ) )
+      call this%update_environment( state, cell_iter )
+    end do
 
     ! start simulation
     do i_step = 2, size( this%simulation_times__s_ )
@@ -272,16 +282,19 @@ contains
       call logger%progress( sim_time__s )
 
       ! output initial conditions for this time step
-      call this%output( sim_time__s )
+      call this%output( state, sim_time__s )
 
       ! determine the current time step
       time_step__s = this%simulation_times__s_( i_step ) -                    &
                      this%simulation_times__s_( i_step - 1 )
 
+      ! update variables tethered to initial conditions
+      call this%initial_conditions_%update_state( this%domain_, state )
+
       ! update evolving conditions from input data
       if( associated( this%evolving_conditions_ ) ) then
         call this%evolving_conditions_%update_state( this%domain_,            &
-                                                     this%state_,             &
+                                                     state,                   &
                                                      sim_time__s )
       end if
 
@@ -290,18 +303,18 @@ contains
       do while( cell_iter%next( ) )
 
         ! update environmental conditions
-        call this%update_environment( this%state_, cell_iter )
+        call this%update_environment( state, cell_iter )
 
         ! emit chemical species
-        call this%emissions_%emit( this%state_, cell_iter, time_step__s )
+        call this%emissions_%emit( state, cell_iter, time_step__s )
 
         ! remove chemical species
-        call this%loss_%do_loss( this%state_, cell_iter, time_step__s )
+        call this%loss_%do_loss( state, cell_iter, time_step__s )
 
         ! solve the system for the current time and cell
         if( associated( this%chemistry_core_ ) .and.                          &
             this%solve_chemistry_ ) then
-          call this%chemistry_core_%solve( this%state_, cell_iter,            &
+          call this%chemistry_core_%solve( state, cell_iter,                  &
                                            sim_time__s, time_step__s )
         end if
 
@@ -313,9 +326,10 @@ contains
     end do
 
     ! output the final model state
-    call this%output( sim_time__s )
+    call this%output( state, sim_time__s )
 
     ! clean up
+    deallocate( state     )
     deallocate( cell_iter )
 
     write(*,*) ""
@@ -325,16 +339,80 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+  !> Preprocess input data
+  subroutine preprocess_input( this, output_path )
+
+    use musica_assert,                 only : assert
+    use musica_config,                 only : config_t
+
+    !> MusicBox core
+    class(core_t), intent(inout) :: this
+    !> Directory to save model configuration to
+    character(len=*), intent(in) :: output_path
+
+    character(len=*), parameter :: my_name = "Model input preprocessor"
+    type(config_t) :: config, box_model, init_cond, evolv_cond, chemistry,    &
+                      date_config
+
+    write(*,*) "MusicBox configuration will saved be to: "//trim( output_path )
+    write(*,*)
+    write(*,*) "Preprocessing input data..."
+
+    call assert( 215400742, associated( this%domain_ ) )
+    call box_model%add( "grid", this%domain_%type( ), my_name )
+    call box_model%add( "chemistry time step", "s",                           &
+                        this%chemistry_base_time_step__s_, my_name )
+    call box_model%add( "output time step", "s", this%output_time_step__s_,   &
+                        my_name )
+    call box_model%add( "simulation length", "s", this%simulation_length__s_, &
+                        my_name )
+    if( this%simulation_start_%in_seconds( ) .gt. 0.0_musica_dk ) then
+      call this%simulation_start_%to_config( date_config )
+      call box_model%add( "simulation start", date_config, my_name )
+    end if
+    call config%add( "box model options", box_model, my_name )
+
+    call this%initial_conditions_%preprocess_input( init_cond, this%domain_,  &
+                                                    output_path )
+    call config%add( "initial conditions", init_cond, my_name )
+
+    if( associated( this%evolving_conditions_ ) ) then
+      call this%evolving_conditions_%preprocess_input( evolv_cond,            &
+                                                       this%domain_,          &
+                                                       output_path )
+      call config%add( "evolving conditions", evolv_cond, my_name )
+    end if
+
+    call assert( 228887028, associated( this%chemistry_core_ ) )
+    call this%chemistry_core_%preprocess_input( chemistry, output_path )
+    call chemistry%add( "solve", this%solve_chemistry_, my_name )
+    call config%add( "chemistry", chemistry, my_name )
+
+    call config%to_file( output_path//"config.json" )
+
+    write(*,*)
+    write(*,*) "MusicBox preprocessing complete!"
+    write(*,*)
+
+  end subroutine preprocess_input
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   !> Register the standard state variable accessors and mutators with the
   !! domain.
   subroutine register_standard_state_variables( this )
 
     use musica_assert,                 only : assert
+    use musica_data_type,              only : kDouble
+    use musica_domain_target_cells,    only : domain_target_cells_t
+    use musica_property,               only : property_t
 
-    !> MUSICA Core
+    !> MusicBox core
     class(core_t), intent(inout) :: this
 
     character(len=*), parameter :: my_name = "MUSICA core registrar"
+    type(property_t), pointer :: prop
+    type(domain_target_cells_t) :: all_cells
 
     call assert( 943402309, associated( this%domain_ ) )
 
@@ -344,36 +422,31 @@ contains
     ! register variables and get mutators
 
     ! temperature
-    call this%domain_%register_cell_state_variable( "temperature",            & !- variable name
-                                                    "K",                      & !- units
-                                                    298.15d0,                 & !- default value
-                                                    my_name )
-    this%mutators_( kTemperature      )%val_ =>                               &
-      this%domain_%cell_state_mutator( "temperature", "K", my_name )
-    this%accessors_( kTemperature      )%val_ =>                              &
-      this%domain_%cell_state_accessor( "temperature", "K", my_name )
+    prop => property_t( my_name, name = "temperature", units = "K",           &
+                        applies_to = all_cells, data_type = kDouble,          &
+                        default_value = 0.0_musica_dk )
+    call this%domain_%register( prop )
+    this%mutators_(  kTemperature )%val_ => this%domain_%mutator(  prop )
+    this%accessors_( kTemperature )%val_ => this%domain_%accessor( prop )
+    deallocate( prop )
 
     ! pressure
-    call this%domain_%register_cell_state_variable( "pressure",                  & !- variable name
-                                                 "Pa",                        & !- units
-                                                 101325.0d0,                  & !- default value
-                                                 my_name )
-    this%mutators_( kPressure         )%val_ =>                               &
-      this%domain_%cell_state_mutator( "pressure", "Pa", my_name )
-    this%accessors_( kPressure         )%val_ =>                              &
-      this%domain_%cell_state_accessor( "pressure", "Pa", my_name )
+    prop => property_t( my_name, name = "pressure", units = "Pa",             &
+                        applies_to = all_cells, data_type = kDouble,          &
+                        default_value = 0.0_musica_dk )
+    call this%domain_%register( prop )
+    this%mutators_(  kPressure )%val_ => this%domain_%mutator(  prop )
+    this%accessors_( kPressure )%val_ => this%domain_%accessor( prop )
+    deallocate( prop )
 
     ! number density of air
-    call this%domain_%register_cell_state_variable( "number density air",        & !- variable name
-                                                 "mol m-3",                   & !- units
-                                                 0.0d0,                       & !- default value
-                                                 my_name )
-    this%mutators_( kNumberDensityAir  )%val_ =>                              &
-      this%domain_%cell_state_mutator(  "number density air", "mol m-3",      &
-                                        my_name )
-    this%accessors_( kNumberDensityAir )%val_ =>                              &
-      this%domain_%cell_state_accessor( "number density air", "mol m-3",      &
-                                        my_name )
+    prop => property_t( my_name, name = "number density air",                 &
+                        units = "mol m-3", applies_to = all_cells,            &
+                        data_type = kDouble, default_value = 0.0_musica_dk )
+    call this%domain_%register( prop )
+    this%mutators_(  kNumberDensityAir )%val_ => this%domain_%mutator(  prop )
+    this%accessors_( kNumberDensityAir )%val_ => this%domain_%accessor( prop )
+    deallocate( prop )
 
   end subroutine register_standard_state_variables
 
@@ -382,7 +455,7 @@ contains
   !> Register output variables
   subroutine register_output_variables( this )
 
-    !> MUSICA Core
+    !> MusicBox core
     class(core_t), intent(inout) :: this
 
     call this%output_%register_output_variable( this%domain_,                 &
@@ -409,10 +482,10 @@ contains
   subroutine update_environment( this, domain_state, cell )
 
     use musica_constants,              only : kUniversalGasConstant
-    use musica_domain,                 only : domain_state_t,                 &
-                                              domain_iterator_t
+    use musica_domain_state,           only : domain_state_t
+    use musica_domain_iterator,        only : domain_iterator_t
 
-    !> MUSICA Core
+    !> MusicBox core
     class(core_t), intent(inout) :: this
     !> Domain state
     class(domain_state_t), intent(inout) :: domain_state
@@ -438,10 +511,14 @@ contains
   !!
   !! Outputs the model state when the simulation time corresponds to an
   !! output time
-  subroutine output( this, simulation_time__s )
+  subroutine output( this, state, simulation_time__s )
 
-    !> MUSICA Core
+    use musica_domain_state,           only : domain_state_t
+
+    !> MusicBox core
     class(core_t), intent(inout) :: this
+    !> Model domain state
+    class(domain_state_t), intent(in) :: state
     !> Current model simulation time [s]
     real(kind=musica_dk), intent(in) :: simulation_time__s
 
@@ -449,7 +526,7 @@ contains
         simulation_time__s .ge. this%simulation_length__s_ ) then
       call this%output_%output( simulation_time__s,                           &
                                 this%domain_,                                 &
-                                this%state_ )
+                                state )
     end if
 
   end subroutine output
@@ -458,13 +535,12 @@ contains
 
   subroutine finalize( this )
 
-    !> MUSICA Core
+    !> MusicBox core
     type(core_t), intent(inout) :: this
 
     integer :: i
 
     if( associated( this%domain_ ) ) deallocate( this%domain_ )
-    if( associated( this%state_  ) ) deallocate( this%state_  )
     if( allocated( this%mutators_ ) ) then
       do i = 1, size( this%mutators_ )
         if( associated( this%mutators_( i )%val_ ) )                          &
@@ -479,6 +555,8 @@ contains
     end if
     if( associated( this%evolving_conditions_ ) )                             &
         deallocate( this%evolving_conditions_ )
+    if( associated( this%initial_conditions_ ) )                              &
+        deallocate( this%initial_conditions_ )
     if( associated( this%chemistry_core_ ) ) deallocate( this%chemistry_core_ )
     if( associated( this%emissions_      ) ) deallocate( this%emissions_      )
     if( associated( this%loss_           ) ) deallocate( this%loss_           )
@@ -491,17 +569,17 @@ contains
   !> Print the MusicBox model header
   subroutine print_header( )
 
-    write(*,*) ""
-    write(*,*) ",---.    ,---.  ___    _    .-'''-. .-./`)     _______    _______       ,-----.     _____     __   "
-    write(*,*) "|    \  /    |.'   |  | |  / _     \\ .-.')   /   __  \  \  ____  \   .'  .-,  '.   \   _\   /  /  "
-    write(*,*) "|  ,  \/  ,  ||   .'  | | (`' )/`--'/ `-' \  | ,_/  \__) | |    \ |  / ,-.|  \ _ \  .-./ ). /  '   "
-    write(*,*) "|  |\_   /|  |.'  '_  | |(_ o _).    `-'`'`,-./  )       | |____/ / ;  \  '_ /  | : \ '_ .') .'    "
-    write(*,*) "|  _( )_/ |  |'   ( \.-.| (_,_). '.  .---. \  '_ '`)     |   _ _ '. |  _`,/ \ _/  |(_ (_) _) '     "
-    write(*,*) "| (_ o _) |  |' (`. _` /|.---.  \  : |   |  > (_)  )  __ |  ( ' )  \: (  '\_/ \   ;  /    \   \    "
-    write(*,*) "|  (_,_)  |  || (_ (_) _)\    `-'  | |   | (  .  .-'_/  )| (_{;}_) | \ `'/  \  ) /   `-'`-'    \   "
-    write(*,*) "|  |      |  | \ /  . \ / \       /  |   |  `-'`-'     / |  (_,_)  /  '. \_/``'.'   /  /   \    \  "
-    write(*,*) "'--'      '--'  ``-'`-''   `-...-'   '---'    `._____.'  /_______.'     '-----'    '--'     '----' "
-    write(*,*) ""
+    write(*,*)
+    write(*,*) ",---.    ,---.  ___    _    .-'''-. .-./`)     _______    _______       ,-----.     _____     __"
+    write(*,*) "|    \  /    |.'   |  | |  / _     \\ .-.')   /   __  \  \  ____  \   .'  .-,  '.   \   _\   /  /"
+    write(*,*) "|  ,  \/  ,  ||   .'  | | (`' )/`--'/ `-' \  | ,_/  \__) | |    \ |  / ,-.|  \ _ \  .-./ ). /  '"
+    write(*,*) "|  |\_   /|  |.'  '_  | |(_ o _).    `-'`'`,-./  )       | |____/ / ;  \  '_ /  | : \ '_ .') .'"
+    write(*,*) "|  _( )_/ |  |'   ( \.-.| (_,_). '.  .---. \  '_ '`)     |   _ _ '. |  _`,/ \ _/  |(_ (_) _) '"
+    write(*,*) "| (_ o _) |  |' (`. _` /|.---.  \  : |   |  > (_)  )  __ |  ( ' )  \: (  '\_/ \   ;  /    \   \"
+    write(*,*) "|  (_,_)  |  || (_ (_) _)\    `-'  | |   | (  .  .-'_/  )| (_{;}_) | \ `'/  \  ) /   `-'`-'    \"
+    write(*,*) "|  |      |  | \ /  . \ / \       /  |   |  `-'`-'     / |  (_,_)  /  '. \_/``'.'   /  /   \    \"
+    write(*,*) "'--'      '--'  ``-'`-''   `-...-'   '---'    `._____.'  /_______.'     '-----'    '--'     '----'"
+    write(*,*)
 
   end subroutine print_header
 
