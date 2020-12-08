@@ -10,7 +10,7 @@ Copyright (C) 2020 National Center for Atmospheric Research
 
 # Install and run
 
-The fastest way to get started with MusicBox is with Docker. You will need to have [Docker Desktop](https://www.docker.com/get-started) installed. Then, from a terminal window run:
+The fastest way to get started with MusicBox is with Docker. You will need to have [Docker Desktop](https://www.docker.com/get-started) installed and running. Then, from a terminal window run:
 
 ```
 docker run -it --rm ncar/music-box bash
