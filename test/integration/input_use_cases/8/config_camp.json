@@ -1,0 +1,95 @@
+{
+  "box model options" : {
+    "grid"                      : "box",
+    "chemistry time step [min]" : 5.0,
+    "output time step [hr]"     : 1.0,
+    "simulation length [hr]"    : 2.5,
+    "simulation start" : {
+      "time zone" : "UTC-8",
+      "year" : 2020,
+      "month" : 6,
+      "day" : 10,
+      "hour" : 13
+    }
+  },
+  "initial conditions" : {
+    "initial.csv" : {
+      "delimiter" : "&",
+      "properties" : {
+        "CONC.O3" : { "variability" : "tethered" }
+      },
+      "linear combinations" : {
+        "atomic oxygen" : {
+          "properties" : {
+            "CONC.O" : { },
+            "CONC.O1D" : { }
+          },
+          "scale factor" : 1.2
+        }
+      }
+    }
+  },
+  "evolving conditions" : {
+    "emissions.csv" : {
+      "properties" : {
+        "time.hr" : {
+          "shift first entry to" :{
+            "time zone" : "UTC-8",
+            "year" : 2020,
+            "month" : 6,
+            "day" : 10,
+            "hour" : 13
+          }
+        }
+      }
+    },
+    "wall_loss_rates_011519.txt" : {
+      "delimiter" : ";",
+      "time axis" : "columns",
+      "properties" : {
+        "simtime" : {
+          "MusicBox name" : "time",
+          "units" : "hr",
+          "shift first entry to" :{
+            "time zone" : "UTC-8",
+            "year" : 2020,
+            "month" : 6,
+            "day" : 10,
+            "hour" : 13
+          }
+        },
+        "*" : {
+          "MusicBox name" : "LOSS.*",
+          "units" : "min-1"
+        }
+      }
+    },
+    "parking_lot_photo_rates.nc" : {
+      "time offset" : { "years" : 15 },
+      "properties" : {
+        "*" : { "MusicBox name" : "PHOT.*" },
+        "time" : {
+          "MusicBox name" : "time",
+          "shift first entry to" : {
+            "year" : 2020,
+            "month" : 1,
+            "day" : 1,
+            "time zone" : "UTC-8"
+          }
+        }
+      }
+    }
+  },
+  "model components" : [
+    {
+      "type" : "CAMP",
+      "configuration file" : "camp_data/config.json",
+      "override species" : {
+        "M" : { "mixing ratio mol mol-1" : 1.0 }
+      },
+      "suppress output" : {
+        "M" : { }
+      }
+    }
+  ]
+}
