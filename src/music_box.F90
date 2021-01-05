@@ -22,6 +22,9 @@ program music_box
   ! Preprocess input data only
   logical :: preprocess_only = .false.
 
+  character(len=*), parameter :: kDoneFile = 'MODEL_RUN_COMPLETE'
+  character(len=*), parameter :: kRunningFile = 'MODEL_RUNNING'
+
   ! Get the model configuration file and options from the command line
   if( command_argument_count( ) .lt. 1 ) call fail_run( )
   call get_command_argument( command_argument_count( ), config_file_name )
@@ -34,6 +37,10 @@ program music_box
     end if
   end do
 
+  open(unit=10, file=kRunningFile)
+  write(10,*) "running"
+  close(10)
+
   allocate( core )
   core = core_t( config_file_name )
 
@@ -45,6 +52,10 @@ program music_box
   end if
 
   deallocate( core )
+
+  open(unit=10, file=kDoneFile)
+  write(10,*) "complete"
+  close(10)
 
 contains
 
