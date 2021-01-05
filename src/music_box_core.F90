@@ -7,7 +7,7 @@
 !> The core_t type and related functions
 module music_box_core
 
-  use micm_core,                       only : chemistry_core_t => core_t
+  use musica_component_set,            only : component_set_t
   use musica_constants,                only : musica_ik, musica_dk
   use musica_datetime,                 only : datetime_t
   use musica_domain,                   only : domain_t
@@ -32,8 +32,8 @@ module music_box_core
     private
     !> Model domain
     class(domain_t), pointer :: domain_ => null( )
-    !> Chemistry base time step [s]
-    real(kind=musica_dk) :: chemistry_base_time_step__s_
+    !> Base time step for the model [s]
+    real(kind=musica_dk) :: model_base_time_step__s_
     !> Chemistry solve times [s]
     real(kind=musica_dk), allocatable :: simulation_times__s_(:)
     !> Output time step [s]
@@ -50,16 +50,10 @@ module music_box_core
     class(initial_conditions_t), pointer :: initial_conditions_ => null( )
     !> Evolving model conditions
     class(evolving_conditions_t), pointer :: evolving_conditions_ => null( )
-    !> Chemistry core
-    class(chemistry_core_t), pointer :: chemistry_core_ => null( )
-    !> Emissions handler
-    class(emissions_t), pointer :: emissions_ => null( )
-    !> First-order loss handler
-    class(loss_t), pointer :: loss_ => null( )
-    !> Solve chemistry during the simulation
-    logical :: solve_chemistry_ = .true.
     !> Output
     class(input_output_processor_t), pointer :: output_ => null( )
+    !> Model components
+    type(component_set_t), pointer :: components_ => null( )
   contains
     !> Run the model
     procedure :: run
@@ -107,9 +101,12 @@ contains
   function constructor( config_file_path ) result( new_obj )
 
     use musica_array,                  only : merge_series
+    use musica_component,              only : component_t
+    use musica_component_factory,      only : component_builder
     use musica_config,                 only : config_t
     use musica_domain_iterator,        only : domain_iterator_t
     use musica_domain_factory,         only : domain_builder
+    use musica_iterator,               only : iterator_t
     use musica_string,                 only : string_t
 
     !> New MusicBox core
@@ -118,12 +115,15 @@ contains
     character(len=*), intent(in) :: config_file_path
 
     character(len=*), parameter :: my_name = "MusicBox core constructor"
-    type(config_t) :: config, model_opts, domain_opts, output_opts, chem_opts,&
-                      evolving_opts, datetime_data
+    type(config_t) :: config, model_opts, domain_opts, output_opts,           &
+                      evolving_opts, datetime_data, components,               &
+                      component_config
+    class(component_t), pointer :: component
     type(string_t) :: domain_type
     logical :: found
     real(kind=musica_dk), allocatable :: update_times(:)
     integer(kind=musica_ik) :: i_step, n_time_steps
+    class(iterator_t), pointer :: iter
 
     call print_header( )
 
@@ -148,7 +148,7 @@ contains
 
     ! simulation time parameters
     call model_opts%get( "chemistry time step", "s",                          &
-                         new_obj%chemistry_base_time_step__s_, my_name )
+                         new_obj%model_base_time_step__s_, my_name )
     call model_opts%get( "output time step", "s",                             &
                          new_obj%output_time_step__s_, my_name )
     call model_opts%get( "simulation length", "s",                            &
@@ -159,14 +159,14 @@ contains
       new_obj%simulation_start_ = datetime_t( datetime_data )
     end if
 
-    ! set the default chemistry times
+    ! set the default solver times
     n_time_steps = ceiling( new_obj%simulation_length__s_ /                   &
-                            new_obj%chemistry_base_time_step__s_ ) + 1
+                            new_obj%model_base_time_step__s_ ) + 1
     allocate( new_obj%simulation_times__s_( n_time_steps ) )
     do i_step = 1, n_time_steps
       new_obj%simulation_times__s_( i_step ) =                                &
         new_obj%simulation_start_%in_seconds( ) +                             &
-        min( ( i_step - 1 ) * new_obj%chemistry_base_time_step__s_,           &
+        min( ( i_step - 1 ) * new_obj%model_base_time_step__s_,               &
              new_obj%simulation_length__s_ )
     end do
 
@@ -183,17 +183,19 @@ contains
     new_obj%simulation_times__s_ =                                            &
       merge_series( new_obj%simulation_times__s_, update_times )
 
-    ! initialize the chemistry module
-    call config%get( "chemistry", chem_opts, my_name, found = found )
-    if( found ) then
-      call chem_opts%add( "chemistry time step", "s",                         &
-                          new_obj%chemistry_base_time_step__s_, my_name )
-      new_obj%chemistry_core_ => chemistry_core_t( chem_opts,                 &
-                                                   new_obj%domain_,           &
-                                                   new_obj%output_ )
-      call chem_opts%get( "solve", new_obj%solve_chemistry_, my_name,         &
-                          default = .true. )
-    end if
+    ! set up the model components
+    new_obj%components_ => component_set_t( )
+    call config%get( "model components", components, my_name )
+    iter => components%get_iterator( )
+    do while( iter%next( ) )
+      call components%get( iter, component_config, my_name )
+      component => component_builder( component_config,                       &
+                                      new_obj%domain_,                        &
+                                      new_obj%output_ )
+      call new_obj%components_%add( component )
+      component => null( )
+    end do
+    deallocate( iter )
 
     ! set up the initial conditions
     new_obj%initial_conditions_ => initial_conditions_t( config,              &
@@ -211,14 +213,6 @@ contains
                       with_bounds_from = new_obj%simulation_times__s_ )
     end if
 
-    ! set up the emissions handler
-    ! (chemical species and emissions rates must all be registered by now)
-    new_obj%emissions_ => emissions_t( new_obj%domain_ )
-
-    ! set up the first-order loss handler
-    ! (chemical species and loss rate constants must all be registered by now)
-    new_obj%loss_ => loss_t( new_obj%domain_ )
-
     ! lock the domain against further changes
     call new_obj%domain_%lock( )
 
@@ -232,6 +226,7 @@ contains
   !> Run the model
   subroutine run( this )
 
+    use musica_component,              only : component_t
     use musica_domain_iterator,        only : domain_iterator_t
     use musica_domain_state,           only : domain_state_t
     use musica_domain_target_cells,    only : domain_target_cells_t
@@ -252,14 +247,17 @@ contains
     type(domain_target_cells_t) :: all_cells
     class(domain_iterator_t), pointer :: cell_iter
 
+    ! model component pointer
+    class(component_t), pointer :: component
+
     type(logger_t) :: logger
-    integer(kind=musica_ik) :: i_step
+    integer(kind=musica_ik) :: i_step, i_component
 
     logger = logger_t( this%simulation_times__s_( 1 ),                        &
             this%simulation_times__s_( size( this%simulation_times__s_ ) ) )
 
-    ! set up the domain iterators
-    cell_iter => this%domain_%iterator( all_cells )
+    ! set up theiterators
+    cell_iter      => this%domain_%iterator( all_cells )
 
     ! reset to initial conditions
     sim_time__s = this%simulation_times__s_( 1 )
@@ -305,18 +303,12 @@ contains
         ! update environmental conditions
         call this%update_environment( state, cell_iter )
 
-        ! emit chemical species
-        call this%emissions_%emit( state, cell_iter, time_step__s )
-
-        ! remove chemical species
-        call this%loss_%do_loss( state, cell_iter, time_step__s )
-
-        ! solve the system for the current time and cell
-        if( associated( this%chemistry_core_ ) .and.                          &
-            this%solve_chemistry_ ) then
-          call this%chemistry_core_%solve( state, cell_iter,                  &
-                                           sim_time__s, time_step__s )
-        end if
+        ! run model components for current cell
+        do i_component = 1, this%components_%size( )
+          component => this%components_%get( i_component )
+          call component%advance_state( state, cell_iter, sim_time__s,        &
+                                        time_step__s )
+        end do
 
       end do
 
@@ -329,8 +321,8 @@ contains
     call this%output( state, sim_time__s )
 
     ! clean up
-    deallocate( state     )
-    deallocate( cell_iter )
+    deallocate( state          )
+    deallocate( cell_iter      )
 
     write(*,*) ""
     write(*,*) "MusicBox simulation complete!"
@@ -343,7 +335,9 @@ contains
   subroutine preprocess_input( this, output_path )
 
     use musica_assert,                 only : assert
+    use musica_component,              only : component_t
     use musica_config,                 only : config_t
+    use musica_iterator,               only : iterator_t
 
     !> MusicBox core
     class(core_t), intent(inout) :: this
@@ -351,8 +345,11 @@ contains
     character(len=*), intent(in) :: output_path
 
     character(len=*), parameter :: my_name = "Model input preprocessor"
-    type(config_t) :: config, box_model, init_cond, evolv_cond, chemistry,    &
-                      date_config
+    type(config_t) :: config, box_model, init_cond, evolv_cond, date_config
+    type(config_t), allocatable :: component_config(:)
+    integer(kind=musica_ik) :: i_component
+    class(component_t), pointer :: component
+    class(iterator_t), pointer :: component_iter
 
     write(*,*) "MusicBox configuration will saved be to: "//trim( output_path )
     write(*,*)
@@ -361,7 +358,7 @@ contains
     call assert( 215400742, associated( this%domain_ ) )
     call box_model%add( "grid", this%domain_%type( ), my_name )
     call box_model%add( "chemistry time step", "s",                           &
-                        this%chemistry_base_time_step__s_, my_name )
+                        this%model_base_time_step__s_, my_name )
     call box_model%add( "output time step", "s", this%output_time_step__s_,   &
                         my_name )
     call box_model%add( "simulation length", "s", this%simulation_length__s_, &
@@ -378,15 +375,20 @@ contains
 
     if( associated( this%evolving_conditions_ ) ) then
       call this%evolving_conditions_%preprocess_input( evolv_cond,            &
-                                                       this%domain_,          &
-                                                       output_path )
+          this%domain_,                                                       &
+          this%simulation_start_%in_seconds( ),                               &
+          this%simulation_start_%in_seconds( ) + this%simulation_length__s_,  &
+          output_path )
       call config%add( "evolving conditions", evolv_cond, my_name )
     end if
 
-    call assert( 228887028, associated( this%chemistry_core_ ) )
-    call this%chemistry_core_%preprocess_input( chemistry, output_path )
-    call chemistry%add( "solve", this%solve_chemistry_, my_name )
-    call config%add( "chemistry", chemistry, my_name )
+    allocate( component_config( this%components_%size( ) ) )
+    do i_component = 1, this%components_%size( )
+      component => this%components_%get( i_component )
+      call component%preprocess_input( component_config( i_component ),       &
+                                       output_path )
+    end do
+    call config%add( "model components", component_config, my_name )
 
     call config%to_file( output_path//"config.json" )
 
@@ -541,25 +543,11 @@ contains
     integer :: i
 
     if( associated( this%domain_ ) ) deallocate( this%domain_ )
-    if( allocated( this%mutators_ ) ) then
-      do i = 1, size( this%mutators_ )
-        if( associated( this%mutators_( i )%val_ ) )                          &
-          deallocate( this%mutators_( i )%val_ )
-      end do
-    end if
-    if( allocated( this%accessors_ ) ) then
-      do i = 1, size( this%accessors_ )
-        if( associated( this%accessors_( i )%val_ ) )                         &
-          deallocate( this%accessors_( i )%val_ )
-      end do
-    end if
     if( associated( this%evolving_conditions_ ) )                             &
         deallocate( this%evolving_conditions_ )
     if( associated( this%initial_conditions_ ) )                              &
         deallocate( this%initial_conditions_ )
-    if( associated( this%chemistry_core_ ) ) deallocate( this%chemistry_core_ )
-    if( associated( this%emissions_      ) ) deallocate( this%emissions_      )
-    if( associated( this%loss_           ) ) deallocate( this%loss_           )
+    if( associated( this%components_) ) deallocate( this%components_ )
     if( associated( this%output_         ) ) deallocate( this%output_         )
 
   end subroutine finalize

@@ -16,3 +16,6 @@
 [submodule "libs/musica-photo-decomp-rates"]
 	path = libs/musica-photo-decomp-rates
 	url = https://github.com/NCAR/musica-photo-decomp-rates.git
+[submodule "libs/partmc"]
+	path = libs/partmc
+	url = https://github.com/compdyn/partmc.git
