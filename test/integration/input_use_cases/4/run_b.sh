@@ -8,20 +8,15 @@ set -v
 cd ${0%/*}
 
 exec_str="../../../../music_box config_b.json"
-check_str="../../../../integration_input_4_check"
+comp_str="../../../../compare_results output.csv expected_output.csv 1.0e-3 1.0e-12"
 
 if ! $exec_str; then
   echo FAIL
   exit 1
 else
-  if cmp -s "output.csv" "expected_output.csv"; then
-    if ! $check_str; then
-      echo FAIL
-      exit 1
-    else
-      echo PASS
-      exit 0
-    fi
+  if $comp_str; then
+    echo PASS
+    exit 0
   else
     echo unexpected results
     echo FAIL
