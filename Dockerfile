@@ -23,6 +23,26 @@ RUN dnf -y update \
         ncview \
     && dnf clean all
 
+# python modules needed in scripts
+RUN pip3 install requests numpy scipy matplotlib ipython jupyter pandas nose Django pillow django-crispy-forms
+
+# Build the SuiteSparse libraries for sparse matrix support
+RUN curl -LO http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-5.1.0.tar.gz \
+    && tar -zxvf SuiteSparse-5.1.0.tar.gz \
+    && export CXX=/usr/bin/cc \
+    && cd SuiteSparse \
+    && make install INSTALL=/usr/local BLAS="-L/lib64 -lopenblas"
+
+# install json-fortran
+RUN curl -LO https://github.com/jacobwilliams/json-fortran/archive/8.2.0.tar.gz \
+    && tar -zxvf 8.2.0.tar.gz \
+    && cd json-fortran-8.2.0 \
+    && export FC=gfortran \
+    && mkdir build \
+    && cd build \
+    && cmake -D SKIP_DOC_GEN:BOOL=TRUE .. \
+    && make install
+
 # copy the MusicBox code
 COPY . /music-box/
 
@@ -33,19 +53,9 @@ RUN cp /music-box/etc/change_mechanism.sh /
 RUN mkdir /build \
     && cp -r /music-box/examples /build/examples
 
-# python modules needed in scripts
-RUN pip3 install requests numpy scipy matplotlib ipython jupyter pandas nose Django pillow django-crispy-forms
-
 # nodejs modules needed Mechanism-To-Code
 RUN cd /music-box/libs/micm-preprocessor; \
     npm install
-
-# Build the SuiteSparse libraries for sparse matrix support
-RUN curl -LO http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-5.1.0.tar.gz \
-    && tar -zxvf SuiteSparse-5.1.0.tar.gz \
-    && export CXX=/usr/bin/cc \
-    && cd SuiteSparse \
-    && make install INSTALL=/usr/local BLAS="-L/lib64 -lopenblas"
 
 # Install a modified version of CVODE
 RUN tar -zxvf /music-box/libs/partmc/cvode-3.4-alpha.tar.gz \
@@ -61,16 +71,6 @@ RUN tar -zxvf /music-box/libs/partmc/cvode-3.4-alpha.tar.gz \
              -D KLU_LIBRARY_DIR=/usr/local/lib \
              -D KLU_INCLUDE_DIR=/usr/local/include \
              .. \
-    && make install
-
-# install json-fortran
-RUN curl -LO https://github.com/jacobwilliams/json-fortran/archive/8.2.0.tar.gz \
-    && tar -zxvf 8.2.0.tar.gz \
-    && cd json-fortran-8.2.0 \
-    && export FC=gfortran \
-    && mkdir build \
-    && cd build \
-    && cmake -D SKIP_DOC_GEN:BOOL=TRUE .. \
     && make install
 
 # Build PartMC
