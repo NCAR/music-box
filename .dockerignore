@@ -1,7 +1,7 @@
-# blacklist all
+# exclude all
 *
 
-# whitelist things to copy
+# include things to copy
 !CMakeLists.txt
 !SetDefaults.cmake
 !src/
@@ -11,6 +11,5 @@
 !examples/
 !etc/
 
-# blacklist generated code
+# exclude generated code
 libs/micm-collection/configured_tags/*
-libs/micm/src/preprocessor_output/*
