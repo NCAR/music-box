@@ -1,14 +1,14 @@
-# Downloads and build MusicBox and its dependencies on CHEYENNE using GNU compilers
+# Downloads and build MusicBox and its dependencies on CHEYENNE using Intel compilers
 #
 # The MUSIC_BOX_HOME environment variable must be set to the directory to build Music
 # in prior to calling this script.
 
 module purge
-module load gnu/10.1.0
-module load openblas/0.3.9
 module load ncarenv/1.3
-module load netcdf/4.7.4
+module load intel/19.1.1
 module load ncarcompilers/0.5.0
+module load mkl/2020.0.1
+module load netcdf/4.7.3
 module load cmake/3.18.2
 module load gsl/2.6
 
@@ -43,15 +43,15 @@ mkdir -p $INSTALL_ROOT
 
 # Suite Sparse
 SUITE_SPARSE_ROOT=$MUSIC_BOX_HOME/SuiteSparse
-export SUITE_SPARSE_HOME=$INSTALL_ROOT/suitesparse-gnu-5.1.0
+export SUITE_SPARSE_HOME=$INSTALL_ROOT/suitesparse-intel-5.1.0
 mkdir -p $SUITE_SPARSE_HOME
 cd $SUITE_SPARSE_ROOT
 sed -i 's/\-openmp/\-qopenmp/' SuiteSparse_config/SuiteSparse_config.mk
-make install INSTALL=$SUITE_SPARSE_HOME BLAS="-lopenblas" LAPACK="-lopenblas"
+make install INSTALL=$SUITE_SPARSE_HOME BLAS="-lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -lpthread -lm" LAPACK=""
 
 # json-fortran
 JSON_FORTRAN_ROOT=$MUSIC_BOX_HOME/json-fortran-8.2.1
-export JSON_FORTRAN_HOME=$INSTALL_ROOT/jsonfortran-gnu-8.2.1
+export JSON_FORTRAN_HOME=$INSTALL_ROOT/jsonfortran-intel-8.2.1
 cd $JSON_FORTRAN_ROOT
 mkdir -p build
 cd build
@@ -62,7 +62,7 @@ mv $JSON_FORTRAN_HOME/lib/*.so* $JSON_FORTRAN_HOME/lib/shared
 
 # CVODE
 SUNDIALS_ROOT=$MUSIC_BOX_HOME/cvode-3.4-alpha
-export SUNDIALS_HOME=$INSTALL_ROOT/cvode-gnu-3.4-alpha
+export SUNDIALS_HOME=$INSTALL_ROOT/cvode-intel-3.4-alpha
 mkdir -p $SUNDIALS_HOME
 cd $SUNDIALS_ROOT
 mkdir -p build
@@ -82,21 +82,23 @@ PARTMC_ROOT=$MUSIC_BOX_HOME/music-box/libs/partmc
 export PARTMC_HOME=$PARTMC_ROOT/build
 mkdir -p $PARTMC_HOME
 cd $PARTMC_ROOT
+sed -i "s/'unit_test_rxn_arrhenius_t()'/unit_test_rxn_arrhenius_t()/" CMakeLists.txt
 mkdir -p build
 cd build
-cmake -D CMAKE_C_COMPILER=gcc \
-      -D CMAKE_Fortran_COMPILER=gfortran \
+cmake -D CMAKE_C_COMPILER=icc \
+      -D CMAKE_Fortran_COMPILER=ifort \
       -D CMAKE_BUILD_TYPE=release \
       -D CMAKE_C_FLAGS="-std=c99 ${NCAR_LIBS_GSL}" \
-      -D ENABLE_JSON=ON \
-      -D ENABLE_SUNDIALS=ON \
-      -D ENABLE_GSL=ON \
       -D SUITE_SPARSE_AMD_LIB=$SUITE_SPARSE_HOME/lib/libamd.so \
       -D SUITE_SPARSE_BTF_LIB=$SUITE_SPARSE_HOME/lib/libbtf.so \
       -D SUITE_SPARSE_COLAMD_LIB=$SUITE_SPARSE_HOME/lib/libcolamd.so \
       -D SUITE_SPARSE_CONFIG_LIB=$SUITE_SPARSE_HOME/lib/libsuitesparseconfig.so \
       -D SUITE_SPARSE_KLU_LIB=$SUITE_SPARSE_HOME/lib/libklu.so \
       -D SUITE_SPARSE_INCLUDE_DIR=$SUITE_SPARSE_HOME/include \
+      -D ENABLE_JSON=ON \
+      -D ENABLE_SUNDIALS=ON \
+      -D ENABLE_MPI=OFF \
+      -D ENABLE_GSL=ON \
       -D NETCDF_INCLUDE_DIR=$NCAR_INC_NETCDF \
       -D NETCDF_C_LIB=$NCAR_LDFLAGS_NETCDF/libnetcdf.so \
       -D NETCDF_FORTRAN_LIB=$NCAR_LDFLAGS_NETCDF/libnetcdff.so \
@@ -111,8 +113,8 @@ MUSIC_BOX_ROOT=$MUSIC_BOX_HOME/music-box
 cd $MUSIC_BOX_ROOT
 mkdir -p build
 cd build
-cmake -D CMAKE_C_COMPILER=gcc \
-      -D CMAKE_Fortran_COMPILER=gfortran \
+cmake -D CMAKE_C_COMPILER=icc \
+      -D CMAKE_Fortran_COMPILER=ifort \
       -D ENABLE_MICM_TESTS=OFF \
       -D CMAKE_BUILD_TYPE=release \
       -D CMAKE_C_FLAGS="-std=c99 ${NCAR_LIBS_GSL}" \

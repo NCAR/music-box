@@ -3,12 +3,13 @@
 # The MUSIC_BOX_HOME environment variable must be set to the directory to build Music
 # in prior to calling this script.
 
+
 module purge
-module load gnu/9.1.0
+module load gnu/10.1.0
+module load openblas/0.3.9
 module load ncarenv/1.3
-module load ncarcompilers/0.5.0
-module load openblas/0.3.6
 module load netcdf/4.7.4
+module load ncarcompilers/0.5.0
 module load cmake/3.18.2
 module load gsl/2.6
 
@@ -100,7 +101,7 @@ cmake -D CMAKE_C_COMPILER=gcc \
       -D NETCDF_INCLUDE_DIR=$NCAR_INC_NETCDF \
       -D NETCDF_C_LIB=$NCAR_LDFLAGS_NETCDF/libnetcdf.so \
       -D NETCDF_FORTRAN_LIB=$NCAR_LDFLAGS_NETCDF/libnetcdff.so \
-      -D GSL_CBLAS_LIB=$NCAR_LDFLAGS_OPENBLAS/libopenblas.so \
+      -D GSL_CBLAS_LIB=$NCAR_LDFLAGS_GSL/libgslcblas.so \
       -D GSL_INCLUDE_DIR=$NCAR_INC_GSL \
       -D GSL_LIB=$NCAR_LDFLAGS_GSL/libgsl.so \
       ..
@@ -125,7 +126,7 @@ cmake -D CMAKE_C_COMPILER=gcc \
       -D NETCDF_INCLUDE_DIR=$NCAR_INC_NETCDF \
       -D NETCDF_C_LIB=$NCAR_LDFLAGS_NETCDF/libnetcdf.so \
       -D NETCDF_FORTRAN_LIB=$NCAR_LDFLAGS_NETCDF/libnetcdff.so \
-      -D GSL_CBLAS_LIB=$NCAR_LDFLAGS_OPENBLAS/libopenblas.so \
+      -D GSL_CBLAS_LIB=$NCAR_LDFLAGS_GSL/libgslcblas.so \
       -D GSL_INCLUDE_DIR=$NCAR_INC_GSL \
       -D GSL_LIB=$NCAR_LDFLAGS_GSL/libgsl.so \
       -D PARTMC_LIB=$PARTMC_HOME/libpartmc.a \
