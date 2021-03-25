@@ -12,7 +12,7 @@ program music_box
   implicit none
 
   ! MusicBox Core
-  type(core_t), allocatable :: core
+  class(core_t), pointer :: core
   ! Path to the configuration file
   character(len=256) :: config_file_name
   ! Command-line options
@@ -41,8 +41,7 @@ program music_box
   write(10,*) "running"
   close(10)
 
-  allocate( core )
-  core = core_t( config_file_name )
+  core => core_t( config_file_name )
 
   if( preprocess_only ) then
     call execute_command_line( 'mkdir -p preprocessor_output/' )

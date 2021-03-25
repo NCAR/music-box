@@ -83,6 +83,22 @@ find_library(SUITE_SPARSE_KLU_LIB klu
   DOC "SuiteSparse klu library"
   PATHS $ENV{SUITE_SPARSE_HOME}/lib $ENV{SUNDIALS_HOME}/lib
         /opt/local/lib /usr/local/lib)
+find_library(SUITE_SPARSE_AMD_LIB amd
+  DOC "SuiteSparse amd library"
+  PATHS $ENV{SUITE_SPARSE_HOME}/lib $ENV{SUNDIALS_HOME}/lib
+        /opt/local/lib /usr/local/lib)
+find_library(SUITE_SPARSE_BTF_LIB btf
+  DOC "SuiteSparse btf library"
+  PATHS $ENV{SUITE_SPARSE_HOME}/lib $ENV{SUNDIALS_HOME}/lib
+        /opt/local/lib /usr/local/lib)
+find_library(SUITE_SPARSE_COLAMD_LIB colamd
+  DOC "SuiteSparse colamd library"
+  PATHS $ENV{SUITE_SPARSE_HOME}/lib $ENV{SUNDIALS_HOME}/lib
+        /opt/local/lib /usr/local/lib)
+find_library(SUITE_SPARSE_CONFIG_LIB suitesparseconfig
+  DOC "SuiteSparse config library"
+  PATHS $ENV{SUITE_SPARSE_HOME}/lib $ENV{SUNDIALS_HOME}/lib
+        /opt/local/lib /usr/local/lib)
 find_path(SUNDIALS_INCLUDE_DIR cvode/cvode.h
   DOC "SUNDIALS include directory (must have cvode/, sundials/, nvector/ subdirs)"
   PATHS $ENV{SUNDIALS_HOME}/include /opt/local/include /usr/local/include)
@@ -101,7 +117,9 @@ find_library(SUNDIALS_SUNMATRIX_SPARSE_LIB sundials_sunmatrixsparse
   PATHS $ENV{SUITE_SPARSE_HOME}/lib $ENV{SUNDIALS_HOME}/lib
         /opt/local/lib /usr/local/lib)
 set(SUNDIALS_LIBS ${SUNDIALS_NVECSERIAL_LIB} ${SUNDIALS_CVODE_LIB}
-  ${SUITE_SPARSE_KLU_LIB} ${SUNDIALS_KLU_LIB} ${SUNDIALS_SUNMATRIX_SPARSE_LIB})
+  ${SUNDIALS_KLU_LIB} ${SUNDIALS_SUNMATRIX_SPARSE_LIB} ${SUITE_SPARSE_KLU_LIB}
+  ${SUITE_SPARSE_COLAMD_LIB} ${SUITE_SPARSE_AMD_LIB} ${SUITE_SPARSE_BTF_LIB}
+  ${SUITE_SPARSE_CONFIG_LIB})
 include_directories(${SUNDIALS_INCLUDE_DIR} ${SUITE_SPARSE_INCLUDE_DIR})
 
 ################################################################################
