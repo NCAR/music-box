@@ -38,6 +38,8 @@ module music_box_core
     real(kind=musica_dk), allocatable :: simulation_times__s_(:)
     !> Output time step [s]
     real(kind=musica_dk) :: output_time_step__s_
+    !> Next output time [s]
+    real(kind=musica_dk) :: next_output_time__s_ = 0.0_musica_dk
     !> Simulation start
     type(datetime_t) :: simulation_start_
     !> Simulation length [s]
@@ -264,6 +266,9 @@ contains
     ! reset to initial conditions
     sim_time__s = this%simulation_times__s_( 1 )
 
+    ! reset the next output time
+    this%next_output_time__s_ = 0.0_musica_dk
+
     ! get a new model state and set the initial conditions
     state => this%initial_conditions_%get_state( this%domain_ )
     if( associated( this%evolving_conditions_ ) ) then
@@ -320,7 +325,7 @@ contains
     end do
 
     ! output the final model state
-    call this%output( state, sim_time__s )
+    call this%output( state, sim_time__s, force_output = .true. )
 
     ! clean up
     deallocate( state          )
@@ -515,7 +520,7 @@ contains
   !!
   !! Outputs the model state when the simulation time corresponds to an
   !! output time
-  subroutine output( this, state, simulation_time__s )
+  subroutine output( this, state, simulation_time__s, force_output )
 
     use musica_domain_state,           only : domain_state_t
 
@@ -525,12 +530,20 @@ contains
     class(domain_state_t), intent(in) :: state
     !> Current model simulation time [s]
     real(kind=musica_dk), intent(in) :: simulation_time__s
+    !> Force output at this time step
+    logical, intent(in), optional :: force_output
 
-    if( mod( simulation_time__s, this%output_time_step__s_ ) .eq. 0.0 .or.    &
-        simulation_time__s .ge. this%simulation_length__s_ ) then
+    logical :: l_force
+
+    l_force = .false.
+    if( present( force_output ) ) l_force = force_output
+
+    if( simulation_time__s .ge. this%next_output_time__s_ .or. l_force ) then
       call this%output_%output( simulation_time__s,                           &
                                 this%domain_,                                 &
                                 state )
+      this%next_output_time__s_ = this%next_output_time__s_ +                 &
+                                  this%output_time_step__s_
     end if
 
   end subroutine output
