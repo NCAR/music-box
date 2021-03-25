@@ -24,14 +24,13 @@ fi
 
 echo "Building MusicBox"
 
-# get source code
+# get source code and copy to $MUSIC_BOX_HOME manually
 cd ${MUSIC_BOX_HOME}
 #>curl -LO http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-5.1.0.tar.gz
 #>curl -LO https://github.com/jacobwilliams/json-fortran/archive/8.2.1.tar.gz
-#>git clone --recurse-submodules https://github.com/mattldawson/music-box.git
-#>cd music-box
-#>git checkout develop-49-micm-stubs
-#>git submodule update
+#>git clone --recurse-submodules https://github.com/NCAR/music-box.git
+
+# extract
 cd ${MUSIC_BOX_HOME}
 cp music-box/libs/partmc/cvode-3.4-alpha.tar.gz .
 tar -zxf SuiteSparse-5.1.0.tar.gz

@@ -27,10 +27,9 @@ curl -LO https://github.com/jacobwilliams/json-fortran/archive/8.2.1.tar.gz
 curl -LO https://github.com/Unidata/netcdf-c/archive/refs/tags/v4.7.4.tar.gz
 curl -LO https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v4.5.3.tar.gz
 curl -LO https://mirrors.kernel.org/gnu/gsl/gsl-2.6.tar.gz
-git clone --recurse-submodules https://github.com/mattldawson/music-box.git
-cd music-box
-git checkout develop-49-micm-stubs
-git submodule update
+git clone --recurse-submodules https://github.com/NCAR/music-box.git
+
+# extract
 cd ${MUSIC_BOX_HOME}
 cp music-box/libs/partmc/cvode-3.4-alpha.tar.gz .
 tar -zxf SuiteSparse-5.1.0.tar.gz
