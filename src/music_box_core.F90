@@ -110,7 +110,7 @@ contains
     use musica_string,                 only : string_t
 
     !> New MusicBox core
-    type(core_t) :: new_obj
+    class(core_t), pointer :: new_obj
     !> Path to the configuration file
     character(len=*), intent(in) :: config_file_path
 
@@ -124,6 +124,8 @@ contains
     real(kind=musica_dk), allocatable :: update_times(:)
     integer(kind=musica_ik) :: i_step, n_time_steps
     class(iterator_t), pointer :: iter
+
+    allocate( core_t :: new_obj )
 
     call print_header( )
 
