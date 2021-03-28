@@ -15,6 +15,10 @@ The only requirement for running MusicBox is that you have [Docker Desktop](http
 ```
 docker run -p 8000:8000 -it --rm ncar/music-box
 ```
+If you have run a previous version of this docker image, you will want to download the most recent image.
+```
+docker image pull ncar/music-box
+```
 
 Leaving the terminal window open, open a web browser and navigate to the following address: `localhost:8000`. From there, you can configure and run a simulation, plot results, and download the raw model output for further analysis.
 
