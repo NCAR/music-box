@@ -11,16 +11,15 @@ Copyright (C) 2020 National Center for Atmospheric Research
 # Install and run (interactive version)
 
 The only requirement for running MusicBox is that you have [Docker Desktop](https://www.docker.com/get-started) installed and running. With Docker Desktop running, open a terminal window and run the following command: (The first time you run this command, the MusicBox code will be downloaded from Docker Hub, which may take a few minutes.)
-
-```
-docker run -p 8000:8000 -it --rm ncar/music-box
-```
-If you have run a previous version of this docker image, you will want to download the most recent image.
 ```
 docker image pull ncar/music-box
 ```
+Then, run Music Box.
+```
+docker run -p 8000:8000 -it --rm ncar/music-box
+```
 
-Leaving the terminal window open, open a web browser and navigate to the following address: `localhost:8000`. From there, you can configure and run a simulation, plot results, and download the raw model output for further analysis.
+Leaving the terminal window open, open a web browser and navigate to the following address: [`localhost:8000`](http://localhost:8000). From there, you can configure and run a simulation, plot results, and download the raw model output for further analysis.
 
 When you are ready to stop the MusicBox server, return to the terminal window and stop the server with `Control-C`. If you would like to remove MusicBox from your machine, open a terminal window and run the following command:
 
