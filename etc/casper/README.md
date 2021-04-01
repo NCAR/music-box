@@ -23,6 +23,13 @@ export MUSIC_BOX_HOME=/path/to/my-music-box-build
 Choose one of the following options, replacing `/path/to/` with the path to the directory you copied the build script to.
 
 ### Option 1: Build with Intel compilers
+With the Intel compilers, you have the option of generating a set of module files during the build that can be used with the LMOD environment module system on CHEYENNE and CASPER. To generate the module files, create an environment variable named `MUSIC_BOX_MODULE_ROOT` pointing to the absolute path of your `modulefiles/` folder:
+
+```
+export MUSIC_BOX_MODULE_ROOT=/path/to/my/modulefiles
+```
+
+To build MusicBox, run:
 
 ```
 cd $MUSIC_BOX_HOME
