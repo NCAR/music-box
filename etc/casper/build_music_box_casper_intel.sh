@@ -14,6 +14,8 @@ module load gsl/2.6
 
 if [[ -z "${MUSIC_BOX_HOME}" ]]; then
   echo "You must set the MUSIC_BOX_HOME environment variable to the directory where MusicBox should be built."
+  echo "You can optionally set the MUSIC_BOX_MODULE_ROOT environment variable to the directory where you " \\
+       "would like module files to be put."
   return
 fi
 
@@ -134,3 +136,116 @@ cmake -D CMAKE_C_COMPILER=icc \
       ..
 make
 
+# Set up environment module files, if a MUSIC_BOX_MODULE_ROOT folder exists
+
+if [[ -z "${MUSIC_BOX_MODULE_ROOT}" ]]; then
+  return
+fi
+
+if [[ ! -d "${MUSIC_BOX_MODULE_ROOT}" ]]; then
+  echo "MUSIC_BOX_MODULE_ROOT must point to an existing directory"
+  return
+fi
+
+echo "Outputting environment module files"
+
+# set up environment module folders
+MODULE_ROOT=$MUSIC_BOX_MODULE_ROOT
+mkdir -p $MODULE_ROOT
+
+SUITE_SPARSE_MODULE=$MODULE_ROOT/suite-sparse/5.1.0
+mkdir -p $SUITE_SPARSE_MODULE
+cp -r $SUITE_SPARSE_HOME/include $SUITE_SPARSE_MODULE
+cp -r $SUITE_SPARSE_HOME/lib $SUITE_SPARSE_MODULE
+printf "help([[\n"\
+"For detailed instructions, go to:\n"\
+"   https://people.engr.tamu.edu/davis/suitesparse.html\n"\
+"\n"\
+"]])\n"\
+"whatis(\"Version: 5.1.0\")\n"\
+"whatis(\"URL: https://people.engr.tamu.edu/davis/suitesparse.html\")\n"\
+"whatis(\"Description: A suite of sparse matrix software\")\n"\
+"always_load(\"intel/19.1.1\", \"mkl/2020.0.1\")\n"\
+"setenv(\"SUITESPARSE_INC\", \"${SUITE_SPARSE_MODULE}/include\")\n"\
+"setenv(\"SUITESPARSE_LIB\", \"${SUITE_SPARSE_MODULE}/lib\")\n"\
+"prepend_path( \"LD_LIBRARY_PATH\", \"${SUITE_SPARSE_MODULE}/lib\")\n" \
+>> $MODULE_ROOT/suite-sparse/5.1.0.lua
+
+JSON_FORTRAN_MODULE=$MODULE_ROOT/json-fortran/8.2.1
+mkdir -p $JSON_FORTRAN_MODULE
+mkdir -p $JSON_FORTRAN_MODULE/lib
+mkdir -p $JSON_FORTRAN_MODULE/include
+cp $JSON_FORTRAN_HOME/lib/lib* $JSON_FORTRAN_MODULE/lib
+cp -r $JSON_FORTRAN_HOME/lib/pkgconfig $JSON_FORTRAN_MODULE/lib
+cp $JSON_FORTRAN_HOME/lib/*.mod $JSON_FORTRAN_MODULE/include
+printf "help([[\n"\
+"For detailed instructions, go to:\n"\
+"   http://jacobwilliams.github.io/json-fortran/\n"\
+"\n"\
+"]])\n"\
+"whatis(\"Version: 8.2.1\")\n"\
+"whatis(\"URL: http://jacobwilliams.github.io/json-fortran/\")\n"\
+"whatis(\"Description: A Fortran 2008 JSON API\")\n"\
+"always_load(\"intel/19.1.1\")n"\
+"setenv(\"JSONFORTRAN_INC\", \"${JSON_FORTRAN_MODULE}/include\")\n"\
+"setenv(\"JSONFORTRAN_LIB\", \"${JSON_FORTRAN_MODULE}/lib\")\n"\
+"prepend_path(\"PKG_CONFIG_PATH\", \"${JSON_FORTRAN_MODULE}/lib/pkgconfig\")\n"\
+"prepend_path(\"LD_LIBRARY_PATH\", \"${JSON_FORTRAN_MODULE}/lib\")\n" \
+>> $MODULE_ROOT/json-fortran/8.2.1.lua
+
+CVODE_MODULE=$MODULE_ROOT/cvode/3.4-alpha
+mkdir -p $CVODE_MODULE
+cp -r $SUNDIALS_HOME/include $CVODE_MODULE
+cp -r $SUNDIALS_HOME/lib $CVODE_MODULE
+printf "help([[\n"\
+"For detailed instructions, go to:\n"\
+"   https://computing.llnl.gov/projects/sundials/cvode\n"\
+"\n"\
+"]])\n"\
+"whatis(\"Version: 3.4-alpha\")\n"\
+"whatis(\"URL: https://computing.llnl.gov/projects/sundials/cvode\")\n"\
+"whatis(\"Description: Solver for stiff and non-stiff ODE systems\")\n"\
+"always_load(\"intel/19.1.1\", \"mkl/2020.0.1\", \"suite-sparse/5.1.0\")\n"\
+"setenv(\"CVODE_INC\", \"${CVODE_MODULE}/include\")\n"\
+"setenv(\"CVODE_LIB\", \"${CVODE_MODULE}/lib\")\n"\
+"prepend_path(\"LD_LIBRARY_PATH\", \"${CVODE_MODULE}/lib\")\n" \
+>> $MODULE_ROOT/cvode/3.4-alpha.lua
+
+PARTMC_MODULE=$MODULE_ROOT/partmc/2.6.0
+mkdir -p $PARTMC_MODULE
+mkdir -p $PARTMC_MODULE/bin
+mkdir -p $PARTMC_MODULE/lib
+mkdir -p $PARTMC_MODULE/include
+cp $PARTMC_ROOT/build/partmc $PARTMC_MODULE/bin/
+cp $PARTMC_ROOT/build/*.mod $PARTMC_MODULE/include/
+cp $PARTMC_ROOT/src/*.h $PARTMC_MODULE/include/
+printf "help([[\n"\
+"For detailed instructions, go to:\n"\
+"   https://github.com/compdyn/partmc\n"\
+"\n"\
+"]])\n"\
+"whatis(\"Version: 2.6.0\")\n"\
+"whatis(\"URL: https://github.com/compdyn/partmc\")\n"\
+"whatis(\"Description: Particle-resolved stochastic atmospheric aerosol model\")\n"\
+"always_load(\"intel/19.1.1\", \"gsl/2.6\", \"netcdf/4.7.3\", \"cvode/3.4-alpha\")\n"\
+"setenv(\"PARTMC_INC\", \"${PARTMC_MODULE}/include\")\n"\
+"setenv(\"PARTMC_LIB\", \"${PARTMC_MODULE}/lib\")\n"\
+"prepend_path(\"PATH\", \"${PARTMC_MODULE}/bin\")\n"\
+"prepend_path(\"LD_LIBRARY_PATH\", \"${PARTMC_MODULE}/lib\")\n" \
+>> $MODULE_ROOT/partmc/2.6.0.lua
+
+MUSIC_BOX_MODULE=$MODULE_ROOT/music-box/0.0.1
+mkdir -p $MUSIC_BOX_MODULE
+mkdir -p $MUSIC_BOX_MODULE/bin
+cp $MUSIC_BOX_ROOT/build/music_box $MUSIC_BOX_MODULE/bin/music_box
+printf "help([[\n"\
+"For detailed instructions, go to:\n"\
+"   https://github.com/NCAR/music-box\n"\
+"\n"\
+"]])\n"\
+"whatis(\"Version: 0.0.1\")\n"\
+"whatis(\"URL: https://github.com/NCAR/music-box\")\n"\
+"whatis(\"Description: A MUSICA model for boxes and columns\")\n"\
+"always_load(\"intel/19.1.1\", \"netcdf/4.7.3\", \"partmc/2.6.0\")\n"\
+"prepend_path(\"PATH\", \"${MUSIC_BOX_MODULE}/bin\")\n" \
+>> $MODULE_ROOT/music-box/0.0.1.lua
