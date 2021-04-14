@@ -1,9 +1,10 @@
-FROM fedora:29
+FROM fedora:33
 
 RUN dnf -y update \
     && dnf -y install \
         gcc-gfortran \
         gcc-c++ \
+        gcc \
         netcdf-fortran-devel \
         gsl-devel \
         metis-devel \
@@ -14,6 +15,7 @@ RUN dnf -y update \
         wget \
         python \
         python3 \
+        python3-pip \
         texlive-scheme-basic \
         'tex(type1cm.sty)' \
         'tex(type1ec.sty)' \
@@ -24,7 +26,9 @@ RUN dnf -y update \
     && dnf clean all
 
 # python modules needed in scripts
-RUN pip3 install requests numpy scipy matplotlib ipython jupyter pandas nose Django pillow django-crispy-forms
+RUN dnf -y install python3-pandas
+
+RUN pip3 install requests numpy scipy matplotlib ipython jupyter nose Django pillow django-crispy-forms
 
 # Build the SuiteSparse libraries for sparse matrix support
 RUN curl -LO http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-5.1.0.tar.gz \
