@@ -14,7 +14,7 @@ deploy:
   provider: script
   script: bash docker_push
   on:
-    branch: main
+    branch: release
 notifications:
   slack:
     rooms:
