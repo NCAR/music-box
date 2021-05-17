@@ -28,6 +28,7 @@ docker image rm ncar/music-box
 ```
 
 # Install and run (command-line version)
+**[View options for MusicBox configuration](config_options.md)**
 
 You can follow these instructions if you are only interested in using the command-line version of MusicBox and will not be using the browser-based model driver.
 
@@ -53,6 +54,7 @@ To set up the box model with a different mechanism from the [Public Chemistry Ca
 ```
 /change_mechanism.sh T1mozcart
 ```
+
 
 # Documentation
 
