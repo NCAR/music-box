@@ -369,8 +369,47 @@ NetCDF files should have a dimension of <code>time</code>, and variables whose o
 </code></pre>
 <hr>
 <h3 class="code-line" data-line-start=321 data-line-end=322 ><a id="Model_Components_321"></a>Model Components</h3>
-<p class="has-line-data" data-line-start="322" data-line-end="323">The model components section of the MusicBox configuration specifies settings for the chemical solver. For most use cases of MusicBox, modifying the model components is not neccesary. <strong>The standard Model Components configuration for the CAMP solver is shown below:</strong></p>
-<pre><code class="has-line-data" data-line-start="324" data-line-end="341" class="language-json">{
+<p class="has-line-data" data-line-start="322" data-line-end="323">The model components section of the MusicBox configuration specifies settings for the chemical solver. For most use cases of MusicBox, modifying the model components is not neccesary.</p>
+<h5 class="code-line" data-line-start=324 data-line-end=325 ><a id="Model_components_configuration_with_the_MICM_solver_324"></a>Model components configuration with the MICM solver:</h5>
+<h1 class="code-line" data-line-start=325 data-line-end=326 ><a id="_325"></a></h1>
+<pre><code class="has-line-data" data-line-start="327" data-line-end="347" class="language-json">{
+    "<span class="hljs-attribute">model components</span>" : <span class="hljs-value">[
+    {
+      "<span class="hljs-attribute">type</span>" : <span class="hljs-value"><span class="hljs-string">"MICM"</span></span>,
+      "<span class="hljs-attribute">solver</span>" : <span class="hljs-value">{
+        "<span class="hljs-attribute">type</span>" : <span class="hljs-value"><span class="hljs-string">"Rosenbrock"</span></span>,
+        "<span class="hljs-attribute">chemistry time step [min]</span>" : <span class="hljs-value"><span class="hljs-number">5.0</span></span>,
+        "<span class="hljs-attribute">absolute tolerance</span>" : <span class="hljs-value"><span class="hljs-number">1.0e-12</span></span>,
+        "<span class="hljs-attribute">relative tolerance</span>" : <span class="hljs-value"><span class="hljs-number">1.0e-4</span>
+      </span>}
+    </span>},
+    {
+      "<span class="hljs-attribute">type</span>" : <span class="hljs-value"><span class="hljs-string">"musica-emissions"</span>
+    </span>},
+    {
+      "<span class="hljs-attribute">type</span>" : <span class="hljs-value"><span class="hljs-string">"musica-loss"</span>
+    </span>}
+  ]
+</span>}
+</code></pre>
+<h5 class="code-line" data-line-start=348 data-line-end=349 ><a id="Configuring_the_CAMP_solver_348"></a>Configuring the CAMP solver:</h5>
+<p class="has-line-data" data-line-start="349" data-line-end="350"><strong>When using the CAMP solver, additional configuration files are required.</strong> By default, these are stored in a directory <code>camp_data</code>. Inside this folder:</p>
+<p class="has-line-data" data-line-start="351" data-line-end="354">|—<code>config.json</code> — Points to <code>specise.json</code> and <code>mechanism.json</code>.<br>
+|—<code>mechanism.json</code> — Contains chemical mechanism information.<br>
+|—<code>species.json</code> — Describes absolute tolerances for species in the chemical mechanism.</p>
+<p class="has-line-data" data-line-start="355" data-line-end="356"><strong>For more information on CAMP configuration files see <a href="https://github.com/compdyn/partmc/tree/763bca3035bdb39989029d8c52c1e45058688eb6">documentation on PartMC</a>.</strong></p>
+<h5 class="code-line" data-line-start=357 data-line-end=358 ><a id="Model_component_options_with_CAMP_357"></a>Model component options with CAMP:</h5>
+<dl>
+<dt>type</dt>
+<dd>Chemical solver type. <code>&quot;CAMP&quot;</code> is default.</dd>
+<dt>configuration file</dt>
+<dd>Path to CAMP configuration file. Default is <code>&quot;camp_data/config.json&quot;</code>.</dd>
+<dt>override species</dt>
+<dd>Overrides species concentration with specified value. By default, <code>M</code> is set to 1 mol/mol.</dd>
+<dt>supress output:</dt>
+<dd>Chemical species which will not be shown in output data by the model. By default <code>M</code> is supressed.</dd>
+</dl>
+<pre><code class="has-line-data" data-line-start="371" data-line-end="388" class="language-json">{
 "<span class="hljs-attribute">model components</span>": <span class="hljs-value">[
         {
             "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"CAMP"</span></span>,
@@ -387,23 +426,11 @@ NetCDF files should have a dimension of <code>time</code>, and variables whose o
     ]
 </span>}
 </code></pre>
-<h5 class="code-line" data-line-start=341 data-line-end=342 ><a id="Model_component_options_341"></a>Model component options:</h5>
-<dl>
-<dt>type</dt>
-<dd>Chemical solver type. <code>&quot;CAMP&quot;</code> is default.</dd>
-<dt>configuration file</dt>
-<dd>Path to CAMP configuration file. Default is <code>&quot;camp_data/config.json&quot;</code>.</dd>
-<dt>override species</dt>
-<dd>Overrides species concentration with specified value. By default, <code>M</code> is set to 1 mol/mol.</dd>
-<dt>supress output:</dt>
-<dd>Chemical species which will not be shown in output data by the model. By default <code>M</code> is supressed.</dd>
-</dl>
 <hr>
-<h3 class="code-line" data-line-start=355 data-line-end=356 ><a id="Example_configuration_files_355"></a>Example configuration files</h3>
-<hr>
-<h5 class="code-line" data-line-start=357 data-line-end=358 ><a id="Configuration_for_simple_box_model_with_specified_reaction_rates_357"></a>Configuration for simple box model with specified reaction rates:</h5>
-<h1 class="code-line" data-line-start=358 data-line-end=359 ><a id="_358"></a></h1>
-<pre><code class="has-line-data" data-line-start="360" data-line-end="403" class="language-json">{
+<h3 class="code-line" data-line-start=390 data-line-end=391 ><a id="Example_configuration_files_390"></a>Example configuration files</h3>
+<h5 class="code-line" data-line-start=392 data-line-end=393 ><a id="Configuration_for_simple_box_model_with_specified_reaction_rates_392"></a>Configuration for simple box model with specified reaction rates:</h5>
+<h1 class="code-line" data-line-start=393 data-line-end=394 ><a id="_393"></a></h1>
+<pre><code class="has-line-data" data-line-start="395" data-line-end="438" class="language-json">{
     "<span class="hljs-attribute">box model options</span>": <span class="hljs-value">{
         "<span class="hljs-attribute">grid</span>": <span class="hljs-value"><span class="hljs-string">"box"</span></span>,
         "<span class="hljs-attribute">chemistry time step [sec]</span>": <span class="hljs-value"><span class="hljs-number">1.0</span></span>,
@@ -447,9 +474,9 @@ NetCDF files should have a dimension of <code>time</code>, and variables whose o
 </span>}
 </code></pre>
 <hr>
-<h5 class="code-line" data-line-start=404 data-line-end=405 ><a id="Configuration_with_multiple_input_files_and_linear_combinations_404"></a>Configuration with multiple input files and linear combinations:</h5>
-<h1 class="code-line" data-line-start=405 data-line-end=406 ><a id="_405"></a></h1>
-<pre><code class="has-line-data" data-line-start="407" data-line-end="460" class="language-json">{
+<h5 class="code-line" data-line-start=439 data-line-end=440 ><a id="Configuration_with_multiple_input_files_and_linear_combinations_439"></a>Configuration with multiple input files and linear combinations:</h5>
+<h1 class="code-line" data-line-start=440 data-line-end=441 ><a id="_440"></a></h1>
+<pre><code class="has-line-data" data-line-start="442" data-line-end="495" class="language-json">{
   "<span class="hljs-attribute">box model options</span>" : <span class="hljs-value">{
     "<span class="hljs-attribute">grid</span>"                    : <span class="hljs-value"><span class="hljs-string">"box"</span></span>,
     "<span class="hljs-attribute">chemistry time step [s]</span>" : <span class="hljs-value"><span class="hljs-number">1.0</span></span>,

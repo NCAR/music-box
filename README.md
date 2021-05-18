@@ -38,22 +38,30 @@ You will need to have [Docker Desktop](https://www.docker.com/get-started) insta
 docker run -it --rm ncar/music-box bash
 ```
 
-By default, MusicBox loads the Chapman chemistry mechanism for simulations using MICM. To run the model with this mechanism under one of the model configurations in the `examples/` folder:
+## Running MusicBox with the MICM Solver
+MICM can be specified as the chemical solver by configuring the [model components](config_options.md#model-components) section of the configuration file. By default, MusicBox loads the Chapman chemistry mechanism for simulations using MICM. To run the model with this mechanism under one of the model configurations in the `examples/` folder:
 
 ```
 cd /build
-cp examples/bright_chamber/use_case_4.json .
-cp examples/bright_chamber/use_case_4_initial.csv data/
+cp examples/micm_examples/bright_chamber/use_case_4.json .
+cp examples/micm_examples/bright_chamber/use_case_4_initial.csv data/
 ./music_box use_case_4.json
 ```
 
-The results will be in a file named `output.csv`.
+## Running MusicBox with the CAMP Solver
 
-To set up the box model with a different mechanism from the [Public Chemistry Cafe Mechanism Store](https://www.acom.ucar.edu/cafe), run:
+CAMP can be specified as the chemical solver by configuring the [model components](config_options.md#model-components) section of the configuration file. To run the model using the CAMP solver under one of the model configurations in the `examples/` folder:
+```
+cd /build
+cp -r examples/camp_examples/dark_chamber/use_case_1/camp_data .
+cp examples/camp_examples/dark_chamber/use_case_1/use_case_1_config.json
+./music_box use_case_1_config.json
+```
 
-```
-/change_mechanism.sh T1mozcart
-```
+
+
+**The results will be in a file named `output.csv`.**
+
 
 
 # Documentation
