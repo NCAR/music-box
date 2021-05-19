@@ -54,7 +54,7 @@ CAMP can be specified as the chemical solver by configuring the [model component
 ```
 cd /build
 cp -r examples/camp_examples/dark_chamber/use_case_1/camp_data .
-cp examples/camp_examples/dark_chamber/use_case_1/use_case_1_config.json
+cp examples/camp_examples/dark_chamber/use_case_1/use_case_1_config.json .
 ./music_box use_case_1_config.json
 ```
 
