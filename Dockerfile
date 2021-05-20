@@ -103,10 +103,13 @@ RUN if [ "$TAG_ID" = "false" ] ; then \
       && nohup bash -c "node combined.js &" && sleep 4 \
       && mkdir /data \
       && cd /music-box/libs/micm-collection \
-      && python3 get_tag.py -tag_id $TAG_ID \
-      && python3 preprocess_tag.py -mechanism_source_path configured_tags/$TAG_ID -preprocessor localhost:3000 \
-      && python3 stage_tag.py -source_dir_kinetics configured_tags/$TAG_ID -target_dir_data /data \
-      && cp /music-box/libs/micm-collection/configured_tags/${TAG_ID}/source_mechanism.json /build \
+      && if [ "$TAG_ID" = "chapman" ] ; then \
+           python3 preprocess_tag.py -c configured_tags/$TAG_ID/config.json -p localhost:3000 \
+        && python3 stage_tag.py -source_dir_kinetics configured_tags/$TAG_ID/output -target_dir_data /data \
+        ; else \
+           echo "Only Chapman chemistry is currently available for MusicBox-MICM" \
+        && exit 1 \
+        ; fi \
       ; fi
 
 # build the model
