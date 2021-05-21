@@ -22,6 +22,12 @@
     {
       "type" : "MICM",
       "solve" : false,
+      "override species" : {
+        "M" : { "mixing ratio mol mol-1" : 1.0 }
+      },
+      "suppress output" : {
+        "M" : { }
+      },
       "solver" : {
         "type" : "Rosenbrock",
         "chemistry time step [min]" : 5.0,
