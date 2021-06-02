@@ -28,7 +28,7 @@ RUN dnf -y update \
 # python modules needed in scripts
 RUN dnf -y install python3-pandas
 
-RUN pip3 install requests numpy scipy matplotlib ipython jupyter nose Django pillow django-crispy-forms
+RUN pip3 install requests numpy scipy matplotlib ipython jupyter nose Django pillow django-crispy-forms pyvis
 
 # Build the SuiteSparse libraries for sparse matrix support
 RUN curl -LO http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-5.1.0.tar.gz \
