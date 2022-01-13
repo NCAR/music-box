@@ -4,7 +4,8 @@ MusicBox
 
 MusicBox: A MUSICA model for boxes and columns.
 
-[![License](https://img.shields.io/github/license/NCAR/music-box.svg)](https://github.com/NCAR/music-box/blob/main/LICENSE) [![Build Status](https://travis-ci.com/NCAR/music-box.svg?branch=main)](https://travis-ci.com/NCAR/music-box)
+[![License](https://img.shields.io/github/license/NCAR/music-box.svg)](https://github.com/NCAR/music-box/blob/main/LICENSE)
+[![CI Status](https://github.com/NCAR/music-box/actions/workflows/test.yml/badge.svg)](https://github.com/NCAR/music-box/actions/workflows/test.yml)
 
 Copyright (C) 2020 National Center for Atmospheric Research
 
