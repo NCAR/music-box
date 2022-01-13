@@ -328,11 +328,11 @@ contains
     class(iterator_t), pointer :: iter
     type(domain_target_cells_t) :: all_cells
     type(property_t), pointer :: prop
-    type(property_set_t), pointer :: prop_set
+    type(property_set_t) :: prop_set
     type(camp_string_t), allocatable :: species_names(:)
 
     species_names = this%core_%unique_names( )
-    prop_set => property_set_t( )
+    prop_set = property_set_t( )
     do i_spec = 1, size( species_names )
       prop => property_t( my_name,                                            &
                           name = species_names( i_spec )%string,              &
@@ -344,7 +344,6 @@ contains
       deallocate( prop )
     end do
     call domain%register( "chemical_species", prop_set )
-    deallocate( prop_set )
     this%set_species_state__mol_m3_ =>                                &
         domain%mutator_set(  "chemical_species",                              & !- property set name
                              "mol m-3",                                       & !- units
