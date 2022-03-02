@@ -13,3 +13,6 @@
 [submodule "libs/music-box-interactive"]
   path = libs/music-box-interactive
   url = https://github.com/NCAR/music-box-interactive.git
+[submodule "libs/camp"]
+	path = libs/camp
+	url = https://github.com/open-atmos/camp.git

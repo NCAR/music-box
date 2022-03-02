@@ -34,7 +34,7 @@ git clone --recurse-submodules https://github.com/NCAR/music-box.git
 
 # extract
 cd ${MUSIC_BOX_HOME}
-cp music-box/libs/partmc/cvode-3.4-alpha.tar.gz .
+cp music-box/libs/camp/cvode-3.4-alpha.tar.gz .
 tar -zxf SuiteSparse-5.1.0.tar.gz
 tar -zxf 8.2.1.tar.gz
 tar -zxf cvode-3.4-alpha.tar.gz
@@ -78,11 +78,11 @@ cmake -D CMAKE_BUILD_TYPE=release \
       ..
 make install
 
-# PartMC
-PARTMC_ROOT=$MUSIC_BOX_HOME/music-box/libs/partmc
-export PARTMC_HOME=$PARTMC_ROOT/build
-mkdir -p $PARTMC_HOME
-cd $PARTMC_ROOT
+# CAMP
+CAMP_ROOT=$MUSIC_BOX_HOME/music-box/libs/camp
+export CAMP_HOME=$CAMP_ROOT/build
+mkdir -p $CAMP_HOME
+cd $CAMP_ROOT
 sed -i "s/'unit_test_rxn_arrhenius_t()'/unit_test_rxn_arrhenius_t()/" CMakeLists.txt
 mkdir -p build
 cd build
@@ -131,8 +131,8 @@ cmake -D CMAKE_C_COMPILER=icc \
       -D GSL_CBLAS_LIB=$NCAR_LDFLAGS_GSL/libgslcblas.so \
       -D GSL_INCLUDE_DIR=$NCAR_INC_GSL \
       -D GSL_LIB=$NCAR_LDFLAGS_GSL/libgsl.so \
-      -D PARTMC_LIB=$PARTMC_HOME/libpartmc.a \
-      -D PARTMC_INCLUDE_DIR=$PARTMC_HOME \
+      -D CAMP_LIB=$CAMP_HOME/libcamp.a \
+      -D CAMP_INCLUDE_DIR=$CAMP_HOME \
       ..
 make
 
@@ -211,28 +211,28 @@ printf "help([[\n"\
 "prepend_path(\"LD_LIBRARY_PATH\", \"${CVODE_MODULE}/lib\")\n" \
 >> $MODULE_ROOT/cvode/3.4-alpha.lua
 
-PARTMC_MODULE=$MODULE_ROOT/partmc/2.6.0
-mkdir -p $PARTMC_MODULE
-mkdir -p $PARTMC_MODULE/bin
-mkdir -p $PARTMC_MODULE/lib
-mkdir -p $PARTMC_MODULE/include
-cp $PARTMC_ROOT/build/partmc $PARTMC_MODULE/bin/
-cp $PARTMC_ROOT/build/*.mod $PARTMC_MODULE/include/
-cp $PARTMC_ROOT/src/*.h $PARTMC_MODULE/include/
+CAMP_MODULE=$MODULE_ROOT/camp/2.6.0
+mkdir -p $CAMP_MODULE
+mkdir -p $CAMP_MODULE/bin
+mkdir -p $CAMP_MODULE/lib
+mkdir -p $CAMP_MODULE/include
+cp $CAMP_ROOT/build/camp $CAMP_MODULE/bin/
+cp $CAMP_ROOT/build/*.mod $CAMP_MODULE/include/
+cp $CAMP_ROOT/src/*.h $CAMP_MODULE/include/
 printf "help([[\n"\
 "For detailed instructions, go to:\n"\
-"   https://github.com/compdyn/partmc\n"\
+"   https://github.com/compdyn/camp\n"\
 "\n"\
 "]])\n"\
 "whatis(\"Version: 2.6.0\")\n"\
-"whatis(\"URL: https://github.com/compdyn/partmc\")\n"\
-"whatis(\"Description: Particle-resolved stochastic atmospheric aerosol model\")\n"\
+"whatis(\"URL: https://github.com/compdyn/camp\")\n"\
+"whatis(\"Description: Multiphase atmospheric chemistry model\")\n"\
 "always_load(\"intel/19.1.1\", \"gsl/2.6\", \"netcdf/4.7.3\", \"cvode/3.4-alpha\")\n"\
-"setenv(\"PARTMC_INC\", \"${PARTMC_MODULE}/include\")\n"\
-"setenv(\"PARTMC_LIB\", \"${PARTMC_MODULE}/lib\")\n"\
-"prepend_path(\"PATH\", \"${PARTMC_MODULE}/bin\")\n"\
-"prepend_path(\"LD_LIBRARY_PATH\", \"${PARTMC_MODULE}/lib\")\n" \
->> $MODULE_ROOT/partmc/2.6.0.lua
+"setenv(\"CAMP_INC\", \"${CAMP_MODULE}/include\")\n"\
+"setenv(\"CAMP_LIB\", \"${CAMP_MODULE}/lib\")\n"\
+"prepend_path(\"PATH\", \"${CAMP_MODULE}/bin\")\n"\
+"prepend_path(\"LD_LIBRARY_PATH\", \"${CAMP_MODULE}/lib\")\n" \
+>> $MODULE_ROOT/camp/2.6.0.lua
 
 MUSIC_BOX_MODULE=$MODULE_ROOT/music-box/0.0.1
 mkdir -p $MUSIC_BOX_MODULE
@@ -246,6 +246,6 @@ printf "help([[\n"\
 "whatis(\"Version: 0.0.1\")\n"\
 "whatis(\"URL: https://github.com/NCAR/music-box\")\n"\
 "whatis(\"Description: A MUSICA model for boxes and columns\")\n"\
-"always_load(\"intel/19.1.1\", \"netcdf/4.7.3\", \"partmc/2.6.0\")\n"\
+"always_load(\"intel/19.1.1\", \"netcdf/4.7.3\", \"camp/2.6.0\")\n"\
 "prepend_path(\"PATH\", \"${MUSIC_BOX_MODULE}/bin\")\n" \
 >> $MODULE_ROOT/music-box/0.0.1.lua
