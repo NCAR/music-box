@@ -32,7 +32,7 @@ cd ${MUSIC_BOX_HOME}
 
 # extract
 cd ${MUSIC_BOX_HOME}
-cp music-box/libs/partmc/cvode-3.4-alpha.tar.gz .
+cp music-box/libs/camp/cvode-3.4-alpha.tar.gz .
 tar -zxf SuiteSparse-5.1.0.tar.gz
 tar -zxf 8.2.1.tar.gz
 tar -zxf cvode-3.4-alpha.tar.gz
@@ -76,11 +76,11 @@ cmake -D CMAKE_BUILD_TYPE=release \
       ..
 make install
 
-# PartMC
-PARTMC_ROOT=$MUSIC_BOX_HOME/music-box/libs/partmc
-export PARTMC_HOME=$PARTMC_ROOT/build
-mkdir -p $PARTMC_HOME
-cd $PARTMC_ROOT
+# CAMP
+CAMP_ROOT=$MUSIC_BOX_HOME/music-box/libs/camp
+export CAMP_HOME=$CAMP_ROOT/build
+mkdir -p $CAMP_HOME
+cd $CAMP_ROOT
 sed -i "s/'unit_test_rxn_arrhenius_t()'/unit_test_rxn_arrhenius_t()/" CMakeLists.txt
 mkdir -p build
 cd build
@@ -129,8 +129,8 @@ cmake -D CMAKE_C_COMPILER=icc \
       -D GSL_CBLAS_LIB=$NCAR_LDFLAGS_GSL/libgslcblas.so \
       -D GSL_INCLUDE_DIR=$NCAR_INC_GSL \
       -D GSL_LIB=$NCAR_LDFLAGS_GSL/libgsl.so \
-      -D PARTMC_LIB=$PARTMC_HOME/libpartmc.a \
-      -D PARTMC_INCLUDE_DIR=$PARTMC_HOME \
+      -D CAMP_LIB=$CAMP_HOME/libcamp.a \
+      -D CAMP_INCLUDE_DIR=$CAMP_HOME \
       ..
 make
 

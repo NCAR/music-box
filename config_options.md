@@ -397,7 +397,7 @@ NetCDF files should have a dimension of <code>time</code>, and variables whose o
 <p class="has-line-data" data-line-start="351" data-line-end="354">|—<code>config.json</code> — Points to <code>specise.json</code> and <code>mechanism.json</code>.<br>
 |—<code>mechanism.json</code> — Contains chemical mechanism information.<br>
 |—<code>species.json</code> — Describes absolute tolerances for species in the chemical mechanism.</p>
-<p class="has-line-data" data-line-start="355" data-line-end="356"><strong>For more information on CAMP configuration files see <a href="https://github.com/compdyn/partmc/tree/763bca3035bdb39989029d8c52c1e45058688eb6">documentation on PartMC</a>.</strong></p>
+<p class="has-line-data" data-line-start="355" data-line-end="356"><strong>For more information on CAMP configuration files see the <a href="https://open-atmos.github.io/camp">CAMP documentation</a>.</strong></p>
 <h5 class="code-line" data-line-start=357 data-line-end=358 ><a id="Model_component_options_with_CAMP_357"></a>Model component options with CAMP:</h5>
 <dl>
 <dt>type</dt>
