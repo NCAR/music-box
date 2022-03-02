@@ -123,21 +123,21 @@ set(SUNDIALS_LIBS ${SUNDIALS_NVECSERIAL_LIB} ${SUNDIALS_CVODE_LIB}
 include_directories(${SUNDIALS_INCLUDE_DIR} ${SUITE_SPARSE_INCLUDE_DIR})
 
 ################################################################################
-# PartMC library
+# CAMP library
 
-find_path(PARTMC_INCLUDE_DIR camp_core.mod
-  DOC "PartMC include directory (must include pmc*.mod files)"
+find_path(CAMP_INCLUDE_DIR camp_core.mod
+  DOC "CAMP include directory (must include camp_*.mod files)"
   PATHS
     /opt/local/lib
     /usr/local/lib
     /usr/local/lib64)
-find_library(PARTMC_LIB partmc
-  DOC "PartMC library"
+  find_library(CAMP_LIB camp
+    DOC "CAMP library"
   PATHS
     /opt/local/lib
     /usr/local/lib
     /usr/local/lib64)
-include_directories(${PARTMC_INCLUDE_DIR})
+include_directories(${CAMP_INCLUDE_DIR})
 
 ################################################################################
 # Create a directory to hold input data
