@@ -12,10 +12,7 @@ Copyright (C) 2020 National Center for Atmospheric Research
 # Install and run (interactive version)
 
 The only requirement for running MusicBox is that you have [Docker Desktop](https://www.docker.com/get-started) installed and running. With Docker Desktop running, open a terminal window and run the following command: (The first time you run this command, the MusicBox code will be downloaded from Docker Hub, which may take a few minutes.)
-```
-docker image pull ncar/music-box
-```
-Then, run Music Box.
+
 ```
 docker run -p 8000:8000 -it --rm ncar/music-box
 ```
