@@ -22,6 +22,7 @@ Leaving the terminal window open, open a web browser and navigate to the followi
 When you are ready to stop the MusicBox server, return to the terminal window and stop the server with `Control-C`. If you would like to remove MusicBox from your machine, open a terminal window and run the following command:
 
 ```
+docker system prune
 docker image rm ncar/music-box
 ```
 
