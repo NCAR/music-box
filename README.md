@@ -4,17 +4,15 @@ MusicBox
 
 MusicBox: A MUSICA model for boxes and columns.
 
-[![License](https://img.shields.io/github/license/NCAR/music-box.svg)](https://github.com/NCAR/music-box/blob/main/LICENSE) [![Build Status](https://travis-ci.com/NCAR/music-box.svg?branch=main)](https://travis-ci.com/NCAR/music-box)
+[![License](https://img.shields.io/github/license/NCAR/music-box.svg)](https://github.com/NCAR/music-box/blob/main/LICENSE)
+[![CI Status](https://github.com/NCAR/music-box/actions/workflows/test.yml/badge.svg)](https://github.com/NCAR/music-box/actions/workflows/test.yml)
 
 Copyright (C) 2020 National Center for Atmospheric Research
 
 # Install and run (interactive version)
 
 The only requirement for running MusicBox is that you have [Docker Desktop](https://www.docker.com/get-started) installed and running. With Docker Desktop running, open a terminal window and run the following command: (The first time you run this command, the MusicBox code will be downloaded from Docker Hub, which may take a few minutes.)
-```
-docker image pull ncar/music-box
-```
-Then, run Music Box.
+
 ```
 docker run -p 8000:8000 -it --rm ncar/music-box
 ```
@@ -24,6 +22,7 @@ Leaving the terminal window open, open a web browser and navigate to the followi
 When you are ready to stop the MusicBox server, return to the terminal window and stop the server with `Control-C`. If you would like to remove MusicBox from your machine, open a terminal window and run the following command:
 
 ```
+docker system prune
 docker image rm ncar/music-box
 ```
 

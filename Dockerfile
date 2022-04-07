@@ -62,7 +62,7 @@ RUN cd /music-box/libs/micm-preprocessor; \
     npm install
 
 # Install a modified version of CVODE
-RUN tar -zxvf /music-box/libs/partmc/cvode-3.4-alpha.tar.gz \
+RUN tar -zxvf /music-box/libs/camp/cvode-3.4-alpha.tar.gz \
     && cd cvode-3.4-alpha \
     && mkdir build \
     && cd build \
@@ -77,19 +77,16 @@ RUN tar -zxvf /music-box/libs/partmc/cvode-3.4-alpha.tar.gz \
              .. \
     && make install
 
-# Build PartMC
-RUN mkdir pmc_build \
-    && cd pmc_build \
+# Build CAMP
+RUN mkdir camp_build \
+    && cd camp_build \
     && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-8.2.0" \
     && cmake -D CMAKE_BUILD_TYPE=release \
-             -D CMAKE_C_FLAGS_DEBUG="-g -pg" \
-             -D CMAKE_Fortran_FLAGS_DEBUG="-g -pg" \
+             -D CMAKE_C_FLAGS_DEBUG="-pg" \
+             -D CMAKE_Fortran_FLAGS_DEBUG="-pg" \
              -D CMAKE_MODULE_LINKER_FLAGS="-pg" \
-             -D ENABLE_SUNDIALS:BOOL=TRUE \
              -D ENABLE_GSL:BOOL=TRUE \
-             -D SUNDIALS_CVODE_LIB=/usr/local/lib/libsundials_cvode.so \
-             -D SUNDIALS_INCLUDE_DIR=/usr/local/include \
-             /music-box/libs/partmc \
+             /music-box/libs/camp \
     && make
 
 # command line arguments
@@ -115,8 +112,8 @@ RUN if [ "$TAG_ID" = "false" ] ; then \
 # build the model
 RUN cd /build \
       && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-8.2.0" \
-      && cmake -D PARTMC_INCLUDE_DIR="/pmc_build" \
-               -D PARTMC_LIB="/pmc_build/libpartmc.a" \
+      && cmake -D CAMP_INCLUDE_DIR="/camp_build/include" \
+               -D CAMP_LIB="/camp_build/lib/libcamp.a" \
                /music-box \
       && make
 
