@@ -14,9 +14,9 @@ module music_box_camp
                                               domain_state_accessor_ptr
   use musica_domain_state_mutator,     only : domain_state_mutator_t,         &
                                               domain_state_mutator_ptr
-  use pmc_camp_core,                   only : camp_core_t
-  use pmc_camp_state,                  only : camp_state_t
-  use pmc_rxn_data,                    only : rxn_update_data_t
+  use camp_camp_core,                  only : camp_core_t
+  use camp_camp_state,                 only : camp_state_t
+  use camp_rxn_data,                   only : rxn_update_data_t
 
   implicit none
   private
@@ -279,7 +279,7 @@ contains
     call camp_orig_config%from_file( config_file_name%to_char( ) )
 
     ! copy each CAMP configuration file to the output path
-    call camp_orig_config%get( "pmc-files", camp_files, my_name )
+    call camp_orig_config%get( "camp-files", camp_files, my_name )
     do i_file = 1, size( camp_files )
       call temp_config%from_file( camp_files( i_file )%to_char( ) )
       split_file = camp_files( i_file )%split( "/" )
@@ -289,7 +289,7 @@ contains
 
     ! save the main CAMP configuration file with updated file names
     call temp_config%empty( )
-    call temp_config%add( "pmc-files", camp_files, my_name )
+    call temp_config%add( "camp-files", camp_files, my_name )
     call temp_config%to_file( output_path//"camp_config.json" )
 
   end subroutine preprocess_input
@@ -309,7 +309,7 @@ contains
     use musica_property,               only : property_t
     use musica_property_set,           only : property_set_t
     use musica_string,                 only : string_t
-    use pmc_util,                      only : camp_string_t => string_t
+    use camp_util,                     only : camp_string_t => string_t
 
     !> CAMP interface
     class(camp_t), intent(inout) :: this
@@ -328,11 +328,11 @@ contains
     class(iterator_t), pointer :: iter
     type(domain_target_cells_t) :: all_cells
     type(property_t), pointer :: prop
-    type(property_set_t), pointer :: prop_set
+    type(property_set_t) :: prop_set
     type(camp_string_t), allocatable :: species_names(:)
 
     species_names = this%core_%unique_names( )
-    prop_set => property_set_t( )
+    prop_set = property_set_t( )
     do i_spec = 1, size( species_names )
       prop => property_t( my_name,                                            &
                           name = species_names( i_spec )%string,              &
@@ -344,7 +344,6 @@ contains
       deallocate( prop )
     end do
     call domain%register( "chemical_species", prop_set )
-    deallocate( prop_set )
     this%set_species_state__mol_m3_ =>                                &
         domain%mutator_set(  "chemical_species",                              & !- property set name
                              "mol m-3",                                       & !- units
@@ -458,10 +457,10 @@ contains
     use musica_input_output_processor, only : input_output_processor_t
     use musica_property,               only : property_t
     use musica_string,                 only : string_t
-    use pmc_rxn_data,                  only : rxn_data_t
-    use pmc_rxn_photolysis,            only : rxn_photolysis_t,               &
+    use camp_rxn_data,                 only : rxn_data_t
+    use camp_rxn_photolysis,           only : rxn_photolysis_t,               &
                                               rxn_update_data_photolysis_t
-    use pmc_util,                      only : camp_string_t => string_t
+    use camp_util,                     only : camp_string_t => string_t
 
     !> CAMP interface
     class(camp_t), intent(inout) :: this
@@ -553,10 +552,10 @@ contains
     use musica_input_output_processor, only : input_output_processor_t
     use musica_property,               only : property_t
     use musica_string,                 only : string_t
-    use pmc_rxn_data,                  only : rxn_data_t
-    use pmc_rxn_emission,              only : rxn_emission_t,                 &
+    use camp_rxn_data,                 only : rxn_data_t
+    use camp_rxn_emission,             only : rxn_emission_t,                 &
                                               rxn_update_data_emission_t
-    use pmc_util,                      only : camp_string_t => string_t
+    use camp_util,                     only : camp_string_t => string_t
 
     !> CAMP interface
     class(camp_t), intent(inout) :: this
@@ -636,10 +635,10 @@ contains
     use musica_input_output_processor, only : input_output_processor_t
     use musica_property,               only : property_t
     use musica_string,                 only : string_t
-    use pmc_rxn_data,                  only : rxn_data_t
-    use pmc_rxn_first_order_loss,      only : rxn_first_order_loss_t,         &
+    use camp_rxn_data,                 only : rxn_data_t
+    use camp_rxn_first_order_loss,     only : rxn_first_order_loss_t,         &
                                             rxn_update_data_first_order_loss_t
-    use pmc_util,                      only : camp_string_t => string_t
+    use camp_util,                     only : camp_string_t => string_t
 
     !> CAMP interface
     class(camp_t), intent(inout) :: this
@@ -774,7 +773,7 @@ contains
     use musica_assert,                 only : die
     use musica_domain_state,           only : domain_state_t
     use musica_domain_iterator,        only : domain_iterator_t
-    use pmc_rxn_photolysis,            only : rxn_update_data_photolysis_t
+    use camp_rxn_photolysis,           only : rxn_update_data_photolysis_t
 
     !> CAMP interface
     class(camp_t), intent(inout) :: this
@@ -809,7 +808,7 @@ contains
     use musica_assert,                 only : die
     use musica_domain_state,           only : domain_state_t
     use musica_domain_iterator,        only : domain_iterator_t
-    use pmc_rxn_emission,              only : rxn_update_data_emission_t
+    use camp_rxn_emission,             only : rxn_update_data_emission_t
 
     !> CAMP interface
     class(camp_t), intent(inout) :: this
@@ -846,7 +845,7 @@ contains
     use musica_assert,                 only : die
     use musica_domain_state,           only : domain_state_t
     use musica_domain_iterator,        only : domain_iterator_t
-    use pmc_rxn_first_order_loss,      only : rxn_update_data_first_order_loss_t
+    use camp_rxn_first_order_loss,     only : rxn_update_data_first_order_loss_t
 
     !> CAMP interface
     class(camp_t), intent(inout) :: this
