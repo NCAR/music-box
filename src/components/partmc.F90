@@ -1,10 +1,7 @@
-! Copyright (C) 2020 National Center for Atmospheric Research
-! SPDX-License-Identifier: Apache-2.0
-!
 !> \file
-!> The music_box_camp module
+!> The music_box_partmc module
 
-!> The camp_t type and related functions
+!> The partmc_t type and related functions
 module music_box_partmc
 
   use musica_component,                only : component_t
@@ -14,15 +11,20 @@ module music_box_partmc
                                               domain_state_accessor_ptr
   use musica_domain_state_mutator,     only : domain_state_mutator_t,         &
                                               domain_state_mutator_ptr
-!  use camp_camp_core,                  only : camp_core_t
-!  use camp_camp_state,                 only : camp_state_t
-!  use camp_rxn_data,                   only : rxn_update_data_t
-
   use pmc_aero_state
   use pmc_gas_state
   use pmc_gas_data
   use pmc_aero_data
   use pmc_env_state
+  use pmc_scenario
+
+  use pmc_bin_grid
+  use pmc_aero_dist
+  use pmc_aero_binned
+  use pmc_coag_kernel
+  use pmc_run_part
+  use pmc_spec_file
+  use pmc_util
 
   implicit none
   private
@@ -72,9 +74,9 @@ module music_box_partmc
     type(aero_data_t) :: aero_data
     type(gas_state_t) :: gas_state
     type(gas_data_t) :: gas_data
-
-    !> Photolysis reaction updaters
-!    type(reaction_updater_t), allocatable :: photolysis_(:)
+    type(env_state_t) :: env_state
+    type(scenario_t) :: scenario
+    type(run_part_opt_t) :: run_part_opt
     !> Emissions reaction updaters
 !    type(reaction_updater_t), allocatable :: emissions_(:)
     !> Deposition reaction updaters
@@ -86,8 +88,6 @@ module music_box_partmc
     !> Number density of air [mol m-3]
     class(domain_state_accessor_t), pointer ::                                &
         number_density_air__mol_m3_ => null( )
-    !> Flag indicating whether to output photolysis rate constants
-    logical :: output_photolysis_rate_constants_ = .false.
   contains
     !> Returns the name of the component
     procedure :: name => component_name
@@ -101,18 +101,14 @@ module music_box_partmc
     procedure, private :: connect_species_state
     !> Connect MUSICA environmental parameters to the CAMP mechanism
     procedure, private :: connect_environment
-    !> Connect external photolysis rate constants to the CAMP mechanism
-    procedure, private :: connect_photolysis
     !> Connect external emissions rates to the CAMP mechanism
     procedure, private :: connect_emissions
     !> Connect external deposition rate constants to the CAMP mechanism
 !    procedure, private :: connect_deposition
     !> Update CAMP with MUSICA species concentrations
-    procedure, private :: update_camp_species_state
+    procedure, private :: update_partmc_species_state
     !> Update CAMP with MUSICA environmental parameters
-    procedure, private :: update_camp_environment
-    !> Update CAMP with externally provided photolysis rate constants
-    procedure, private :: update_camp_photolysis
+    procedure, private :: update_partmc_environment
     !> Update CAMP with externally provided emission rates
     procedure, private :: update_camp_emissions
     !> Update CAMP with externally provided deposition rate constants
@@ -151,7 +147,153 @@ contains
     character(len=*), parameter :: my_name = "PartMC interface constructor"
     type(string_t) :: config_file_name
 
+    character(len=100) :: spec_name
+    type(spec_file_t) :: file
+    type(run_part_opt_t) :: run_part_opt
+    character(len=PMC_MAX_FILENAME_LEN) :: sub_filename
+    type(spec_file_t) :: sub_file
+
+    type(gas_state_t) :: gas_state_init
+    type(aero_dist_t) :: aero_dist_init
+    type(aero_state_t) :: aero_state_init
+    type(scenario_t) :: scenario
+    type(env_state_t) :: env_state_init
+    type(aero_data_t) :: aero_data
+    type(gas_data_t) :: gas_data
+
+    real(kind=dp) :: n_part
+    logical :: do_restart, do_init_equilibriate
+    integer :: rand_init
+
+    spec_name = 'urban_plume.spec'
     allocate( new_obj )
+       call spec_file_open(spec_name, file)
+
+       call spec_file_read_string(file, 'output_prefix', &
+            run_part_opt%output_prefix)
+       call spec_file_read_integer(file, 'n_repeat', run_part_opt%n_repeat)
+       call spec_file_read_real(file, 'n_part', n_part)
+       call spec_file_read_logical(file, 'restart', do_restart)
+
+       call spec_file_read_real(file, 't_max', run_part_opt%t_max)
+       call spec_file_read_real(file, 'del_t', run_part_opt%del_t)
+       call spec_file_read_real(file, 't_output', run_part_opt%t_output)
+       call spec_file_read_real(file, 't_progress', run_part_opt%t_progress)
+
+       call spec_file_read_logical(file, 'do_camp_chem', &
+               run_part_opt%do_camp_chem)
+
+          env_state_init%elapsed_time = 0d0
+          if (.not. run_part_opt%do_camp_chem) then
+            call spec_file_read_string(file, 'gas_data', sub_filename)
+            call spec_file_open(sub_filename, sub_file)
+            call spec_file_read_gas_data(sub_file, gas_data)
+            call spec_file_close(sub_file)
+          end if
+          call spec_file_read_string(file, 'gas_init', sub_filename)
+          call spec_file_open(sub_filename, sub_file)
+          call spec_file_read_gas_state(sub_file, gas_data, &
+               gas_state_init)
+          call spec_file_close(sub_file)
+
+          if (.not. run_part_opt%do_camp_chem) then
+             call spec_file_read_string(file, 'aerosol_data', sub_filename)
+             call spec_file_open(sub_filename, sub_file)
+             call spec_file_read_aero_data(sub_file, aero_data)
+             call spec_file_close(sub_file)
+          end if
+          call spec_file_read_fractal(file, aero_data%fractal)
+
+          call spec_file_read_string(file, 'aerosol_init', sub_filename)
+          call spec_file_open(sub_filename, sub_file)
+          call spec_file_read_aero_dist(sub_file, aero_data, aero_dist_init)
+          call spec_file_close(sub_file)
+
+       call spec_file_read_scenario(file, gas_data, aero_data, scenario)
+       call spec_file_read_env_state(file, env_state_init)
+
+call spec_file_read_logical(file, 'do_coagulation', &
+            run_part_opt%do_coagulation)
+       if (run_part_opt%do_coagulation) then
+          call spec_file_read_coag_kernel_type(file, &
+               run_part_opt%coag_kernel_type)
+       else
+          run_part_opt%coag_kernel_type = COAG_KERNEL_TYPE_INVALID
+       end if
+
+       call spec_file_read_logical(file, 'do_condensation', &
+            run_part_opt%do_condensation)
+#ifndef PMC_USE_SUNDIALS
+       call assert_msg(121370218, &
+            run_part_opt%do_condensation .eqv. .false., &
+            "cannot use condensation, SUNDIALS support is not compiled in")
+#endif
+       if (run_part_opt%do_condensation) then
+          call spec_file_read_logical(file, 'do_init_equilibriate', &
+               do_init_equilibriate)
+       else
+          do_init_equilibriate = .false.
+       end if
+
+       call spec_file_read_logical(file, 'do_mosaic', run_part_opt%do_mosaic)
+       if (run_part_opt%do_mosaic .and. (.not. mosaic_support())) then
+          call spec_file_die_msg(230495365, file, &
+               'cannot use MOSAIC, support is not compiled in')
+       end if
+       if (run_part_opt%do_mosaic .and. run_part_opt%do_condensation) then
+          call spec_file_die_msg(599877804, file, &
+               'cannot use MOSAIC and condensation simultaneously')
+       end if
+       if (run_part_opt%do_mosaic) then
+          call spec_file_read_logical(file, 'do_optical', &
+               run_part_opt%do_optical)
+       else
+          run_part_opt%do_optical = .false.
+       end if
+
+       call spec_file_read_logical(file, 'do_nucleation', &
+            run_part_opt%do_nucleation)
+       if (run_part_opt%do_nucleation) then
+          call spec_file_read_nucleate_type(file, aero_data, &
+               run_part_opt%nucleate_type, run_part_opt%nucleate_source)
+       else
+          run_part_opt%nucleate_type = NUCLEATE_TYPE_INVALID
+       end if
+
+       call spec_file_read_integer(file, 'rand_init', rand_init)
+       call spec_file_read_logical(file, 'allow_doubling', &
+            run_part_opt%allow_doubling)
+       call spec_file_read_logical(file, 'allow_halving', &
+            run_part_opt%allow_halving)
+       if (.not. do_restart) then
+          call spec_file_read_logical(file, 'do_select_weighting', &
+               run_part_opt%do_select_weighting)
+          if (run_part_opt%do_select_weighting) then
+             call spec_file_read_aero_state_weighting_type(file, &
+                  run_part_opt%weighting_type, run_part_opt%weighting_exponent)
+          else
+             run_part_opt%weighting_type = AERO_STATE_WEIGHT_NUMMASS_SOURCE
+             run_part_opt%weighting_exponent = 0.0d0
+          end if
+       end if
+       call spec_file_read_logical(file, 'record_removals', &
+            run_part_opt%record_removals)
+
+       call spec_file_read_logical(file, 'do_parallel', &
+            run_part_opt%do_parallel)
+
+       run_part_opt%output_type = OUTPUT_TYPE_SINGLE
+       run_part_opt%mix_timescale = 0d0
+       run_part_opt%gas_average = .false.
+       run_part_opt%env_average = .false.
+       run_part_opt%parallel_coag_type = PARALLEL_COAG_TYPE_LOCAL
+
+       new_obj%env_state = env_state_init
+       new_obj%scenario = scenario
+       new_obj%gas_data = gas_data
+       new_obj%aero_data = aero_data
+
+       call spec_file_close(file)
 
   end function constructor
 
@@ -165,8 +307,8 @@ contains
     !> CAMP interface
     class(partmc_t), intent(in) :: this
 
-    component_name = "PartMC: Particle-resolved Monte Carlo code for 
-         atmospheric aerosol simulation"
+    component_name = "PartMC: Particle-resolved Monte Carlo code for" &
+         // "atmospheric aerosol simulation"
 
   end function component_name
 
@@ -205,15 +347,18 @@ contains
     real(kind=musica_dk), intent(in) :: time_step__s
 
 !    ! update CAMP with externally provided parameters
-!    call this%update_camp_species_state( domain_state, domain_element )
-!    call this%update_camp_environment(   domain_state, domain_element )
-!    call this%update_camp_photolysis(    domain_state, domain_element )
+!     call this%update_partmc_species_state( domain_state, domain_element )
+!     call this%update_partmc_environment(   domain_state, domain_element )
 !    call this%update_camp_emissions(     domain_state, domain_element )
 !    call this%update_camp_deposition(    domain_state, domain_element )
 !
 !    ! solve multi-phase chemistry
 !    call this%core_%solve( this%state_, time_step__s )
-!
+     ! TODO: What is current simulation time?
+     call scenario_update_env_state(this%scenario, this%env_state, &
+          this%env_state%elapsed_time + time_step__s)
+     print*, this%env_state%temp, this%env_state%elapsed_time
+
 !    ! update MUSICA with CAMP results
 !    call this%update_musica_species_state( domain_state, domain_element )
 
@@ -323,43 +468,6 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Connect external photolysis rate constants to the CAMP mechanism
-  subroutine connect_photolysis( this, config, domain, output )
-
-    use musica_assert,                 only : assert
-    use musica_constants,              only : musica_lk
-    use musica_data_type,              only : kDouble
-    use musica_domain,                 only : domain_t
-    use musica_domain_target_cells,    only : domain_target_cells_t
-    use musica_input_output_processor, only : input_output_processor_t
-    use musica_property,               only : property_t
-    use musica_string,                 only : string_t
-    use camp_rxn_data,                 only : rxn_data_t
-    use camp_rxn_photolysis,           only : rxn_photolysis_t,               &
-                                              rxn_update_data_photolysis_t
-    use camp_util,                     only : camp_string_t => string_t
-
-    !> CAMP interface
-    class(partmc_t), intent(inout) :: this
-    !> CAMP configuration
-    type(config_t), intent(inout) :: config
-    !> Model domain
-    class(domain_t), intent(inout) :: domain
-    !> Ouput file
-    class(input_output_processor_t), intent(inout) :: output
-
-    character(len=*), parameter :: my_name = "CAMP photolysis connector"
-    integer(kind=musica_ik) :: i_rxn, i_mech, n_rxn, i_updater
-    logical(kind=musica_lk) :: found
-    class(rxn_data_t), pointer :: rxn
-    type(property_t), pointer :: prop
-    type(domain_target_cells_t) :: all_cells
-    character(len=:), allocatable :: key, temp_str
-
-  end subroutine connect_photolysis
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
   !> Connect external emissions rates to the CAMP mechanism
   subroutine connect_emissions( this, config, domain, output )
 
@@ -395,8 +503,8 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Update CAMP with MUSICA species concentrations
-  subroutine update_camp_species_state( this, domain_state, domain_element )
+  !> Update PartMC with MUSICA species concentrations
+  subroutine update_partmc_species_state( this, domain_state, domain_element )
 
     use musica_domain_state,           only : domain_state_t
     use musica_domain_iterator,        only : domain_iterator_t
@@ -411,12 +519,12 @@ contains
     integer(kind=musica_ik) :: i_spec
     real(kind=musica_dk) :: number_density, new_value
 
-  end subroutine update_camp_species_state
+  end subroutine update_partmc_species_state
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Update CAMP with MUSICA environmental parameters
-  subroutine update_camp_environment( this, domain_state, domain_element )
+  !> Update PartMC with MUSICA environmental parameters
+  subroutine update_partmc_environment( this, domain_state, domain_element )
 
     use musica_domain_state,           only : domain_state_t
     use musica_domain_iterator,        only : domain_iterator_t
@@ -430,42 +538,12 @@ contains
 
     real(kind=musica_dk) :: new_value
 
-  end subroutine update_camp_environment
+    call domain_state%get( domain_element, this%temperature__K_, new_value )
+    this%env_state%temp = new_value
+    call domain_state%get( domain_element, this%pressure__Pa_, new_value )
+    this%env_state%pressure =  new_value
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  !> Update CAMP with externally provided photolysis rate constants
-  subroutine update_camp_photolysis( this, domain_state, domain_element )
-
-    use musica_assert,                 only : die
-    use musica_domain_state,           only : domain_state_t
-    use musica_domain_iterator,        only : domain_iterator_t
-    use camp_rxn_photolysis,           only : rxn_update_data_photolysis_t
-
-    !> CAMP interface
-    class(partmc_t), intent(inout) :: this
-    !> Domain state
-    class(domain_state_t), intent(inout) :: domain_state
-    !> Domain element to advance state for
-    class(domain_iterator_t), intent(in) :: domain_element
-
-    integer(kind=musica_ik) :: i_pair
-    real(kind=musica_dk) :: update_value
-
-!    do i_pair = 1, size( this%photolysis_ )
-!    associate( pair => this%photolysis_( i_pair ) )
-!      select type( updater => pair%updater_ )
-!      class is( rxn_update_data_photolysis_t )
-!        call domain_state%get( domain_element, pair%accessor_, update_value )
-!        call updater%set_rate( update_value )
-!        call this%core_%update_data( updater )
-!      class default
-!        call die( 232110673 )
-!      end select
-!    end associate
-!    end do
-
-  end subroutine update_camp_photolysis
+  end subroutine update_partmc_environment
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

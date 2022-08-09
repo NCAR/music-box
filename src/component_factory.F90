@@ -26,6 +26,7 @@ contains
 
     use micm_core,                     only : micm_t => core_t
     use music_box_camp,                only : camp_t
+    use music_box_partmc,              only : partmc_t
     use musica_assert,                 only : die_msg
     use musica_config,                 only : config_t
     use musica_domain,                 only : domain_t
@@ -58,6 +59,8 @@ contains
       new_obj => emissions_t( config, domain, output )
     else if( component_type .eq. 'musica-loss' ) then
       new_obj => loss_t( config, domain, output )
+    else if( component_type .eq. 'partmc' ) then
+      new_obj => partmc_t ( config, domain, output )
     else
       call die_msg( 935006810, "Unsupported model component type: '"//        &
                                component_type%to_char( )//"'" )

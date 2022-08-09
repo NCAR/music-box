@@ -122,7 +122,7 @@ RUN cd /build \
       && cmake -D CAMP_INCLUDE_DIR="/camp_build/include" \
                -D CAMP_LIB="/camp_build/lib/libcamp.a" \
                -D PARTMC_INCLUDE_DIR="/partmc_build/" \
-               -D PARTMC_LIB="/partmc_build/" \
+               -D PARTMC_LIB="/partmc_build/libpartmc.a" \
                /music-box \
       && make
 

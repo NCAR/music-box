@@ -147,7 +147,7 @@ find_path(PARTMC_INCLUDE_DIR aero_state.mod
     /opt/local/lib
     /usr/local/lib
     /usr/local/lib64)
-  find_library(PARTMC_LIB libpartmc.a
+  find_library(PARTMC_LIB partmc
     DOC "PartMC library"
   PATHS
     /opt/local/lib
