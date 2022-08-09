@@ -89,6 +89,13 @@ RUN mkdir camp_build \
              /music-box/libs/camp \
     && make
 
+# Build PartMC
+
+RUN mkdir partmc_build \
+    && cd partmc_build \
+    && cmake /music-box/libs/partmc \
+    && make
+
 # command line arguments
 ARG TAG_ID=false
 
@@ -114,6 +121,8 @@ RUN cd /build \
       && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-8.2.0" \
       && cmake -D CAMP_INCLUDE_DIR="/camp_build/include" \
                -D CAMP_LIB="/camp_build/lib/libcamp.a" \
+               -D PARTMC_INCLUDE_DIR="/partmc_build/" \
+               -D PARTMC_LIB="/partmc_build/" \
                /music-box \
       && make
 

@@ -140,6 +140,22 @@ find_path(CAMP_INCLUDE_DIR camp_core.mod
 include_directories(${CAMP_INCLUDE_DIR})
 
 ################################################################################
+
+find_path(PARTMC_INCLUDE_DIR aero_state.mod
+  DOC "PartMC include directory (must include *.mod files)"
+  PATHS
+    /opt/local/lib
+    /usr/local/lib
+    /usr/local/lib64)
+  find_library(PARTMC_LIB libpartmc.a
+    DOC "PartMC library"
+  PATHS
+    /opt/local/lib
+    /usr/local/lib
+    /usr/local/lib64)
+include_directories(${PARTMC_INCLUDE_DIR})
+
+################################################################################
 # Create a directory to hold input data
 
 add_custom_target(data-directory ALL COMMAND ${CMAKE_COMMAND} -E make_directory
