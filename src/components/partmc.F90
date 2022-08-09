@@ -145,154 +145,154 @@ contains
     spec_name = config_file_name%to_char()
 
     allocate( new_obj )
-       call spec_file_open(spec_name, file)
+    call spec_file_open(spec_name, file)
 
-       call spec_file_read_string(file, 'output_prefix', &
-            run_part_opt%output_prefix)
-       call spec_file_read_integer(file, 'n_repeat', run_part_opt%n_repeat)
-       call spec_file_read_real(file, 'n_part', n_part)
-       call spec_file_read_logical(file, 'restart', do_restart)
+    call spec_file_read_string(file, 'output_prefix', &
+         run_part_opt%output_prefix)
+    call spec_file_read_integer(file, 'n_repeat', run_part_opt%n_repeat)
+    call spec_file_read_real(file, 'n_part', n_part)
+    call spec_file_read_logical(file, 'restart', do_restart)
 
-       call spec_file_read_real(file, 't_max', run_part_opt%t_max)
-       call spec_file_read_real(file, 'del_t', run_part_opt%del_t)
-       call spec_file_read_real(file, 't_output', run_part_opt%t_output)
-       call spec_file_read_real(file, 't_progress', run_part_opt%t_progress)
+    call spec_file_read_real(file, 't_max', run_part_opt%t_max)
+    call spec_file_read_real(file, 'del_t', run_part_opt%del_t)
+    call spec_file_read_real(file, 't_output', run_part_opt%t_output)
+    call spec_file_read_real(file, 't_progress', run_part_opt%t_progress)
 
-       call spec_file_read_logical(file, 'do_camp_chem', &
-               run_part_opt%do_camp_chem)
+    call spec_file_read_logical(file, 'do_camp_chem', &
+         run_part_opt%do_camp_chem)
 
-          env_state_init%elapsed_time = 0d0
-          if (.not. run_part_opt%do_camp_chem) then
-            call spec_file_read_string(file, 'gas_data', sub_filename)
-            call spec_file_open(sub_filename, sub_file)
-            call spec_file_read_gas_data(sub_file, gas_data)
-            call spec_file_close(sub_file)
-          end if
-          call spec_file_read_string(file, 'gas_init', sub_filename)
-          call spec_file_open(sub_filename, sub_file)
-          call spec_file_read_gas_state(sub_file, gas_data, &
-               gas_state_init)
-          call spec_file_close(sub_file)
+    env_state_init%elapsed_time = 0d0
+    if (.not. run_part_opt%do_camp_chem) then
+       call spec_file_read_string(file, 'gas_data', sub_filename)
+       call spec_file_open(sub_filename, sub_file)
+       call spec_file_read_gas_data(sub_file, gas_data)
+       call spec_file_close(sub_file)
+    end if
+    call spec_file_read_string(file, 'gas_init', sub_filename)
+    call spec_file_open(sub_filename, sub_file)
+    call spec_file_read_gas_state(sub_file, gas_data, &
+         gas_state_init)
+    call spec_file_close(sub_file)
 
-          if (.not. run_part_opt%do_camp_chem) then
-             call spec_file_read_string(file, 'aerosol_data', sub_filename)
-             call spec_file_open(sub_filename, sub_file)
-             call spec_file_read_aero_data(sub_file, aero_data)
-             call spec_file_close(sub_file)
-          end if
-          call spec_file_read_fractal(file, aero_data%fractal)
+    if (.not. run_part_opt%do_camp_chem) then
+       call spec_file_read_string(file, 'aerosol_data', sub_filename)
+       call spec_file_open(sub_filename, sub_file)
+       call spec_file_read_aero_data(sub_file, aero_data)
+       call spec_file_close(sub_file)
+    end if
+    call spec_file_read_fractal(file, aero_data%fractal)
 
-          call spec_file_read_string(file, 'aerosol_init', sub_filename)
-          call spec_file_open(sub_filename, sub_file)
-          call spec_file_read_aero_dist(sub_file, aero_data, aero_dist_init)
-          call spec_file_close(sub_file)
+    call spec_file_read_string(file, 'aerosol_init', sub_filename)
+    call spec_file_open(sub_filename, sub_file)
+    call spec_file_read_aero_dist(sub_file, aero_data, aero_dist_init)
+    call spec_file_close(sub_file)
 
-       call spec_file_read_scenario(file, gas_data, aero_data, scenario)
-       call spec_file_read_env_state(file, env_state_init)
+    call spec_file_read_scenario(file, gas_data, aero_data, scenario)
+    call spec_file_read_env_state(file, env_state_init)
 
-       call spec_file_read_logical(file, 'do_coagulation', &
-            run_part_opt%do_coagulation)
-       if (run_part_opt%do_coagulation) then
-          call spec_file_read_coag_kernel_type(file, &
-               run_part_opt%coag_kernel_type)
-       else
-          run_part_opt%coag_kernel_type = COAG_KERNEL_TYPE_INVALID
-       end if
+    call spec_file_read_logical(file, 'do_coagulation', &
+         run_part_opt%do_coagulation)
+    if (run_part_opt%do_coagulation) then
+       call spec_file_read_coag_kernel_type(file, &
+            run_part_opt%coag_kernel_type)
+    else
+       run_part_opt%coag_kernel_type = COAG_KERNEL_TYPE_INVALID
+    end if
 
-       call spec_file_read_logical(file, 'do_condensation', &
-            run_part_opt%do_condensation)
+    call spec_file_read_logical(file, 'do_condensation', &
+         run_part_opt%do_condensation)
 #ifndef PMC_USE_SUNDIALS
-       call assert_msg(121370218, &
-            run_part_opt%do_condensation .eqv. .false., &
-            "cannot use condensation, SUNDIALS support is not compiled in")
+    call assert_msg(121370218, &
+         run_part_opt%do_condensation .eqv. .false., &
+         "cannot use condensation, SUNDIALS support is not compiled in")
 #endif
-       if (run_part_opt%do_condensation) then
-          call spec_file_read_logical(file, 'do_init_equilibriate', &
-               do_init_equilibriate)
-       else
-          do_init_equilibriate = .false.
-       end if
+    if (run_part_opt%do_condensation) then
+       call spec_file_read_logical(file, 'do_init_equilibriate', &
+            do_init_equilibriate)
+    else
+       do_init_equilibriate = .false.
+    end if
 
-       call spec_file_read_logical(file, 'do_mosaic', run_part_opt%do_mosaic)
-       if (run_part_opt%do_mosaic .and. (.not. mosaic_support())) then
-          call spec_file_die_msg(230495365, file, &
-               'cannot use MOSAIC, support is not compiled in')
-       end if
-       if (run_part_opt%do_mosaic .and. run_part_opt%do_condensation) then
-          call spec_file_die_msg(599877804, file, &
-               'cannot use MOSAIC and condensation simultaneously')
-       end if
-       if (run_part_opt%do_mosaic) then
-          call spec_file_read_logical(file, 'do_optical', &
-               run_part_opt%do_optical)
-       else
-          run_part_opt%do_optical = .false.
-       end if
+    call spec_file_read_logical(file, 'do_mosaic', run_part_opt%do_mosaic)
+    if (run_part_opt%do_mosaic .and. (.not. mosaic_support())) then
+       call spec_file_die_msg(230495365, file, &
+            'cannot use MOSAIC, support is not compiled in')
+    end if
+    if (run_part_opt%do_mosaic .and. run_part_opt%do_condensation) then
+       call spec_file_die_msg(599877804, file, &
+            'cannot use MOSAIC and condensation simultaneously')
+    end if
+    if (run_part_opt%do_mosaic) then
+       call spec_file_read_logical(file, 'do_optical', &
+            run_part_opt%do_optical)
+    else
+       run_part_opt%do_optical = .false.
+    end if
 
-       call spec_file_read_logical(file, 'do_nucleation', &
-            run_part_opt%do_nucleation)
-       if (run_part_opt%do_nucleation) then
-          call spec_file_read_nucleate_type(file, aero_data, &
-               run_part_opt%nucleate_type, run_part_opt%nucleate_source)
-       else
-          run_part_opt%nucleate_type = NUCLEATE_TYPE_INVALID
-       end if
+    call spec_file_read_logical(file, 'do_nucleation', &
+         run_part_opt%do_nucleation)
+    if (run_part_opt%do_nucleation) then
+       call spec_file_read_nucleate_type(file, aero_data, &
+            run_part_opt%nucleate_type, run_part_opt%nucleate_source)
+    else
+       run_part_opt%nucleate_type = NUCLEATE_TYPE_INVALID
+    end if
 
-       call spec_file_read_integer(file, 'rand_init', rand_init)
-       call spec_file_read_logical(file, 'allow_doubling', &
-            run_part_opt%allow_doubling)
-       call spec_file_read_logical(file, 'allow_halving', &
-            run_part_opt%allow_halving)
-       if (.not. do_restart) then
-          call spec_file_read_logical(file, 'do_select_weighting', &
-               run_part_opt%do_select_weighting)
-          if (run_part_opt%do_select_weighting) then
-             call spec_file_read_aero_state_weighting_type(file, &
-                  run_part_opt%weighting_type, run_part_opt%weighting_exponent)
-          else
-             run_part_opt%weighting_type = AERO_STATE_WEIGHT_NUMMASS_SOURCE
-             run_part_opt%weighting_exponent = 0.0d0
-          end if
-       end if
-       call spec_file_read_logical(file, 'record_removals', &
-            run_part_opt%record_removals)
-
-       call spec_file_read_logical(file, 'do_parallel', &
-            run_part_opt%do_parallel)
-
-       run_part_opt%output_type = OUTPUT_TYPE_SINGLE
-       run_part_opt%mix_timescale = 0d0
-       run_part_opt%gas_average = .false.
-       run_part_opt%env_average = .false.
-       run_part_opt%parallel_coag_type = PARALLEL_COAG_TYPE_LOCAL
-
-       new_obj%env_state = env_state_init
-       new_obj%scenario = scenario
-       new_obj%gas_data = gas_data
-       new_obj%aero_data = aero_data
-       new_obj%run_part_opt = run_part_opt
-
-       call aero_state_zero(new_obj%aero_state)
-       aero_mode_type_exp_present &
-            = aero_dist_contains_aero_mode_type(aero_dist_init, &
-            AERO_MODE_TYPE_EXP) &
-            .or. scenario_contains_aero_mode_type(scenario, &
-            AERO_MODE_TYPE_EXP)
-       if (aero_mode_type_exp_present) then
-          call warn_msg(245301880, "using flat weighting only due to " &
-               // "presence of exp aerosol mode")
-          call aero_state_set_weight(new_obj%aero_state, aero_data, &
-               AERO_STATE_WEIGHT_FLAT)
-       else
-          call aero_state_set_weight(new_obj%aero_state, aero_data, &
+    call spec_file_read_integer(file, 'rand_init', rand_init)
+    call spec_file_read_logical(file, 'allow_doubling', &
+         run_part_opt%allow_doubling)
+    call spec_file_read_logical(file, 'allow_halving', &
+         run_part_opt%allow_halving)
+    if (.not. do_restart) then
+       call spec_file_read_logical(file, 'do_select_weighting', &
+            run_part_opt%do_select_weighting)
+       if (run_part_opt%do_select_weighting) then
+          call spec_file_read_aero_state_weighting_type(file, &
                run_part_opt%weighting_type, run_part_opt%weighting_exponent)
+       else
+          run_part_opt%weighting_type = AERO_STATE_WEIGHT_NUMMASS_SOURCE
+          run_part_opt%weighting_exponent = 0.0d0
        end if
-       call aero_state_set_n_part_ideal(new_obj%aero_state, n_part)
-       call aero_state_add_aero_dist_sample(new_obj%aero_state, aero_data, &
-            aero_dist_init, 1d0, 0d0, run_part_opt%allow_doubling, &
-            run_part_opt%allow_halving)
+    end if
+    call spec_file_read_logical(file, 'record_removals', &
+         run_part_opt%record_removals)
 
-       call spec_file_close(file)
+    call spec_file_read_logical(file, 'do_parallel', &
+         run_part_opt%do_parallel)
+
+    run_part_opt%output_type = OUTPUT_TYPE_SINGLE
+    run_part_opt%mix_timescale = 0d0
+    run_part_opt%gas_average = .false.
+    run_part_opt%env_average = .false.
+    run_part_opt%parallel_coag_type = PARALLEL_COAG_TYPE_LOCAL
+
+    new_obj%env_state = env_state_init
+    new_obj%scenario = scenario
+    new_obj%gas_data = gas_data
+    new_obj%aero_data = aero_data
+    new_obj%run_part_opt = run_part_opt
+
+    call aero_state_zero(new_obj%aero_state)
+    aero_mode_type_exp_present &
+         = aero_dist_contains_aero_mode_type(aero_dist_init, &
+         AERO_MODE_TYPE_EXP) &
+         .or. scenario_contains_aero_mode_type(scenario, &
+         AERO_MODE_TYPE_EXP)
+    if (aero_mode_type_exp_present) then
+       call warn_msg(245301880, "using flat weighting only due to " &
+            // "presence of exp aerosol mode")
+       call aero_state_set_weight(new_obj%aero_state, aero_data, &
+            AERO_STATE_WEIGHT_FLAT)
+    else
+       call aero_state_set_weight(new_obj%aero_state, aero_data, &
+            run_part_opt%weighting_type, run_part_opt%weighting_exponent)
+    end if
+    call aero_state_set_n_part_ideal(new_obj%aero_state, n_part)
+    call aero_state_add_aero_dist_sample(new_obj%aero_state, aero_data, &
+         aero_dist_init, 1d0, 0d0, run_part_opt%allow_doubling, &
+         run_part_opt%allow_halving)
+
+    call spec_file_close(file)
 
   end function constructor
 
