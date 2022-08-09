@@ -147,39 +147,24 @@ contains
     allocate( new_obj )
     call spec_file_open(spec_name, file)
 
-    call spec_file_read_string(file, 'output_prefix', &
-         run_part_opt%output_prefix)
-    call spec_file_read_integer(file, 'n_repeat', run_part_opt%n_repeat)
     call spec_file_read_real(file, 'n_part', n_part)
-    call spec_file_read_logical(file, 'restart', do_restart)
-
-    call spec_file_read_real(file, 't_max', run_part_opt%t_max)
-    call spec_file_read_real(file, 'del_t', run_part_opt%del_t)
-    call spec_file_read_real(file, 't_output', run_part_opt%t_output)
-    call spec_file_read_real(file, 't_progress', run_part_opt%t_progress)
-
-    call spec_file_read_logical(file, 'do_camp_chem', &
-         run_part_opt%do_camp_chem)
 
     env_state_init%elapsed_time = 0d0
-    if (.not. run_part_opt%do_camp_chem) then
-       call spec_file_read_string(file, 'gas_data', sub_filename)
-       call spec_file_open(sub_filename, sub_file)
-       call spec_file_read_gas_data(sub_file, gas_data)
-       call spec_file_close(sub_file)
-    end if
+    call spec_file_read_string(file, 'gas_data', sub_filename)
+    call spec_file_open(sub_filename, sub_file)
+    call spec_file_read_gas_data(sub_file, gas_data)
+    call spec_file_close(sub_file)
+
     call spec_file_read_string(file, 'gas_init', sub_filename)
     call spec_file_open(sub_filename, sub_file)
     call spec_file_read_gas_state(sub_file, gas_data, &
          gas_state_init)
     call spec_file_close(sub_file)
 
-    if (.not. run_part_opt%do_camp_chem) then
-       call spec_file_read_string(file, 'aerosol_data', sub_filename)
-       call spec_file_open(sub_filename, sub_file)
-       call spec_file_read_aero_data(sub_file, aero_data)
-       call spec_file_close(sub_file)
-    end if
+    call spec_file_read_string(file, 'aerosol_data', sub_filename)
+    call spec_file_open(sub_filename, sub_file)
+    call spec_file_read_aero_data(sub_file, aero_data)
+    call spec_file_close(sub_file)
     call spec_file_read_fractal(file, aero_data%fractal)
 
     call spec_file_read_string(file, 'aerosol_init', sub_filename)
@@ -213,21 +198,7 @@ contains
        do_init_equilibriate = .false.
     end if
 
-    call spec_file_read_logical(file, 'do_mosaic', run_part_opt%do_mosaic)
-    if (run_part_opt%do_mosaic .and. (.not. mosaic_support())) then
-       call spec_file_die_msg(230495365, file, &
-            'cannot use MOSAIC, support is not compiled in')
-    end if
-    if (run_part_opt%do_mosaic .and. run_part_opt%do_condensation) then
-       call spec_file_die_msg(599877804, file, &
-            'cannot use MOSAIC and condensation simultaneously')
-    end if
-    if (run_part_opt%do_mosaic) then
-       call spec_file_read_logical(file, 'do_optical', &
-            run_part_opt%do_optical)
-    else
-       run_part_opt%do_optical = .false.
-    end if
+    run_part_opt%do_optical = .false.
 
     call spec_file_read_logical(file, 'do_nucleation', &
          run_part_opt%do_nucleation)
@@ -265,6 +236,12 @@ contains
     run_part_opt%gas_average = .false.
     run_part_opt%env_average = .false.
     run_part_opt%parallel_coag_type = PARALLEL_COAG_TYPE_LOCAL
+
+    ! set things just in case
+    run_part_opt%n_repeat = 1
+    run_part_opt%t_progress = 0
+    run_part_opt%do_mosaic = .false.
+    run_part_opt%do_camp_chem = .false.
 
     new_obj%env_state = env_state_init
     new_obj%scenario = scenario
