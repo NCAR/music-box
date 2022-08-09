@@ -141,7 +141,9 @@ contains
     logical :: do_restart, do_init_equilibriate, aero_mode_type_exp_present
     integer :: rand_init
 
-    spec_name = 'urban_plume.spec'
+    call config%get( "configuration file", config_file_name, my_name )
+    spec_name = config_file_name%to_char()
+
     allocate( new_obj )
        call spec_file_open(spec_name, file)
 
@@ -268,6 +270,7 @@ contains
        new_obj%scenario = scenario
        new_obj%gas_data = gas_data
        new_obj%aero_data = aero_data
+       new_obj%run_part_opt = run_part_opt
 
        call aero_state_zero(new_obj%aero_state)
        aero_mode_type_exp_present &
@@ -342,19 +345,44 @@ contains
     !> Time step to advance state by [s]
     real(kind=musica_dk), intent(in) :: time_step__s
 
+    integer :: n_dil_in, n_dil_out, n_emit, n_samp, n_coag
+    type(env_state_t) :: old_env_state
+
 !    ! update CAMP with externally provided parameters
 !     call this%update_partmc_species_state( domain_state, domain_element )
 !     call this%update_partmc_environment(   domain_state, domain_element )
 !    call this%update_camp_emissions(     domain_state, domain_element )
 !    call this%update_camp_deposition(    domain_state, domain_element )
     ! TODO: What is current simulation time?
+    old_env_state = this%env_state
     call scenario_update_env_state(this%scenario, this%env_state, &
          this%env_state%elapsed_time + time_step__s)
     print*, this%env_state%elapsed_time, 'temp:', this%env_state%temp, &
          'n_part:', aero_state_n_part(this%aero_state)
 
     ! solve
+    if (this%run_part_opt%do_nucleation) then
+       call nucleate(this%run_part_opt%nucleate_type, &
+            this%run_part_opt%nucleate_source, this%env_state, this%gas_data, &
+            this%aero_data, this%aero_state, this%gas_state, time_step__s, &
+            this%run_part_opt%allow_doubling, this%run_part_opt%allow_halving)
+    end if
 
+    if (this%run_part_opt%do_coagulation) then
+       call mc_coag(this%run_part_opt%coag_kernel_type, this%env_state, &
+            this%aero_data, this%aero_state, time_step__s, n_samp, n_coag)
+       print*, 'n_coag', n_coag
+    end if
+
+    call scenario_update_aero_state(this%scenario, time_step__s, &
+         this%env_state, old_env_state, this%aero_data, this%aero_state, &
+         n_emit, n_dil_in, n_dil_out, this%run_part_opt%allow_doubling, &
+         this%run_part_opt%allow_halving)
+    print*, n_emit, n_dil_in, n_dil_out
+
+    call aero_state_rebalance(this%aero_state, this%aero_data, &
+         this%run_part_opt%allow_doubling, &
+         this%run_part_opt%allow_halving, initial_state_warning=.false.)
 
     ! update MUSICA with PartMC results
 !    call this%update_musica_species_state( domain_state, domain_element )
@@ -363,7 +391,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Save the CAMP configuration for future simulations
+  !> Save the PartMC configuration for future simulations
   subroutine preprocess_input( this, config, output_path )
 
     use musica_assert,                 only : die_msg
@@ -376,12 +404,28 @@ contains
     !> Folder to save input data to
     character(len=*), intent(in) :: output_path
 
-    character(len=*), parameter :: my_name = "CAMP preprocessor"
-    type(config_t) :: camp_orig_config, temp_config
+    character(len=*), parameter :: my_name = "PartMC preprocessor"
+    type(config_t) :: partmc_orig_config, temp_config
     type(string_t) :: config_file_name
     type(string_t), allocatable :: camp_files(:), split_file(:)
     logical :: found
     integer(kind=musica_ik) :: i_file
+
+!    ! set MUSICA configuration for PartMC 
+!    call config%empty( )
+!    call config%add( "type", "PartMC", my_name )
+!    call config%add( "configuration file", "partmc_config.spec", my_name )
+!
+!    ! get the path to the original PartMC configuration file
+!    call this%config_%get( "configuration file", config_file_name, my_name )
+!    call partmc_orig_config%from_file( config_file_name%to_char( ) )
+!
+!    ! copy each PartMC configuration file to the output path
+!
+!    ! save the main PartMC configuration file with updated file names
+!    call temp_config%empty( )
+!    call temp_config%add( "partmc-files", partmc_files, my_name )
+!    call temp_config%to_file( output_path//"partmc_config.spec" )
 
   end subroutine preprocess_input
 
