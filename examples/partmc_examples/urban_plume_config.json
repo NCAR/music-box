@@ -1,0 +1,21 @@
+{
+  "box model options" : {
+    "grid"                      : "box",
+    "chemistry time step [min]" : 5.0,
+    "output time step [hr]"     : 1.0,
+    "simulation length [hr]"    : 2.5,
+    "simulation start" : {
+      "time zone" : "UTC-8",
+      "year" : 2020,
+      "month" : 6,
+      "day" : 10,
+      "hour" : 13
+    }
+  },
+  "model components" : [
+    {
+      "type" : "PartMC",
+      "configuration file" : "urban_plume.spec"
+    }
+  ]
+}
