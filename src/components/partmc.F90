@@ -31,34 +31,10 @@ module music_box_partmc
 
   public :: partmc_t
 
-!  !> MUSICA accessor / CAMP updater pair for reaction parameters
-!  type :: reaction_updater_t
-!    !> MUSICA accessor for variable
-!    class(domain_state_accessor_t), pointer :: accessor_ => null( )
-!    !> CAMP updater
-!    class(rxn_update_data_t), pointer :: updater_ => null( )
-!  contains
-!    !> Finalizes a reaction_updater_t object
-!    final :: reaction_updater_finalize
-!  end type reaction_updater_t
-
-  !> Overridden species mixing ratios
+  !> Interface to PartMC (PartMC)
   !!
-  !! These species mixing ratios will be used to set the initial CAMP state,
-  !! overriding the MUSICA state values. The final CAMP state will still be
-  !! used to update the MUSICA state after solving chemistry.
-  !!
-!  type :: override_t
-!    !> Index for the species in the CAMP state array
-!    integer(kind=musica_ik) :: camp_id_ = -99999
-!    !> Species mixing ratio [mol mol-1]
-!    real(kind=musica_dk) :: mixing_ratio__mol_mol_ = 0.0
-!  end type override_t
-
-  !> Interface to Chemistry Across Multiple Phases (CAMP)
-  !!
-  !! CAMP can be used to solve mixed-phase chemical systems, including gas-
-  !! and condensed-phase chemistry, condensation, and evaporation.
+  !! PartMC can be used for simulating particle-resolved emissions, dilution,
+  !! coagulation, and nucleation.
   !!
   type, extends(component_t) :: partmc_t
     private
@@ -162,7 +138,7 @@ contains
     type(gas_data_t) :: gas_data
 
     real(kind=dp) :: n_part
-    logical :: do_restart, do_init_equilibriate
+    logical :: do_restart, do_init_equilibriate, aero_mode_type_exp_present
     integer :: rand_init
 
     spec_name = 'urban_plume.spec'
@@ -212,7 +188,7 @@ contains
        call spec_file_read_scenario(file, gas_data, aero_data, scenario)
        call spec_file_read_env_state(file, env_state_init)
 
-call spec_file_read_logical(file, 'do_coagulation', &
+       call spec_file_read_logical(file, 'do_coagulation', &
             run_part_opt%do_coagulation)
        if (run_part_opt%do_coagulation) then
           call spec_file_read_coag_kernel_type(file, &
@@ -293,6 +269,26 @@ call spec_file_read_logical(file, 'do_coagulation', &
        new_obj%gas_data = gas_data
        new_obj%aero_data = aero_data
 
+       call aero_state_zero(new_obj%aero_state)
+       aero_mode_type_exp_present &
+            = aero_dist_contains_aero_mode_type(aero_dist_init, &
+            AERO_MODE_TYPE_EXP) &
+            .or. scenario_contains_aero_mode_type(scenario, &
+            AERO_MODE_TYPE_EXP)
+       if (aero_mode_type_exp_present) then
+          call warn_msg(245301880, "using flat weighting only due to " &
+               // "presence of exp aerosol mode")
+          call aero_state_set_weight(new_obj%aero_state, aero_data, &
+               AERO_STATE_WEIGHT_FLAT)
+       else
+          call aero_state_set_weight(new_obj%aero_state, aero_data, &
+               run_part_opt%weighting_type, run_part_opt%weighting_exponent)
+       end if
+       call aero_state_set_n_part_ideal(new_obj%aero_state, n_part)
+       call aero_state_add_aero_dist_sample(new_obj%aero_state, aero_data, &
+            aero_dist_init, 1d0, 0d0, run_part_opt%allow_doubling, &
+            run_part_opt%allow_halving)
+
        call spec_file_close(file)
 
   end function constructor
@@ -351,15 +347,16 @@ call spec_file_read_logical(file, 'do_coagulation', &
 !     call this%update_partmc_environment(   domain_state, domain_element )
 !    call this%update_camp_emissions(     domain_state, domain_element )
 !    call this%update_camp_deposition(    domain_state, domain_element )
-!
-!    ! solve multi-phase chemistry
-!    call this%core_%solve( this%state_, time_step__s )
-     ! TODO: What is current simulation time?
-     call scenario_update_env_state(this%scenario, this%env_state, &
-          this%env_state%elapsed_time + time_step__s)
-     print*, this%env_state%temp, this%env_state%elapsed_time
+    ! TODO: What is current simulation time?
+    call scenario_update_env_state(this%scenario, this%env_state, &
+         this%env_state%elapsed_time + time_step__s)
+    print*, this%env_state%elapsed_time, 'temp:', this%env_state%temp, &
+         'n_part:', aero_state_n_part(this%aero_state)
 
-!    ! update MUSICA with CAMP results
+    ! solve
+
+
+    ! update MUSICA with PartMC results
 !    call this%update_musica_species_state( domain_state, domain_element )
 
   end subroutine advance_state
