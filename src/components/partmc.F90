@@ -46,17 +46,22 @@ module music_box_partmc
     !> Accessors for chemical species concentrations [mol m-3]
     class(domain_state_accessor_ptr), pointer ::                              &
         get_species_state__mol_m3_(:) => null( )
+    !> Aerosol state
     type(aero_state_t) :: aero_state
+    !> Aerosol data
     type(aero_data_t) :: aero_data
+    !> Gas state
     type(gas_state_t) :: gas_state
+    !> Gas data
     type(gas_data_t) :: gas_data
+    !> Environmental state
     type(env_state_t) :: env_state
+    !> Scenario data
     type(scenario_t) :: scenario
+    !> Configuration options
     type(run_part_opt_t) :: run_part_opt
     !> Emissions reaction updaters
 !    type(reaction_updater_t), allocatable :: emissions_(:)
-    !> Deposition reaction updaters
-!    type(reaction_updater_t), allocatable :: deposition_(:)
     !> Temperature [K] accessor
     class(domain_state_accessor_t), pointer :: temperature__K_ => null( )
     !> Pressure [Pa] accessor
@@ -212,16 +217,14 @@ contains
          run_part_opt%allow_doubling)
     call spec_file_read_logical(file, 'allow_halving', &
          run_part_opt%allow_halving)
-    if (.not. do_restart) then
-       call spec_file_read_logical(file, 'do_select_weighting', &
-            run_part_opt%do_select_weighting)
-       if (run_part_opt%do_select_weighting) then
-          call spec_file_read_aero_state_weighting_type(file, &
-               run_part_opt%weighting_type, run_part_opt%weighting_exponent)
-       else
-          run_part_opt%weighting_type = AERO_STATE_WEIGHT_NUMMASS_SOURCE
-          run_part_opt%weighting_exponent = 0.0d0
-       end if
+    call spec_file_read_logical(file, 'do_select_weighting', &
+         run_part_opt%do_select_weighting)
+    if (run_part_opt%do_select_weighting) then
+       call spec_file_read_aero_state_weighting_type(file, &
+            run_part_opt%weighting_type, run_part_opt%weighting_exponent)
+    else
+       run_part_opt%weighting_type = AERO_STATE_WEIGHT_NUMMASS_SOURCE
+       run_part_opt%weighting_exponent = 0.0d0
     end if
     call spec_file_read_logical(file, 'record_removals', &
          run_part_opt%record_removals)
@@ -353,14 +356,14 @@ contains
          this%env_state, old_env_state, this%aero_data, this%aero_state, &
          n_emit, n_dil_in, n_dil_out, this%run_part_opt%allow_doubling, &
          this%run_part_opt%allow_halving)
-    print*, n_emit, n_dil_in, n_dil_out
+    print*, 'n_emit:', n_emit, 'n_dil_in:', n_dil_in, 'n_dil_out', n_dil_out
 
     call aero_state_rebalance(this%aero_state, this%aero_data, &
          this%run_part_opt%allow_doubling, &
          this%run_part_opt%allow_halving, initial_state_warning=.false.)
 
     ! update MUSICA with PartMC results
-!    call this%update_musica_species_state( domain_state, domain_element )
+    call this%update_musica_species_state( domain_state, domain_element )
 
   end subroutine advance_state
 
@@ -649,8 +652,9 @@ contains
     integer(kind=musica_ik) :: i_spec
     real(kind=musica_dk) :: number_density, new_value
 
-    call domain_state%get( domain_element, this%number_density_air__mol_m3_,  &
-                           number_density )
+!    call domain_state%get( domain_element, this%number_density_air__mol_m3_,  &
+!                           number_density )
+
 !    do i_spec = 1, size( this%set_species_state__mol_m3_ )
 !    associate( mutator => this%set_species_state__mol_m3_( i_spec )%val_ )
 !      new_value = this%state_%state_var( i_spec ) * 1.0d-6 * number_density
