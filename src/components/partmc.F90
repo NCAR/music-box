@@ -66,6 +66,8 @@ module music_box_partmc
     class(domain_state_accessor_t), pointer :: temperature__K_ => null( )
     !> Pressure [Pa] accessor
     class(domain_state_accessor_t), pointer :: pressure__Pa_ => null( )
+    !> Box height [m] accessor
+    class(domain_state_accessor_t), pointer :: height__m_ => null( )
     !> Number density of air [mol m-3]
     class(domain_state_accessor_t), pointer ::                                &
         number_density_air__mol_m3_ => null( )
@@ -90,8 +92,6 @@ module music_box_partmc
     procedure, private :: update_partmc_environment
     !> Update PartMC with externally provided emission rates
     procedure, private :: update_partmc_emissions
-    !> Update PartMC with externally provided deposition rate constants
-    procedure, private :: update_partmc_deposition
     !> Update MUSICA with PartMC species concentrations
     procedure, private :: update_musica_species_state
     !> Finalizes a partmc_t object
@@ -175,7 +175,17 @@ contains
     call spec_file_read_aero_dist(sub_file, aero_data, aero_dist_init)
     call spec_file_close(sub_file)
 
+    ! TODO: Eventually will be replaced spec_file_read_scenario reads:
+    !   - temperature, pressure and box height profile
+    !   - gas emissions, aerosol emissions
+    !   - gas background, aerosol background
+    !   - loss function
+    ! Will be replaced with connect_environment()
     call spec_file_read_scenario(file, gas_data, aero_data, scenario)
+    ! TODO: spec_file_read_env_state reads:
+    !   - relative humidity
+    !   - latitude, longitude, altitude
+    !   - start time and start day
     call spec_file_read_env_state(file, env_state_init)
 
     call spec_file_read_logical(file, 'do_coagulation', &
@@ -328,11 +338,11 @@ contains
 
 !    ! update PartMC with externally provided parameters
 !     call this%update_partmc_species_state( domain_state, domain_element )
-!     call this%update_partmc_environment(   domain_state, domain_element )
-!    call this%update_partmc_emissions(     domain_state, domain_element )
-!    call this%update_partmc_deposition(    domain_state, domain_element )
-    ! TODO: What is current simulation time?
     old_env_state = this%env_state
+    call this%update_partmc_environment(   domain_state, domain_element, &
+         time_step__s )
+!    call this%update_partmc_emissions(     domain_state, domain_element )
+    ! TODO: What is current simulation time?
     call scenario_update_env_state(this%scenario, this%env_state, &
          this%env_state%elapsed_time + time_step__s)
     print*, this%env_state%elapsed_time, 'temp:', this%env_state%temp, &
@@ -469,19 +479,22 @@ contains
     type(domain_target_cells_t) :: all_cells
     type(property_t), pointer :: prop
 
-!    prop => property_t( my_name, name = "temperature", units = "K",           &
-!                        applies_to = all_cells, data_type = kDouble )
-!    this%temperature__K_ => domain%accessor( prop )
-!    deallocate( prop )
-!    prop => property_t( my_name, name = "pressure", units = "Pa",             &
-!                        applies_to = all_cells, data_type = kDouble )
-!    this%pressure__Pa_ => domain%accessor( prop )
-!    deallocate( prop )
+    prop => property_t( my_name, name = "temperature", units = "K",           &
+                        applies_to = all_cells, data_type = kDouble )
+    this%temperature__K_ => domain%accessor( prop )
+    deallocate( prop )
+    prop => property_t( my_name, name = "pressure", units = "Pa",             &
+                        applies_to = all_cells, data_type = kDouble )
+    this%pressure__Pa_ => domain%accessor( prop )
+    deallocate( prop )
+
 !    prop => property_t( my_name, name = "number density air",                 &
 !                        units = "mol m-3", applies_to = all_cells,            &
 !                        data_type = kDouble )
 !    this%number_density_air__mol_m3_ => domain%accessor( prop )
 !    deallocate( prop )
+
+    ! TODO: Add box height and other variables that music-box controls
 
   end subroutine connect_environment
 
@@ -535,15 +548,25 @@ contains
     !> Domain element to advance state for
     class(domain_iterator_t), intent(in) :: domain_element
 
-    integer(kind=musica_ik) :: i_spec
+    integer(kind=musica_ik) :: i_spec, i_part
     real(kind=musica_dk) :: number_density, new_value
+
+    do i_part = 1,aero_state_n_part(this%aero_state)
+       associate (part => this%aero_state%apa%particle(i_part))
+       do i_spec = 1,aero_data_n_spec(this%aero_data)
+         ! What is new_value ?
+         ! part%vol(i_spec) = new_value / aero_data%density(i_spec)
+       end do
+      end associate
+    end do
 
   end subroutine update_partmc_species_state
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !> Update PartMC with MUSICA environmental parameters
-  subroutine update_partmc_environment( this, domain_state, domain_element )
+  subroutine update_partmc_environment( this, domain_state, domain_element, &
+       time_step__s )
 
     use musica_domain_state,           only : domain_state_t
     use musica_domain_iterator,        only : domain_iterator_t
@@ -554,13 +577,25 @@ contains
     class(domain_state_t), intent(inout) :: domain_state
     !> Domain element to advance state for
     class(domain_iterator_t), intent(in) :: domain_element
+    !> Time step to advance state by [s]
+    real(kind=musica_dk), intent(in) :: time_step__s
 
     real(kind=musica_dk) :: new_value
+    type(env_state_t) :: old_env_state
 
+    old_env_state = this%env_state
+    ! TODO: If MUSICA has control of the environment, we will want to replace
+    ! this by grabbing temperature, pressure, and box height (?). We will
+    ! need to compute rel_humid and elapsed_time.
+    call scenario_update_env_state(this%scenario, this%env_state, &
+         this%env_state%elapsed_time + time_step__s)
+
+    ! This will not work until MUSICA has control rather than reading the
+    ! time series from PartMC input files
     call domain_state%get( domain_element, this%temperature__K_, new_value )
-    this%env_state%temp = new_value
+!    this%env_state%temp = new_value
     call domain_state%get( domain_element, this%pressure__Pa_, new_value )
-    this%env_state%pressure =  new_value
+!    this%env_state%pressure = new_value
 
   end subroutine update_partmc_environment
 
@@ -583,56 +618,7 @@ contains
     integer(kind=musica_ik) :: i_pair
     real(kind=musica_dk) :: update_value, number_density
 
-!    call domain_state%get( domain_element, this%number_density_air__mol_m3_,  &
-!                           number_density )
-!    do i_pair = 1, size( this%emissions_ )
-!    associate( pair => this%emissions_( i_pair ) )
-!      select type( updater => pair%updater_ )
-!      class is( rxn_update_data_emission_t )
-!        call domain_state%get( domain_element, pair%accessor_, update_value )
-!        call updater%set_rate( update_value / number_density * 1.0e6 )
-!        call this%core_%update_data( updater )
-!      class default
-!        call die( 190238180 )
-!      end select
-!    end associate
-!    end do
-
   end subroutine update_partmc_emissions
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  !> Update PartMC with externally provided deposition rate constants
-  subroutine update_partmc_deposition( this, domain_state, domain_element )
-
-    use musica_assert,                 only : die
-    use musica_domain_state,           only : domain_state_t
-    use musica_domain_iterator,        only : domain_iterator_t
-
-    !> PartMC interface
-    class(partmc_t), intent(inout) :: this
-    !> Domain state
-    class(domain_state_t), intent(inout) :: domain_state
-    !> Domain element to advance state for
-    class(domain_iterator_t), intent(in) :: domain_element
-
-    integer(kind=musica_ik) :: i_pair
-    real(kind=musica_dk) :: update_value
-
-!    do i_pair = 1, size( this%deposition_ )
-!    associate( pair => this%deposition_( i_pair ) )
-!      select type( updater => pair%updater_ )
-!      class is( rxn_update_data_first_order_loss_t )
-!        call domain_state%get( domain_element, pair%accessor_, update_value )
-!        call updater%set_rate( update_value )
-!        call this%core_%update_data( updater )
-!      class default
-!        call die( 916722502 )
-!      end select
-!    end associate
-!    end do
-
-  end subroutine update_partmc_deposition
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -649,18 +635,18 @@ contains
     !> Domain element to advance state for
     class(domain_iterator_t), intent(in) :: domain_element
 
-    integer(kind=musica_ik) :: i_spec
+    integer(kind=musica_ik) :: i_spec, i_part
     real(kind=musica_dk) :: number_density, new_value
 
-!    call domain_state%get( domain_element, this%number_density_air__mol_m3_,  &
-!                           number_density )
-
-!    do i_spec = 1, size( this%set_species_state__mol_m3_ )
-!    associate( mutator => this%set_species_state__mol_m3_( i_spec )%val_ )
-!      new_value = this%state_%state_var( i_spec ) * 1.0d-6 * number_density
-!      call domain_state%update( domain_element, mutator, new_value )
-!    end associate
-!    end do
+    do i_part = 1, aero_state_n_part(this%aero_state)
+       associate (part => this%aero_state%apa%particle(i_part))
+       do i_spec = 1, aero_data_n_spec(this%aero_data)
+          ! Index is something like...
+          ! (i_part - 1) * n_spec  + i_spec
+          new_value = part%vol(i_spec) * this%aero_data%density(i_spec)
+       end do
+       end associate
+    end do
 
   end subroutine update_musica_species_state
 
@@ -673,6 +659,9 @@ contains
     type(partmc_t), intent(inout) :: this
 
     integer(kind=musica_ik) :: i_elem
+
+    if( associated( this%temperature__K_ ) ) deallocate( this%temperature__K_ )
+    if( associated( this%pressure__Pa_   ) ) deallocate( this%pressure__Pa_   )
 
   end subroutine finalize
 
