@@ -73,29 +73,27 @@ module music_box_partmc
     procedure :: advance_state
     !> Save the component configuration for future simultaions
     procedure :: preprocess_input
-    !> Connect MUSICA chemical species concentrations to the CAMP mechanism
+    !> Connect MUSICA chemical species concentrations to the PartMC mechanism
     procedure, private :: connect_species_state
-    !> Connect MUSICA environmental parameters to the CAMP mechanism
+    !> Connect MUSICA environmental parameters to the PartMC mechanism
     procedure, private :: connect_environment
-    !> Connect external emissions rates to the CAMP mechanism
+    !> Connect external emissions rates to the PartMC mechanism
     procedure, private :: connect_emissions
-    !> Connect external deposition rate constants to the CAMP mechanism
-!    procedure, private :: connect_deposition
-    !> Update CAMP with MUSICA species concentrations
+    !> Update PartMC with MUSICA species concentrations
     procedure, private :: update_partmc_species_state
-    !> Update CAMP with MUSICA environmental parameters
+    !> Update PartMC with MUSICA environmental parameters
     procedure, private :: update_partmc_environment
-    !> Update CAMP with externally provided emission rates
-    procedure, private :: update_camp_emissions
-    !> Update CAMP with externally provided deposition rate constants
-    procedure, private :: update_camp_deposition
-    !> Update MUSICA with CAMP species concentrations
+    !> Update PartMC with externally provided emission rates
+    procedure, private :: update_partmc_emissions
+    !> Update PartMC with externally provided deposition rate constants
+    procedure, private :: update_partmc_deposition
+    !> Update MUSICA with PartMC species concentrations
     procedure, private :: update_musica_species_state
-    !> Finalizes a camp_t object
+    !> Finalizes a partmc_t object
     final :: finalize
   end type partmc_t
 
-  !> Constructor of camp_t objects
+  !> Constructor of partmc_t objects
   interface partmc_t
     module procedure :: constructor
   end interface
@@ -111,9 +109,9 @@ contains
     use musica_input_output_processor, only : input_output_processor_t
     use musica_string,                 only : string_t
 
-    !> New CAMP interface
+    !> New PartMC interface
     type(partmc_t), pointer :: new_obj
-    !> CAMP configuration
+    !> PartMC configuration
     type(config_t), intent(inout) :: config
     !> Model domain
     class(domain_t), intent(inout) :: domain
@@ -280,7 +278,7 @@ contains
 
     use musica_string,                 only : string_t
 
-    !> CAMP interface
+    !> PartMC interface
     class(partmc_t), intent(in) :: this
 
     component_name = "PartMC: Particle-resolved Monte Carlo code for" &
@@ -295,7 +293,7 @@ contains
 
     use musica_string,                 only : string_t
 
-    !> CAMP interface
+    !> PartMC interface
     class(partmc_t), intent(in) :: this
 
     description = "Particle-resolved aerosol representation"
@@ -311,7 +309,7 @@ contains
     use musica_domain_iterator,        only : domain_iterator_t
     use musica_domain_state,           only : domain_state_t
 
-    !> CAMP interface
+    !> PartMC interface
     class(partmc_t), intent(inout) :: this
     !> Domain state
     class(domain_state_t), intent(inout) :: domain_state
@@ -325,11 +323,11 @@ contains
     integer :: n_dil_in, n_dil_out, n_emit, n_samp, n_coag
     type(env_state_t) :: old_env_state
 
-!    ! update CAMP with externally provided parameters
+!    ! update PartMC with externally provided parameters
 !     call this%update_partmc_species_state( domain_state, domain_element )
 !     call this%update_partmc_environment(   domain_state, domain_element )
-!    call this%update_camp_emissions(     domain_state, domain_element )
-!    call this%update_camp_deposition(    domain_state, domain_element )
+!    call this%update_partmc_emissions(     domain_state, domain_element )
+!    call this%update_partmc_deposition(    domain_state, domain_element )
     ! TODO: What is current simulation time?
     old_env_state = this%env_state
     call scenario_update_env_state(this%scenario, this%env_state, &
@@ -374,7 +372,7 @@ contains
     use musica_assert,                 only : die_msg
     use musica_string,                 only : string_t
 
-    !> CAMP interface
+    !> PartMC interface
     class(partmc_t), intent(inout) :: this
     !> Model component configuration
     type(config_t), intent(out) :: config
@@ -384,7 +382,7 @@ contains
     character(len=*), parameter :: my_name = "PartMC preprocessor"
     type(config_t) :: partmc_orig_config, temp_config
     type(string_t) :: config_file_name
-    type(string_t), allocatable :: camp_files(:), split_file(:)
+    type(string_t), allocatable :: partmc_files(:), split_file(:)
     logical :: found
     integer(kind=musica_ik) :: i_file
 
@@ -408,7 +406,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Connect MUSICA chemical species concentrations to the CAMP mechanism
+  !> Connect MUSICA chemical species concentrations to PartMC
   subroutine connect_species_state( this, config, domain, output )
 
     use musica_assert,                 only : assert, assert_msg
@@ -423,16 +421,16 @@ contains
     use musica_string,                 only : string_t
     use camp_util,                     only : camp_string_t => string_t
 
-    !> CAMP interface
+    !> PartMC interface
     class(partmc_t), intent(inout) :: this
-    !> CAMP configuration
+    !> PartMC configuration
     type(config_t), intent(inout) :: config
     !> Model domain
     class(domain_t), intent(inout) :: domain
     !> Ouput file
     class(input_output_processor_t), intent(inout) :: output
 
-    character(len=*), parameter :: my_name = "CAMP chemical species connector"
+    character(len=*), parameter :: my_name = "PartMC"
     integer(kind=musica_ik) :: i_spec
     logical(kind=musica_lk) :: found, found_spec
     type(string_t) :: spec_name
@@ -446,7 +444,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Connect MUSICA environmental parameters to the CAMP mechanism
+  !> Connect MUSICA environmental parameters to the PartMC mechanism
   subroutine connect_environment( this, config, domain, output )
 
     use musica_data_type,              only : kDouble
@@ -455,16 +453,16 @@ contains
     use musica_input_output_processor, only : input_output_processor_t
     use musica_property,               only : property_t
 
-    !> CAMP interface
+    !> PartMC interface
     class(partmc_t), intent(inout) :: this
-    !> CAMP configuration
+    !> PartMC configuration
     type(config_t), intent(inout) :: config
     !> Model domain
     class(domain_t), intent(inout) :: domain
     !> Ouput file
     class(input_output_processor_t), intent(inout) :: output
 
-    character(len=*), parameter :: my_name = "CAMP environment connector"
+    character(len=*), parameter :: my_name = "PartMC environment connector"
     type(domain_target_cells_t) :: all_cells
     type(property_t), pointer :: prop
 
@@ -486,7 +484,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Connect external emissions rates to the CAMP mechanism
+  !> Connect external emissions rates to PartMC
   subroutine connect_emissions( this, config, domain, output )
 
     use musica_assert,                 only : assert
@@ -501,16 +499,16 @@ contains
                                               rxn_update_data_emission_t
     use camp_util,                     only : camp_string_t => string_t
 
-    !> CAMP interface
+    !> PartMC interface
     class(partmc_t), intent(inout) :: this
-    !> CAMP configuration
+    !> PartMC configuration
     type(config_t), intent(inout) :: config
     !> Model domain
     class(domain_t), intent(inout) :: domain
     !> Ouput file
     class(input_output_processor_t), intent(inout) :: output
 
-    character(len=*), parameter :: my_name = "CAMP emissions connector"
+    character(len=*), parameter :: my_name = "PartMC emissions connector"
     integer(kind=musica_ik) :: i_rxn, i_mech, n_rxn, i_updater
     class(rxn_data_t), pointer :: rxn
     type(property_t), pointer :: prop
@@ -527,7 +525,7 @@ contains
     use musica_domain_state,           only : domain_state_t
     use musica_domain_iterator,        only : domain_iterator_t
 
-    !> CAMP interface
+    !> PartMC interface
     class(partmc_t), intent(inout) :: this
     !> Domain state
     class(domain_state_t), intent(inout) :: domain_state
@@ -547,7 +545,7 @@ contains
     use musica_domain_state,           only : domain_state_t
     use musica_domain_iterator,        only : domain_iterator_t
 
-    !> CAMP interface
+    !> PartMC interface
     class(partmc_t), intent(inout) :: this
     !> Domain state
     class(domain_state_t), intent(inout) :: domain_state
@@ -565,15 +563,14 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Update CAMP with externally provided emissions rate constants
-  subroutine update_camp_emissions( this, domain_state, domain_element )
+  !> Update PartMC with externally provided emissions rate constants
+  subroutine update_partmc_emissions( this, domain_state, domain_element )
 
     use musica_assert,                 only : die
     use musica_domain_state,           only : domain_state_t
     use musica_domain_iterator,        only : domain_iterator_t
-    use camp_rxn_emission,             only : rxn_update_data_emission_t
 
-    !> CAMP interface
+    !> PartMC interface
     class(partmc_t), intent(inout) :: this
     !> Domain state
     class(domain_state_t), intent(inout) :: domain_state
@@ -598,19 +595,18 @@ contains
 !    end associate
 !    end do
 
-  end subroutine update_camp_emissions
+  end subroutine update_partmc_emissions
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Update CAMP with externally provided deposition rate constants
-  subroutine update_camp_deposition( this, domain_state, domain_element )
+  !> Update PartMC with externally provided deposition rate constants
+  subroutine update_partmc_deposition( this, domain_state, domain_element )
 
     use musica_assert,                 only : die
     use musica_domain_state,           only : domain_state_t
     use musica_domain_iterator,        only : domain_iterator_t
-    use camp_rxn_first_order_loss,     only : rxn_update_data_first_order_loss_t
 
-    !> CAMP interface
+    !> PartMC interface
     class(partmc_t), intent(inout) :: this
     !> Domain state
     class(domain_state_t), intent(inout) :: domain_state
@@ -633,17 +629,17 @@ contains
 !    end associate
 !    end do
 
-  end subroutine update_camp_deposition
+  end subroutine update_partmc_deposition
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Update MUSICA with CAMP species concentrations
+  !> Update MUSICA with PartMC species concentrations
   subroutine update_musica_species_state( this, domain_state, domain_element )
 
     use musica_domain_state,           only : domain_state_t
     use musica_domain_iterator,        only : domain_iterator_t
 
-    !> CAMP interface
+    !> PartMC interface
     class(partmc_t), intent(inout) :: this
     !> Domain state
     class(domain_state_t), intent(inout) :: domain_state
@@ -666,7 +662,7 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Finalizes a camp_t object
+  !> Finalizes a partmc_t object
   elemental subroutine finalize( this )
 
     !> CAMP interface
