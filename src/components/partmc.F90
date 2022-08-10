@@ -339,8 +339,8 @@ contains
 !    ! update PartMC with externally provided parameters
 !     call this%update_partmc_species_state( domain_state, domain_element )
     old_env_state = this%env_state
-    call this%update_partmc_environment(   domain_state, domain_element, &
-         time_step__s )
+!    call this%update_partmc_environment(   domain_state, domain_element, &
+!         time_step__s )
 !    call this%update_partmc_emissions(     domain_state, domain_element )
     ! TODO: What is current simulation time?
     call scenario_update_env_state(this%scenario, this%env_state, &
