@@ -16,3 +16,6 @@
 [submodule "libs/camp"]
 	path = libs/camp
 	url = https://github.com/open-atmos/camp.git
+[submodule "libs/partmc"]
+	path = libs/partmc
+	url = https://github.com/compdyn/partmc.git
