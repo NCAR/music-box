@@ -282,6 +282,8 @@ contains
 
     call spec_file_close(file)
 
+!    call new_obj%connect_species_state( config, domain, output )
+
   end function constructor
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -336,19 +338,37 @@ contains
     integer :: n_dil_in, n_dil_out, n_emit, n_samp, n_coag
     type(env_state_t) :: old_env_state
 
-!    ! update PartMC with externally provided parameters
+    ! update PartMC with externally provided parameters
+
+    ! MUSICA needs to send the aerosol information back to PartMC
+    ! data structures
 !     call this%update_partmc_species_state( domain_state, domain_element )
+
+    ! Update the environment from MUSICA
+    ! We need to save the old env_state for dilution
     old_env_state = this%env_state
 !    call this%update_partmc_environment(   domain_state, domain_element, &
 !         time_step__s )
+
+    ! MUSICA could populate scenario initially with all inputs for all time
+    ! or it can track and update like CAMP does for gas emissions.
 !    call this%update_partmc_emissions(     domain_state, domain_element )
-    ! TODO: What is current simulation time?
+
+    ! Current simulation time is time in seconds from 1/1/0001 in UTC
+    ! This differs from how PartMC thinks about time.
+    ! PartMC has start_time (s into day in UTC), start day of year, and
+    ! elapsed_time.
+    ! scenario_update_env_state to be replaced with update_partmc_environment
     call scenario_update_env_state(this%scenario, this%env_state, &
          this%env_state%elapsed_time + time_step__s)
-    print*, this%env_state%elapsed_time, 'temp:', this%env_state%temp, &
-         'n_part:', aero_state_n_part(this%aero_state)
 
-    ! solve
+    print*, 'Elapsed time:', this%env_state%elapsed_time, 'temp:', &
+         this%env_state%temp, 'n_part:', aero_state_n_part(this%aero_state)
+
+    ! solve PartMC processes
+    !   - nucleation
+    !   - coagulation
+    !   - aerosol emissions, dilution and removal
     if (this%run_part_opt%do_nucleation) then
        call nucleate(this%run_part_opt%nucleate_type, &
             this%run_part_opt%nucleate_source, this%env_state, this%gas_data, &
@@ -368,6 +388,7 @@ contains
          this%run_part_opt%allow_halving)
     print*, 'n_emit:', n_emit, 'n_dil_in:', n_dil_in, 'n_dil_out', n_dil_out
 
+    ! Rebalance the aerosol population if necessary
     call aero_state_rebalance(this%aero_state, this%aero_data, &
          this%run_part_opt%allow_doubling, &
          this%run_part_opt%allow_halving, initial_state_warning=.false.)
@@ -452,6 +473,29 @@ contains
     type(domain_target_cells_t) :: all_cells
     type(property_t), pointer :: prop
     type(property_set_t) :: prop_set
+    type(camp_string_t), allocatable :: species_names(:)
+
+!    prop_set = property_set_t( )
+!    do i_spec = 1,gas_data_n_spec(this%gas_data)
+!      prop => property_t( my_name,                                   &
+!                          name = this%gas_data%name(i_spec),         &
+!                          units = "mol m-3",                         &
+!                          applies_to = all_cells,                    &
+!                          data_type = kDouble,                       &
+!                          default_value = 0.0_musica_dk )
+!      call prop_set%add( prop )
+!      deallocate( prop )
+!    end do
+!    call domain%register( "chemical_species", prop_set )
+
+    ! regsiter the species concentration for output
+!    do i_spec = 1,gas_data_n_spec(this%gas_data)
+!      call output%register_output_variable(                        &
+!          domain,                                                  &
+!          "chemical_species%"//this%gas_data%name(i_spec),         &
+!          "mol m-3",                                               & !- units
+!          "CONC."//this%gas_data%name(i_spec) )                      !- output name
+!    end do
 
   end subroutine connect_species_state
 
