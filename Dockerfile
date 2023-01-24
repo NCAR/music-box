@@ -1,4 +1,4 @@
-FROM fedora:33
+FROM fedora:35
 
 RUN dnf -y update \
     && dnf -y install \
@@ -57,10 +57,6 @@ RUN cp /music-box/etc/change_mechanism.sh /
 # move the example configurations to the build folder
 RUN mkdir /build \
     && cp -r /music-box/examples /build/examples
-
-# nodejs modules needed Mechanism-To-Code
-RUN cd /music-box/libs/micm-preprocessor; \
-    npm install
 
 # Install a modified version of CVODE
 RUN tar -zxvf /music-box/libs/camp/cvode-3.4-alpha.tar.gz \
