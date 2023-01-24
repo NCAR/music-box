@@ -4,12 +4,6 @@
 [submodule "libs/micm"]
 	path = libs/micm
 	url = https://github.com/NCAR/micm.git
-[submodule "libs/micm-preprocessor"]
-	path = libs/micm-preprocessor
-	url = https://github.com/NCAR/micm-preprocessor.git
-[submodule "libs/micm-collection"]
-	path = libs/micm-collection
-  url = https://github.com/NCAR/micm-collection.git
 [submodule "libs/music-box-interactive"]
   path = libs/music-box-interactive
   url = https://github.com/NCAR/music-box-interactive.git

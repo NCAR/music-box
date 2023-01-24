@@ -14,6 +14,7 @@ module music_box_micm
                                               domain_state_accessor_ptr
   use musica_domain_state_mutator,     only : domain_state_mutator_t,         &
                                               domain_state_mutator_ptr
+  use micm_solver_interface,           only: get_solver, solver
 
   implicit none
   private
@@ -23,9 +24,11 @@ module music_box_micm
   !> Interface to Model Independent Chemical Mechanisms (MICM)
   !!
   type, extends(component_t) :: micm_t
+    private
     !> MICM configuration
     type(config_t) :: config_
-    private
+    !> The solve function constructed by micm
+    procedure(solver), pointer :: micm_solver => ()
   contains
     !> Returns the name of the component
     procedure :: name => component_name
@@ -50,6 +53,7 @@ contains
   !> MICM interface constructor
   function constructor( config, domain, output ) result( new_obj )
 
+    use iso_c_binding,                 only : c_funptr, c_f_procpointer
     use musica_domain,                 only : domain_t
     use musica_input_output_processor, only : input_output_processor_t
     use musica_string,                 only : string_t
@@ -65,6 +69,7 @@ contains
 
     character(len=*), parameter :: my_name = "MICM interface constructor"
     type(string_t) :: config_file_name
+    type(c_funptr) :: c_func_pointer
 
     allocate( new_obj )
 
@@ -73,6 +78,9 @@ contains
 
     ! get the path to the MICM configuration file
     call config%get( "configuration file", config_file_name, my_name )
+
+    c_func_pointer = get_solver(config_file_name%val_)
+    call c_f_procpointer(c_func_pointer, new_obj%micm_solver)
 
   end function constructor
 
@@ -157,4 +165,4 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-end module music_box_camp
+end module music_box_micm

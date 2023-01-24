@@ -10,6 +10,7 @@
 !test/
 !examples/
 !etc/
+!cmake/
 
 # exclude generated code
 libs/micm-collection/configured_tags/*
