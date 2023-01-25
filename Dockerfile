@@ -1,4 +1,4 @@
-FROM fedora:33
+FROM fedora:35
 
 RUN dnf -y update \
     && dnf -y install \
@@ -58,10 +58,6 @@ RUN cp /music-box/etc/change_mechanism.sh /
 RUN mkdir /build \
     && cp -r /music-box/examples /build/examples
 
-# nodejs modules needed Mechanism-To-Code
-RUN cd /music-box/libs/micm-preprocessor; \
-    npm install
-
 # Install a modified version of CVODE
 RUN tar -zxvf /music-box/libs/camp/cvode-3.4-alpha.tar.gz \
     && cd cvode-3.4-alpha \
@@ -89,26 +85,6 @@ RUN mkdir camp_build \
              -D ENABLE_GSL:BOOL=TRUE \
              /music-box/libs/camp \
     && make
-
-# command line arguments
-ARG TAG_ID=false
-
-# get a MICM mechanism if one has been specified
-RUN if [ "$TAG_ID" = "false" ] ; then \
-      echo "No mechanism specified" ; else \
-      echo "Grabbing mechanism $TAG_ID" \
-      && cd /music-box/libs/micm-preprocessor \
-      && nohup bash -c "node combined.js &" && sleep 4 \
-      && mkdir /data \
-      && cd /music-box/libs/micm-collection \
-      && if [ "$TAG_ID" = "chapman" ] ; then \
-           python3 preprocess_tag.py -c configured_tags/$TAG_ID/config.json -p localhost:3000 \
-        && python3 stage_tag.py -source_dir_kinetics configured_tags/$TAG_ID/output -target_dir_data /data \
-        ; else \
-           echo "Only Chapman chemistry is currently available for MusicBox-MICM" \
-        && exit 1 \
-        ; fi \
-      ; fi
 
 # build the model
 RUN cd /build \
