@@ -28,7 +28,7 @@ module music_box_micm
     !> MICM configuration
     type(config_t) :: config_
     !> The solve function constructed by micm
-    procedure(solver), pointer :: micm_solver => ()
+    procedure(solver), pointer, nopass :: micm_solver => null()
   contains
     !> Returns the name of the component
     procedure :: name => component_name

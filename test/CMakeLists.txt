@@ -21,7 +21,7 @@ add_executable(integration_input_4_check
                integration/input_use_cases/4/check_output.F90
                test_common/output.F90)
 target_include_directories(integration_input_4_check PUBLIC ${CMAKE_BINARY_DIR}/src)
-target_link_libraries(integration_input_4_check musicalib)
+target_link_libraries(integration_input_4_check musica::musicacore)
 if(ENABLE_MICM_TESTS)
   add_test(NAME input_use_case_1 COMMAND integration/input_use_cases/1/run.sh)
   add_test(NAME input_use_case_1_preprocessor COMMAND integration/input_use_cases/1/run_preprocessor.sh)
