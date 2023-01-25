@@ -86,26 +86,6 @@ RUN mkdir camp_build \
              /music-box/libs/camp \
     && make
 
-# command line arguments
-ARG TAG_ID=false
-
-# get a MICM mechanism if one has been specified
-RUN if [ "$TAG_ID" = "false" ] ; then \
-      echo "No mechanism specified" ; else \
-      echo "Grabbing mechanism $TAG_ID" \
-      && cd /music-box/libs/micm-preprocessor \
-      && nohup bash -c "node combined.js &" && sleep 4 \
-      && mkdir /data \
-      && cd /music-box/libs/micm-collection \
-      && if [ "$TAG_ID" = "chapman" ] ; then \
-           python3 preprocess_tag.py -c configured_tags/$TAG_ID/config.json -p localhost:3000 \
-        && python3 stage_tag.py -source_dir_kinetics configured_tags/$TAG_ID/output -target_dir_data /data \
-        ; else \
-           echo "Only Chapman chemistry is currently available for MusicBox-MICM" \
-        && exit 1 \
-        ; fi \
-      ; fi
-
 # build the model
 RUN cd /build \
       && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-8.2.0" \
