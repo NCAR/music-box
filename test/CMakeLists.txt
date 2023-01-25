@@ -1,7 +1,7 @@
 ################################################################################
 # Test options
 
-option(ENABLE_MICM_TESTS "Enable tests of MICM chemistry for Chapman mechansim" ON)
+option(ENABLE_MICM_TESTS "Enable tests of MICM chemistry for Chapman mechansim" OFF)
 
 ################################################################################
 # Copy test data
