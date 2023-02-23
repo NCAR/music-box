@@ -1,4 +1,4 @@
-FROM fedora:35
+FROM fedora:37
 
 RUN dnf -y update \
     && dnf -y install \
@@ -95,7 +95,7 @@ RUN cd /build \
       && make
 
 # Prepare the music-box-interactive web server
-RUN mv music-box/libs/music-box-interactive .
+RUN git clone https://github.com/NCAR/music-box-interactive.git --branch music-box-main --single-branch
 ENV MUSIC_BOX_BUILD_DIR=/build
 
 EXPOSE 8000
