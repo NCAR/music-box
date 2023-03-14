@@ -14,4 +14,4 @@ jobs:
     - name: build Docker image
       run: docker build -t music-box-test . --build-arg TAG_ID=chapman
     - name: run tests in container
-      run: docker run --name test-container -t music-box-test bash -c 'cd build; make test'
+      run: docker run --name test-container -t music-box-test bash -c 'cd /music-box/build; make test'
