@@ -13,30 +13,18 @@ RUN dnf -y update \
         cmake \
         make \
         wget \
-        python \
+        git \
+        postgresql-devel \
         python3 \
         python3-pip \
-        texlive-scheme-basic \
-        'tex(type1cm.sty)' \
-        'tex(type1ec.sty)' \
-        dvipng \
-        git \
-        nodejs \
-        ncview \
     && dnf clean all
-
-# python modules needed in scripts
-RUN dnf -y install python3-pandas
-
-RUN pip3 install requests numpy scipy matplotlib ipython jupyter nose Django pillow \
-                 django-crispy-forms pyvis django-cors-headers drf-yasg
 
 # Build the SuiteSparse libraries for sparse matrix support
 RUN curl -LO http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-5.1.0.tar.gz \
     && tar -zxvf SuiteSparse-5.1.0.tar.gz \
     && export CXX=/usr/bin/cc \
     && cd SuiteSparse \
-    && make install INSTALL=/usr/local BLAS="-L/lib64 -lopenblas"
+    && make -j 8 install INSTALL=/usr/local BLAS="-L/lib64 -lopenblas"
 
 # install json-fortran
 RUN curl -LO https://github.com/jacobwilliams/json-fortran/archive/8.2.0.tar.gz \
@@ -46,20 +34,15 @@ RUN curl -LO https://github.com/jacobwilliams/json-fortran/archive/8.2.0.tar.gz 
     && mkdir build \
     && cd build \
     && cmake -D SKIP_DOC_GEN:BOOL=TRUE .. \
-    && make install
+    && make -j 8 install
 
-# copy the MusicBox code
-COPY . /music-box/
-
-# move the change mechanism script to the root folder
-RUN cp /music-box/etc/change_mechanism.sh /
-
-# move the example configurations to the build folder
-RUN mkdir /build \
-    && cp -r /music-box/examples /build/examples
+# copy the interactive server code
+COPY . /music-box
 
 # Install a modified version of CVODE
-RUN tar -zxvf /music-box/libs/camp/cvode-3.4-alpha.tar.gz \
+RUN mkdir cvode_build \
+    && cd cvode_build \
+    && tar -zxvf /music-box/libs/camp/cvode-3.4-alpha.tar.gz \
     && cd cvode-3.4-alpha \
     && mkdir build \
     && cd build \
@@ -86,18 +69,13 @@ RUN mkdir camp_build \
              /music-box/libs/camp \
     && make
 
-# build the model
-RUN cd /build \
-      && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-8.2.0" \
-      && cmake -D CAMP_INCLUDE_DIR="/camp_build/include" \
-               -D CAMP_LIB="/camp_build/lib/libcamp.a" \
-               /music-box \
-      && make
-
-# Prepare the music-box-interactive web server
-RUN git clone https://github.com/NCAR/music-box-interactive.git --branch music-box-main --single-branch
-ENV MUSIC_BOX_BUILD_DIR=/build
-
-EXPOSE 8000
-
-CMD ["python3", "music-box-interactive/interactive/manage.py", "runserver", "0.0.0.0:8000" ]
+# build music-box
+RUN cd music-box \
+    && mkdir build \
+    && cd build \
+    && export FC=gfortran \
+    && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-8.2.0" \
+    && cmake -D CAMP_INCLUDE_DIR="/camp_build/include" \
+              -D CAMP_LIB="/camp_build/lib/libcamp.a" \
+              .. \
+    && make -j 8
