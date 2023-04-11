@@ -65,8 +65,17 @@ def combine_stoichiometric_coeffs(species):
     return result
 
 line_index = 0
+# there are a few AQUA type reactions in the dissociation reactions, 
+# when those exist, add them to the appropriate array
+is_diss = False
 while line_index < len(content):
     line = content[line_index].strip()
+    if line.startswith('COMMENT  CLASS: AQUA, TYPE: PHOTABC'):
+        pass
+    if line.startswith('COMMENT  CLASS: AQUA;  TYPE: TEMP3'):
+        pass
+    if line.startswith('COMMENT  CLASS: DISS, TYPE: DCONST'):
+        is_diss = True
     if line.startswith('CLASS'):
         type = line.split(':')[1].strip()
         if type == 'HENRY':
@@ -90,7 +99,10 @@ while line_index < len(content):
             if type == 'PHOTABC':
                 aqua_photo.append(dict(reactants = reactants, products=products, A=A, B=B, C=C))
             elif type == 'TEMP3':
-                aqua_temp.append(dict(reactants = reactants, products=products, A=A, B=B))
+                if is_diss:
+                    diss.append(dict(reactants = reactants, products=products, A=A, B=B))
+                else:
+                    aqua_temp.append(dict(reactants = reactants, products=products, A=A, B=B))
             else:
                 print(f"Unknown aqua type: {type}")
             line_index += 2
@@ -107,8 +119,3 @@ while line_index < len(content):
         else:
             print(f'Unknown type: {type}')
     line_index += 1
-
-
-print(aqua_photo)
-print()
-print(aqua_temp)
