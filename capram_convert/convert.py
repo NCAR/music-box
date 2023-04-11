@@ -38,6 +38,12 @@ aqua_temp = []
 # B= k(back reaction) 
 diss = []
 
+
+# pattern that matches A, B, and optionall C constants for PHOTABC and TEMP3 reactions
+# thanks chatgpt
+pattern = re.compile(r"(PHOTABC|TEMP3|DCONST|DTEMP):\s+A:\s+([\d\.e+-]+)\s+B:\s+([\d\.e+-]+)(?:\s+C:\s+([\d\.e+-]+))?")
+
+
 line_index = 0
 while line_index < len(content):
     line = content[line_index].strip()
@@ -62,18 +68,26 @@ while line_index < len(content):
             reactants = [i.strip() for i in reaction[0].strip().split('+')]
             products = [i.strip() for i in reaction[1].strip().split('+')]
             # thanks chatgpt
-            pattern = re.compile(r"(?:PHOTABC|TEMP3):\s+A:\s+([\d\.e+-]+)\s+B:\s+([\d\.e+-]+)(?:\s+C:\s+([\d\.e+-]+))?")
             match = pattern.search(content[line_index + 2])
             if content[line_index + 2].startswith('PHOTABC'):
-                A, B, C = match.group(1), match.group(2), match.group(3)
+                A, B, C = match.group(2), match.group(3), match.group(4)
                 aqua_photo.append(dict(reactants = reactants, products=products, A=A, B=B, C=C))
             elif content[line_index + 2].startswith('TEMP3'):
-                A, B = match.group(1), match.group(2)
-                aqua_temp.append(dict(reactants = reactants, products=products, A=A, B=B, C=C))
+                A, B = match.group(2), match.group(3)
+                aqua_temp.append(dict(reactants = reactants, products=products, A=A, B=B))
             else:
                 print(f"Unknown aqua type: {content[line_index + 2]}")
+            line_index += 2
         elif type == 'DISS':
-            pass
+            reaction = content[line_index + 1].strip().split('=')
+            reactants = [i.strip() for i in reaction[0].strip().split('+')]
+            products = [i.strip() for i in reaction[1].strip().split('+')]
+            match = pattern.search(content[line_index + 2])
+            type, A, B, C = match.group(1), match.group(2), match.group(3), match.group(4)
+            if C is None:
+                diss.append(dict(reactants = reactants, products=products, A=A, B=B))
+            else:
+                diss.append(dict(reactants = reactants, products=products, A=A, B=B, C=C))
         else:
             print(f'Unknown type: {type}')
     line_index += 1
