@@ -1,5 +1,6 @@
 import re
 import json
+import numpy as np
 
 # file from https://capram.tropos.de/capram_24.html
 with open("capram24_red.txt") as f:
@@ -33,12 +34,17 @@ aqua_photo = []
 # B=-Ea/R   
 aqua_temp = []
 
+# CLASS: DISS, TYPE: DTEMP
+# Temperature dependent dissociation
+# Ke = A exp(B*(1/T - 1/298)); 
+# B=-Ea/R  
+# C = k(back reaction)
+diss_with_c = []
 # CLASS: DISS, TYPE: DCONST
 # Dissociation
 # Ke = A 
 # B= k(back reaction) 
-diss = []
-
+diss_without_c = []
 
 # pattern that matches A, B, and optionall C constants for PHOTABC and TEMP3 reactions
 # thanks chatgpt
@@ -68,7 +74,6 @@ def combine_stoichiometric_coeffs(species):
 line_index = 0
 # there are a few AQUA type reactions in the dissociation reactions, 
 # when those exist, add them to the appropriate array
-is_diss = False
 while line_index < len(content):
     line = content[line_index].strip()
     if line.startswith('COMMENT  CLASS: AQUA, TYPE: PHOTABC'):
@@ -76,7 +81,7 @@ while line_index < len(content):
     if line.startswith('COMMENT  CLASS: AQUA;  TYPE: TEMP3'):
         pass
     if line.startswith('COMMENT  CLASS: DISS, TYPE: DCONST'):
-        is_diss = True
+        pass
     if line.startswith('CLASS'):
         type = line.split(':')[1].strip()
         if type == 'HENRY':
@@ -96,14 +101,11 @@ while line_index < len(content):
         elif type == 'AQUA':
             reactants, products = parse_reactants_products(content[line_index + 1])
             match = constants_pattern.search(content[line_index + 2])
-            type, A, B, C = match.group(1), match.group(2), match.group(3), match.group(4)
+            type, A, B, C = match.group(1), float(match.group(2)), float(match.group(3)), match.group(4)
             if type == 'PHOTABC':
-                aqua_photo.append(dict(reactants = reactants, products=products, A=A, B=B, C=C))
+                aqua_photo.append(dict(reactants = reactants, products=products, A=A, B=B, C=float(C)))
             elif type == 'TEMP3':
-                if is_diss:
-                    diss.append(dict(reactants = reactants, products=products, A=A, B=B))
-                else:
-                    aqua_temp.append(dict(reactants = reactants, products=products, A=A, B=B))
+                aqua_temp.append(dict(reactants = reactants, products=products, A=A, B=B))
             else:
                 print(f"Unknown aqua type: {type}")
             line_index += 2
@@ -112,24 +114,21 @@ while line_index < len(content):
             reactants = [i.strip() for i in reaction[0].strip().split('+')]
             products = [i.strip() for i in reaction[1].strip().split('+')]
             match = constants_pattern.search(content[line_index + 2])
-            type, A, B, C = match.group(1), match.group(2), match.group(3), match.group(4)
+            type, A, B, C = match.group(1), float(match.group(2)), float(match.group(3)), match.group(4)
             if C is None:
-                diss.append(dict(reactants = reactants, products=products, A=A, B=B))
+                diss_without_c.append(dict(reactants = reactants, products=products, A=A, B=B))
             else:
-                diss.append(dict(reactants = reactants, products=products, A=A, B=B, C=C))
+                diss_with_c.append(dict(reactants = reactants, products=products, A=A, B=B, C=float(C)))
         else:
             print(f'Unknown type: {type}')
     line_index += 1
 
 
-# for k,v in molecules_identifier_mapping.items():
-#     print(f"{k} -> {v}")
-
 species = set(
     name for name,_ in molecules_identifier_mapping.items() if not name.startswith("a")
 )
 
-for list in [aqua_photo, aqua_temp, diss]:
+for list in [aqua_photo, aqua_temp, diss_with_c, diss_without_c]:
     for item in list:
         for spec in item['reactants']:
             species.add(spec)
@@ -142,3 +141,106 @@ with open('species.json', 'w') as f:
             "camp-data" : [dict(name=name, type="CHEM_SPEC") for name in species] 
         }, f, indent=2
     )
+
+henrys_law = [
+
+]
+
+photolysis_reactions = [
+    {
+        "type":  "PHOTOLYSIS",
+        "reactants": {
+            reactant: {} for reactant in reaction["reactants"]
+        },
+        "products": {
+            product: {} for product in reaction["products"]
+        }
+    }
+    for reaction in aqua_photo
+]
+
+# CAMP uses this formula: A * exp(-Ea/Kb * (1/T)) * (T/D) ** B * (1 + E*P)
+# CAPRAM uses A*exp(B * (1/T - 1/298))
+# 
+# The A in CAPRAM is not equal to A in CAMP. A in CAPRAM is the rate constant at 298 K (A=k(298K))
+# 
+# To convert CAPRAM's A into CAMP's A, 
+#     A * exp(B*(1/T - 1/298)) 
+#   = A * exp(B/T) * exp(-B/298)
+#   = (A * exp(-B/298)) * exp(B/T) 
+#   = A_ * exp(-B/298)
+#   with A_ = A * exp(-B/298)
+# Then specify the "C" option of the the CAMP configuaration 
+# by setting it equal to -B of CAPRAM.
+#
+# CAMP's B, D, and E are all left as the default values
+# For example
+# CAPRAM A = 50, B=0 -> CAMP A = A(capram)*exp(-1 * B(capram) / 298), C(camp) = B(capram)
+#
+#
+
+arrhenius_reactions = [
+    {
+        "type":  "ARRHENIUS",
+        "reactants": {
+            reactant: {} for reactant in reaction["reactants"]
+        },
+        "products": {
+            product: {} for product in reaction["products"]
+        },
+        "A" : reaction['A'] * np.exp(-1 * reaction['B'] / 298),
+        "C" : reaction['B']
+    }
+    for reaction in aqua_temp
+]
+
+aqueous_equilibrium = [
+    {
+        "type":  "AQUEOUS_EQUILIBRIUM",
+        "reactants": {
+            reactant: {} for reactant in reaction["reactants"]
+        },
+        "products": {
+            product: {} for product in reaction["products"]
+        },
+        "A" : reaction['A'],
+        "C" : reaction['B'],
+        "k_reverse" : reaction['C']
+    }
+    for reaction in diss_with_c
+]
+
+aqueous_equilibrium.extend(
+    [
+        {
+            "type":  "AQUEOUS_EQUILIBRIUM",
+            "reactants": {
+                reactant: {} for reactant in reaction["reactants"]
+            },
+            "products": {
+                product: {} for product in reaction["products"]
+            },
+            "A" : reaction['A'],
+            "C" : 0,
+            "k_reverse" : reaction['B']
+        }
+        for reaction in diss_without_c
+    ]
+)
+
+mechanisms = { 
+    "camp-data" : [
+        {
+            "name": "CAPRAM2.4 reduced",
+            "url": "https://capram.tropos.de/capram_24.html",
+            "reactions": [
+                *henrys_law,
+                *photolysis_reactions,
+                *arrhenius_reactions,
+                *aqueous_equilibrium,
+            ]
+        }
+    ]
+}
+with open('mechanism.json', 'w') as f:
+    json.dump(mechanisms, f, indent=2)

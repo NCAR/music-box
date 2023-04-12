@@ -569,7 +569,7 @@ CLASS: AQUA
 BROHm = aBR + OHm
 TEMP3:  A: 4.2e6  B: 0.0
 
-COMMENT  CLASS: DISS, TYPE: DCONST
+COMMENT  CLASS: DISS, TYPE: DTEMP
 COMMENT  Temperature dependent dissociation
 COMMENT  Ke = A exp(B*(1/T - 1/298)); 
 COMMENT  B=-Ea/R  
