@@ -125,10 +125,20 @@ while line_index < len(content):
 # for k,v in molecules_identifier_mapping.items():
 #     print(f"{k} -> {v}")
 
-species = {}
-species["camp-data"] = [
-    dict(name=name, type="CHEM_SPEC") for name,_ in molecules_identifier_mapping.items() if not name.startswith("a")
-]
+species = set(
+    name for name,_ in molecules_identifier_mapping.items() if not name.startswith("a")
+)
+
+for list in [aqua_photo, aqua_temp, diss]:
+    for item in list:
+        for spec in item['reactants']:
+            species.add(spec)
+        for spec in item['products']:
+            species.add(spec)
 
 with open('species.json', 'w') as f:
-    json.dump(species, f, indent=2)
+    json.dump(
+        { 
+            "camp-data" : [dict(name=name, type="CHEM_SPEC") for name in species] 
+        }, f, indent=2
+    )
