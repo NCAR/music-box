@@ -1,4 +1,5 @@
 import re
+import json
 
 # file from https://capram.tropos.de/capram_24.html
 with open("capram24_red.txt") as f:
@@ -119,3 +120,15 @@ while line_index < len(content):
         else:
             print(f'Unknown type: {type}')
     line_index += 1
+
+
+# for k,v in molecules_identifier_mapping.items():
+#     print(f"{k} -> {v}")
+
+species = {}
+species["camp-data"] = [
+    dict(name=name, type="CHEM_SPEC") for name,_ in molecules_identifier_mapping.items() if not name.startswith("a")
+]
+
+with open('species.json', 'w') as f:
+    json.dump(species, f, indent=2)

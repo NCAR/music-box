@@ -1,0 +1,136 @@
+{
+  "camp-data": [
+    {
+      "name": "CO2",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "O3",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "HO2",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "HO",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "H2O2",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "NO2",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "HONO",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "HNO3",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "NO3",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "N2O5",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "NH3",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "HCL",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "HCHO",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "ORA1",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "SO2",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "OP1",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "ORA2",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "MO2",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "ETHPX",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "ETOH",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "CH3OH",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "ALD",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "BR2",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "CL2",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "SULF",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "HNO4",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "ACO3",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "GLY",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "[O2]",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "CLNO2",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "BRNO2",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "BRCL",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "NO",
+      "type": "CHEM_SPEC"
+    }
+  ]
+}
