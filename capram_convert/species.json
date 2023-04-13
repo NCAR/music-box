@@ -9,7 +9,7 @@
       "N star": 1.0
     },
     {
-      "name": "",
+      "name": "aCO2",
       "type": "CHEM_SPEC"
     },
     {
@@ -21,12 +21,20 @@
       "N star": 1.0
     },
     {
+      "name": "aO3",
+      "type": "CHEM_SPEC"
+    },
+    {
       "name": "HO2",
       "type": "CHEM_SPEC",
       "HLC(298K) [M Pa-1]": 9000.0,
       "HLC exp factor [K]": 0.0,
       "diffusion coeff [m2 s-1]": 1.0,
       "N star": 1.0
+    },
+    {
+      "name": "aHO2",
+      "type": "CHEM_SPEC"
     },
     {
       "name": "HO",
@@ -49,7 +57,7 @@
       "N star": 1.0
     },
     {
-      "name": "O",
+      "name": "aH2O2",
       "type": "CHEM_SPEC"
     },
     {
@@ -59,6 +67,10 @@
       "HLC exp factor [K]": 1263.0,
       "diffusion coeff [m2 s-1]": 1.0,
       "N star": 1.0
+    },
+    {
+      "name": "aNO2",
+      "type": "CHEM_SPEC"
     },
     {
       "name": "HONO",
@@ -81,12 +93,20 @@
       "N star": 1.0
     },
     {
+      "name": "aHNO3",
+      "type": "CHEM_SPEC"
+    },
+    {
       "name": "NO3",
       "type": "CHEM_SPEC",
       "HLC(298K) [M Pa-1]": 0.6,
       "HLC exp factor [K]": 0.0,
       "diffusion coeff [m2 s-1]": 1.0,
       "N star": 1.0
+    },
+    {
+      "name": "aNO3",
+      "type": "CHEM_SPEC"
     },
     {
       "name": "N2O5",
@@ -97,12 +117,20 @@
       "N star": 1.0
     },
     {
+      "name": "aN2O5",
+      "type": "CHEM_SPEC"
+    },
+    {
       "name": "NH3",
       "type": "CHEM_SPEC",
       "HLC(298K) [M Pa-1]": 60.7,
       "HLC exp factor [K]": 3920.0,
       "diffusion coeff [m2 s-1]": 1.0,
       "N star": 1.0
+    },
+    {
+      "name": "aNH3",
+      "type": "CHEM_SPEC"
     },
     {
       "name": "HCL",
@@ -137,12 +165,20 @@
       "N star": 1.0
     },
     {
+      "name": "aORA1",
+      "type": "CHEM_SPEC"
+    },
+    {
       "name": "SO2",
       "type": "CHEM_SPEC",
       "HLC(298K) [M Pa-1]": 1.24,
       "HLC exp factor [K]": 3247.0,
       "diffusion coeff [m2 s-1]": 1.0,
       "N star": 1.0
+    },
+    {
+      "name": "aSO2",
+      "type": "CHEM_SPEC"
     },
     {
       "name": "OP1",
@@ -153,6 +189,10 @@
       "N star": 1.0
     },
     {
+      "name": "aOP1",
+      "type": "CHEM_SPEC"
+    },
+    {
       "name": "ORA2",
       "type": "CHEM_SPEC",
       "HLC(298K) [M Pa-1]": 5500.0,
@@ -161,12 +201,20 @@
       "N star": 1.0
     },
     {
+      "name": "aORA2",
+      "type": "CHEM_SPEC"
+    },
+    {
       "name": "MO2",
       "type": "CHEM_SPEC",
       "HLC(298K) [M Pa-1]": 310.0,
       "HLC exp factor [K]": 5607.0,
       "diffusion coeff [m2 s-1]": 1.0,
       "N star": 1.0
+    },
+    {
+      "name": "aMO2",
+      "type": "CHEM_SPEC"
     },
     {
       "name": "ETHPX",
@@ -201,7 +249,7 @@
       "N star": 1.0
     },
     {
-      "name": "OH",
+      "name": "aCH3OH",
       "type": "CHEM_SPEC"
     },
     {
@@ -225,12 +273,20 @@
       "N star": 1.0
     },
     {
+      "name": "aBR2",
+      "type": "CHEM_SPEC"
+    },
+    {
       "name": "CL2",
       "type": "CHEM_SPEC",
       "HLC(298K) [M Pa-1]": 0.0915,
       "HLC exp factor [K]": 2490.0,
       "diffusion coeff [m2 s-1]": 1.0,
       "N star": 1.0
+    },
+    {
+      "name": "aCL2",
+      "type": "CHEM_SPEC"
     },
     {
       "name": "SULF",
@@ -253,12 +309,20 @@
       "N star": 1.0
     },
     {
+      "name": "aHNO4",
+      "type": "CHEM_SPEC"
+    },
+    {
       "name": "ACO3",
       "type": "CHEM_SPEC",
       "HLC(298K) [M Pa-1]": 669.0,
       "HLC exp factor [K]": 5893.0,
       "diffusion coeff [m2 s-1]": 1.0,
       "N star": 1.0
+    },
+    {
+      "name": "aACO3",
+      "type": "CHEM_SPEC"
     },
     {
       "name": "GLY",
@@ -281,6 +345,10 @@
       "N star": 1.0
     },
     {
+      "name": "aO2",
+      "type": "CHEM_SPEC"
+    },
+    {
       "name": "CLNO2",
       "type": "CHEM_SPEC",
       "HLC(298K) [M Pa-1]": 0.024,
@@ -289,12 +357,20 @@
       "N star": 1.0
     },
     {
+      "name": "aCLNO2",
+      "type": "CHEM_SPEC"
+    },
+    {
       "name": "BRNO2",
       "type": "CHEM_SPEC",
       "HLC(298K) [M Pa-1]": 0.3,
       "HLC exp factor [K]": 0.0,
       "diffusion coeff [m2 s-1]": 1.0,
       "N star": 1.0
+    },
+    {
+      "name": "aBRNO2",
+      "type": "CHEM_SPEC"
     },
     {
       "name": "BRCL",
@@ -337,15 +413,15 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aH2O2",
-      "type": "CHEM_SPEC"
-    },
-    {
       "name": "FEC2O42m",
       "type": "CHEM_SPEC"
     },
     {
-      "name": "m",
+      "name": "C2O4mm",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "CO2m",
       "type": "CHEM_SPEC"
     },
     {
@@ -365,7 +441,7 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aHO2",
+      "name": "[aH2O]",
       "type": "CHEM_SPEC"
     },
     {
@@ -373,7 +449,7 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aO3",
+      "name": "O3m",
       "type": "CHEM_SPEC"
     },
     {
@@ -385,7 +461,7 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aO2",
+      "name": "SO3m",
       "type": "CHEM_SPEC"
     },
     {
@@ -401,23 +477,7 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aN2O5",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "p",
-      "type": "CHEM_SPEC"
-    },
-    {
       "name": "NO2p",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "[aH2O]",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "aNO3",
       "type": "CHEM_SPEC"
     },
     {
@@ -425,23 +485,23 @@
       "type": "CHEM_SPEC"
     },
     {
+      "name": "SO4m",
+      "type": "CHEM_SPEC"
+    },
+    {
       "name": "NO4m",
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aHNO4",
+      "name": "NO2m",
+      "type": "CHEM_SPEC"
+    },
+    {
+      "name": "HSO4m",
       "type": "CHEM_SPEC"
     },
     {
       "name": "BRm",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "aCLNO2",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "aBRNO2",
       "type": "CHEM_SPEC"
     },
     {
@@ -453,15 +513,7 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "CHOHSO",
-      "type": "CHEM_SPEC"
-    },
-    {
       "name": "O2CHOHSO3m",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "CHO",
       "type": "CHEM_SPEC"
     },
     {
@@ -470,10 +522,6 @@
     },
     {
       "name": "aO2CHO",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "mm",
       "type": "CHEM_SPEC"
     },
     {
@@ -489,7 +537,7 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "SO4m",
+      "name": "SO5O2Hm",
       "type": "CHEM_SPEC"
     },
     {
@@ -497,15 +545,7 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "SO3m",
-      "type": "CHEM_SPEC"
-    },
-    {
       "name": "SO",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "aCH3OH",
       "type": "CHEM_SPEC"
     },
     {
@@ -513,15 +553,7 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "CH",
-      "type": "CHEM_SPEC"
-    },
-    {
       "name": "aO2CH2OH",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "CHOH",
       "type": "CHEM_SPEC"
     },
     {
@@ -545,19 +577,15 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "COH",
+      "name": "aCH3COH2",
       "type": "CHEM_SPEC"
     },
     {
-      "name": "CO",
+      "name": "aCH3CO",
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aORA1",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "H",
+      "name": "aCO2H",
       "type": "CHEM_SPEC"
     },
     {
@@ -565,11 +593,7 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aORA2",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "COOH",
+      "name": "aCH2COOH",
       "type": "CHEM_SPEC"
     },
     {
@@ -577,19 +601,11 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "COOm",
+      "name": "CH2COOm",
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aCH2COOH",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "aMO2",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "aACO3",
+      "name": "aCH3O",
       "type": "CHEM_SPEC"
     },
     {
@@ -598,10 +614,6 @@
     },
     {
       "name": "HC2O4m",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "C2O4mm",
       "type": "CHEM_SPEC"
     },
     {
@@ -633,11 +645,7 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "C",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "aCH3COH2",
+      "name": "aH2C2O4",
       "type": "CHEM_SPEC"
     },
     {
@@ -645,27 +653,15 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aCH3O",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "CH2COOm",
-      "type": "CHEM_SPEC"
-    },
-    {
       "name": "O2CH2COOm",
       "type": "CHEM_SPEC"
     },
     {
-      "name": "CO2m",
+      "name": "CHOH",
       "type": "CHEM_SPEC"
     },
     {
       "name": "CL2m",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "aCL2",
       "type": "CHEM_SPEC"
     },
     {
@@ -681,10 +677,6 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aBR2",
-      "type": "CHEM_SPEC"
-    },
-    {
       "name": "aHOBR",
       "type": "CHEM_SPEC"
     },
@@ -693,27 +685,11 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aCO2",
-      "type": "CHEM_SPEC"
-    },
-    {
       "name": "aH2CO3",
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aNH3",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "aHNO3",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "aSO2",
-      "type": "CHEM_SPEC"
-    },
-    {
-      "name": "HSO4m",
+      "name": "NH4p",
       "type": "CHEM_SPEC"
     },
     {
@@ -721,15 +697,15 @@
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aCH3CO",
+      "name": "HCO3m",
       "type": "CHEM_SPEC"
     },
     {
-      "name": "aNO2",
+      "name": "CHOSO3mm",
       "type": "CHEM_SPEC"
     },
     {
-      "name": "SO5O2Hm",
+      "name": "CHOH2COOm",
       "type": "CHEM_SPEC"
     },
     {

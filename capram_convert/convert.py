@@ -46,7 +46,7 @@ diss_without_c = list()
 # thanks chatgpt
 constants_pattern = re.compile(r"(PHOTABC|TEMP3|DCONST|DTEMP):\s+A:\s+([\d\.e+-]+)\s+B:\s+([\d\.e+-]+)(?:\s+C:\s+([\d\.e+-]+))?")
 reaction_pattern = re.compile(r"^([^=]*)=([^=]*)$")
-stoichiemetric_coefficient_pattern = re.compile(r"(-?\d+(?:\.\d+)?)([A-Za-z]*)")
+stoichiemetric_coefficient_pattern = re.compile(r"^(-?\d+(?:\.\d+)?)([A-Za-z]*)")
 
 def parse_reactants_products(line):
     match = reaction_pattern.search(line.replace(" ", ""))
@@ -75,13 +75,15 @@ def convert_products_to_yield(products):
     # first, combine duplicated products
     prods = {}
     for product in products:
-        # check if this has a coefficient
-        match = stoichiemetric_coefficient_pattern.search(product)
         existing = prods.get(product, 0.0)
         _yield = 1.0
+
+        # check if this has a coefficient
+        match = stoichiemetric_coefficient_pattern.search(product)
         if match:
             # it does! add that coefficient as the yeidl
             _yield = float(match.group(1))
+            print(product, match.groups())
             # also, use the matched text as the species name so that the species name doesn't include the yield
             product = match.group(2)
         prods[product] = existing + _yield
