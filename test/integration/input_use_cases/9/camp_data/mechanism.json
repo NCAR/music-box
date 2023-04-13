@@ -133,7 +133,7 @@
     {
       "name" : "droplet phase",
       "type" : "AERO_PHASE",
-      "species" : ["H2O"]
+      "species" : ["aH2O"]
     },
     {
       "type" : "AERO_REP_MODAL_BINNED_MASS",
