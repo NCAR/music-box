@@ -109,7 +109,7 @@ species = dict()
 henrys_law_reactions = list()
 henrys_species = list()
 
-aerosol_phase_name = "cloud aerosols"
+aerosol_phase_name = "cloud water"
 
 for item in henry:
     gas_phase = item['reactants'][0]
@@ -205,7 +205,9 @@ arrhenius_reactions = [
             product: {} for product in reaction["products"]
         },
         "A" : reaction['A'] * np.exp(-1 * reaction['B'] / 298),
-        "C" : reaction['B']
+        "C" : reaction['B'],
+        "aerosol phase" : aerosol_phase_name,
+        "aerosol-phase water" : "H2O_aq"
     }
     for reaction in aqua_temp
 ]
@@ -221,7 +223,9 @@ aqueous_equilibrium = [
         },
         "A" : reaction['A'],
         "C" : reaction['B'],
-        "k_reverse" : reaction['C']
+        "k_reverse" : reaction['C'],
+        "phase": aerosol_phase_name,
+        "aerosol-phase water" : "H2O_aq"
     }
     for reaction in diss_with_c
 ]
@@ -239,7 +243,8 @@ aqueous_equilibrium.extend(
             "A" : reaction['A'],
             "C" : 0,
             "k_reverse" : reaction['B'],
-            "phase": aerosol_phase_name
+            "phase": aerosol_phase_name,
+            "aerosol-phase water" : "H2O_aq"
         }
         for reaction in diss_without_c
     ]
