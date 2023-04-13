@@ -257,6 +257,19 @@ mechanisms = {
         },
         *henrys_law_aero_phase,
         {
+            "type" : "AERO_REP_MODAL_BINNED_MASS",
+            "name" : "my aero rep 2",
+            "modes/bins" :
+            {
+            "the mode" :
+            {
+                "type" : "MODAL",
+                "phases" : ["aqueous aerosol"],
+                "shape" : "LOG_NORMAL"
+            }
+            }
+        },
+        {
             "name" : "Henry's Law phase transfer",
             "type" : "MECHANISM",
             "reactions" : henrys_law_reactions
