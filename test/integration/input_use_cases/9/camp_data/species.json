@@ -48,6 +48,13 @@
       "name" : "O3",
       "type" : "CHEM_SPEC",
       "absolute tolerance" : 1.0e-12
+    },
+    {
+      "name" : "aH20",
+      "type" : "CHEM_SPEC",
+      "phase" : "AEROSOL",
+      "molecular weight [kg mol-1]" : 18.02,
+      "density [kg m-3]" : 997
     }
   ]
 }
