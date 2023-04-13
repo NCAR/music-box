@@ -45,10 +45,11 @@ diss_without_c = list()
 # pattern that matches A, B, and optionall C constants for PHOTABC and TEMP3 reactions
 # thanks chatgpt
 constants_pattern = re.compile(r"(PHOTABC|TEMP3|DCONST|DTEMP):\s+A:\s+([\d\.e+-]+)\s+B:\s+([\d\.e+-]+)(?:\s+C:\s+([\d\.e+-]+))?")
-reaction_pattern = r"^([^=]*)=([^=]*)$"
+reaction_pattern = re.compile(r"^([^=]*)=([^=]*)$")
+stoichiemetric_coefficient_pattern = re.compile(r"(-?\d+(?:\.\d+)?)([A-Za-z]*)")
 
 def parse_reactants_products(line):
-    match = re.search(reaction_pattern, line.replace(" ", ""))
+    match = reaction_pattern.search(line.replace(" ", ""))
     if match:
         reactants = combine_stoichiometric_coeffs(match.group(1).strip())
         products = combine_stoichiometric_coeffs(match.group(2).strip())
@@ -74,8 +75,16 @@ def convert_products_to_yield(products):
     # first, combine duplicated products
     prods = {}
     for product in products:
+        # check if this has a coefficient
+        match = stoichiemetric_coefficient_pattern.search(product)
         existing = prods.get(product, 0.0)
-        prods[product] = existing + 1.0
+        _yield = 1.0
+        if match:
+            # it does! add that coefficient as the yeidl
+            _yield = float(match.group(1))
+            # also, use the matched text as the species name so that the species name doesn't include the yield
+            product = match.group(2)
+        prods[product] = existing + _yield
 
     products = []
     for name, _yield in prods.items():
@@ -84,8 +93,6 @@ def convert_products_to_yield(products):
         products.append(spec)
     
     # now, go through each product and, when there's a
-    print(products)
-    print()
     return products
 
 line_index = 0

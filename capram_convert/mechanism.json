@@ -25,8 +25,8 @@
             "NO3m": {}
           },
           "products": {
-            "aNO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
             "aHO": {
               "yield": 1.0
@@ -56,14 +56,14 @@
             "FEpp": {
               "yield": 1.0
             },
-            "C2O4mm": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             },
-            "aCO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
-            "CO2m": {
-              "yield": 1.0
+            "m": {
+              "yield": 2.0
             }
           }
         },
@@ -121,8 +121,8 @@
             "FEpp": {
               "yield": 1.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 150000000.0,
@@ -140,11 +140,11 @@
             "FEpp": {
               "yield": 1.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             }
           },
           "A": 130000.0,
@@ -162,8 +162,8 @@
             "FEpp": {
               "yield": 1.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
             "OHm": {
               "yield": 1.0
@@ -184,11 +184,11 @@
             "FEppp": {
               "yield": 1.0
             },
-            "aH2O2": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             },
-            "-2.0Hp": {
-              "yield": 1.0
+            "Hp": {
+              "yield": -2.0
             }
           },
           "A": 10000000.0,
@@ -206,11 +206,11 @@
             "FEppp": {
               "yield": 1.0
             },
-            "aH2O2": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             },
-            "-1.0Hp": {
-              "yield": 1.0
+            "Hp": {
+              "yield": -1.0
             }
           },
           "A": 27470692899786.598,
@@ -244,11 +244,11 @@
             "CUpp": {
               "yield": 1.0
             },
-            "aH2O2": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             },
-            "-2.0Hp": {
-              "yield": 1.0
+            "Hp": {
+              "yield": -2.0
             }
           },
           "A": 10000000000.0,
@@ -266,11 +266,11 @@
             "CUpp": {
               "yield": 1.0
             },
-            "aH2O2": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             },
-            "-1.0Hp": {
-              "yield": 1.0
+            "Hp": {
+              "yield": -1.0
             }
           },
           "A": 2300000000.0,
@@ -288,8 +288,8 @@
             "CUp": {
               "yield": 1.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
             "Hp": {
               "yield": 1.0
@@ -310,8 +310,8 @@
             "CUp": {
               "yield": 1.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 8000000000.0,
@@ -367,11 +367,11 @@
             "O2m": {}
           },
           "products": {
-            "O3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 2411527019006.37,
@@ -388,8 +388,8 @@
             "aHO": {
               "yield": 1.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 1193031991.1270792,
@@ -404,11 +404,11 @@
             "aHO": {}
           },
           "products": {
-            "aHO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             }
           },
           "A": 8423504855.756161,
@@ -423,11 +423,11 @@
             "aHO": {}
           },
           "products": {
-            "SO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             },
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             }
           },
           "A": 2700000000.0,
@@ -445,8 +445,8 @@
             "CUpp": {
               "yield": 1.0
             },
-            "O2m": {
-              "yield": 1.0
+            "m": {
+              "yield": 2.0
             }
           },
           "A": 460000.0,
@@ -464,8 +464,8 @@
             "FEOpp": {
               "yield": 1.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 5608557390760.588,
@@ -486,8 +486,8 @@
             "CLOHm": {
               "yield": 1.0
             },
-            "-1.0Hp": {
-              "yield": 1.0
+            "Hp": {
+              "yield": -1.0
             }
           },
           "A": 100.0,
@@ -502,11 +502,11 @@
             "FEpp": {}
           },
           "products": {
-            "2FEppp": {
-              "yield": 1.0
+            "FEppp": {
+              "yield": 2.0
             },
-            "2OHm": {
-              "yield": 1.0
+            "OHm": {
+              "yield": 2.0
             }
           },
           "A": 1214599.2606213153,
@@ -520,11 +520,11 @@
             "aN2O5": {}
           },
           "products": {
-            "NO2p": {
-              "yield": 1.0
+            "p": {
+              "yield": 2.0
             },
-            "NO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             }
           },
           "A": 1000000000.0,
@@ -539,8 +539,8 @@
             "[aH2O]": {}
           },
           "products": {
-            "NO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             },
             "Hp": {
               "yield": 2.0
@@ -558,13 +558,10 @@
             "HSO3m": {}
           },
           "products": {
-            "NO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             },
             "Hp": {
-              "yield": 1.0
-            },
-            "SO3m": {
               "yield": 1.0
             }
           },
@@ -580,11 +577,8 @@
             "SO4mm": {}
           },
           "products": {
-            "NO3m": {
-              "yield": 1.0
-            },
-            "SO4m": {
-              "yield": 1.0
+            "m": {
+              "yield": 4.0
             }
           },
           "A": 100000.0,
@@ -598,11 +592,11 @@
             "NO4m": {}
           },
           "products": {
-            "NO2m": {
-              "yield": 1.0
+            "m": {
+              "yield": 2.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 1.0,
@@ -617,13 +611,10 @@
             "HSO3m": {}
           },
           "products": {
-            "HSO4m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             },
             "Hp": {
-              "yield": 1.0
-            },
-            "NO3m": {
               "yield": 1.0
             }
           },
@@ -639,8 +630,8 @@
             "CLm": {}
           },
           "products": {
-            "aCLNO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 10000000000.0,
@@ -655,8 +646,8 @@
             "BRm": {}
           },
           "products": {
-            "aBRNO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 10000000000.0,
@@ -671,8 +662,8 @@
             "BRm": {}
           },
           "products": {
-            "NO2m": {
-              "yield": 1.0
+            "m": {
+              "yield": 2.0
             },
             "aBRCL": {
               "yield": 1.0
@@ -690,11 +681,11 @@
             "BRm": {}
           },
           "products": {
-            "aBR2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
-            "NO2m": {
-              "yield": 1.0
+            "m": {
+              "yield": 2.0
             }
           },
           "A": 25500.0,
@@ -709,8 +700,8 @@
             "CLm": {}
           },
           "products": {
-            "NO2m": {
-              "yield": 1.0
+            "m": {
+              "yield": 2.0
             },
             "aBRCL": {
               "yield": 1.0
@@ -728,11 +719,11 @@
             "aHO": {}
           },
           "products": {
-            "CHOHSO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             },
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             }
           },
           "A": 300000000.0,
@@ -747,8 +738,8 @@
             "aO2": {}
           },
           "products": {
-            "O2CHOHSO3m": {
-              "yield": 1.0
+            "CHOHSO": {
+              "yield": 2.0
             }
           },
           "A": 2600000000.0,
@@ -762,11 +753,11 @@
             "O2CHOHSO3m": {}
           },
           "products": {
-            "aHO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
-            "CHOSO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             }
           },
           "A": 17000.0,
@@ -780,11 +771,11 @@
             "O2CHOHSO3m": {}
           },
           "products": {
-            "aO2CHO": {
-              "yield": 1.0
+            "CHO": {
+              "yield": 2.0
             },
-            "HSO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             }
           },
           "A": 7000.0,
@@ -799,10 +790,10 @@
             "[aH2O]": {}
           },
           "products": {
-            "HSO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             },
-            "aORA1": {
+            "": {
               "yield": 1.0
             }
           },
@@ -818,11 +809,8 @@
             "[aH2O]": {}
           },
           "products": {
-            "aORA1": {
-              "yield": 1.0
-            },
-            "aHO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 44.32,
@@ -838,14 +826,14 @@
             "Hp": {}
           },
           "products": {
-            "SO4mm": {
-              "yield": 1.0
+            "mm": {
+              "yield": 4.0
             },
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             },
-            "2Hp": {
-              "yield": 1.0
+            "Hp": {
+              "yield": 2.0
             }
           },
           "A": 48617052944753.77,
@@ -860,14 +848,14 @@
             "aO3": {}
           },
           "products": {
-            "SO4mm": {
-              "yield": 1.0
+            "mm": {
+              "yield": 4.0
             },
             "Hp": {
               "yield": 1.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 42405757730857.71,
@@ -882,11 +870,11 @@
             "aO3": {}
           },
           "products": {
-            "SO4mm": {
-              "yield": 1.0
+            "mm": {
+              "yield": 4.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 7.429735524861723e+16,
@@ -901,8 +889,8 @@
             "FEpp": {}
           },
           "products": {
-            "HSO5m": {
-              "yield": 1.0
+            "m": {
+              "yield": 5.0
             },
             "FEOHpp": {
               "yield": 1.0
@@ -920,8 +908,8 @@
             "FEpp": {}
           },
           "products": {
-            "SO4m": {
-              "yield": 1.0
+            "m": {
+              "yield": 4.0
             },
             "FEOHpp": {
               "yield": 1.0
@@ -942,8 +930,8 @@
             "FEOHpp": {
               "yield": 1.0
             },
-            "SO4mm": {
-              "yield": 1.0
+            "mm": {
+              "yield": 4.0
             },
             "Hp": {
               "yield": 1.0
@@ -960,11 +948,11 @@
             "SO5m": {}
           },
           "products": {
-            "SO4m": {
-              "yield": 2.0
+            "m": {
+              "yield": 4.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 1353845691603.3787,
@@ -979,8 +967,8 @@
             "aHO2": {}
           },
           "products": {
-            "SO5O2Hm": {
-              "yield": 1.0
+            "O": {
+              "yield": 5.0
             }
           },
           "A": 1700000000.0,
@@ -994,14 +982,14 @@
             "SO5O2mm": {}
           },
           "products": {
-            "HSO5m": {
-              "yield": 1.0
+            "m": {
+              "yield": 5.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
-            "-1.0Hp": {
-              "yield": 1.0
+            "Hp": {
+              "yield": -1.0
             }
           },
           "A": 1200.0,
@@ -1016,8 +1004,8 @@
             "aO2": {}
           },
           "products": {
-            "SO5m": {
-              "yield": 1.0
+            "m": {
+              "yield": 5.0
             }
           },
           "A": 2500000000.0,
@@ -1032,8 +1020,8 @@
             "[aH2O]": {}
           },
           "products": {
-            "SO4mm": {
-              "yield": 1.0
+            "mm": {
+              "yield": 4.0
             },
             "aHO": {
               "yield": 1.0
@@ -1055,11 +1043,11 @@
             "Hp": {}
           },
           "products": {
-            "2SO4mm": {
-              "yield": 1.0
+            "SO": {
+              "yield": 2.0
             },
-            "3Hp": {
-              "yield": 1.0
+            "Hp": {
+              "yield": 3.0
             }
           },
           "A": 7140000.0,
@@ -1074,11 +1062,11 @@
             "aHO": {}
           },
           "products": {
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             },
-            "aCH2OH": {
-              "yield": 1.0
+            "OH": {
+              "yield": 2.0
             }
           },
           "A": 7002790586.531466,
@@ -1093,8 +1081,8 @@
             "aO2": {}
           },
           "products": {
-            "aO2CH2OH": {
-              "yield": 1.0
+            "CH": {
+              "yield": 2.0
             }
           },
           "A": 2000000000.0,
@@ -1108,11 +1096,11 @@
             "aO2CH2OH": {}
           },
           "products": {
-            "aCH3OH": {
-              "yield": 1.0
+            "OH": {
+              "yield": 3.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
             "aHCHO": {
               "yield": 1.0
@@ -1130,11 +1118,11 @@
             "aHO": {}
           },
           "products": {
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             },
-            "aCH3CHOH": {
-              "yield": 1.0
+            "CHOH": {
+              "yield": 3.0
             }
           },
           "A": 1900000000.0,
@@ -1149,8 +1137,8 @@
             "aO2": {}
           },
           "products": {
-            "aO2CH3CHOH": {
-              "yield": 1.0
+            "CH": {
+              "yield": 2.0
             }
           },
           "A": 2000000000.0,
@@ -1167,8 +1155,8 @@
             "aALD": {
               "yield": 1.0
             },
-            "aHO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 1713166492299.335,
@@ -1183,11 +1171,11 @@
             "aHO": {}
           },
           "products": {
-            "aCHOH2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             }
           },
           "A": 30655705402.09484,
@@ -1202,10 +1190,7 @@
             "aO2": {}
           },
           "products": {
-            "aHO2": {
-              "yield": 1.0
-            },
-            "aORA1": {
+            "": {
               "yield": 1.0
             }
           },
@@ -1221,11 +1206,11 @@
             "aHO": {}
           },
           "products": {
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             },
-            "aCH3COH2": {
-              "yield": 1.0
+            "COH": {
+              "yield": 3.0
             }
           },
           "A": 1200000000.0,
@@ -1240,11 +1225,11 @@
             "aHO": {}
           },
           "products": {
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             },
-            "aCH3CO": {
-              "yield": 1.0
+            "CO": {
+              "yield": 3.0
             }
           },
           "A": 3600000000.0,
@@ -1259,11 +1244,11 @@
             "aHO": {}
           },
           "products": {
-            "aCO2H": {
-              "yield": 1.0
+            "H": {
+              "yield": 2.0
             },
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             }
           },
           "A": 3726553714.606836,
@@ -1278,8 +1263,8 @@
             "aHO": {}
           },
           "products": {
-            "aCO2H": {
-              "yield": 1.0
+            "H": {
+              "yield": 2.0
             },
             "OHm": {
               "yield": 1.0
@@ -1297,11 +1282,11 @@
             "aHO": {}
           },
           "products": {
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             },
-            "aCH2COOH": {
-              "yield": 1.0
+            "COOH": {
+              "yield": 2.0
             }
           },
           "A": 1301323951.4818943,
@@ -1316,11 +1301,11 @@
             "aHO": {}
           },
           "products": {
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             },
-            "CH2COOm": {
-              "yield": 1.0
+            "COOm": {
+              "yield": 2.0
             }
           },
           "A": 42000577298.10133,
@@ -1335,8 +1320,8 @@
             "aO2": {}
           },
           "products": {
-            "aACO3": {
-              "yield": 1.0
+            "": {
+              "yield": 3.0
             }
           },
           "A": 1700000000.0,
@@ -1350,14 +1335,14 @@
             "aMO2": {}
           },
           "products": {
-            "aCH3OH": {
-              "yield": 1.0
+            "OH": {
+              "yield": 3.0
             },
             "aHCHO": {
               "yield": 1.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 118968666270.98093,
@@ -1371,11 +1356,11 @@
             "aMO2": {}
           },
           "products": {
-            "aCH3O": {
-              "yield": 2.0
+            "O": {
+              "yield": 3.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 57876648456.152885,
@@ -1389,14 +1374,8 @@
             "aACO3": {}
           },
           "products": {
-            "aMO2": {
+            "": {
               "yield": 2.0
-            },
-            "aCO2": {
-              "yield": 2.0
-            },
-            "aO2": {
-              "yield": 1.0
             }
           },
           "A": 150000000.0,
@@ -1411,11 +1390,11 @@
             "HSO3m": {}
           },
           "products": {
-            "aOP1": {
+            "": {
               "yield": 1.0
             },
-            "SO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             }
           },
           "A": 500000.0,
@@ -1429,11 +1408,11 @@
             "aETHPX": {}
           },
           "products": {
-            "aCH3CH2O": {
-              "yield": 2.0
+            "CH": {
+              "yield": 3.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 8071922.343268531,
@@ -1447,8 +1426,8 @@
             "aCH3CH2O": {}
           },
           "products": {
-            "aCH3CHOH": {
-              "yield": 1.0
+            "CHOH": {
+              "yield": 3.0
             }
           },
           "A": 1000000.0,
@@ -1463,11 +1442,8 @@
             "HC2O4m": {}
           },
           "products": {
-            "[aH2O]": {
-              "yield": 1.0
-            },
-            "C2O4m": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             }
           },
           "A": 32000000.0,
@@ -1485,8 +1461,8 @@
             "OHm": {
               "yield": 1.0
             },
-            "C2O4m": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             }
           },
           "A": 5300000.0,
@@ -1501,11 +1477,11 @@
             "aO2": {}
           },
           "products": {
-            "aCO2": {
+            "": {
               "yield": 2.0
             },
-            "O2m": {
-              "yield": 1.0
+            "m": {
+              "yield": 2.0
             }
           },
           "A": 2000000000.0,
@@ -1520,11 +1496,11 @@
             "aCHOH2CHOH2": {}
           },
           "products": {
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             },
-            "aCOH2CHOH2": {
-              "yield": 1.0
+            "CHOH": {
+              "yield": 2.0
             }
           },
           "A": 178137994858.22678,
@@ -1539,8 +1515,8 @@
             "aO2": {}
           },
           "products": {
-            "aO2COH2CHOH2": {
-              "yield": 1.0
+            "COH": {
+              "yield": 2.0
             }
           },
           "A": 1380000000.0,
@@ -1554,11 +1530,11 @@
             "aO2COH2CHOH2": {}
           },
           "products": {
-            "aHO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
-            "aCHOH2COOH": {
-              "yield": 1.0
+            "COOH": {
+              "yield": 2.0
             }
           },
           "A": 2000000000.0,
@@ -1573,11 +1549,11 @@
             "aCHOH2COOH": {}
           },
           "products": {
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             },
-            "aCOH2COOH": {
-              "yield": 1.0
+            "COOH": {
+              "yield": 2.0
             }
           },
           "A": 178137994858.22678,
@@ -1592,8 +1568,8 @@
             "aO2": {}
           },
           "products": {
-            "aO2COH2COOH": {
-              "yield": 1.0
+            "COH": {
+              "yield": 2.0
             }
           },
           "A": 2000000000.0,
@@ -1607,11 +1583,11 @@
             "aO2COH2COOH": {}
           },
           "products": {
-            "aHO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
-            "aH2C2O4": {
-              "yield": 1.0
+            "C": {
+              "yield": 2.0
             }
           },
           "A": 2000000000.0,
@@ -1626,8 +1602,8 @@
             "aO2": {}
           },
           "products": {
-            "aCH3COH2OO": {
-              "yield": 1.0
+            "COH": {
+              "yield": 3.0
             }
           },
           "A": 2000000000.0,
@@ -1647,8 +1623,8 @@
             "MCOOm": {
               "yield": 1.0
             },
-            "O2m": {
-              "yield": 1.0
+            "m": {
+              "yield": 2.0
             }
           },
           "A": 100000.0,
@@ -1662,8 +1638,8 @@
             "aCH3O": {}
           },
           "products": {
-            "aCH2OH": {
-              "yield": 1.0
+            "OH": {
+              "yield": 2.0
             }
           },
           "A": 1000000.0,
@@ -1678,8 +1654,8 @@
             "aO2": {}
           },
           "products": {
-            "O2CH2COOm": {
-              "yield": 1.0
+            "CH": {
+              "yield": 2.0
             }
           },
           "A": 2000000000.0,
@@ -1693,11 +1669,11 @@
             "O2CH2COOm": {}
           },
           "products": {
-            "2CHOH2COOm": {
-              "yield": 1.0
+            "CHOH": {
+              "yield": 2.0
             },
-            "aH2O2": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             }
           },
           "A": 20000000.0,
@@ -1712,11 +1688,11 @@
             "aO2": {}
           },
           "products": {
-            "aCO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
-            "O2m": {
-              "yield": 1.0
+            "m": {
+              "yield": 2.0
             }
           },
           "A": 4000000000.0,
@@ -1731,8 +1707,8 @@
             "FEpp": {}
           },
           "products": {
-            "2CLm": {
-              "yield": 1.0
+            "CLm": {
+              "yield": 2.0
             },
             "FEppp": {
               "yield": 1.0
@@ -1750,14 +1726,14 @@
             "aHO2": {}
           },
           "products": {
-            "2CLm": {
-              "yield": 1.0
+            "CLm": {
+              "yield": 2.0
             },
             "Hp": {
               "yield": 1.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 13000000000.0,
@@ -1772,14 +1748,14 @@
             "HSO3m": {}
           },
           "products": {
-            "2CLm": {
-              "yield": 1.0
+            "CLm": {
+              "yield": 2.0
             },
             "Hp": {
               "yield": 1.0
             },
-            "SO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             }
           },
           "A": 650720568.7854763,
@@ -1838,8 +1814,8 @@
             "SO4m": {}
           },
           "products": {
-            "SO4mm": {
-              "yield": 1.0
+            "mm": {
+              "yield": 4.0
             },
             "aBR": {
               "yield": 1.0
@@ -1857,8 +1833,8 @@
             "aNO3": {}
           },
           "products": {
-            "NO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             },
             "aBR": {
               "yield": 1.0
@@ -1875,11 +1851,11 @@
             "BR2m": {}
           },
           "products": {
-            "aBR2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
-            "2BRm": {
-              "yield": 1.0
+            "BRm": {
+              "yield": 2.0
             }
           },
           "A": 1700000000.0,
@@ -1894,8 +1870,8 @@
             "FEpp": {}
           },
           "products": {
-            "2BRm": {
-              "yield": 1.0
+            "BRm": {
+              "yield": 2.0
             },
             "FEppp": {
               "yield": 1.0
@@ -1913,14 +1889,14 @@
             "aH2O2": {}
           },
           "products": {
-            "2BRm": {
-              "yield": 1.0
+            "BRm": {
+              "yield": 2.0
             },
             "Hp": {
               "yield": 1.0
             },
-            "aHO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             }
           },
           "A": 100000.0,
@@ -1935,11 +1911,11 @@
             "aHO2": {}
           },
           "products": {
-            "2BRm": {
-              "yield": 1.0
+            "BRm": {
+              "yield": 2.0
             },
-            "aO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
             "Hp": {
               "yield": 1.0
@@ -1957,14 +1933,14 @@
             "HSO3m": {}
           },
           "products": {
-            "2BRm": {
-              "yield": 1.0
+            "BRm": {
+              "yield": 2.0
             },
             "Hp": {
               "yield": 1.0
             },
-            "SO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             }
           },
           "A": 685036875.6354121,
@@ -2019,8 +1995,8 @@
             "[aH2O]": {}
           },
           "products": {
-            "aH2CO3": {
-              "yield": 1.0
+            "CO": {
+              "yield": 2.0
             }
           },
           "A": 1300426356398.6077,
@@ -2034,11 +2010,11 @@
             "aH2CO3": {}
           },
           "products": {
-            "aCO2": {
-              "yield": 1.0
+            "": {
+              "yield": 2.0
             },
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             }
           },
           "A": 1.3670434220265014e+17,
@@ -2072,11 +2048,11 @@
             "OHm": {}
           },
           "products": {
-            "SO3mm": {
-              "yield": 1.0
+            "mm": {
+              "yield": 3.0
             },
-            "aCH2OH2": {
-              "yield": 1.0
+            "OH": {
+              "yield": 2.0
             }
           },
           "A": 475632147521.7825,
@@ -2129,8 +2105,8 @@
             "[aH2O]": {}
           },
           "products": {
-            "NH4p": {
-              "yield": 1.0
+            "p": {
+              "yield": 4.0
             },
             "OHm": {
               "yield": 1.0
@@ -2148,8 +2124,8 @@
             "aHNO3": {}
           },
           "products": {
-            "NO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             },
             "Hp": {
               "yield": 1.0
@@ -2167,8 +2143,8 @@
             "aHONO": {}
           },
           "products": {
-            "NO2m": {
-              "yield": 1.0
+            "m": {
+              "yield": 2.0
             },
             "Hp": {
               "yield": 1.0
@@ -2187,8 +2163,8 @@
             "[aH2O]": {}
           },
           "products": {
-            "HSO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             },
             "Hp": {
               "yield": 1.0
@@ -2206,8 +2182,8 @@
             "HSO3m": {}
           },
           "products": {
-            "SO3mm": {
-              "yield": 1.0
+            "mm": {
+              "yield": 3.0
             },
             "Hp": {
               "yield": 1.0
@@ -2228,8 +2204,8 @@
             "Hp": {
               "yield": 1.0
             },
-            "SO4mm": {
-              "yield": 1.0
+            "mm": {
+              "yield": 4.0
             }
           },
           "A": 0.0102,
@@ -2283,8 +2259,8 @@
             "[aH2O]": {}
           },
           "products": {
-            "aCH2OH2": {
-              "yield": 1.0
+            "OH": {
+              "yield": 2.0
             }
           },
           "A": 36.0,
@@ -2300,8 +2276,8 @@
             "[aH2O]": {}
           },
           "products": {
-            "aCH3CHOH2": {
-              "yield": 1.0
+            "CHOH": {
+              "yield": 3.0
             }
           },
           "A": 0.0246,
@@ -2320,8 +2296,8 @@
             "HMSm": {
               "yield": 1.0
             },
-            "[aH2O]": {
-              "yield": 1.0
+            "O": {
+              "yield": 2.0
             }
           },
           "A": 200000000.0,
@@ -2337,8 +2313,8 @@
             "CLm": {}
           },
           "products": {
-            "NO3m": {
-              "yield": 1.0
+            "m": {
+              "yield": 3.0
             },
             "aCL": {
               "yield": 1.0
@@ -2357,8 +2333,8 @@
             "[aH2O]": {}
           },
           "products": {
-            "aCH3COH2": {
-              "yield": 1.0
+            "COH": {
+              "yield": 3.0
             }
           },
           "A": 367.0,
@@ -2376,8 +2352,8 @@
             "Hp": {
               "yield": 1.0
             },
-            "O2CH2COOm": {
-              "yield": 1.0
+            "CH": {
+              "yield": 2.0
             }
           },
           "A": 1.75e-05,
@@ -2393,8 +2369,8 @@
               "aH2CO3": {}
             },
             "products": {
-              "HCO3m": {
-                "yield": 1.0
+              "m": {
+                "yield": 3.0
               },
               "Hp": {
                 "yield": 1.0
@@ -2414,8 +2390,8 @@
               "aHO2": {}
             },
             "products": {
-              "O2m": {
-                "yield": 1.0
+              "m": {
+                "yield": 2.0
               },
               "Hp": {
                 "yield": 1.0
@@ -2435,8 +2411,8 @@
               "aHNO4": {}
             },
             "products": {
-              "NO4m": {
-                "yield": 1.0
+              "m": {
+                "yield": 4.0
               },
               "Hp": {
                 "yield": 1.0
@@ -2457,8 +2433,8 @@
               "aHO2": {}
             },
             "products": {
-              "aHNO4": {
-                "yield": 1.0
+              "": {
+                "yield": 4.0
               }
             },
             "A": 2200000000.0,
@@ -2475,8 +2451,8 @@
               "aSULF": {}
             },
             "products": {
-              "HSO4m": {
-                "yield": 1.0
+              "m": {
+                "yield": 4.0
               },
               "Hp": {
                 "yield": 1.0
@@ -2519,8 +2495,8 @@
               "CLm": {}
             },
             "products": {
-              "CL2m": {
-                "yield": 1.0
+              "m": {
+                "yield": 2.0
               }
             },
             "A": 140000.0,
@@ -2538,8 +2514,8 @@
               "BRm": {}
             },
             "products": {
-              "BR2m": {
-                "yield": 1.0
+              "m": {
+                "yield": 2.0
               }
             },
             "A": 632000.0,
@@ -2579,8 +2555,8 @@
               "aCL": {
                 "yield": 1.0
               },
-              "[aH2O]": {
-                "yield": 1.0
+              "O": {
+                "yield": 2.0
               }
             },
             "A": 5100000.0,
@@ -2620,8 +2596,8 @@
               "aBR": {
                 "yield": 1.0
               },
-              "[aH2O]": {
-                "yield": 1.0
+              "O": {
+                "yield": 2.0
               }
             },
             "A": 1800000000000.0,
@@ -2641,8 +2617,8 @@
               "Hp": {
                 "yield": 1.0
               },
-              "O3m": {
-                "yield": 1.0
+              "m": {
+                "yield": 3.0
               }
             },
             "A": 6.3e-09,
@@ -2659,8 +2635,8 @@
               "CHOHSO3m": {}
             },
             "products": {
-              "CHOSO3mm": {
-                "yield": 1.0
+              "mm": {
+                "yield": 3.0
               },
               "Hp": {
                 "yield": 1.0
@@ -2683,8 +2659,8 @@
               "Hp": {
                 "yield": 1.0
               },
-              "SO5O2mm": {
-                "yield": 1.0
+              "O": {
+                "yield": 5.0
               }
             },
             "A": 1.5e-05,
@@ -2701,8 +2677,8 @@
               "HC2O4m": {}
             },
             "products": {
-              "C2O4mm": {
-                "yield": 1.0
+              "O": {
+                "yield": 2.0
               },
               "Hp": {
                 "yield": 1.0
@@ -2725,8 +2701,8 @@
               "Hp": {
                 "yield": 1.0
               },
-              "CHOH2COOm": {
-                "yield": 1.0
+              "COOm": {
+                "yield": 2.0
               }
             },
             "A": 0.000316,
@@ -2744,8 +2720,8 @@
               "[aH2O]": {}
             },
             "products": {
-              "aCHOH2CHOH2": {
-                "yield": 1.0
+              "CHOH": {
+                "yield": 2.0
               }
             },
             "A": 3900.0,
@@ -2763,8 +2739,8 @@
               "C2O4mm": {}
             },
             "products": {
-              "FEC2O4p": {
-                "yield": 1.0
+              "O": {
+                "yield": 2.0
               }
             },
             "A": 2900000000.0,
@@ -2782,8 +2758,8 @@
               "C2O4mm": {}
             },
             "products": {
-              "FEC2O42m": {
-                "yield": 1.0
+              "O": {
+                "yield": 2.0
               }
             },
             "A": 6300000.0,
@@ -2801,8 +2777,8 @@
               "CLm": {}
             },
             "products": {
-              "SO4mm": {
-                "yield": 1.0
+              "mm": {
+                "yield": 4.0
               },
               "aCL": {
                 "yield": 1.0
@@ -2819,21 +2795,21 @@
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "CO2",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aCO2",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "O3",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aO3",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "HO2",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aHO2",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
@@ -2847,14 +2823,14 @@
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "H2O2",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aH2O2",
+          "aerosol-phase species": "O",
           "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "NO2",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aNO2",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
@@ -2868,28 +2844,28 @@
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "HNO3",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aHNO3",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "NO3",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aNO3",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "N2O5",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aN2O5",
+          "aerosol-phase species": "O",
           "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "NH3",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aNH3",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
@@ -2910,35 +2886,35 @@
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "ORA1",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aORA1",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "SO2",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aSO2",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "OP1",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aOP1",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "ORA2",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aORA2",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "MO2",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aMO2",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
@@ -2959,7 +2935,7 @@
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "CH3OH",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aCH3OH",
+          "aerosol-phase species": "OH",
           "aerosol-phase water": "[aH2O]"
         },
         {
@@ -2973,14 +2949,14 @@
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "BR2",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aBR2",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "CL2",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aCL2",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
@@ -2994,14 +2970,14 @@
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "HNO4",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aHNO4",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "ACO3",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aACO3",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
@@ -3015,21 +2991,21 @@
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "[O2]",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aO2",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "CLNO2",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aCLNO2",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "BRNO2",
           "aerosol phase": "cloud water",
-          "aerosol-phase species": "aBRNO2",
+          "aerosol-phase species": "",
           "aerosol-phase water": "[aH2O]"
         },
         {
@@ -3052,126 +3028,122 @@
       "name": "cloud water",
       "type": "AERO_PHASE",
       "species": [
-        "aO3",
-        "CL2m",
-        "aHOCL",
-        "O2m",
-        "aCOH2CHOH2",
-        "aNO",
-        "aCH3CH2O",
-        "aHO",
-        "aO2",
-        "aHNO4",
-        "2FEppp",
-        "aCH3CHOH",
-        "BR2m",
-        "aCL",
-        "aCOH2COOH",
-        "HC2O4m",
-        "CLOHm",
-        "aORA1",
-        "aH2C2O4",
-        "aSULF",
-        "aCH3COH2",
-        "aCH3O",
-        "BRm",
-        "aCH3OH",
-        "aO2CH3CHOH",
-        "CUp",
-        "-1.0Hp",
-        "NO2m",
-        "3Hp",
-        "CO2m",
-        "aMO2",
-        "aHCL",
-        "Hp",
-        "O2CH2COOm",
-        "MCOOm",
-        "aCH2OH",
-        "aBRCL",
-        "2Hp",
-        "aH2CO3",
-        "2SO4mm",
-        "SO3mm",
-        "aCL2",
-        "FEppp",
-        "SO3m",
-        "SO5m",
-        "2BRm",
-        "aALD",
-        "HMSm",
-        "aHNO3",
-        "aCO2H",
-        "2CHOH2COOm",
-        "FEOHpp",
-        "aCHOH2",
-        "O2CHOHSO3m",
-        "FEC2O42m",
-        "FEOpp",
-        "CH2COOm",
-        "FEC2O4p",
-        "O3m",
-        "NO2p",
-        "SO4mm",
-        "aNO3",
-        "aSO2",
-        "-2.0Hp",
-        "C2O4mm",
-        "aCHOH2COOH",
-        "aBR",
-        "[aH2O]",
-        "aCH2COOH",
-        "CHOSO3mm",
-        "aHONO",
-        "HCO3m",
-        "aCLNO2",
-        "HSO3m",
-        "NO3m",
-        "CHOH2COOm",
-        "SO4m",
-        "aCHOH2CHOH2",
-        "CUpp",
-        "aO2COH2COOH",
-        "OHm",
-        "aCH2OH2",
-        "aCH3CHOH2",
-        "aACO3",
-        "NH4p",
-        "aHOBR",
-        "HCOOm",
-        "aNH3",
-        "aETHPX",
-        "aHO3",
-        "2OHm",
-        "aN2O5",
-        "aHCHO",
-        "aO2COH2CHOH2",
-        "CHOHSO3m",
-        "aHO2",
-        "aCH3CO",
-        "aORA2",
-        "aH2O2",
+        "",
         "FEpp",
-        "aCH3COH2OO",
-        "CHOSO3m",
-        "aOP1",
+        "CH",
+        "aSO2",
+        "CHOHSO",
+        "HCOOm",
+        "HC2O4m",
+        "FEppp",
+        "CLm",
+        "FEOpp",
+        "aMO2",
+        "aO2CH2OH",
+        "O2m",
+        "aCH2OH2",
+        "HSO4m",
+        "aH2O2",
+        "COOH",
+        "aHOBR",
+        "SO4mm",
+        "aCH3CH2O",
+        "p",
+        "O2CHOHSO3m",
+        "H",
+        "aSULF",
+        "CHO",
+        "NO4m",
         "SO5O2mm",
-        "aNO2",
+        "CLOHm",
+        "aHO3",
+        "aCH3COH2OO",
+        "aHNO3",
+        "SO",
+        "aORA2",
+        "aHO",
+        "aBRCL",
+        "aCL",
+        "aO2COH2CHOH2",
+        "aCHOH2COOH",
+        "aNH3",
+        "HMSm",
+        "SO3mm",
+        "CHOSO3m",
+        "mm",
+        "OHm",
+        "aHNO4",
+        "aETHPX",
+        "aCH3O",
+        "aCH3CO",
+        "aO2",
+        "aO2CHO",
+        "MCOOm",
+        "aCLNO2",
+        "FEC2O4p",
+        "aBR2",
+        "aCH2OH",
+        "aCO2",
+        "C2O4mm",
+        "O2CH2COOm",
+        "aH2CO3",
+        "CUp",
+        "CHOHSO3m",
+        "aCL2",
+        "CO",
+        "aETOH",
+        "aALD",
+        "aNO3",
+        "NO2p",
+        "aCOH2CHOH2",
+        "HSO3m",
+        "Hp",
+        "aBRNO2",
+        "BRm",
+        "aCH2COOH",
+        "aN2O5",
+        "aBR",
+        "aACO3",
+        "CL2m",
+        "C",
+        "aHOCL",
+        "[aH2O]",
+        "CH2COOm",
+        "aO2CH3CHOH",
         "HSO5m",
         "aGLY",
-        "aBR2",
-        "C2O4m",
-        "CLm",
-        "aETOH",
-        "aBRNO2",
+        "aHCL",
+        "aHONO",
         "SO5O2Hm",
-        "2CLm",
-        "aO2CH2OH",
-        "HSO4m",
-        "aCO2",
-        "aO2CHO",
+        "aO3",
+        "aHO2",
+        "O",
+        "aCH3OH",
+        "OH",
+        "aHCHO",
+        "CHOH",
+        "BR2m",
+        "aORA1",
+        "aCOH2COOH",
         "BROHm",
-        "NO4m"
+        "aCHOH2",
+        "COOm",
+        "aCH3COH2",
+        "m",
+        "aCH3CHOH",
+        "aCH3CHOH2",
+        "aO2COH2COOH",
+        "aNO",
+        "aCHOH2CHOH2",
+        "CUpp",
+        "SO5m",
+        "COH",
+        "CO2m",
+        "aNO2",
+        "C2O4m",
+        "FEOHpp",
+        "SO3m",
+        "SO4m"
       ]
     },
     {
