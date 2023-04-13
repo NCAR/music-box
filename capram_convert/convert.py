@@ -255,6 +255,7 @@ mechanisms = {
                 *photolysis_reactions,
                 *arrhenius_reactions,
                 *aqueous_equilibrium,
+                *henrys_law_reactions
             ]
         },
         *henrys_law_aero_phase,
@@ -270,11 +271,6 @@ mechanisms = {
                 "shape" : "LOG_NORMAL"
             }
             }
-        },
-        {
-            "name" : "Henry's Law phase transfer",
-            "type" : "MECHANISM",
-            "reactions" : henrys_law_reactions
         }
     ]
 }
