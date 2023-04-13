@@ -260,7 +260,7 @@ for reaction in aqua_temp:
             "A" : reaction['A'] * np.exp(-1 * reaction['B'] / 298),
             "C" : reaction['B'],
             "aerosol phase" : aerosol_phase_name,
-            "aerosol-phase water" : "H2O_aq"
+            "aerosol-phase water" : "[aH2O]"
         }
     )
     aerosol_phase_species.update([ reactant['name'] for reactant in reaction['reactants']])
@@ -282,7 +282,7 @@ for reaction in diss_with_c:
             "C" : reaction['B'],
             "k_reverse" : reaction['C'],
             "phase": aerosol_phase_name,
-            "aerosol-phase water" : "H2O_aq"
+            "aerosol-phase water" : "[aH2O]"
         }
     )
     aerosol_phase_species.update([ reactant['name'] for reactant in reaction['reactants']])
@@ -290,22 +290,20 @@ for reaction in diss_with_c:
 
 for reaction in diss_without_c:
     aqueous_equilibrium.append(
-        [
-            {
-                "type":  "AQUEOUS_EQUILIBRIUM",
-                "reactants": {
-                    reactant['name']: { 'qty': reactant['qty'] } for reactant in reaction["reactants"]
-                },
-                "products": {
-                    product['name']: { 'yield': product['yield'] } for product in reaction["products"]
-                },
-                "A" : reaction['A'],
-                "C" : 0,
-                "k_reverse" : reaction['B'],
-                "phase": aerosol_phase_name,
-                "aerosol-phase water" : "H2O_aq"
-            }
-        ]
+        {
+            "type":  "AQUEOUS_EQUILIBRIUM",
+            "reactants": {
+                reactant['name']: { 'qty': reactant['qty'] } for reactant in reaction["reactants"]
+            },
+            "products": {
+                product['name']: { 'yield': product['yield'] } for product in reaction["products"]
+            },
+            "A" : reaction['A'],
+            "C" : 0,
+            "k_reverse" : reaction['B'],
+            "phase": aerosol_phase_name,
+            "aerosol-phase water" : "[aH2O]"
+        }
     )
     aerosol_phase_species.update([ reactant['name'] for reactant in reaction['reactants']])
     aerosol_phase_species.update([ product['name'] for product in reaction['products']])

@@ -99,7 +99,7 @@
           "A": 50.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -125,7 +125,7 @@
           "A": 7000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -148,7 +148,7 @@
           "A": 150000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -174,7 +174,7 @@
           "A": 130000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -200,7 +200,7 @@
           "A": 150000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -226,7 +226,7 @@
           "A": 10000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -252,7 +252,7 @@
           "A": 27470692899786.598,
           "C": -5050.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -272,7 +272,7 @@
           "A": 17241255673.805157,
           "C": -1100.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -298,7 +298,7 @@
           "A": 10000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -324,7 +324,7 @@
           "A": 2300000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -350,7 +350,7 @@
           "A": 100000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -373,7 +373,7 @@
           "A": 8000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -396,7 +396,7 @@
           "A": 13000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -422,7 +422,7 @@
           "A": 13000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -445,7 +445,7 @@
           "A": 2411527019006.37,
           "C": -2200.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -465,7 +465,7 @@
           "A": 1193031991.1270792,
           "C": -4500.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -488,7 +488,7 @@
           "A": 8423504855.756161,
           "C": -1680.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -511,7 +511,7 @@
           "A": 2700000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -534,7 +534,7 @@
           "A": 460000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -557,7 +557,7 @@
           "A": 5608557390760.588,
           "C": -4690.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -583,7 +583,7 @@
           "A": 100.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -606,7 +606,7 @@
           "A": 1214599.2606213153,
           "C": -842.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -626,7 +626,7 @@
           "A": 1000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -649,7 +649,7 @@
           "A": 89000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -675,7 +675,7 @@
           "A": 1068246352911.5388,
           "C": -2000.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -698,7 +698,7 @@
           "A": 100000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -718,7 +718,7 @@
           "A": 1.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -744,7 +744,7 @@
           "A": 330000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -764,7 +764,7 @@
           "A": 10000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -784,7 +784,7 @@
           "A": 10000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -807,7 +807,7 @@
           "A": 5000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -830,7 +830,7 @@
           "A": 25500.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -853,7 +853,7 @@
           "A": 10.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -876,7 +876,7 @@
           "A": 300000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -896,7 +896,7 @@
           "A": 2600000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -916,7 +916,7 @@
           "A": 17000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -936,7 +936,7 @@
           "A": 7000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -959,7 +959,7 @@
           "A": 0.0126,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -982,7 +982,7 @@
           "A": 44.32,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1011,7 +1011,7 @@
           "A": 48617052944753.77,
           "C": -4000.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1037,7 +1037,7 @@
           "A": 42405757730857.71,
           "C": -5530.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1060,7 +1060,7 @@
           "A": 7.429735524861723e+16,
           "C": -5280.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1083,7 +1083,7 @@
           "A": 7745929554766653.0,
           "C": -5809.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1106,7 +1106,7 @@
           "A": 30000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1132,7 +1132,7 @@
           "A": 3217841.880265981,
           "C": 2165.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1152,7 +1152,7 @@
           "A": 1353845691603.3787,
           "C": -2600.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1172,7 +1172,7 @@
           "A": 1700000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1195,7 +1195,7 @@
           "A": 1200.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1215,7 +1215,7 @@
           "A": 2500000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1241,7 +1241,7 @@
           "A": 456.10702574818845,
           "C": -1110.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1267,7 +1267,7 @@
           "A": 7140000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1290,7 +1290,7 @@
           "A": 7002790586.531466,
           "C": -580.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1310,7 +1310,7 @@
           "A": 2000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1333,7 +1333,7 @@
           "A": 1050000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1356,7 +1356,7 @@
           "A": 1900000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1376,7 +1376,7 @@
           "A": 2000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1396,7 +1396,7 @@
           "A": 1713166492299.335,
           "C": -7217.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1419,7 +1419,7 @@
           "A": 30655705402.09484,
           "C": -1020.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1442,7 +1442,7 @@
           "A": 2000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1465,7 +1465,7 @@
           "A": 1200000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1488,7 +1488,7 @@
           "A": 3600000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1511,7 +1511,7 @@
           "A": 3726553714.606836,
           "C": -1000.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1534,7 +1534,7 @@
           "A": 91730552974.9375,
           "C": -1000.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1557,7 +1557,7 @@
           "A": 1301323951.4818943,
           "C": -1330.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1580,7 +1580,7 @@
           "A": 42000577298.10133,
           "C": -1800.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1600,7 +1600,7 @@
           "A": 1700000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1623,7 +1623,7 @@
           "A": 118968666270.98093,
           "C": -2200.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1643,7 +1643,7 @@
           "A": 57876648456.152885,
           "C": -2200.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1666,7 +1666,7 @@
           "A": 150000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1689,7 +1689,7 @@
           "A": 500000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1709,7 +1709,7 @@
           "A": 8071922.343268531,
           "C": 750.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1726,7 +1726,7 @@
           "A": 1000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1749,7 +1749,7 @@
           "A": 32000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1772,7 +1772,7 @@
           "A": 5300000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1795,7 +1795,7 @@
           "A": 2000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1818,7 +1818,7 @@
           "A": 178137994858.22678,
           "C": -1516.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1838,7 +1838,7 @@
           "A": 1380000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1858,7 +1858,7 @@
           "A": 2000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1881,7 +1881,7 @@
           "A": 178137994858.22678,
           "C": -1516.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1901,7 +1901,7 @@
           "A": 2000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1921,7 +1921,7 @@
           "A": 2000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1941,7 +1941,7 @@
           "A": 2000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1964,7 +1964,7 @@
           "A": 100000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -1981,7 +1981,7 @@
           "A": 1000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2001,7 +2001,7 @@
           "A": 2000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2021,7 +2021,7 @@
           "A": 20000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2044,7 +2044,7 @@
           "A": 4000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2067,7 +2067,7 @@
           "A": 260503174919.8385,
           "C": -3030.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2093,7 +2093,7 @@
           "A": 13000000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2119,7 +2119,7 @@
           "A": 650720568.7854763,
           "C": -400.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2145,7 +2145,7 @@
           "A": 130387468611.99103,
           "C": -7900.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2171,7 +2171,7 @@
           "A": 6.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2194,7 +2194,7 @@
           "A": 2100000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2217,7 +2217,7 @@
           "A": 3800000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2237,7 +2237,7 @@
           "A": 1700000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2260,7 +2260,7 @@
           "A": 256640227408.05545,
           "C": -3330.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2286,7 +2286,7 @@
           "A": 100000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2312,7 +2312,7 @@
           "A": 6500000000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2338,7 +2338,7 @@
           "A": 685036875.6354121,
           "C": -780.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2364,7 +2364,7 @@
           "A": 2639927153.6309934,
           "C": -7500.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2384,7 +2384,7 @@
           "A": 4200000.0,
           "C": 0.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2404,7 +2404,7 @@
           "A": 1300426356398.6077,
           "C": -9250.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2424,7 +2424,7 @@
           "A": 1.3670434220265014e+17,
           "C": -8500.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2447,7 +2447,7 @@
           "A": 505918766.97323936,
           "C": -2450.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "ARRHENIUS",
@@ -2470,7 +2470,7 @@
           "A": 475632147521.7825,
           "C": -5530.0,
           "aerosol phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2491,7 +2491,7 @@
           "C": -6800.0,
           "k_reverse": 130000000000.0,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2512,7 +2512,7 @@
           "C": 6890.0,
           "k_reverse": 290000.0,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2536,7 +2536,7 @@
           "C": -560.0,
           "k_reverse": 34000000000.0,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2557,7 +2557,7 @@
           "C": 1800.0,
           "k_reverse": 50000000000.0,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2578,7 +2578,7 @@
           "C": -1760.0,
           "k_reverse": 50000000000.0,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2602,7 +2602,7 @@
           "C": 1940.0,
           "k_reverse": 200000000.0,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2623,7 +2623,7 @@
           "C": 1960.0,
           "k_reverse": 50000000000.0,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2644,7 +2644,7 @@
           "C": 2700.0,
           "k_reverse": 100000000000.0,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2665,7 +2665,7 @@
           "C": 12.0,
           "k_reverse": 50000000000.0,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2686,7 +2686,7 @@
           "C": 46.0,
           "k_reverse": 50000000000.0,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2707,7 +2707,7 @@
           "C": 4030.0,
           "k_reverse": 0.0051,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2728,7 +2728,7 @@
           "C": 2500.0,
           "k_reverse": 0.00569,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2752,7 +2752,7 @@
           "C": -2500.0,
           "k_reverse": 2.2e-09,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2776,7 +2776,7 @@
           "C": -4300.0,
           "k_reverse": 100000000.0,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2797,7 +2797,7 @@
           "C": 0.0,
           "k_reverse": 30000.0,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "AQUEOUS_EQUILIBRIUM",
@@ -2818,503 +2818,461 @@
           "C": 46.0,
           "k_reverse": 50000000000.0,
           "phase": "cloud water",
-          "aerosol-phase water": "H2O_aq"
+          "aerosol-phase water": "[aH2O]"
         },
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "aH2CO3": {
-                "qty": 1.0
-              }
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "aH2CO3": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "HCO3m": {
+              "yield": 1.0
             },
-            "products": {
-              "HCO3m": {
-                "yield": 1.0
-              },
-              "Hp": {
-                "yield": 1.0
-              }
+            "Hp": {
+              "yield": 1.0
+            }
+          },
+          "A": 0.0002,
+          "C": 0,
+          "k_reverse": 50000000000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "aHO2": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "O2m": {
+              "yield": 1.0
             },
-            "A": 0.0002,
-            "C": 0,
-            "k_reverse": 50000000000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "aHO2": {
-                "qty": 1.0
-              }
+            "Hp": {
+              "yield": 1.0
+            }
+          },
+          "A": 1.6e-05,
+          "C": 0,
+          "k_reverse": 50000000000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "aHNO4": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "NO4m": {
+              "yield": 1.0
             },
-            "products": {
-              "O2m": {
-                "yield": 1.0
-              },
-              "Hp": {
-                "yield": 1.0
-              }
+            "Hp": {
+              "yield": 1.0
+            }
+          },
+          "A": 1e-05,
+          "C": 0,
+          "k_reverse": 50000000000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "aNO2": {
+              "qty": 1.0
             },
-            "A": 1.6e-05,
-            "C": 0,
-            "k_reverse": 50000000000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "aHNO4": {
-                "qty": 1.0
-              }
+            "aHO2": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "aHNO4": {
+              "yield": 1.0
+            }
+          },
+          "A": 2200000000.0,
+          "C": 0,
+          "k_reverse": 0.0046,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "aSULF": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "HSO4m": {
+              "yield": 1.0
             },
-            "products": {
-              "NO4m": {
-                "yield": 1.0
-              },
-              "Hp": {
-                "yield": 1.0
-              }
+            "Hp": {
+              "yield": 1.0
+            }
+          },
+          "A": 1000.0,
+          "C": 0,
+          "k_reverse": 50000000000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "FEppp": {
+              "qty": 1.0
             },
-            "A": 1e-05,
-            "C": 0,
-            "k_reverse": 50000000000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "aNO2": {
-                "qty": 1.0
-              },
-              "aHO2": {
-                "qty": 1.0
-              }
+            "[aH2O]": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "FEOHpp": {
+              "yield": 1.0
             },
-            "products": {
-              "aHNO4": {
-                "yield": 1.0
-              }
+            "Hp": {
+              "yield": 1.0
+            }
+          },
+          "A": 0.00011,
+          "C": 0,
+          "k_reverse": 430000000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "aCL": {
+              "qty": 1.0
             },
-            "A": 2200000000.0,
-            "C": 0,
-            "k_reverse": 0.0046,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "aSULF": {
-                "qty": 1.0
-              }
+            "CLm": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "CL2m": {
+              "yield": 1.0
+            }
+          },
+          "A": 140000.0,
+          "C": 0,
+          "k_reverse": 60000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "aBR": {
+              "qty": 1.0
             },
-            "products": {
-              "HSO4m": {
-                "yield": 1.0
-              },
-              "Hp": {
-                "yield": 1.0
-              }
+            "BRm": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "BR2m": {
+              "yield": 1.0
+            }
+          },
+          "A": 632000.0,
+          "C": 0,
+          "k_reverse": 19000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "CLm": {
+              "qty": 1.0
             },
-            "A": 1000.0,
-            "C": 0,
-            "k_reverse": 50000000000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "FEppp": {
-                "qty": 1.0
-              },
-              "[aH2O]": {
-                "qty": 1.0
-              }
+            "aHO": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "CLOHm": {
+              "yield": 1.0
+            }
+          },
+          "A": 0.7,
+          "C": 0,
+          "k_reverse": 6100000000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "CLOHm": {
+              "qty": 1.0
             },
-            "products": {
-              "FEOHpp": {
-                "yield": 1.0
-              },
-              "Hp": {
-                "yield": 1.0
-              }
+            "Hp": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "aCL": {
+              "yield": 1.0
             },
-            "A": 0.00011,
-            "C": 0,
-            "k_reverse": 430000000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "aCL": {
-                "qty": 1.0
-              },
-              "CLm": {
-                "qty": 1.0
-              }
+            "[aH2O]": {
+              "yield": 1.0
+            }
+          },
+          "A": 5100000.0,
+          "C": 0,
+          "k_reverse": 4100.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "BRm": {
+              "qty": 1.0
             },
-            "products": {
-              "CL2m": {
-                "yield": 1.0
-              }
+            "aHO": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "BROHm": {
+              "yield": 1.0
+            }
+          },
+          "A": 333.0,
+          "C": 0,
+          "k_reverse": 33000000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "BROHm": {
+              "qty": 1.0
             },
-            "A": 140000.0,
-            "C": 0,
-            "k_reverse": 60000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "aBR": {
-                "qty": 1.0
-              },
-              "BRm": {
-                "qty": 1.0
-              }
+            "Hp": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "aBR": {
+              "yield": 1.0
             },
-            "products": {
-              "BR2m": {
-                "yield": 1.0
-              }
+            "[aH2O]": {
+              "yield": 1.0
+            }
+          },
+          "A": 1800000000000.0,
+          "C": 0,
+          "k_reverse": 0.0245,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "aHO3": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "Hp": {
+              "yield": 1.0
             },
-            "A": 632000.0,
-            "C": 0,
-            "k_reverse": 19000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "CLm": {
-                "qty": 1.0
-              },
-              "aHO": {
-                "qty": 1.0
-              }
+            "O3m": {
+              "yield": 1.0
+            }
+          },
+          "A": 6.3e-09,
+          "C": 0,
+          "k_reverse": 52000000000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "CHOHSO3m": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "CHOSO3mm": {
+              "yield": 1.0
             },
-            "products": {
-              "CLOHm": {
-                "yield": 1.0
-              }
+            "Hp": {
+              "yield": 1.0
+            }
+          },
+          "A": 1.34e-06,
+          "C": 0,
+          "k_reverse": 44000000000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "SO5O2Hm": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "Hp": {
+              "yield": 1.0
             },
-            "A": 0.7,
-            "C": 0,
-            "k_reverse": 6100000000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "CLOHm": {
-                "qty": 1.0
-              },
-              "Hp": {
-                "qty": 1.0
-              }
+            "SO5O2mm": {
+              "yield": 1.0
+            }
+          },
+          "A": 1.5e-05,
+          "C": 0,
+          "k_reverse": 50000000000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "HC2O4m": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "C2O4mm": {
+              "yield": 1.0
             },
-            "products": {
-              "aCL": {
-                "yield": 1.0
-              },
-              "[aH2O]": {
-                "yield": 1.0
-              }
+            "Hp": {
+              "yield": 1.0
+            }
+          },
+          "A": 6.25e-05,
+          "C": 0,
+          "k_reverse": 50000000000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "aCHOH2COOH": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "Hp": {
+              "yield": 1.0
             },
-            "A": 5100000.0,
-            "C": 0,
-            "k_reverse": 4100.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "BRm": {
-                "qty": 1.0
-              },
-              "aHO": {
-                "qty": 1.0
-              }
+            "CHOH2COOm": {
+              "yield": 1.0
+            }
+          },
+          "A": 0.000316,
+          "C": 0,
+          "k_reverse": 20000000000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "aGLY": {
+              "qty": 1.0
             },
-            "products": {
-              "BROHm": {
-                "yield": 1.0
-              }
+            "[aH2O]": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "aCHOH2CHOH2": {
+              "yield": 1.0
+            }
+          },
+          "A": 3900.0,
+          "C": 0,
+          "k_reverse": 0.0055,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "FEppp": {
+              "qty": 1.0
             },
-            "A": 333.0,
-            "C": 0,
-            "k_reverse": 33000000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "BROHm": {
-                "qty": 1.0
-              },
-              "Hp": {
-                "qty": 1.0
-              }
+            "C2O4mm": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "FEC2O4p": {
+              "yield": 1.0
+            }
+          },
+          "A": 2900000000.0,
+          "C": 0,
+          "k_reverse": 0.003,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "FEC2O4p": {
+              "qty": 1.0
             },
-            "products": {
-              "aBR": {
-                "yield": 1.0
-              },
-              "[aH2O]": {
-                "yield": 1.0
-              }
+            "C2O4mm": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "FEC2O42m": {
+              "yield": 1.0
+            }
+          },
+          "A": 6300000.0,
+          "C": 0,
+          "k_reverse": 0.003,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
+        {
+          "type": "AQUEOUS_EQUILIBRIUM",
+          "reactants": {
+            "SO4m": {
+              "qty": 1.0
             },
-            "A": 1800000000000.0,
-            "C": 0,
-            "k_reverse": 0.0245,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "aHO3": {
-                "qty": 1.0
-              }
+            "CLm": {
+              "qty": 1.0
+            }
+          },
+          "products": {
+            "SO4mm": {
+              "yield": 1.0
             },
-            "products": {
-              "Hp": {
-                "yield": 1.0
-              },
-              "O3m": {
-                "yield": 1.0
-              }
-            },
-            "A": 6.3e-09,
-            "C": 0,
-            "k_reverse": 52000000000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "CHOHSO3m": {
-                "qty": 1.0
-              }
-            },
-            "products": {
-              "CHOSO3mm": {
-                "yield": 1.0
-              },
-              "Hp": {
-                "yield": 1.0
-              }
-            },
-            "A": 1.34e-06,
-            "C": 0,
-            "k_reverse": 44000000000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "SO5O2Hm": {
-                "qty": 1.0
-              }
-            },
-            "products": {
-              "Hp": {
-                "yield": 1.0
-              },
-              "SO5O2mm": {
-                "yield": 1.0
-              }
-            },
-            "A": 1.5e-05,
-            "C": 0,
-            "k_reverse": 50000000000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "HC2O4m": {
-                "qty": 1.0
-              }
-            },
-            "products": {
-              "C2O4mm": {
-                "yield": 1.0
-              },
-              "Hp": {
-                "yield": 1.0
-              }
-            },
-            "A": 6.25e-05,
-            "C": 0,
-            "k_reverse": 50000000000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "aCHOH2COOH": {
-                "qty": 1.0
-              }
-            },
-            "products": {
-              "Hp": {
-                "yield": 1.0
-              },
-              "CHOH2COOm": {
-                "yield": 1.0
-              }
-            },
-            "A": 0.000316,
-            "C": 0,
-            "k_reverse": 20000000000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "aGLY": {
-                "qty": 1.0
-              },
-              "[aH2O]": {
-                "qty": 1.0
-              }
-            },
-            "products": {
-              "aCHOH2CHOH2": {
-                "yield": 1.0
-              }
-            },
-            "A": 3900.0,
-            "C": 0,
-            "k_reverse": 0.0055,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "FEppp": {
-                "qty": 1.0
-              },
-              "C2O4mm": {
-                "qty": 1.0
-              }
-            },
-            "products": {
-              "FEC2O4p": {
-                "yield": 1.0
-              }
-            },
-            "A": 2900000000.0,
-            "C": 0,
-            "k_reverse": 0.003,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "FEC2O4p": {
-                "qty": 1.0
-              },
-              "C2O4mm": {
-                "qty": 1.0
-              }
-            },
-            "products": {
-              "FEC2O42m": {
-                "yield": 1.0
-              }
-            },
-            "A": 6300000.0,
-            "C": 0,
-            "k_reverse": 0.003,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
-        [
-          {
-            "type": "AQUEOUS_EQUILIBRIUM",
-            "reactants": {
-              "SO4m": {
-                "qty": 1.0
-              },
-              "CLm": {
-                "qty": 1.0
-              }
-            },
-            "products": {
-              "SO4mm": {
-                "yield": 1.0
-              },
-              "aCL": {
-                "yield": 1.0
-              }
-            },
-            "A": 1.2,
-            "C": 0,
-            "k_reverse": 210000000.0,
-            "phase": "cloud water",
-            "aerosol-phase water": "H2O_aq"
-          }
-        ],
+            "aCL": {
+              "yield": 1.0
+            }
+          },
+          "A": 1.2,
+          "C": 0,
+          "k_reverse": 210000000.0,
+          "phase": "cloud water",
+          "aerosol-phase water": "[aH2O]"
+        },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "CO2",
@@ -3552,118 +3510,118 @@
       "name": "cloud water",
       "type": "AERO_PHASE",
       "species": [
-        "SO5O2mm",
-        "aCHOH2COOH",
-        "aALD",
-        "NO2m",
-        "aCH3COH2",
-        "CHOSO3mm",
-        "FEC2O4p",
-        "NO2p",
-        "aO2CH2OH",
-        "aGLY",
-        "SO4mm",
-        "aNH3",
-        "aOP1",
-        "aBR",
-        "SO5O2Hm",
-        "aCH3CH2O",
-        "aSO2",
-        "O3m",
-        "FEppp",
-        "Hp",
-        "HCOOm",
-        "CLm",
-        "C2O4m",
-        "aHNO3",
-        "CLOHm",
-        "aO3",
-        "aCO2H",
-        "SO",
-        "aHONO",
-        "FEpp",
-        "aCOH2COOH",
-        "aCLNO2",
-        "FEOpp",
         "aCH3CHOH2",
-        "aHO2",
-        "aH2C2O4",
-        "aBR2",
-        "aETHPX",
-        "aCL",
-        "HSO5m",
-        "SO3mm",
-        "aO2COH2COOH",
-        "aNO2",
-        "aBRCL",
-        "aHCL",
-        "CHOHSO3m",
-        "aO2CHO",
-        "FEC2O42m",
-        "HMSm",
-        "HC2O4m",
-        "aORA1",
-        "aO2COH2CHOH2",
-        "aNO3",
-        "aACO3",
-        "NO4m",
-        "aO2CH3CHOH",
-        "aCO2",
-        "NH4p",
-        "aSULF",
-        "MCOOm",
-        "aCH3CHOH",
-        "aO2",
-        "SO3m",
-        "CHOSO3m",
-        "aHOBR",
-        "aH2CO3",
-        "[aH2O]",
-        "aHOCL",
-        "aCH3OH",
-        "aCH2COOH",
-        "aCH3COH2OO",
-        "aHCHO",
-        "aNO",
-        "HSO4m",
-        "O2CHOHSO3m",
-        "CHOH",
-        "CUpp",
-        "CL2m",
-        "SO5m",
-        "HSO3m",
-        "OHm",
-        "O2m",
-        "FEOHpp",
-        "CUp",
-        "aCHOH2CHOH2",
-        "aORA2",
-        "SO4m",
-        "aCH2OH",
-        "BRm",
-        "aHO3",
-        "aHO",
-        "BROHm",
-        "O2CH2COOm",
-        "aCH2OH2",
-        "aH2O2",
-        "NO3m",
-        "HCO3m",
-        "aCOH2CHOH2",
-        "aMO2",
-        "aBRNO2",
-        "aCL2",
+        "aO3",
         "aN2O5",
+        "HCO3m",
+        "SO4m",
+        "SO3m",
         "CO2m",
-        "CH2COOm",
-        "aETOH",
-        "aCH3O",
-        "aCHOH2",
-        "CHOH2COOm",
-        "BR2m",
-        "aHNO4",
+        "aBR2",
+        "aH2CO3",
+        "O3m",
+        "aHO",
+        "CLm",
+        "FEC2O42m",
+        "aOP1",
+        "aCH2OH",
+        "SO5m",
+        "aHCL",
         "C2O4mm",
-        "aCH3CO"
+        "OHm",
+        "O2CHOHSO3m",
+        "aCL",
+        "MCOOm",
+        "[aH2O]",
+        "aHONO",
+        "aCH3O",
+        "CHOHSO3m",
+        "CUp",
+        "aHO3",
+        "aETHPX",
+        "CHOSO3m",
+        "aO2CH2OH",
+        "Hp",
+        "FEC2O4p",
+        "aHOBR",
+        "O2CH2COOm",
+        "aMO2",
+        "aCH3COH2OO",
+        "BROHm",
+        "aO2CH3CHOH",
+        "aCHOH2COOH",
+        "aHOCL",
+        "aNH3",
+        "HMSm",
+        "O2m",
+        "CHOH",
+        "FEOHpp",
+        "aGLY",
+        "SO",
+        "HSO5m",
+        "aCH2COOH",
+        "NO3m",
+        "aSULF",
+        "HC2O4m",
+        "aCHOH2",
+        "aCH3OH",
+        "aACO3",
+        "NH4p",
+        "aALD",
+        "aNO2",
+        "FEpp",
+        "aCH3COH2",
+        "aHO2",
+        "HCOOm",
+        "NO2p",
+        "aSO2",
+        "CUpp",
+        "aORA1",
+        "aBRCL",
+        "SO4mm",
+        "BRm",
+        "aCOH2CHOH2",
+        "CLOHm",
+        "aH2O2",
+        "aHNO3",
+        "SO5O2mm",
+        "CHOH2COOm",
+        "aCHOH2CHOH2",
+        "aNO3",
+        "BR2m",
+        "SO3mm",
+        "aCO2",
+        "aBR",
+        "aCH3CHOH",
+        "aORA2",
+        "HSO4m",
+        "aH2C2O4",
+        "aETOH",
+        "C2O4m",
+        "aO2",
+        "aCOH2COOH",
+        "HSO3m",
+        "aHCHO",
+        "aCL2",
+        "CL2m",
+        "aCO2H",
+        "NO2m",
+        "FEOpp",
+        "CH2COOm",
+        "aO2COH2CHOH2",
+        "CHOSO3mm",
+        "aCH3CO",
+        "aHNO4",
+        "aCH3CH2O",
+        "aNO",
+        "aCH2OH2",
+        "aO2CHO",
+        "aBRNO2",
+        "FEppp",
+        "aCLNO2",
+        "SO5O2Hm",
+        "aO2COH2COOH",
+        "NO4m"
       ]
     },
     {
