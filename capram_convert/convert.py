@@ -17,30 +17,30 @@ with open("capram24_red.txt") as f:
 # Further uptake parameters according to Schwartz's approach (alpha, Dg)  
 # are read elsewhere in the program
 # for example, henry['CO2'] = {A: '3.1e-2', B: '2423.0'}
-henry = []
+henry = list()
 
 # CLASS: AQUA, TYPE: PHOTABC photolysis reactions according to 
 # j = A * exp (B *(1 - 1 /(cos (C * chi)); A = jmax; chi = zenith angle
-aqua_photo = []
+aqua_photo = list()
 
 # CLASS: AQUA;  TYPE: TEMP3
 # TEmperature dependent reation
 # k(T)=A*exp(B*(1/T-1/298))
 # A=k(298 K)
 # B=-Ea/R   
-aqua_temp = []
+aqua_temp = list()
 
 # CLASS: DISS, TYPE: DTEMP
 # Temperature dependent dissociation
 # Ke = A exp(B*(1/T - 1/298)); 
 # B=-Ea/R  
 # C = k(back reaction)
-diss_with_c = []
+diss_with_c = list()
 # CLASS: DISS, TYPE: DCONST
 # Dissociation
 # Ke = A 
 # B= k(back reaction) 
-diss_without_c = []
+diss_without_c = list()
 
 # pattern that matches A, B, and optionall C constants for PHOTABC and TEMP3 reactions
 # thanks chatgpt
@@ -104,19 +104,44 @@ while line_index < len(content):
     line_index += 1
 
 
-species = {}
+species = dict()
+
+henrys_law_reactions = list()
+henrys_species = list()
+
 
 for item in henry:
-    for name in item['reactants']:
-        spec = dict(name=name, type="CHEM_SPEC")
-        spec["HLC(298K) [M Pa-1]"] = item['A']
-        spec["HLC exp factor [K]"] = item['B']
-        spec["diffusion coeff [m2 s-1]"] = 1.00 # TODO: replace
-        spec["N star"] = 1.00 # TODO: replace
-        species[name] = spec
-    for name in item['products']:
-        spec = dict(name=name, type="CHEM_SPEC")
-        species[name] = spec
+    gas_phase = item['reactants'][0]
+    aero_phase = item['products'][0]
+
+    henrys_species.append(gas_phase)
+
+    spec = dict(name=gas_phase, type="CHEM_SPEC")
+    spec["HLC(298K) [M Pa-1]"] = item['A']
+    spec["HLC exp factor [K]"] = item['B']
+    spec["diffusion coeff [m2 s-1]"] = 1.00 # TODO: replace
+    spec["N star"] = 1.00 # TODO: replace
+    species[gas_phase] = spec
+
+    species[aero_phase] = dict(name=aero_phase, type="CHEM_SPEC")
+
+    henrys_law_reactions.append(
+        {
+            "type" : "HL_PHASE_TRANSFER",
+            "gas-phase species" : gas_phase,
+            "aerosol phase" : "aqueous aerosol",
+            "aerosol-phase species" : aero_phase,
+            "aerosol-phase water" : "aH2O" #TODO: verify this
+        }
+    )
+
+henrys_law_aero_phase = [
+    {
+        "name" : "aqueous aerosol",
+        "type" : "AERO_PHASE",
+        "species" : henrys_species
+    }
+]
 
 for collection in [aqua_photo, aqua_temp, diss_with_c, diss_without_c]:
     for item in collection:
@@ -129,25 +154,12 @@ for collection in [aqua_photo, aqua_temp, diss_with_c, diss_without_c]:
                 spec = dict(name=name, type="CHEM_SPEC")
                 species[name] = spec
 
-print(list(species.values()))
-
 with open('species.json', 'w') as f:
     json.dump(
         { 
             "camp-data" : list(species.values())
         }, f, indent=2
     )
-
-henrys_law = [
-    {
-        "type" : "HL_PHASE_TRANSFER",
-        "gas-phase species" : "my gas spec",
-        "aerosol-phase species" : "my aero spec",
-        "areosol phase" : "my aqueous phase",
-        "aerosol-phase water" : "H2O_aq",
-    }
-    for reaction in henry
-]
 
 photolysis_reactions = [
     {
@@ -235,15 +247,22 @@ mechanisms = {
     "camp-data" : [
         {
             "name": "CAPRAM2.4 reduced",
+            "type" : "MECHANISM",
             "url": "https://capram.tropos.de/capram_24.html",
             "reactions": [
-                *henrys_law,
                 *photolysis_reactions,
                 *arrhenius_reactions,
                 *aqueous_equilibrium,
             ]
+        },
+        *henrys_law_aero_phase,
+        {
+            "name" : "Henry's Law phase transfer",
+            "type" : "MECHANISM",
+            "reactions" : henrys_law_reactions
         }
     ]
 }
+
 with open('mechanism.json', 'w') as f:
     json.dump(mechanisms, f, indent=2)
