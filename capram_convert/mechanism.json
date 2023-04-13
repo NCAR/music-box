@@ -2226,231 +2226,231 @@
           "gas-phase species": "CO2",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aCO2",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "O3",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aO3",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "HO2",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aHO2",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "HO",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aHO",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "H2O2",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aH2O2",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "NO2",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aNO2",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "HONO",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aHONO",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "HNO3",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aHNO3",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "NO3",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aNO3",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "N2O5",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aN2O5",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "NH3",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aNH3",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "HCL",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aHCL",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "HCHO",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aHCHO",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "ORA1",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aORA1",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "SO2",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aSO2",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "OP1",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aOP1",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "ORA2",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aORA2",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "MO2",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aMO2",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "ETHPX",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aETHPX",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "ETOH",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aETOH",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "CH3OH",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aCH3OH",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "ALD",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aALD",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "BR2",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aBR2",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "CL2",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aCL2",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "SULF",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aSULF",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "HNO4",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aHNO4",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "ACO3",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aACO3",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "GLY",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aGLY",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "[O2]",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aO2",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "CLNO2",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aCLNO2",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "BRNO2",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aBRNO2",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "BRCL",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aBRCL",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         },
         {
           "type": "HL_PHASE_TRANSFER",
           "gas-phase species": "NO",
           "aerosol phase": "cloud water",
           "aerosol-phase species": "aNO",
-          "aerosol-phase water": "aH2O"
+          "aerosol-phase water": "[aH2O]"
         }
       ]
     },
@@ -2458,126 +2458,126 @@
       "name": "cloud water",
       "type": "AERO_PHASE",
       "species": [
-        "CUpp",
-        "HMSm",
-        "aH2C2O4",
-        "aNH3",
-        "BROHm",
-        "-1.0Hp",
-        "HC2O4m",
-        "C2O4mm",
-        "2SO4mm",
-        "CHOH2COOm",
-        "aNO3",
-        "SO5m",
-        "CLm",
-        "aCH3OH",
-        "aMO2",
-        "CL2m",
-        "OHm",
-        "aBRNO2",
-        "aHNO4",
-        "aCH3O",
-        "CUp",
-        "aBRCL",
-        "aO2CH2OH",
-        "aH2O2",
-        "aCH3CH2O",
-        "aCOH2COOH",
-        "aCH3COH2OO",
-        "aHO2",
-        "aOP1",
-        "FEpp",
-        "SO5O2mm",
-        "aO3",
-        "aO2CHO",
-        "CHOSO3m",
-        "HSO5m",
-        "FEppp",
-        "aACO3",
-        "aO2",
-        "2CLm",
-        "aH2CO3",
-        "aHOCL",
-        "aGLY",
-        "aCH3CHOH2",
-        "aBR",
-        "NH4p",
-        "aORA2",
-        "FEOpp",
-        "aNO",
-        "[aH2O]",
-        "aNO2",
-        "aCHOH2COOH",
-        "aCH2COOH",
-        "FEC2O4p",
-        "aCH2OH2",
-        "HSO4m",
-        "CO2m",
-        "aETHPX",
-        "aCL2",
-        "aORA1",
-        "O2m",
-        "aHCL",
-        "aCLNO2",
-        "aALD",
-        "SO4mm",
-        "aBR2",
-        "2OHm",
-        "O3m",
-        "aN2O5",
-        "Hp",
-        "aO2COH2COOH",
-        "aO2COH2CHOH2",
-        "SO3mm",
-        "HCO3m",
-        "SO3m",
-        "BRm",
-        "NO2m",
-        "CLOHm",
-        "aHONO",
-        "aCHOH2",
         "HCOOm",
-        "aHCHO",
-        "FEOHpp",
-        "3Hp",
-        "aSO2",
-        "2FEppp",
-        "CHOHSO3m",
-        "aHNO3",
-        "aCH2OH",
-        "aCOH2CHOH2",
-        "MCOOm",
-        "O2CH2COOm",
-        "-2.0Hp",
-        "2BRm",
-        "aCH3CHOH",
-        "SO4m",
-        "CH2COOm",
-        "aO2CH3CHOH",
-        "NO4m",
-        "aCO2H",
-        "BR2m",
-        "aHOBR",
-        "NO3m",
-        "FEC2O42m",
         "aCH3CO",
+        "aALD",
+        "CUp",
+        "aACO3",
+        "HSO4m",
         "aHO",
-        "aETOH",
-        "HSO3m",
-        "aSULF",
-        "NO2p",
-        "aCL",
-        "2Hp",
-        "aCHOH2CHOH2",
-        "aCO2",
-        "2CHOH2COOm",
-        "aCH3COH2",
-        "SO5O2Hm",
+        "HCO3m",
+        "aCHOH2COOH",
+        "HSO5m",
+        "2FEppp",
+        "aCOH2COOH",
         "O2CHOHSO3m",
-        "aHO3",
+        "aCH3CH2O",
+        "HSO3m",
+        "aCL2",
+        "BRm",
+        "aNH3",
+        "aO2COH2COOH",
+        "CHOH2COOm",
+        "aGLY",
+        "Hp",
         "C2O4m",
-        "CHOSO3mm"
+        "aCO2",
+        "aETHPX",
+        "NO3m",
+        "aO2",
+        "aBRCL",
+        "CHOSO3mm",
+        "aCO2H",
+        "aN2O5",
+        "aCH3OH",
+        "NO4m",
+        "CHOHSO3m",
+        "aSO2",
+        "FEppp",
+        "CO2m",
+        "HC2O4m",
+        "aHO3",
+        "SO3m",
+        "O2CH2COOm",
+        "aHOBR",
+        "aHOCL",
+        "aCL",
+        "SO5m",
+        "aO3",
+        "CL2m",
+        "CLOHm",
+        "SO5O2Hm",
+        "C2O4mm",
+        "NO2p",
+        "BROHm",
+        "3Hp",
+        "aCH3O",
+        "aORA2",
+        "aCLNO2",
+        "CLm",
+        "aCH2COOH",
+        "aO2CH3CHOH",
+        "aBR2",
+        "aO2COH2CHOH2",
+        "FEC2O4p",
+        "aHO2",
+        "2BRm",
+        "O3m",
+        "aNO2",
+        "NO2m",
+        "aHONO",
+        "aCH2OH",
+        "FEOHpp",
+        "aH2CO3",
+        "-1.0Hp",
+        "aETOH",
+        "aO2CHO",
+        "[aH2O]",
+        "aCH3COH2OO",
+        "aCH3CHOH2",
+        "aHCL",
+        "HMSm",
+        "NH4p",
+        "O2m",
+        "aORA1",
+        "aSULF",
+        "SO5O2mm",
+        "2CLm",
+        "SO3mm",
+        "aH2O2",
+        "aBRNO2",
+        "aCHOH2CHOH2",
+        "2SO4mm",
+        "aCH3COH2",
+        "aMO2",
+        "CHOSO3m",
+        "-2.0Hp",
+        "MCOOm",
+        "aNO",
+        "aBR",
+        "CUpp",
+        "BR2m",
+        "SO4m",
+        "aHNO3",
+        "FEC2O42m",
+        "aCOH2CHOH2",
+        "aHNO4",
+        "aHCHO",
+        "aNO3",
+        "SO4mm",
+        "CH2COOm",
+        "2OHm",
+        "2CHOH2COOm",
+        "aCHOH2",
+        "aH2C2O4",
+        "aOP1",
+        "aCH2OH2",
+        "FEOpp",
+        "aCH3CHOH",
+        "2Hp",
+        "OHm",
+        "aO2CH2OH",
+        "FEpp"
       ]
     },
     {

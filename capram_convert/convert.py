@@ -52,10 +52,12 @@ def parse_reactants_products(line):
     if match:
         reactants = combine_stoichiometric_coeffs(match.group(1).strip())
         products = combine_stoichiometric_coeffs(match.group(2).strip())
-    return reactants, products
+    #TODO: now, convert the products into a species with a yield
+    # also, sometimes the list of producdts is like CL2m + [aH2O] = Hp + CLm + CLm + aHO
+    # this should end up being represented as if it were written like CL2m + [aH2O] = Hp + 2CLm + aHO
+    return reactants, convert_products_to_yield(products)
 
 def combine_stoichiometric_coeffs(species):
-    #TODO: for the ceofficients, make sure they get put into the products with a yield
     # given this: O2m   +  FEpp = FEppp  + aH2O2  -2.0 Hp 
     # output this for the products: ['FEppp', 'aH2O2', '-2.0Hp']
     groups = [i for i in re.split(r'([+-])', species) if i != '+']
@@ -67,6 +69,9 @@ def combine_stoichiometric_coeffs(species):
             result.append(group)
 
     return result
+
+def convert_products_to_yield(products):
+    return products
 
 line_index = 0
 # there are a few AQUA type reactions in the dissociation reactions, 
@@ -133,7 +138,7 @@ for item in henry:
             "gas-phase species" : gas_phase,
             "aerosol phase" : aerosol_phase_name,
             "aerosol-phase species" : aero_phase,
-            "aerosol-phase water" : "aH2O" #TODO: verify this
+            "aerosol-phase water" : "[aH2O]"
         }
     )
 
