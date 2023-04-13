@@ -53,9 +53,10 @@ def parse_reactants_products(line):
     if match:
         reactants = combine_stoichiometric_coeffs(match.group(1).strip())
         products = combine_stoichiometric_coeffs(match.group(2).strip())
-    #TODO: now, go through the lists of products and reactants and combine like species
-    # also, sometimes the list of producdts is like CL2m + [aH2O] = Hp + CLm + CLm + aHO
+    # now, go through the lists of products and reactants and combine like species
+    # e.g., sometimes the list of products is like CL2m + [aH2O] = Hp + CLm + CLm + aHO
     # this should end up being represented as if it were written like CL2m + [aH2O] = Hp + 2CLm + aHO
+    # same thing, but for reactants
     return convert_reactants_to_quantity(reactants), convert_products_to_yield(products)
 
 def combine_stoichiometric_coeffs(species):
