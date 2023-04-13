@@ -5,6 +5,237 @@
       "url": "https://capram.tropos.de/capram_24.html",
       "reactions": [
         {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
+          "type": "HL_PHASE_TRANSFER",
+          "gas-phase species": "my gas spec",
+          "aerosol-phase species": "my aero spec",
+          "areosol phase": "my aqueous phase",
+          "aerosol-phase water": "H2O_aq"
+        },
+        {
           "type": "PHOTOLYSIS",
           "reactants": {
             "FEOHpp": {}

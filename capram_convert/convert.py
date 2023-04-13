@@ -10,10 +10,6 @@ with open("capram24_red.txt") as f:
 # comments here taken from the capram file
 ##
 
-# for example  molecules_to_identifier['CO2'] = 'aCO2'
-# for example  molecules_to_identifier['aCO2'] = 'CO2'
-molecules_identifier_mapping = {}
-
 # CLASS: HENRY, TYPE: TEMP3
 # Phase transfer
 # Kh = A exp(B (1/T - 1/298))
@@ -21,7 +17,7 @@ molecules_identifier_mapping = {}
 # Further uptake parameters according to Schwartz's approach (alpha, Dg)  
 # are read elsewhere in the program
 # for example, henry['CO2'] = {A: '3.1e-2', B: '2423.0'}
-henry = {}
+henry = []
 
 # CLASS: AQUA, TYPE: PHOTABC photolysis reactions according to 
 # j = A * exp (B *(1 - 1 /(cos (C * chi)); A = jmax; chi = zenith angle
@@ -76,27 +72,13 @@ line_index = 0
 # when those exist, add them to the appropriate array
 while line_index < len(content):
     line = content[line_index].strip()
-    if line.startswith('COMMENT  CLASS: AQUA, TYPE: PHOTABC'):
-        pass
-    if line.startswith('COMMENT  CLASS: AQUA;  TYPE: TEMP3'):
-        pass
-    if line.startswith('COMMENT  CLASS: DISS, TYPE: DCONST'):
-        pass
     if line.startswith('CLASS'):
         type = line.split(':')[1].strip()
         if type == 'HENRY':
-            mol = content[line_index + 1].strip().split(' = ')
-            ident = mol[1].strip()
-            mol = mol[0].strip()
-
-            temp = content[line_index + 2].strip().split('TEMP3:')
-            a = temp[1].split('B:')[0].strip().split('A:')[1].strip()
-            b = temp[1].split('B:')[1].strip()
-
-            molecules_identifier_mapping[mol] = ident
-            molecules_identifier_mapping[ident] = mol
-            henry[mol] = { 'A': a, 'B': b }
-
+            reactants, products = parse_reactants_products(content[line_index + 1])
+            match = constants_pattern.search(content[line_index + 2])
+            type, A, B, C = match.group(1), float(match.group(2)), float(match.group(3)), match.group(4)
+            henry.append(dict(reactants = reactants, products=products, A=A, B=B))
             line_index += 2
         elif type == 'AQUA':
             reactants, products = parse_reactants_products(content[line_index + 1])
@@ -110,9 +92,7 @@ while line_index < len(content):
                 print(f"Unknown aqua type: {type}")
             line_index += 2
         elif type == 'DISS':
-            reaction = content[line_index + 1].strip().split('=')
-            reactants = [i.strip() for i in reaction[0].strip().split('+')]
-            products = [i.strip() for i in reaction[1].strip().split('+')]
+            reactants, products = parse_reactants_products(content[line_index + 1])
             match = constants_pattern.search(content[line_index + 2])
             type, A, B, C = match.group(1), float(match.group(2)), float(match.group(3)), match.group(4)
             if C is None:
@@ -124,26 +104,49 @@ while line_index < len(content):
     line_index += 1
 
 
-species = set(
-    name for name,_ in molecules_identifier_mapping.items() if not name.startswith("a")
-)
+species = {}
 
-for list in [aqua_photo, aqua_temp, diss_with_c, diss_without_c]:
-    for item in list:
-        for spec in item['reactants']:
-            species.add(spec)
-        for spec in item['products']:
-            species.add(spec)
+for item in henry:
+    for name in item['reactants']:
+        spec = dict(name=name, type="CHEM_SPEC")
+        spec["HLC(298K) [M Pa-1]"] = item['A']
+        spec["HLC exp factor [K]"] = item['B']
+        spec["diffusion coeff [m2 s-1]"] = 1.00 # TODO: replace
+        spec["N star"] = 1.00 # TODO: replace
+        species[name] = spec
+    for name in item['products']:
+        spec = dict(name=name, type="CHEM_SPEC")
+        species[name] = spec
+
+for collection in [aqua_photo, aqua_temp, diss_with_c, diss_without_c]:
+    for item in collection:
+        for name in item['reactants']:
+            if name not in species:
+                spec = dict(name=name, type="CHEM_SPEC")
+                species[name] = spec
+        for name in item['products']:
+            if name not in species:
+                spec = dict(name=name, type="CHEM_SPEC")
+                species[name] = spec
+
+print(list(species.values()))
 
 with open('species.json', 'w') as f:
     json.dump(
         { 
-            "camp-data" : [dict(name=name, type="CHEM_SPEC") for name in species] 
+            "camp-data" : list(species.values())
         }, f, indent=2
     )
 
 henrys_law = [
-
+    {
+        "type" : "HL_PHASE_TRANSFER",
+        "gas-phase species" : "my gas spec",
+        "aerosol-phase species" : "my aero spec",
+        "areosol phase" : "my aqueous phase",
+        "aerosol-phase water" : "H2O_aq",
+    }
+    for reaction in henry
 ]
 
 photolysis_reactions = [
