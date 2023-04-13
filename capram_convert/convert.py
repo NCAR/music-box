@@ -55,6 +55,7 @@ def parse_reactants_products(line):
     return reactants, products
 
 def combine_stoichiometric_coeffs(species):
+    #TODO: for the ceofficients, make sure they get put into the products with a yield
     # given this: O2m   +  FEpp = FEppp  + aH2O2  -2.0 Hp 
     # output this for the products: ['FEppp', 'aH2O2', '-2.0Hp']
     groups = [i for i in re.split(r'([+-])', species) if i != '+']
@@ -107,7 +108,7 @@ while line_index < len(content):
 species = dict()
 
 henrys_law_reactions = list()
-henrys_species = list()
+aerosol_phase_species = set()
 
 aerosol_phase_name = "cloud water"
 
@@ -115,7 +116,7 @@ for item in henry:
     gas_phase = item['reactants'][0]
     aero_phase = item['products'][0]
 
-    henrys_species.append(aero_phase)
+    aerosol_phase_species.add(aero_phase)
 
     spec = dict(name=gas_phase, type="CHEM_SPEC")
     spec["HLC(298K) [M Pa-1]"] = item['A']
@@ -136,12 +137,7 @@ for item in henry:
         }
     )
 
-henrys_law_aero_phase = [
-    {
-        "name" : aerosol_phase_name,
-        "type" : "AERO_PHASE",
-        "species" : henrys_species
-    }
+aero_phase_species = [
 ]
 
 for collection in [aqua_photo, aqua_temp, diss_with_c, diss_without_c]:
@@ -195,43 +191,30 @@ photolysis_reactions = [
 #
 #
 
-arrhenius_reactions = [
-    {
-        "type":  "ARRHENIUS",
-        "reactants": {
-            reactant: {} for reactant in reaction["reactants"]
-        },
-        "products": {
-            product: {} for product in reaction["products"]
-        },
-        "A" : reaction['A'] * np.exp(-1 * reaction['B'] / 298),
-        "C" : reaction['B'],
-        "aerosol phase" : aerosol_phase_name,
-        "aerosol-phase water" : "H2O_aq"
-    }
-    for reaction in aqua_temp
-]
+arrhenius_reactions = list()
+for reaction in aqua_temp:
+    arrhenius_reactions.append(
+        {
+            "type":  "ARRHENIUS",
+            "reactants": {
+                reactant: {} for reactant in reaction["reactants"]
+            },
+            "products": {
+                product: {} for product in reaction["products"]
+            },
+            "A" : reaction['A'] * np.exp(-1 * reaction['B'] / 298),
+            "C" : reaction['B'],
+            "aerosol phase" : aerosol_phase_name,
+            "aerosol-phase water" : "H2O_aq"
+        }
+    )
+    aerosol_phase_species.update(reaction["reactants"])
+    aerosol_phase_species.update(reaction["products"])
+    
 
-aqueous_equilibrium = [
-    {
-        "type":  "AQUEOUS_EQUILIBRIUM",
-        "reactants": {
-            reactant: {} for reactant in reaction["reactants"]
-        },
-        "products": {
-            product: {} for product in reaction["products"]
-        },
-        "A" : reaction['A'],
-        "C" : reaction['B'],
-        "k_reverse" : reaction['C'],
-        "phase": aerosol_phase_name,
-        "aerosol-phase water" : "H2O_aq"
-    }
-    for reaction in diss_with_c
-]
-
-aqueous_equilibrium.extend(
-    [
+aqueous_equilibrium = list()
+for reaction in diss_with_c:
+    aqueous_equilibrium.append(
         {
             "type":  "AQUEOUS_EQUILIBRIUM",
             "reactants": {
@@ -241,14 +224,36 @@ aqueous_equilibrium.extend(
                 product: {} for product in reaction["products"]
             },
             "A" : reaction['A'],
-            "C" : 0,
-            "k_reverse" : reaction['B'],
+            "C" : reaction['B'],
+            "k_reverse" : reaction['C'],
             "phase": aerosol_phase_name,
             "aerosol-phase water" : "H2O_aq"
         }
-        for reaction in diss_without_c
-    ]
-)
+    )
+    aerosol_phase_species.update(reaction["reactants"])
+    aerosol_phase_species.update(reaction["products"])
+
+for reaction in diss_without_c:
+    aqueous_equilibrium.append(
+        [
+            {
+                "type":  "AQUEOUS_EQUILIBRIUM",
+                "reactants": {
+                    reactant: {} for reactant in reaction["reactants"]
+                },
+                "products": {
+                    product: {} for product in reaction["products"]
+                },
+                "A" : reaction['A'],
+                "C" : 0,
+                "k_reverse" : reaction['B'],
+                "phase": aerosol_phase_name,
+                "aerosol-phase water" : "H2O_aq"
+            }
+        ]
+    )
+    aerosol_phase_species.update(reaction["reactants"])
+    aerosol_phase_species.update(reaction["products"])
 
 mechanisms = { 
     "camp-data" : [
@@ -263,7 +268,11 @@ mechanisms = {
                 *henrys_law_reactions
             ]
         },
-        *henrys_law_aero_phase,
+        {
+            "name" : aerosol_phase_name,
+            "type" : "AERO_PHASE",
+            "species" : list(aerosol_phase_species)
+        },
         {
             "type" : "AERO_REP_MODAL_BINNED_MASS",
             "name" : "my aero rep 2",
