@@ -213,6 +213,10 @@ with open('species.json', 'w') as f:
         }, f, indent=2
     )
 
+# TODO: aqueous phase photolysis reactions are calculated like this in capram2.4
+# j = A * exp (B *(1 - 1 /(cos (C * chi)); A = jmax; chi = zenith angle
+#
+# We recoded the A, B, and C values but have not done anything with them. Figure out what to do
 photolysis_reactions = [
     {
         "type":  "PHOTOLYSIS",
