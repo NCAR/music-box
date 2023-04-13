@@ -50,7 +50,7 @@
       "absolute tolerance" : 1.0e-12
     },
     {
-      "name" : "aH20",
+      "name" : "aH2O",
       "type" : "CHEM_SPEC",
       "phase" : "AEROSOL",
       "molecular weight [kg mol-1]" : 18.02,
