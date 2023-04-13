@@ -8,7 +8,9 @@
         {
           "type": "PHOTOLYSIS",
           "reactants": {
-            "FEOHpp": {}
+            "FEOHpp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEpp": {
@@ -22,7 +24,9 @@
         {
           "type": "PHOTOLYSIS",
           "reactants": {
-            "NO3m": {}
+            "NO3m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aNO2": {
@@ -39,7 +43,9 @@
         {
           "type": "PHOTOLYSIS",
           "reactants": {
-            "aH2O2": {}
+            "aH2O2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aHO": {
@@ -50,7 +56,9 @@
         {
           "type": "PHOTOLYSIS",
           "reactants": {
-            "FEC2O42m": {}
+            "FEC2O42m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEpp": {
@@ -70,8 +78,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aH2O2": {},
-            "FEpp": {}
+            "aH2O2": {
+              "qty": 1.0
+            },
+            "FEpp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEppp": {
@@ -92,8 +104,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aH2O2": {},
-            "CUp": {}
+            "aH2O2": {
+              "qty": 1.0
+            },
+            "CUp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "CUpp": {
@@ -114,8 +130,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "O2m": {},
-            "FEppp": {}
+            "O2m": {
+              "qty": 1.0
+            },
+            "FEppp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEpp": {
@@ -133,8 +153,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aHO2": {},
-            "FEOHpp": {}
+            "aHO2": {
+              "qty": 1.0
+            },
+            "FEOHpp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEpp": {
@@ -155,8 +179,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "O2m": {},
-            "FEOHpp": {}
+            "O2m": {
+              "qty": 1.0
+            },
+            "FEOHpp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEpp": {
@@ -177,8 +205,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "O2m": {},
-            "FEpp": {}
+            "O2m": {
+              "qty": 1.0
+            },
+            "FEpp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEppp": {
@@ -199,8 +231,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aHO2": {},
-            "FEpp": {}
+            "aHO2": {
+              "qty": 1.0
+            },
+            "FEpp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEppp": {
@@ -221,8 +257,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aHO": {},
-            "FEpp": {}
+            "aHO": {
+              "qty": 1.0
+            },
+            "FEpp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEOHpp": {
@@ -237,8 +277,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "O2m": {},
-            "CUp": {}
+            "O2m": {
+              "qty": 1.0
+            },
+            "CUp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "CUpp": {
@@ -259,8 +303,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aHO2": {},
-            "CUp": {}
+            "aHO2": {
+              "qty": 1.0
+            },
+            "CUp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "CUpp": {
@@ -281,8 +329,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aHO2": {},
-            "CUpp": {}
+            "aHO2": {
+              "qty": 1.0
+            },
+            "CUpp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "CUp": {
@@ -303,8 +355,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "O2m": {},
-            "CUpp": {}
+            "O2m": {
+              "qty": 1.0
+            },
+            "CUpp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "CUp": {
@@ -322,8 +378,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "FEppp": {},
-            "CUp": {}
+            "FEppp": {
+              "qty": 1.0
+            },
+            "CUp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEpp": {
@@ -341,8 +401,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "FEOHpp": {},
-            "CUp": {}
+            "FEOHpp": {
+              "qty": 1.0
+            },
+            "CUp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEpp": {
@@ -363,8 +427,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aO3": {},
-            "O2m": {}
+            "aO3": {
+              "qty": 1.0
+            },
+            "O2m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "O3m": {
@@ -382,7 +450,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aHO3": {}
+            "aHO3": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aHO": {
@@ -400,8 +470,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aH2O2": {},
-            "aHO": {}
+            "aH2O2": {
+              "qty": 1.0
+            },
+            "aHO": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aHO2": {
@@ -419,8 +493,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "HSO3m": {},
-            "aHO": {}
+            "HSO3m": {
+              "qty": 1.0
+            },
+            "aHO": {
+              "qty": 1.0
+            }
           },
           "products": {
             "SO3m": {
@@ -438,8 +516,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "CUp": {},
-            "aO2": {}
+            "CUp": {
+              "qty": 1.0
+            },
+            "aO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "CUpp": {
@@ -457,8 +539,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "FEpp": {},
-            "aO3": {}
+            "FEpp": {
+              "qty": 1.0
+            },
+            "aO3": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEOpp": {
@@ -476,8 +562,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "FEOpp": {},
-            "CLm": {}
+            "FEOpp": {
+              "qty": 1.0
+            },
+            "CLm": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEppp": {
@@ -498,8 +588,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "FEOpp": {},
-            "FEpp": {}
+            "FEOpp": {
+              "qty": 1.0
+            },
+            "FEpp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEppp": {
@@ -517,7 +611,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aN2O5": {}
+            "aN2O5": {
+              "qty": 1.0
+            }
           },
           "products": {
             "NO2p": {
@@ -535,8 +631,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "NO2p": {},
-            "[aH2O]": {}
+            "NO2p": {
+              "qty": 1.0
+            },
+            "[aH2O]": {
+              "qty": 1.0
+            }
           },
           "products": {
             "NO3m": {
@@ -554,8 +654,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aNO3": {},
-            "HSO3m": {}
+            "aNO3": {
+              "qty": 1.0
+            },
+            "HSO3m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "NO3m": {
@@ -576,8 +680,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aNO3": {},
-            "SO4mm": {}
+            "aNO3": {
+              "qty": 1.0
+            },
+            "SO4mm": {
+              "qty": 1.0
+            }
           },
           "products": {
             "NO3m": {
@@ -595,7 +703,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "NO4m": {}
+            "NO4m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "NO2m": {
@@ -613,8 +723,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aHNO4": {},
-            "HSO3m": {}
+            "aHNO4": {
+              "qty": 1.0
+            },
+            "HSO3m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "HSO4m": {
@@ -635,8 +749,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "NO2p": {},
-            "CLm": {}
+            "NO2p": {
+              "qty": 1.0
+            },
+            "CLm": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aCLNO2": {
@@ -651,8 +769,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "NO2p": {},
-            "BRm": {}
+            "NO2p": {
+              "qty": 1.0
+            },
+            "BRm": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aBRNO2": {
@@ -667,8 +789,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCLNO2": {},
-            "BRm": {}
+            "aCLNO2": {
+              "qty": 1.0
+            },
+            "BRm": {
+              "qty": 1.0
+            }
           },
           "products": {
             "NO2m": {
@@ -686,8 +812,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aBRNO2": {},
-            "BRm": {}
+            "aBRNO2": {
+              "qty": 1.0
+            },
+            "BRm": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aBR2": {
@@ -705,8 +835,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aBRNO2": {},
-            "CLm": {}
+            "aBRNO2": {
+              "qty": 1.0
+            },
+            "CLm": {
+              "qty": 1.0
+            }
           },
           "products": {
             "NO2m": {
@@ -724,8 +858,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "HMSm": {},
-            "aHO": {}
+            "HMSm": {
+              "qty": 1.0
+            },
+            "aHO": {
+              "qty": 1.0
+            }
           },
           "products": {
             "CHOHSO3m": {
@@ -743,8 +881,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "CHOHSO3m": {},
-            "aO2": {}
+            "CHOHSO3m": {
+              "qty": 1.0
+            },
+            "aO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "O2CHOHSO3m": {
@@ -759,7 +901,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "O2CHOHSO3m": {}
+            "O2CHOHSO3m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aHO2": {
@@ -777,7 +921,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "O2CHOHSO3m": {}
+            "O2CHOHSO3m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aO2CHO": {
@@ -795,8 +941,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "CHOSO3m": {},
-            "[aH2O]": {}
+            "CHOSO3m": {
+              "qty": 1.0
+            },
+            "[aH2O]": {
+              "qty": 1.0
+            }
           },
           "products": {
             "HSO3m": {
@@ -814,8 +964,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aO2CHO": {},
-            "[aH2O]": {}
+            "aO2CHO": {
+              "qty": 1.0
+            },
+            "[aH2O]": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aORA1": {
@@ -833,9 +987,15 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "HSO3m": {},
-            "aH2O2": {},
-            "Hp": {}
+            "HSO3m": {
+              "qty": 1.0
+            },
+            "aH2O2": {
+              "qty": 1.0
+            },
+            "Hp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "SO4mm": {
@@ -856,8 +1016,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "HSO3m": {},
-            "aO3": {}
+            "HSO3m": {
+              "qty": 1.0
+            },
+            "aO3": {
+              "qty": 1.0
+            }
           },
           "products": {
             "SO4mm": {
@@ -878,8 +1042,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "SO3mm": {},
-            "aO3": {}
+            "SO3mm": {
+              "qty": 1.0
+            },
+            "aO3": {
+              "qty": 1.0
+            }
           },
           "products": {
             "SO4mm": {
@@ -897,8 +1065,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "SO5m": {},
-            "FEpp": {}
+            "SO5m": {
+              "qty": 1.0
+            },
+            "FEpp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "HSO5m": {
@@ -916,8 +1088,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "HSO5m": {},
-            "FEpp": {}
+            "HSO5m": {
+              "qty": 1.0
+            },
+            "FEpp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "SO4m": {
@@ -935,8 +1111,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "FEpp": {},
-            "SO4m": {}
+            "FEpp": {
+              "qty": 1.0
+            },
+            "SO4m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "FEOHpp": {
@@ -957,7 +1137,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "SO5m": {}
+            "SO5m": {
+              "qty": 2.0
+            }
           },
           "products": {
             "SO4m": {
@@ -975,8 +1157,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "SO5m": {},
-            "aHO2": {}
+            "SO5m": {
+              "qty": 1.0
+            },
+            "aHO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "SO5O2Hm": {
@@ -991,7 +1177,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "SO5O2mm": {}
+            "SO5O2mm": {
+              "qty": 1.0
+            }
           },
           "products": {
             "HSO5m": {
@@ -1012,8 +1200,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "SO3m": {},
-            "aO2": {}
+            "SO3m": {
+              "qty": 1.0
+            },
+            "aO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "SO5m": {
@@ -1028,8 +1220,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "SO4m": {},
-            "[aH2O]": {}
+            "SO4m": {
+              "qty": 1.0
+            },
+            "[aH2O]": {
+              "qty": 1.0
+            }
           },
           "products": {
             "SO4mm": {
@@ -1050,9 +1246,15 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "HSO5m": {},
-            "HSO3m": {},
-            "Hp": {}
+            "HSO5m": {
+              "qty": 1.0
+            },
+            "HSO3m": {
+              "qty": 1.0
+            },
+            "Hp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "SO": {
@@ -1070,8 +1272,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCH3OH": {},
-            "aHO": {}
+            "aCH3OH": {
+              "qty": 1.0
+            },
+            "aHO": {
+              "qty": 1.0
+            }
           },
           "products": {
             "[aH2O]": {
@@ -1089,8 +1295,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCH2OH": {},
-            "aO2": {}
+            "aCH2OH": {
+              "qty": 1.0
+            },
+            "aO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aO2CH2OH": {
@@ -1105,7 +1315,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aO2CH2OH": {}
+            "aO2CH2OH": {
+              "qty": 2.0
+            }
           },
           "products": {
             "aCH3OH": {
@@ -1126,8 +1338,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aETOH": {},
-            "aHO": {}
+            "aETOH": {
+              "qty": 1.0
+            },
+            "aHO": {
+              "qty": 1.0
+            }
           },
           "products": {
             "[aH2O]": {
@@ -1145,8 +1361,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCH3CHOH": {},
-            "aO2": {}
+            "aCH3CHOH": {
+              "qty": 1.0
+            },
+            "aO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aO2CH3CHOH": {
@@ -1161,7 +1381,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aO2CH3CHOH": {}
+            "aO2CH3CHOH": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aALD": {
@@ -1179,8 +1401,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCH2OH2": {},
-            "aHO": {}
+            "aCH2OH2": {
+              "qty": 1.0
+            },
+            "aHO": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aCHOH2": {
@@ -1198,8 +1424,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCHOH2": {},
-            "aO2": {}
+            "aCHOH2": {
+              "qty": 1.0
+            },
+            "aO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aHO2": {
@@ -1217,8 +1447,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCH3CHOH2": {},
-            "aHO": {}
+            "aCH3CHOH2": {
+              "qty": 1.0
+            },
+            "aHO": {
+              "qty": 1.0
+            }
           },
           "products": {
             "[aH2O]": {
@@ -1236,8 +1470,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aALD": {},
-            "aHO": {}
+            "aALD": {
+              "qty": 1.0
+            },
+            "aHO": {
+              "qty": 1.0
+            }
           },
           "products": {
             "[aH2O]": {
@@ -1255,8 +1493,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aORA1": {},
-            "aHO": {}
+            "aORA1": {
+              "qty": 1.0
+            },
+            "aHO": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aCO2H": {
@@ -1274,8 +1516,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "HCOOm": {},
-            "aHO": {}
+            "HCOOm": {
+              "qty": 1.0
+            },
+            "aHO": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aCO2H": {
@@ -1293,8 +1539,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aORA2": {},
-            "aHO": {}
+            "aORA2": {
+              "qty": 1.0
+            },
+            "aHO": {
+              "qty": 1.0
+            }
           },
           "products": {
             "[aH2O]": {
@@ -1312,8 +1562,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "MCOOm": {},
-            "aHO": {}
+            "MCOOm": {
+              "qty": 1.0
+            },
+            "aHO": {
+              "qty": 1.0
+            }
           },
           "products": {
             "[aH2O]": {
@@ -1331,8 +1585,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCH2COOH": {},
-            "aO2": {}
+            "aCH2COOH": {
+              "qty": 1.0
+            },
+            "aO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aACO3": {
@@ -1347,7 +1605,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aMO2": {}
+            "aMO2": {
+              "qty": 2.0
+            }
           },
           "products": {
             "aCH3OH": {
@@ -1368,7 +1628,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aMO2": {}
+            "aMO2": {
+              "qty": 2.0
+            }
           },
           "products": {
             "aCH3O": {
@@ -1386,7 +1648,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aACO3": {}
+            "aACO3": {
+              "qty": 2.0
+            }
           },
           "products": {
             "aMO2": {
@@ -1407,8 +1671,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aMO2": {},
-            "HSO3m": {}
+            "aMO2": {
+              "qty": 1.0
+            },
+            "HSO3m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aOP1": {
@@ -1426,7 +1694,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aETHPX": {}
+            "aETHPX": {
+              "qty": 2.0
+            }
           },
           "products": {
             "aCH3CH2O": {
@@ -1444,7 +1714,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCH3CH2O": {}
+            "aCH3CH2O": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aCH3CHOH": {
@@ -1459,8 +1731,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aHO": {},
-            "HC2O4m": {}
+            "aHO": {
+              "qty": 1.0
+            },
+            "HC2O4m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "[aH2O]": {
@@ -1478,8 +1754,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aHO": {},
-            "C2O4mm": {}
+            "aHO": {
+              "qty": 1.0
+            },
+            "C2O4mm": {
+              "qty": 1.0
+            }
           },
           "products": {
             "OHm": {
@@ -1497,8 +1777,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "C2O4m": {},
-            "aO2": {}
+            "C2O4m": {
+              "qty": 1.0
+            },
+            "aO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aCO2": {
@@ -1516,8 +1800,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aHO": {},
-            "aCHOH2CHOH2": {}
+            "aHO": {
+              "qty": 1.0
+            },
+            "aCHOH2CHOH2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "[aH2O]": {
@@ -1535,8 +1823,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCOH2CHOH2": {},
-            "aO2": {}
+            "aCOH2CHOH2": {
+              "qty": 1.0
+            },
+            "aO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aO2COH2CHOH2": {
@@ -1551,7 +1843,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aO2COH2CHOH2": {}
+            "aO2COH2CHOH2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aHO2": {
@@ -1569,8 +1863,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aHO": {},
-            "aCHOH2COOH": {}
+            "aHO": {
+              "qty": 1.0
+            },
+            "aCHOH2COOH": {
+              "qty": 1.0
+            }
           },
           "products": {
             "[aH2O]": {
@@ -1588,8 +1886,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCOH2COOH": {},
-            "aO2": {}
+            "aCOH2COOH": {
+              "qty": 1.0
+            },
+            "aO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aO2COH2COOH": {
@@ -1604,7 +1906,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aO2COH2COOH": {}
+            "aO2COH2COOH": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aHO2": {
@@ -1622,8 +1926,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCH3COH2": {},
-            "aO2": {}
+            "aCH3COH2": {
+              "qty": 1.0
+            },
+            "aO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aCH3COH2OO": {
@@ -1638,7 +1946,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCH3COH2OO": {}
+            "aCH3COH2OO": {
+              "qty": 1.0
+            }
           },
           "products": {
             "Hp": {
@@ -1659,7 +1969,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCH3O": {}
+            "aCH3O": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aCH2OH": {
@@ -1674,8 +1986,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "CH2COOm": {},
-            "aO2": {}
+            "CH2COOm": {
+              "qty": 1.0
+            },
+            "aO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "O2CH2COOm": {
@@ -1690,7 +2006,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "O2CH2COOm": {}
+            "O2CH2COOm": {
+              "qty": 2.0
+            }
           },
           "products": {
             "CHOH": {
@@ -1708,8 +2026,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "CO2m": {},
-            "aO2": {}
+            "CO2m": {
+              "qty": 1.0
+            },
+            "aO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aCO2": {
@@ -1727,8 +2049,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "CL2m": {},
-            "FEpp": {}
+            "CL2m": {
+              "qty": 1.0
+            },
+            "FEpp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "CLm": {
@@ -1746,8 +2072,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "CL2m": {},
-            "aHO2": {}
+            "CL2m": {
+              "qty": 1.0
+            },
+            "aHO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "CLm": {
@@ -1768,8 +2098,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "CL2m": {},
-            "HSO3m": {}
+            "CL2m": {
+              "qty": 1.0
+            },
+            "HSO3m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "CLm": {
@@ -1790,8 +2124,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCL2": {},
-            "[aH2O]": {}
+            "aCL2": {
+              "qty": 1.0
+            },
+            "[aH2O]": {
+              "qty": 1.0
+            }
           },
           "products": {
             "Hp": {
@@ -1812,8 +2150,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "CL2m": {},
-            "[aH2O]": {}
+            "CL2m": {
+              "qty": 1.0
+            },
+            "[aH2O]": {
+              "qty": 1.0
+            }
           },
           "products": {
             "Hp": {
@@ -1834,8 +2176,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "BRm": {},
-            "SO4m": {}
+            "BRm": {
+              "qty": 1.0
+            },
+            "SO4m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "SO4mm": {
@@ -1853,8 +2199,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "BRm": {},
-            "aNO3": {}
+            "BRm": {
+              "qty": 1.0
+            },
+            "aNO3": {
+              "qty": 1.0
+            }
           },
           "products": {
             "NO3m": {
@@ -1872,7 +2222,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "BR2m": {}
+            "BR2m": {
+              "qty": 2.0
+            }
           },
           "products": {
             "aBR2": {
@@ -1890,8 +2242,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "BR2m": {},
-            "FEpp": {}
+            "BR2m": {
+              "qty": 1.0
+            },
+            "FEpp": {
+              "qty": 1.0
+            }
           },
           "products": {
             "BRm": {
@@ -1909,8 +2265,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "BR2m": {},
-            "aH2O2": {}
+            "BR2m": {
+              "qty": 1.0
+            },
+            "aH2O2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "BRm": {
@@ -1931,8 +2291,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "BR2m": {},
-            "aHO2": {}
+            "BR2m": {
+              "qty": 1.0
+            },
+            "aHO2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "BRm": {
@@ -1953,8 +2317,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "BR2m": {},
-            "HSO3m": {}
+            "BR2m": {
+              "qty": 1.0
+            },
+            "HSO3m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "BRm": {
@@ -1975,8 +2343,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aBR2": {},
-            "[aH2O]": {}
+            "aBR2": {
+              "qty": 1.0
+            },
+            "[aH2O]": {
+              "qty": 1.0
+            }
           },
           "products": {
             "Hp": {
@@ -1997,7 +2369,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "BROHm": {}
+            "BROHm": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aBR": {
@@ -2015,8 +2389,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aCO2": {},
-            "[aH2O]": {}
+            "aCO2": {
+              "qty": 1.0
+            },
+            "[aH2O]": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aH2CO3": {
@@ -2031,7 +2409,9 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "aH2CO3": {}
+            "aH2CO3": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aCO2": {
@@ -2049,8 +2429,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "SO3mm": {},
-            "aCH2OH2": {}
+            "SO3mm": {
+              "qty": 1.0
+            },
+            "aCH2OH2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "HMSm": {
@@ -2068,8 +2452,12 @@
         {
           "type": "ARRHENIUS",
           "reactants": {
-            "HMSm": {},
-            "OHm": {}
+            "HMSm": {
+              "qty": 1.0
+            },
+            "OHm": {
+              "qty": 1.0
+            }
           },
           "products": {
             "SO3mm": {
@@ -2087,7 +2475,9 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "[aH2O]": {}
+            "[aH2O]": {
+              "qty": 1.0
+            }
           },
           "products": {
             "OHm": {
@@ -2106,7 +2496,9 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "aHCL": {}
+            "aHCL": {
+              "qty": 1.0
+            }
           },
           "products": {
             "CLm": {
@@ -2125,8 +2517,12 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "aNH3": {},
-            "[aH2O]": {}
+            "aNH3": {
+              "qty": 1.0
+            },
+            "[aH2O]": {
+              "qty": 1.0
+            }
           },
           "products": {
             "NH4p": {
@@ -2145,7 +2541,9 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "aHNO3": {}
+            "aHNO3": {
+              "qty": 1.0
+            }
           },
           "products": {
             "NO3m": {
@@ -2164,7 +2562,9 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "aHONO": {}
+            "aHONO": {
+              "qty": 1.0
+            }
           },
           "products": {
             "NO2m": {
@@ -2183,8 +2583,12 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "aSO2": {},
-            "[aH2O]": {}
+            "aSO2": {
+              "qty": 1.0
+            },
+            "[aH2O]": {
+              "qty": 1.0
+            }
           },
           "products": {
             "HSO3m": {
@@ -2203,7 +2607,9 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "HSO3m": {}
+            "HSO3m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "SO3mm": {
@@ -2222,7 +2628,9 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "HSO4m": {}
+            "HSO4m": {
+              "qty": 1.0
+            }
           },
           "products": {
             "Hp": {
@@ -2241,7 +2649,9 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "aORA1": {}
+            "aORA1": {
+              "qty": 1.0
+            }
           },
           "products": {
             "Hp": {
@@ -2260,7 +2670,9 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "aORA2": {}
+            "aORA2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "Hp": {
@@ -2279,8 +2691,12 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "aHCHO": {},
-            "[aH2O]": {}
+            "aHCHO": {
+              "qty": 1.0
+            },
+            "[aH2O]": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aCH2OH2": {
@@ -2296,8 +2712,12 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "aALD": {},
-            "[aH2O]": {}
+            "aALD": {
+              "qty": 1.0
+            },
+            "[aH2O]": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aCH3CHOH2": {
@@ -2313,8 +2733,12 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "HSO3m": {},
-            "aCH2OH2": {}
+            "HSO3m": {
+              "qty": 1.0
+            },
+            "aCH2OH2": {
+              "qty": 1.0
+            }
           },
           "products": {
             "HMSm": {
@@ -2333,8 +2757,12 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "aNO3": {},
-            "CLm": {}
+            "aNO3": {
+              "qty": 1.0
+            },
+            "CLm": {
+              "qty": 1.0
+            }
           },
           "products": {
             "NO3m": {
@@ -2353,8 +2781,12 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "aCH3CO": {},
-            "[aH2O]": {}
+            "aCH3CO": {
+              "qty": 1.0
+            },
+            "[aH2O]": {
+              "qty": 1.0
+            }
           },
           "products": {
             "aCH3COH2": {
@@ -2370,7 +2802,9 @@
         {
           "type": "AQUEOUS_EQUILIBRIUM",
           "reactants": {
-            "aACO3": {}
+            "aACO3": {
+              "qty": 1.0
+            }
           },
           "products": {
             "Hp": {
@@ -2390,7 +2824,9 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "aH2CO3": {}
+              "aH2CO3": {
+                "qty": 1.0
+              }
             },
             "products": {
               "HCO3m": {
@@ -2411,7 +2847,9 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "aHO2": {}
+              "aHO2": {
+                "qty": 1.0
+              }
             },
             "products": {
               "O2m": {
@@ -2432,7 +2870,9 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "aHNO4": {}
+              "aHNO4": {
+                "qty": 1.0
+              }
             },
             "products": {
               "NO4m": {
@@ -2453,8 +2893,12 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "aNO2": {},
-              "aHO2": {}
+              "aNO2": {
+                "qty": 1.0
+              },
+              "aHO2": {
+                "qty": 1.0
+              }
             },
             "products": {
               "aHNO4": {
@@ -2472,7 +2916,9 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "aSULF": {}
+              "aSULF": {
+                "qty": 1.0
+              }
             },
             "products": {
               "HSO4m": {
@@ -2493,8 +2939,12 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "FEppp": {},
-              "[aH2O]": {}
+              "FEppp": {
+                "qty": 1.0
+              },
+              "[aH2O]": {
+                "qty": 1.0
+              }
             },
             "products": {
               "FEOHpp": {
@@ -2515,8 +2965,12 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "aCL": {},
-              "CLm": {}
+              "aCL": {
+                "qty": 1.0
+              },
+              "CLm": {
+                "qty": 1.0
+              }
             },
             "products": {
               "CL2m": {
@@ -2534,8 +2988,12 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "aBR": {},
-              "BRm": {}
+              "aBR": {
+                "qty": 1.0
+              },
+              "BRm": {
+                "qty": 1.0
+              }
             },
             "products": {
               "BR2m": {
@@ -2553,8 +3011,12 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "CLm": {},
-              "aHO": {}
+              "CLm": {
+                "qty": 1.0
+              },
+              "aHO": {
+                "qty": 1.0
+              }
             },
             "products": {
               "CLOHm": {
@@ -2572,8 +3034,12 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "CLOHm": {},
-              "Hp": {}
+              "CLOHm": {
+                "qty": 1.0
+              },
+              "Hp": {
+                "qty": 1.0
+              }
             },
             "products": {
               "aCL": {
@@ -2594,8 +3060,12 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "BRm": {},
-              "aHO": {}
+              "BRm": {
+                "qty": 1.0
+              },
+              "aHO": {
+                "qty": 1.0
+              }
             },
             "products": {
               "BROHm": {
@@ -2613,8 +3083,12 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "BROHm": {},
-              "Hp": {}
+              "BROHm": {
+                "qty": 1.0
+              },
+              "Hp": {
+                "qty": 1.0
+              }
             },
             "products": {
               "aBR": {
@@ -2635,7 +3109,9 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "aHO3": {}
+              "aHO3": {
+                "qty": 1.0
+              }
             },
             "products": {
               "Hp": {
@@ -2656,7 +3132,9 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "CHOHSO3m": {}
+              "CHOHSO3m": {
+                "qty": 1.0
+              }
             },
             "products": {
               "CHOSO3mm": {
@@ -2677,7 +3155,9 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "SO5O2Hm": {}
+              "SO5O2Hm": {
+                "qty": 1.0
+              }
             },
             "products": {
               "Hp": {
@@ -2698,7 +3178,9 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "HC2O4m": {}
+              "HC2O4m": {
+                "qty": 1.0
+              }
             },
             "products": {
               "C2O4mm": {
@@ -2719,7 +3201,9 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "aCHOH2COOH": {}
+              "aCHOH2COOH": {
+                "qty": 1.0
+              }
             },
             "products": {
               "Hp": {
@@ -2740,8 +3224,12 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "aGLY": {},
-              "[aH2O]": {}
+              "aGLY": {
+                "qty": 1.0
+              },
+              "[aH2O]": {
+                "qty": 1.0
+              }
             },
             "products": {
               "aCHOH2CHOH2": {
@@ -2759,8 +3247,12 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "FEppp": {},
-              "C2O4mm": {}
+              "FEppp": {
+                "qty": 1.0
+              },
+              "C2O4mm": {
+                "qty": 1.0
+              }
             },
             "products": {
               "FEC2O4p": {
@@ -2778,8 +3270,12 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "FEC2O4p": {},
-              "C2O4mm": {}
+              "FEC2O4p": {
+                "qty": 1.0
+              },
+              "C2O4mm": {
+                "qty": 1.0
+              }
             },
             "products": {
               "FEC2O42m": {
@@ -2797,8 +3293,12 @@
           {
             "type": "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-              "SO4m": {},
-              "CLm": {}
+              "SO4m": {
+                "qty": 1.0
+              },
+              "CLm": {
+                "qty": 1.0
+              }
             },
             "products": {
               "SO4mm": {
@@ -3052,118 +3552,118 @@
       "name": "cloud water",
       "type": "AERO_PHASE",
       "species": [
-        "aHNO3",
-        "SO5O2Hm",
-        "SO",
-        "SO3mm",
-        "aH2O2",
-        "aCO2H",
-        "aBR2",
-        "FEOHpp",
-        "SO5m",
-        "aNO2",
-        "HSO3m",
-        "SO3m",
-        "NH4p",
-        "CL2m",
-        "NO3m",
-        "aHNO4",
-        "CO2m",
-        "aGLY",
-        "aCOH2COOH",
-        "aCH3COH2OO",
-        "aCHOH2",
-        "aHOCL",
-        "FEC2O42m",
-        "aALD",
-        "CHOSO3m",
-        "aCL2",
-        "aBRNO2",
-        "[aH2O]",
-        "MCOOm",
-        "HC2O4m",
-        "O2CHOHSO3m",
-        "FEOpp",
-        "O2CH2COOm",
-        "CLm",
-        "SO4m",
-        "aH2C2O4",
-        "aO2",
-        "CUpp",
-        "NO2m",
-        "aBR",
-        "SO4mm",
-        "BROHm",
-        "aN2O5",
-        "aO2COH2CHOH2",
-        "CHOSO3mm",
-        "aHOBR",
-        "aCH3CH2O",
-        "aCH3OH",
-        "FEppp",
-        "NO4m",
-        "aCH2OH",
-        "C2O4m",
-        "aNO3",
-        "aOP1",
-        "CHOHSO3m",
-        "aHO3",
-        "aCH3CHOH2",
-        "aHONO",
-        "CHOH2COOm",
-        "SO5O2mm",
-        "aETOH",
-        "CH2COOm",
-        "aO2COH2COOH",
-        "aCH2COOH",
-        "aCLNO2",
-        "BRm",
-        "O2m",
-        "aCHOH2CHOH2",
-        "aORA1",
-        "aO2CHO",
-        "aCH3CHOH",
-        "NO2p",
-        "BR2m",
-        "aHCHO",
-        "FEpp",
-        "aNO",
-        "aH2CO3",
-        "aCH2OH2",
-        "aHCL",
-        "C2O4mm",
-        "HSO4m",
-        "aHO",
-        "aCL",
-        "aCO2",
-        "HCO3m",
-        "aCH3O",
-        "FEC2O4p",
-        "aO2CH3CHOH",
-        "aBRCL",
-        "aACO3",
-        "CHOH",
-        "aCH3COH2",
-        "CUp",
-        "aHO2",
-        "aCHOH2COOH",
-        "aMO2",
-        "aETHPX",
-        "Hp",
-        "aSULF",
-        "aCOH2CHOH2",
-        "aO3",
-        "O3m",
-        "aSO2",
         "HSO5m",
-        "HCOOm",
-        "aORA2",
-        "aCH3CO",
+        "aHNO4",
+        "NO4m",
+        "SO5O2mm",
+        "aCOH2COOH",
+        "NO2p",
+        "aN2O5",
+        "BR2m",
+        "aHCL",
+        "O2CH2COOm",
+        "FEOHpp",
         "CLOHm",
+        "aHNO3",
+        "aCH3CHOH",
+        "aSO2",
+        "aCHOH2",
+        "CHOHSO3m",
+        "SO4m",
+        "aCH3CO",
+        "aHOCL",
+        "CH2COOm",
+        "O2CHOHSO3m",
+        "aO3",
+        "aCH3CHOH2",
+        "aCH2COOH",
+        "aOP1",
+        "CHOH2COOm",
+        "aH2O2",
+        "aETHPX",
+        "NO2m",
+        "aCOH2CHOH2",
+        "aCHOH2CHOH2",
+        "aNO",
+        "NO3m",
+        "aCH3OH",
+        "aCH2OH",
+        "aACO3",
+        "FEOpp",
+        "aCH3CH2O",
+        "aBR",
+        "SO3mm",
+        "aCH3O",
+        "aH2C2O4",
+        "aHO2",
+        "aORA2",
+        "SO",
+        "FEppp",
+        "FEC2O42m",
+        "CUp",
+        "aMO2",
+        "aBR2",
+        "O3m",
+        "CUpp",
+        "SO4mm",
+        "aO2CH3CHOH",
+        "FEpp",
+        "aCH3COH2",
         "OHm",
-        "aNH3",
+        "HSO4m",
+        "aO2CHO",
+        "CHOSO3m",
+        "aALD",
+        "aCH3COH2OO",
+        "NH4p",
+        "aO2CH2OH",
+        "aCO2H",
+        "aHO",
+        "aCL2",
+        "aHONO",
+        "aCL",
+        "aBRCL",
+        "aHCHO",
+        "CL2m",
+        "HCOOm",
+        "aCO2",
+        "CLm",
+        "CO2m",
+        "BRm",
+        "C2O4m",
+        "HCO3m",
         "HMSm",
-        "aO2CH2OH"
+        "HSO3m",
+        "SO5m",
+        "aO2COH2COOH",
+        "aGLY",
+        "aHOBR",
+        "aETOH",
+        "C2O4mm",
+        "aO2COH2CHOH2",
+        "aCLNO2",
+        "Hp",
+        "FEC2O4p",
+        "SO3m",
+        "aCHOH2COOH",
+        "aORA1",
+        "SO5O2Hm",
+        "aCH2OH2",
+        "aSULF",
+        "aHO3",
+        "MCOOm",
+        "aNO2",
+        "[aH2O]",
+        "aNO3",
+        "HC2O4m",
+        "aO2",
+        "CHOSO3mm",
+        "CHOH",
+        "BROHm",
+        "aBRNO2",
+        "aH2CO3",
+        "aNH3",
+        "O2m"
       ]
     },
     {

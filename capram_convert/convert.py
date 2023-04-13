@@ -56,7 +56,7 @@ def parse_reactants_products(line):
     #TODO: now, go through the lists of products and reactants and combine like species
     # also, sometimes the list of producdts is like CL2m + [aH2O] = Hp + CLm + CLm + aHO
     # this should end up being represented as if it were written like CL2m + [aH2O] = Hp + 2CLm + aHO
-    return reactants, convert_products_to_yield(products)
+    return convert_reactants_to_quantity(reactants), convert_products_to_yield(products)
 
 def combine_stoichiometric_coeffs(species):
     # given this: O2m   +  FEpp = FEppp  + aH2O2  -2.0 Hp 
@@ -71,6 +71,32 @@ def combine_stoichiometric_coeffs(species):
 
     return result
 
+def convert_reactants_to_quantity(reactants):
+    # first, combine duplicated products
+    react = {}
+    for reactant in reactants:
+        existing = react.get(reactant, 0.0)
+        quantity = 1.0
+
+        # check if this has a coefficient
+        match = stoichiemetric_coefficient_pattern.search(reactant)
+        if match:
+            # it does! add that coefficient as the yeidl
+            quantity = float(match.group(1))
+            print(reactant, match.groups())
+            # also, use the matched text as the species name so that the species name doesn't include the yield
+            reactant = match.group(2)
+        react[reactant] = existing + quantity
+
+    reactants = []
+    for name, quantity in react.items():
+        spec = dict(name=name, type="CHEM_SPEC", )
+        spec["qty"] = quantity
+        reactants.append(spec)
+    
+    # now, go through each product and, when there's a
+    return reactants
+
 def convert_products_to_yield(products):
     # first, combine duplicated products
     prods = {}
@@ -83,7 +109,6 @@ def convert_products_to_yield(products):
         if match:
             # it does! add that coefficient as the yeidl
             _yield = float(match.group(1))
-            print(product, match.groups())
             # also, use the matched text as the species name so that the species name doesn't include the yield
             product = match.group(2)
         prods[product] = existing + _yield
@@ -147,19 +172,19 @@ for item in henry:
 
     aerosol_phase_species.add(aero_phase['name'])
 
-    spec = dict(name=gas_phase, type="CHEM_SPEC")
+    spec = dict(name=gas_phase['name'], type="CHEM_SPEC")
     spec["HLC(298K) [M Pa-1]"] = item['A']
     spec["HLC exp factor [K]"] = item['B']
     spec["diffusion coeff [m2 s-1]"] = 1.00 # TODO: replace
     spec["N star"] = 1.00 # TODO: replace
-    species[gas_phase] = spec
+    species[gas_phase['name']] = spec
 
     species[aero_phase['name']] = dict(name=aero_phase['name'], type="CHEM_SPEC")
 
     henrys_law_reactions.append(
         {
             "type" : "HL_PHASE_TRANSFER",
-            "gas-phase species" : gas_phase,
+            "gas-phase species" : gas_phase['name'],
             "aerosol phase" : aerosol_phase_name,
             "aerosol-phase species" : aero_phase['name'],
             "aerosol-phase water" : "[aH2O]"
@@ -171,10 +196,10 @@ aero_phase_species = [
 
 for collection in [aqua_photo, aqua_temp, diss_with_c, diss_without_c]:
     for item in collection:
-        for name in item['reactants']:
-            if name not in species:
-                spec = dict(name=name, type="CHEM_SPEC")
-                species[name] = spec
+        for reactant in item['reactants']:
+            if reactant['name'] not in species:
+                spec = dict(name=reactant['name'], type="CHEM_SPEC")
+                species[reactant['name']] = spec
         for product in item['products']:
             if product['name'] not in species:
                 spec = dict(name=product['name'], type="CHEM_SPEC")
@@ -191,7 +216,7 @@ photolysis_reactions = [
     {
         "type":  "PHOTOLYSIS",
         "reactants": {
-            reactant: {} for reactant in reaction["reactants"]
+            reactant['name']: { 'qty': reactant['qty'] } for reactant in reaction["reactants"]
         },
         "products": {
             product['name']: { 'yield': product['yield'] } for product in reaction["products"]
@@ -226,7 +251,7 @@ for reaction in aqua_temp:
         {
             "type":  "ARRHENIUS",
             "reactants": {
-                reactant: {} for reactant in reaction["reactants"]
+                reactant['name']: { 'qty': reactant['qty'] } for reactant in reaction["reactants"]
             },
             "products": {
                 product['name']: { 'yield': product['yield'] } for product in reaction["products"]
@@ -237,7 +262,7 @@ for reaction in aqua_temp:
             "aerosol-phase water" : "H2O_aq"
         }
     )
-    aerosol_phase_species.update(reaction["reactants"])
+    aerosol_phase_species.update([ reactant['name'] for reactant in reaction['reactants']])
     aerosol_phase_species.update([ product['name'] for product in reaction['products']])
     
 
@@ -247,7 +272,7 @@ for reaction in diss_with_c:
         {
             "type":  "AQUEOUS_EQUILIBRIUM",
             "reactants": {
-                reactant: {} for reactant in reaction["reactants"]
+                reactant['name']: { 'qty': reactant['qty'] } for reactant in reaction["reactants"]
             },
             "products": {
                 product['name']: { 'yield': product['yield'] } for product in reaction["products"]
@@ -259,7 +284,7 @@ for reaction in diss_with_c:
             "aerosol-phase water" : "H2O_aq"
         }
     )
-    aerosol_phase_species.update(reaction["reactants"])
+    aerosol_phase_species.update([ reactant['name'] for reactant in reaction['reactants']])
     aerosol_phase_species.update([ product['name'] for product in reaction['products']])
 
 for reaction in diss_without_c:
@@ -268,7 +293,7 @@ for reaction in diss_without_c:
             {
                 "type":  "AQUEOUS_EQUILIBRIUM",
                 "reactants": {
-                    reactant: {} for reactant in reaction["reactants"]
+                    reactant['name']: { 'qty': reactant['qty'] } for reactant in reaction["reactants"]
                 },
                 "products": {
                     product['name']: { 'yield': product['yield'] } for product in reaction["products"]
@@ -281,7 +306,7 @@ for reaction in diss_without_c:
             }
         ]
     )
-    aerosol_phase_species.update(reaction["reactants"])
+    aerosol_phase_species.update([ reactant['name'] for reactant in reaction['reactants']])
     aerosol_phase_species.update([ product['name'] for product in reaction['products']])
 
 mechanisms = { 
