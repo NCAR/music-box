@@ -109,12 +109,13 @@ species = dict()
 henrys_law_reactions = list()
 henrys_species = list()
 
+aerosol_phase_name = "cloud aerosols"
 
 for item in henry:
     gas_phase = item['reactants'][0]
     aero_phase = item['products'][0]
 
-    henrys_species.append(gas_phase)
+    henrys_species.append(aero_phase)
 
     spec = dict(name=gas_phase, type="CHEM_SPEC")
     spec["HLC(298K) [M Pa-1]"] = item['A']
@@ -129,7 +130,7 @@ for item in henry:
         {
             "type" : "HL_PHASE_TRANSFER",
             "gas-phase species" : gas_phase,
-            "aerosol phase" : "aqueous aerosol",
+            "aerosol phase" : aerosol_phase_name,
             "aerosol-phase species" : aero_phase,
             "aerosol-phase water" : "aH2O" #TODO: verify this
         }
@@ -137,7 +138,7 @@ for item in henry:
 
 henrys_law_aero_phase = [
     {
-        "name" : "aqueous aerosol",
+        "name" : aerosol_phase_name,
         "type" : "AERO_PHASE",
         "species" : henrys_species
     }
@@ -237,7 +238,8 @@ aqueous_equilibrium.extend(
             },
             "A" : reaction['A'],
             "C" : 0,
-            "k_reverse" : reaction['B']
+            "k_reverse" : reaction['B'],
+            "phase": aerosol_phase_name
         }
         for reaction in diss_without_c
     ]
@@ -264,7 +266,7 @@ mechanisms = {
             "the mode" :
             {
                 "type" : "MODAL",
-                "phases" : ["aqueous aerosol"],
+                "phases" : [aerosol_phase_name],
                 "shape" : "LOG_NORMAL"
             }
             }
