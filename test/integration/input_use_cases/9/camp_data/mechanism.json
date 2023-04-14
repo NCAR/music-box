@@ -144,7 +144,9 @@
         {
           "type" : "MODAL",
           "phases" : [ "droplet phase" ],
-          "shape" : "LOG_NORMAL"
+          "shape" : "LOG_NORMAL",
+          "geometric mean diameter" : 2.5e-8,
+          "geometric standard deviation" : 1.2
         },
         "binned aerosol" :
         {
