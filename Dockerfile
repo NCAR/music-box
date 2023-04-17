@@ -37,12 +37,12 @@ RUN curl -LO https://github.com/jacobwilliams/json-fortran/archive/8.2.0.tar.gz 
     && make -j 8 install
 
 # copy the interactive server code
-COPY . /music-box
+COPY ./libs/camp /camp
 
 # Install a modified version of CVODE
 RUN mkdir cvode_build \
     && cd cvode_build \
-    && tar -zxvf /music-box/libs/camp/cvode-3.4-alpha.tar.gz \
+    && tar -zxvf /camp/cvode-3.4-alpha.tar.gz \
     && cd cvode-3.4-alpha \
     && mkdir build \
     && cd build \
@@ -66,8 +66,11 @@ RUN mkdir camp_build \
              -D CMAKE_Fortran_FLAGS_DEBUG="-pg" \
              -D CMAKE_MODULE_LINKER_FLAGS="-pg" \
              -D ENABLE_GSL:BOOL=TRUE \
-             /music-box/libs/camp \
+             /camp \
     && make
+
+# copy the interactive server code
+COPY . /music-box
 
 # build music-box
 RUN cd music-box \
