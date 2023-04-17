@@ -130,9 +130,15 @@ contains
   !> CAMP interface constructor
   function constructor( config, domain, output ) result( new_obj )
 
-    use musica_domain,                 only : domain_t
-    use musica_input_output_processor, only : input_output_processor_t
-    use musica_string,                 only : string_t
+    use musica_domain,                   only : domain_t
+    use musica_assert,                   only : assert_msg, die_msg
+    use musica_input_output_processor,   only : input_output_processor_t
+    use musica_string,                   only : string_t
+    use musica_iterator,                 only : iterator_t
+    use camp_aero_rep_data,              only : aero_rep_data_t
+    use camp_aero_rep_modal_binned_mass, only : aero_rep_modal_binned_mass_t,                                                &
+                                                aero_rep_update_data_modal_binned_mass_GMD_t,                                &
+                                                aero_rep_update_data_modal_binned_mass_GSD_t
 
     !> New CAMP interface
     type(camp_t), pointer :: new_obj
@@ -144,7 +150,15 @@ contains
     class(input_output_processor_t), intent(inout) :: output
 
     character(len=*), parameter :: my_name = "CAMP interface constructor"
-    type(string_t) :: config_file_name
+    type(string_t) :: config_file_name, object_type, filename, rep_name
+    type(config_t) :: mechanism_config, child_config, obj_config, mode_config, single_phase_config
+    class(iterator_t), pointer  :: iter
+    logical                     :: found, file_exists
+    real(musica_dk) :: gmd, gsd
+    class(aero_rep_data_t), pointer :: aero_rep
+    type(aero_rep_update_data_modal_binned_mass_GMD_t) :: update_data_GMD
+    type(aero_rep_update_data_modal_binned_mass_GSD_t) :: update_data_GSD
+    integer :: i_sect_single
 
     allocate( new_obj )
 
@@ -164,6 +178,53 @@ contains
     call new_obj%connect_photolysis(    config, domain, output )
     call new_obj%connect_emissions(     config, domain, output )
     call new_obj%connect_deposition(    config, domain, output )
+
+    ! check if the configuration file has a mean diameter and standard deviation. Create an updater if so
+    filename = "camp_data/mechanism.json"
+    inquire( file=filename%to_char(), exist=file_exists )
+    if(file_exists) then
+      call mechanism_config%from_file( filename%to_char() )
+      call mechanism_config%get( "camp-data", child_config, my_name )
+      iter => child_config%get_iterator()
+      do while( iter%next() )
+        call child_config%get( iter, obj_config, my_name )
+        call obj_config%get( "type", object_type, my_name, found = found)
+
+        if(found .and. (object_type == "AERO_REP_MODAL_BINNED_MASS")) then
+          call obj_config%get( "modes/bins", mode_config, my_name )
+          call mode_config%get( "single phase mode", single_phase_config, my_name, found = found )
+          if(found) then
+            call obj_config%get( "name", rep_name, my_name)
+            call assert_msg(940125461, new_obj%core_%get_aero_rep(rep_name%to_char(), aero_rep), rep_name)
+            call assert_msg(636914093, associated(aero_rep), rep_name)
+            call new_obj%core_%initialize_update_object(aero_rep, update_data_GMD)
+            call new_obj%core_%initialize_update_object(aero_rep, update_data_GSD)
+
+            ! Update the GMD and GSD for the two modes
+            select type (aero_rep)
+              type is (aero_rep_modal_binned_mass_t)
+                call assert_msg(937636446, &
+                            aero_rep%get_section_id("single phase mode", &
+                                                    i_sect_single), &
+                            "Could not get section id for the single phase mode")
+              class default
+                call die_msg(570113680, rep_name)
+            end select
+
+
+            call single_phase_config%get( "geometric mean diameter", gmd, my_name )
+            call single_phase_config%get( "geometric standard deviation", gsd, my_name )
+
+            call update_data_GMD%set_GMD(i_sect_single, gmd)
+            call update_data_GSD%set_GSD(i_sect_single, gsd)
+
+            call new_obj%core_%update_data(update_data_GMD)
+            call new_obj%core_%update_data(update_data_GSD)
+          end if
+          exit
+        end if
+      end do
+    end if
 
     ! at this point the core and update objects could be packed onto a
     ! character buffer and used to recreate these objects for use on multiple
