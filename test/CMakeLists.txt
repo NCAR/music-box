@@ -64,5 +64,7 @@ add_test(NAME input_use_case_8_camp COMMAND integration/input_use_cases/8/run_ca
 add_test(NAME input_use_case_8_preprocessor_camp COMMAND integration/input_use_cases/8/run_preprocessor_camp.sh)
 add_test(NAME input_use_case_8b_camp COMMAND integration/input_use_cases/8/run_b_camp.sh)
 add_test(NAME input_use_case_8b_preprocessor_camp COMMAND integration/input_use_cases/8/run_b_preprocessor_camp.sh)
+add_test(NAME input_use_case_9_camp COMMAND integration/input_use_cases/9/run_camp.sh)
+add_test(NAME input_use_case_9_preprocessor_camp COMMAND integration/input_use_cases/9/run_preprocessor_camp.sh)
 
 ################################################################################
