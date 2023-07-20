@@ -17,14 +17,16 @@ RUN dnf -y update \
         postgresql-devel \
         python3 \
         python3-pip \
+        suitesparse-devel \
+        suitesparse-static \
     && dnf clean all
 
-# Build the SuiteSparse libraries for sparse matrix support
-RUN curl -LO http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-5.1.0.tar.gz \
-    && tar -zxvf SuiteSparse-5.1.0.tar.gz \
-    && export CXX=/usr/bin/cc \
-    && cd SuiteSparse \
-    && make -j 8 install INSTALL=/usr/local BLAS="-L/lib64 -lopenblas"
+# # Build the SuiteSparse libraries for sparse matrix support
+# RUN curl -LO http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-5.1.0.tar.gz \
+#     && tar -zxvf SuiteSparse-5.1.0.tar.gz \
+#     && export CXX=/usr/bin/cc \
+#     && cd SuiteSparse/KLU \
+#     && make -j 8 install INSTALL=/usr/local BLAS="-L/lib64 -lopenblas"
 
 # install json-fortran
 RUN curl -LO https://github.com/jacobwilliams/json-fortran/archive/8.2.0.tar.gz \
@@ -58,27 +60,27 @@ RUN mkdir cvode_build \
     && make install
 
 # Build CAMP
-RUN mkdir camp_build \
-    && cd camp_build \
-    && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-8.2.0" \
-    && cmake -D CMAKE_BUILD_TYPE=release \
-             -D CMAKE_C_FLAGS_DEBUG="-pg" \
-             -D CMAKE_Fortran_FLAGS_DEBUG="-pg" \
-             -D CMAKE_MODULE_LINKER_FLAGS="-pg" \
-             -D ENABLE_GSL:BOOL=TRUE \
-             /camp \
-    && make
+# RUN mkdir camp_build \
+#     && cd camp_build \
+#     && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-8.2.0" \
+#     && cmake -D CMAKE_BUILD_TYPE=release \
+#              -D CMAKE_C_FLAGS_DEBUG="-pg" \
+#              -D CMAKE_Fortran_FLAGS_DEBUG="-pg" \
+#              -D CMAKE_MODULE_LINKER_FLAGS="-pg" \
+#              -D ENABLE_GSL:BOOL=TRUE \
+#              /camp 
+    # && make
 
-# copy the interactive server code
-COPY . /music-box
+# # copy the interactive server code
+# COPY . /music-box
 
-# build music-box
-RUN cd music-box \
-    && mkdir build \
-    && cd build \
-    && export FC=gfortran \
-    && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-8.2.0" \
-    && cmake -D CAMP_INCLUDE_DIR="/camp_build/include" \
-              -D CAMP_LIB="/camp_build/lib/libcamp.a" \
-              .. \
-    && make -j 8
+# # build music-box
+# RUN cd music-box \
+#     && mkdir build \
+#     && cd build \
+#     && export FC=gfortran \
+#     && export JSON_FORTRAN_HOME="/usr/local/jsonfortran-gnu-8.2.0" \
+#     && cmake -D CAMP_INCLUDE_DIR="/camp_build/include" \
+#               -D CAMP_LIB="/camp_build/lib/libcamp.a" \
+#               .. \
+#     && make -j 8
