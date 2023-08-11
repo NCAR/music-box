@@ -25,7 +25,6 @@ contains
   function component_builder( config, domain, output ) result( new_obj )
 
     use music_box_camp,                only : camp_t
-    use music_box_micm,                only : micm_t
     use musica_assert,                 only : die_msg
     use musica_config,                 only : config_t
     use musica_domain,                 only : domain_t
@@ -52,8 +51,6 @@ contains
 
     if( component_type .eq. 'camp' ) then
       new_obj => camp_t( config, domain, output )
-    else if( component_type .eq. 'micm' ) then
-      new_obj => micm_t( config, domain, output )
     else if( component_type .eq. 'musica-emissions' ) then
       new_obj => emissions_t( config, domain, output )
     else if( component_type .eq. 'musica-loss' ) then
