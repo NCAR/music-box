@@ -9,6 +9,33 @@ MusicBox: A MUSICA model for boxes and columns.
 
 Copyright (C) 2020 National Center for Atmospheric Research
 
+# Install and run from local git clone
+
+```
+git clone https://github.com/NCAR/music-box
+cd music-box
+git submodule init
+git submodule update
+docker build -t music-box .
+docker run --rm -it music-box
+```
+
+Running those commands will put you in a docker container, at which point you can run
+
+```
+cd /music-box/build
+make test
+```
+
+and you will see tests run, and hopefully pass.
+
+There are a number of examples you can run and modify.
+
+```
+cd /music-box/examples/camp_examples/bright_chamber/use_case_7/
+/music-box/build/music_box use_case_7_config.json 
+```
+
 # Install and run (interactive version)
 
 The only requirement for running MusicBox is that you have [Docker Desktop](https://www.docker.com/get-started) installed and running. With Docker Desktop running, open a terminal window and run the following command: (The first time you run this command, the MusicBox code will be downloaded from Docker Hub, which may take a few minutes.)
