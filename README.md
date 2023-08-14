@@ -64,16 +64,6 @@ You will need to have [Docker Desktop](https://www.docker.com/get-started) insta
 docker run -it --rm ncar/music-box bash
 ```
 
-## Running MusicBox with the MICM Solver
-MICM can be specified as the chemical solver by configuring the [model components](config_options.md#model-components) section of the configuration file. By default, MusicBox loads the Chapman chemistry mechanism for simulations using MICM. To run the model with this mechanism under one of the model configurations in the `examples/` folder:
-
-```
-cd /build
-cp examples/micm_examples/bright_chamber/use_case_4.json .
-cp examples/micm_examples/bright_chamber/use_case_4_initial.csv data/
-./music_box use_case_4.json
-```
-
 ## Running MusicBox with the CAMP Solver
 
 CAMP can be specified as the chemical solver by configuring the [model components](config_options.md#model-components) section of the configuration file. To run the model using the CAMP solver under one of the model configurations in the `examples/` folder:

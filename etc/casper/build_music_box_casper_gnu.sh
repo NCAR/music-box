@@ -113,7 +113,6 @@ mkdir -p build
 cd build
 cmake -D CMAKE_C_COMPILER=gcc \
       -D CMAKE_Fortran_COMPILER=gfortran \
-      -D ENABLE_MICM_TESTS=OFF \
       -D CMAKE_BUILD_TYPE=release \
       -D CMAKE_C_FLAGS="-std=c99 ${NCAR_LIBS_GSL}" \
       -D SUITE_SPARSE_AMD_LIB=$SUITE_SPARSE_HOME/lib/libamd.so \
