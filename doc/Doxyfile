@@ -765,7 +765,6 @@ WARN_LOGFILE           =
 
 INPUT                  = doxygen_files \
                          ../src \
-                         ../libs/micm/src \
                          ../libs/musica-core/src \
                          ../test
 
