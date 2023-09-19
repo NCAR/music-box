@@ -5,7 +5,7 @@ include(FetchContent)
 
 FetchContent_Declare(musicacore
   GIT_REPOSITORY https://github.com/NCAR/musica-core.git
-  GIT_TAG 6a628d4f368c9a6b2aa01e5138660d961819c77c 
+  GIT_TAG 25ef3ab
   FIND_PACKAGE_ARGS NAMES musicacore
 )
 
