@@ -369,29 +369,6 @@ NetCDF files should have a dimension of <code>time</code>, and variables whose o
 </code></pre>
 <hr>
 <h3 class="code-line" data-line-start=321 data-line-end=322 ><a id="Model_Components_321"></a>Model Components</h3>
-<p class="has-line-data" data-line-start="322" data-line-end="323">The model components section of the MusicBox configuration specifies settings for the chemical solver. For most use cases of MusicBox, modifying the model components is not neccesary.</p>
-<h5 class="code-line" data-line-start=324 data-line-end=325 ><a id="Model_components_configuration_with_the_MICM_solver_324"></a>Model components configuration with the MICM solver:</h5>
-<h1 class="code-line" data-line-start=325 data-line-end=326 ><a id="_325"></a></h1>
-<pre><code class="has-line-data" data-line-start="327" data-line-end="347" class="language-json">{
-    "<span class="hljs-attribute">model components</span>" : <span class="hljs-value">[
-    {
-      "<span class="hljs-attribute">type</span>" : <span class="hljs-value"><span class="hljs-string">"MICM"</span></span>,
-      "<span class="hljs-attribute">solver</span>" : <span class="hljs-value">{
-        "<span class="hljs-attribute">type</span>" : <span class="hljs-value"><span class="hljs-string">"Rosenbrock"</span></span>,
-        "<span class="hljs-attribute">chemistry time step [min]</span>" : <span class="hljs-value"><span class="hljs-number">5.0</span></span>,
-        "<span class="hljs-attribute">absolute tolerance</span>" : <span class="hljs-value"><span class="hljs-number">1.0e-12</span></span>,
-        "<span class="hljs-attribute">relative tolerance</span>" : <span class="hljs-value"><span class="hljs-number">1.0e-4</span>
-      </span>}
-    </span>},
-    {
-      "<span class="hljs-attribute">type</span>" : <span class="hljs-value"><span class="hljs-string">"musica-emissions"</span>
-    </span>},
-    {
-      "<span class="hljs-attribute">type</span>" : <span class="hljs-value"><span class="hljs-string">"musica-loss"</span>
-    </span>}
-  ]
-</span>}
-</code></pre>
 <h5 class="code-line" data-line-start=348 data-line-end=349 ><a id="Configuring_the_CAMP_solver_348"></a>Configuring the CAMP solver:</h5>
 <p class="has-line-data" data-line-start="349" data-line-end="350"><strong>When using the CAMP solver, additional configuration files are required.</strong> By default, these are stored in a directory <code>camp_data</code>. Inside this folder:</p>
 <p class="has-line-data" data-line-start="351" data-line-end="354">|—<code>config.json</code> — Points to <code>specise.json</code> and <code>mechanism.json</code>.<br>
