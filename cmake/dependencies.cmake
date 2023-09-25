@@ -5,7 +5,7 @@ include(FetchContent)
 
 FetchContent_Declare(musicacore
   GIT_REPOSITORY https://github.com/NCAR/musica-core.git
-  GIT_TAG 6a628d4f368c9a6b2aa01e5138660d961819c77c 
+  GIT_TAG 25ef3ab
   FIND_PACKAGE_ARGS NAMES musicacore
 )
 
@@ -141,17 +141,3 @@ find_path(CAMP_INCLUDE_DIR camp_core.mod
     /usr/local/lib
     /usr/local/lib64)
 include_directories(${CAMP_INCLUDE_DIR})
-
-################################################################################
-# MICM library
-
-include(FetchContent)
-
-set(ENABLE_FORTRAN_LINK ON)
-FetchContent_Declare(micm
-  GIT_REPOSITORY https://github.com/NCAR/micm.git
-  GIT_TAG 20c0a19
-  FIND_PACKAGE_ARGS NAMES micm
-)
-
-FetchContent_MakeAvailable(micm)

@@ -7,19 +7,18 @@ set -v
 # make sure that the current directory is the once where this script is
 cd ${0%/*}
 
-exec_str="../../../../music_box config.json"
-comp_str="../../../../compare_results output.csv expected_output.csv 1.0e-3 1.0e-12"
+exec_str="../../../../music_box --preprocess-only config_camp.json"
+exec_str2="./run_preprocessed_data_camp.sh"
 
 if ! $exec_str; then
   echo FAIL
   exit 1
 else
-  if $comp_str; then
-    echo PASS
-    exit 0
-  else
-    echo unexpected results
+  if ! $exec_str2; then
     echo FAIL
     exit 1
+  else
+    echo PASS
+    exit 0
   fi
 fi

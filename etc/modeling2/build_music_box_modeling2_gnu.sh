@@ -184,7 +184,6 @@ mkdir -p build
 cd build
 cmake3 -D CMAKE_C_COMPILER=gcc \
        -D CMAKE_Fortran_COMPILER=gfortran \
-       -D ENABLE_MICM_TESTS=OFF \
        -D CMAKE_BUILD_TYPE=release \
        -D CMAKE_C_FLAGS="-std=c99" \
        -D GSL_CBLAS_LIB=$GSL_HOME/lib/libgslcblas.so \
