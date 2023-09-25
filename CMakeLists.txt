@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.21)
 set(CMAKE_USER_MAKE_RULES_OVERRIDE "SetDefaults.cmake")
-project(musicbox)
+project(
+  musicbox
+  VERSION 1.4.2
+)
+
 enable_language(Fortran)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
