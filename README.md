@@ -9,6 +9,20 @@ MusicBox: A MUSICA model for boxes and columns.
 
 Copyright (C) 2020 National Center for Atmospheric Research
 
+# Windows Users
+
+> [!IMPORTANT]  
+> By default git will checkout the repository with `\r\n`. When running 
+> `make test`, if you see something related to `BAD COMMAND` or a file not found issue
+> it is most likely because all of your files are using windows line endings instead of linux line endings.
+> Because all of our docker files are based off of linux, things will fail.
+
+To fix this, please configure git to use linux line endings.
+
+```
+git config --global core.autocrlf false
+```
+
 # Install and run from local git clone
 
 ```
