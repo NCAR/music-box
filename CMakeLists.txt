@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 set(CMAKE_USER_MAKE_RULES_OVERRIDE "SetDefaults.cmake")
 project(
   musicbox
-  VERSION 1.4.2
+  VERSION 1.4.3
 )
 
 enable_language(Fortran)
