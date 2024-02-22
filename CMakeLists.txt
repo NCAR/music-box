@@ -1,22 +1,18 @@
 cmake_minimum_required(VERSION 3.21)
-set(CMAKE_USER_MAKE_RULES_OVERRIDE "SetDefaults.cmake")
+
 project(
   musicbox
-  VERSION 1.4.3
+  VERSION 2.0.0
+  LANGUAGES CXX
 )
 
-enable_language(Fortran)
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/cmake")
 
 ################################################################################
 # options
 
-################################################################################
-# Create a directory to hold input data
-
-add_custom_target(data-directory ALL COMMAND ${CMAKE_COMMAND} -E make_directory
-  ${CMAKE_BINARY_DIR}/data)
+option(MUSIC_BOX_ENABLE_MEMCHECK "Enable memory checking in tests" OFF)
 
 ################################################################################
 # Dependencies
@@ -31,5 +27,8 @@ add_subdirectory(src)
 ################################################################################
 # MUSICA tests
 
-enable_testing()
-add_subdirectory(test)
+if(PROJECT_IS_TOP_LEVEL)
+  include(CTest)
+  enable_testing()
+  add_subdirectory(test)
+endif()

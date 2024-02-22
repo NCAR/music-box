@@ -5,14 +5,7 @@
 !CMakeLists.txt
 !SetDefaults.cmake
 !src/
-!apps/
-!libs/
 !test/
 !examples/
-!etc/
 !cmake/
-
-# exclude generated code
-libs/micm-collection/configured_tags/*
-!libs/micm-collection/configured_tags/chapman/
-libs/micm-collection/configured_tags/chapman/output
+!include/
