@@ -79,6 +79,7 @@ class BoxModel:
         }
 
         speciesArray = []
+        speciesArray.append(relTolerance)
 
         #Adds species to config
         for species in self.species_list.species:
