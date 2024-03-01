@@ -170,8 +170,20 @@ class BoxModel:
                 products[product.name] = yield_value
             
             reac["products"] = products
-
-             #Adds reaction name if value is set
+            
+            # Add reaction parameters (A, B, D, E, Ea) if values are set
+            if reaction.A is not None:
+                reac["A"] = reaction.A
+            if reaction.B is not None:
+                reac["B"] = reaction.B
+            if reaction.D is not None:
+                reac["D"] = reaction.D
+            if reaction.E is not None:
+                reac["E"] = reaction.E
+            if reaction.Ea is not None:
+                reac["Ea"] = reaction.Ea
+            
+            #Adds reaction name if value is set
             if(reaction.name != None):
                 reac["MUSICA name"] = reaction.name
 
@@ -199,6 +211,5 @@ class BoxModel:
         """
         # TODO: Implement the logic to update the box model config using a json.
         pass
-    
 
-    
+
