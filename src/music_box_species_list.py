@@ -18,7 +18,7 @@ class SpeciesList:
             relative_tolerance (float): The relative tolerance for the species list. Default is 0.0.
         """
         self.species = species if species is not None else []
-        self.relativeTolerance = relative_tolerance
+        self.relative_tolerance = relative_tolerance
 
     def add_species(self, species):
         """

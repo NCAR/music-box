@@ -16,7 +16,7 @@ class Reaction:
         Initializes a new instance of the Reaction class.
 
         Args:
-            name (str): The name of the reaction.
+            type (str): The type of the reaction.
             reaction_type (str): The type of the reaction.
             reactants (List[Reactant]): A list of Reactant instances representing the reactants. Default is an empty list.
             products (List[Product]): A list of Product instances representing the products. Default is an empty list.

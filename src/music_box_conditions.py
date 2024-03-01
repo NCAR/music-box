@@ -24,8 +24,8 @@ class Conditions:
         """
         self.pressure = pressure
         self.temperature = temperature
-        self.speciesConcentrations = species_concentrations if species_concentrations is not None else []
-        self.reactionRates = reaction_rates if reaction_rates is not None else []
+        self.species_concentrations = species_concentrations if species_concentrations is not None else []
+        self.reaction_rates = reaction_rates if reaction_rates is not None else []
 
     def add_species_concentration(self, species_concentration):
         """
@@ -34,7 +34,7 @@ class Conditions:
         Args:
             species_concentration (SpeciesConcentration): The SpeciesConcentration instance to be added.
         """
-        self.speciesConcentrations.append(species_concentration)
+        self.species_concentration.append(species_concentration)
 
     def add_reaction_rate(self, reaction_rate):
         """
@@ -43,4 +43,4 @@ class Conditions:
         Args:
             reaction_rate (ReactionRate): The ReactionRate instance to be added.
         """
-        self.reactionRates.append(reaction_rate)
+        self.reaction_rates.append(reaction_rate)

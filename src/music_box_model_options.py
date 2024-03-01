@@ -19,7 +19,7 @@ class BoxModelOptions:
             simulation_length (float): Length of the simulation in hours.
             grid (str): The type of grid. Default is "box".
         """
-        self.chemStepTime = chem_step_time
-        self.outputStepTime = output_step_time
-        self.simulationLength = simulation_length
+        self.chem_step_time = chem_step_time
+        self.output_step_time = output_step_time
+        self.simulation_length = simulation_length
         self.grid = grid
