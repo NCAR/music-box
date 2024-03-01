@@ -199,5 +199,6 @@ class BoxModel:
         """
         # TODO: Implement the logic to update the box model config using a json.
         pass
+    
 
     
