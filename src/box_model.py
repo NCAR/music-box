@@ -193,4 +193,11 @@ class BoxModel:
         # Update the internal state of the BoxModel instance to reflect the simulation results.
         pass
 
+    def readFromJson(self):
+        """
+        TODO: Read the box model configuration from json and sets config
+        """
+        # TODO: Implement the logic to update the box model config using a json.
+        pass
+
     
