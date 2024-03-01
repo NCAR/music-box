@@ -3,6 +3,8 @@ import json
 from music_box_evolving_conditions import EvolvingConditions
 from music_box_reaction_list import ReactionList
 from music_box_reaction import Reaction
+from music_box_reactant import Reactant
+from music_box_product import Product
 from music_box_species_list import SpeciesList
 from music_box_species import Species
 from music_box_model_options import BoxModelOptions
@@ -63,7 +65,11 @@ class BoxModel:
         speciesConfig = self.generateSpeciesConfig()
         print(speciesConfig)
 
+        reactionConfig = self.generateReactionConfig()
+        print(reactionConfig)
+
         pass
+
     def generateSpeciesConfig(self):
         """
         Generate a JSON configuration for the species in the box model.
@@ -72,14 +78,14 @@ class BoxModel:
             str: A JSON-formatted string representing the species configuration.
         """
 
-        #Established relative tolerance
-        relTolerance = {
-            "type" : "RELATIVE_TOLERANCE",
-            "value" : self.species_list.relative_tolerance
-        }
-
         speciesArray = []
-        speciesArray.append(relTolerance)
+
+        #Adds relative tolerance if value is set
+        if(self.species_list.relative_tolerance != None):
+            relativeTolerance = {}
+            relativeTolerance["Type"] = "RELATIVE_TOLERANCE"
+            relativeTolerance["value"] = self.species_list.relative_tolerance
+            speciesArray.append(relativeTolerance)
 
         #Adds species to config
         for species in self.species_list.species:
@@ -115,4 +121,69 @@ class BoxModel:
 
         return json.dumps(species_json)
     
+    
+    def generateReactionConfig(self):
+        """
+        Generate a JSON configuration for the reactions in the box model.
+
+        Returns:
+            str: A JSON-formatted string representing the reaction configuration.
+        """
+        reacList = {}
+
+        #Add mechanism name if value is set
+        if self.reaction_list.name != None:
+            reacList["name"] = self.reaction_list.name
+        
+        reacList["type"] = "MECHANISM"
+
+        reactionsArray = []
+
+        #Adds reaction to config
+        for reaction in self.reaction_list.reactions:
+            reac = {}
+
+            #Adds reaction name if value is set
+            if(reaction.reaction_type != None):
+                reac["type"] = reaction.reaction_type
+
+            reactants = {}
+
+            #Adds reactants
+            for reactant in reaction.reactants:
+                quantity = {}
+
+                #Adds reactant quantity if value is set
+                if reactant.quantity != None:
+                    quantity["quantity"] = reactant.quantity
+                reactants[reactant.name] = quantity
+            
+            reac["reactants"] = reactants
+
+            products = {}
+
+            #Adds products
+            for product in reaction.products:
+                yield_value = {}
+
+                 #Adds product yield if value is set
+                if product.yield_value != None:
+                    yield_value["yield"] = product.yield_value
+                products[product.name] = yield_value
+            
+            reac["products"] = products
+
+             #Adds reaction name if value is set
+            if(reaction.name != None):
+                reac["MUSICA name"] = reaction.name
+
+            reactionsArray.append(reac)
+
+        reacList["reactions"] = reactionsArray
+
+        reactionsJson = {
+            "camp-data" : [reacList]
+        }
+
+        return json.dumps(reactionsJson)
 

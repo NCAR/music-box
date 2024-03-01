@@ -7,7 +7,7 @@ class Reactant:
         quantity (float): The quantity of the reactant.
     """
 
-    def __init__(self, species, quantity):
+    def __init__(self, species, quantity=None):
         """
         Initializes a new instance of the Reactant class.
 

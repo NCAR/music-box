@@ -8,7 +8,7 @@ class Product:
         yield_value (float): The yield of the product.
     """
 
-    def __init__(self, species, yield_value):
+    def __init__(self, species, yield_value=None):
         """
         Initializes a new instance of the Product class.
 

@@ -8,13 +8,15 @@ class ReactionList:
         reactions (List[Reaction]): A list of Reaction instances.
     """
 
-    def __init__(self, reactions=None):
+    def __init__(self, name=None, reactions=None):
         """
         Initializes a new instance of the ReactionList class.
 
         Args:
             reactions (List[Reaction]): A list of Reaction instances. Default is an empty list.
         """
+
+        self.name = name
         self.reactions = reactions if reactions is not None else []
 
     def add_reaction(self, reaction):
