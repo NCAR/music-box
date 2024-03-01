@@ -57,18 +57,16 @@ class BoxModel:
 
     def generateConfig(self):
         """
-        TODO: Generate configuration JSON for the box model simulation.
+        Generate configuration JSON for the box model simulation.
+
+        Returns:
+        tuple: A tuple containing the species configuration JSON and the reaction configuration JSON.
         """
-        # TODO: Implement the logic to generate configuration files.
-        # This method is a placeholder, and the actual implementation is required.
 
         speciesConfig = self.generateSpeciesConfig()
-        print(speciesConfig)
-
         reactionConfig = self.generateReactionConfig()
-        print(reactionConfig)
 
-        pass
+        return speciesConfig, reactionConfig
 
     def generateSpeciesConfig(self):
         """
@@ -186,4 +184,13 @@ class BoxModel:
         }
 
         return json.dumps(reactionsJson)
+    
+    def solve(self):
+        """
+        TODO: Solve the box model simulation.
+        """
+        # TODO: Implement the logic to solve the box model simulation.
+        # Update the internal state of the BoxModel instance to reflect the simulation results.
+        pass
 
+    
