@@ -9,6 +9,7 @@ from music_box_species_list import SpeciesList
 from music_box_species import Species
 from music_box_model_options import BoxModelOptions
 from music_box_conditions import Conditions
+from music_box_species_concentration import SpeciesConcentration
 
 class BoxModel:
     """
@@ -205,11 +206,166 @@ class BoxModel:
         # Update the internal state of the BoxModel instance to reflect the simulation results.
         pass
 
-    def readFromJson(self):
+    def readFromJson(self, path_to_json):
         """
         TODO: Read the box model configuration from json and sets config
         """
         # TODO: Implement the logic to update the box model config using a json.
-        pass
+
+        with open(path_to_json, 'r', encoding='utf-16') as json_file:
+            data = json.load(json_file)
+
+            # Set box model options
+            # make sure to convert the time units to minutes
+            chem_step_time = None
+            if 'chemistry time step [sec]' in data['conditions']['box model options']:
+                chem_step_time = float(data['conditions']['box model options']['chemistry time step [sec]']) / 60
+            elif 'chemistry time step [min]' in data['conditions']['box model options']:
+                chem_step_time = float(data['conditions']['box model options']['chemistry time step [min]'])
+            elif 'chemistry time step [hour]' in data['conditions']['box model options']:
+                chem_step_time = float(data['conditions']['box model options']['chemistry time step [hour]']) * 60
+            elif 'chemistry time step [day]' in data['conditions']['box model options']:
+                chem_step_time = float(data['conditions']['box model options']['chemistry time step [day]']) * 60 * 24
+
+            # make sure to convert the time units to hours
+            output_step_time = None
+            if 'output time step [sec]' in data['conditions']['box model options']:
+                output_step_time = float(data['conditions']['box model options']['output time step [sec]']) / 3600
+            elif 'output time step [min]' in data['conditions']['box model options']:
+                output_step_time = float(data['conditions']['box model options']['output time step [min]']) / 60
+            elif 'output time step [hour]' in data['conditions']['box model options']:
+                output_step_time = float(data['conditions']['box model options']['output time step [hour]'])
+            elif 'output time step [day]' in data['conditions']['box model options']:
+                output_step_time = float(data['conditions']['box model options']['output time step [day]']) * 24
+
+            # make sure to convert the time units to hours
+            simulation_length = None
+            if 'simulation length [sec]' in data['conditions']['box model options']:
+                simulation_length = float(data['conditions']['box model options']['simulation length [sec]']) / 3600
+            elif 'simulation length [min]' in data['conditions']['box model options']:
+                simulation_length = float(data['conditions']['box model options']['simulation length [min]']) / 60
+            elif 'simulation length [hour]' in data['conditions']['box model options']:
+                simulation_length = float(data['conditions']['box model options']['simulation length [hour]'])
+            elif 'simulation length [day]' in data['conditions']['box model options']:
+                simulation_length = float(data['conditions']['box model options']['simulation length [day]']) * 24
+
+            grid = data['conditions']['box model options']['grid']
+
+            self.box_model_options = BoxModelOptions(chem_step_time, output_step_time, simulation_length, grid)
+
+            # Set species list
+            species_from_json = []
+
+            for species in data['mechanism']['species']['camp-data']:
+                name = species['name']
+                absolute_tolerance = species['absolute tolerance'] if 'absolute tolerance' in species else None
+                molecular_weight = species['molecular weight [kg mol-1]'] if 'molecular weight [kg mol-1]' in species else None
+
+                # TODO: Add phase and density to species
+
+                species_from_json.append(Species(name, absolute_tolerance, None, molecular_weight, None))
+
+            self.species_list = SpeciesList(species)
+
+            # Set reaction list
+            reactions = []
+
+            for reaction in data['mechanism']['reactions']['camp-data'][0]['reactions']:
+                name = reaction['MUSICA name'] if 'MUSICA name' in reaction else None
+                reaction_type = reaction['type']
+                A = reaction['A'] if 'A' in reaction else None
+                B = reaction['B'] if 'B' in reaction else None
+                D = reaction['D'] if 'D' in reaction else None
+                E = reaction['E'] if 'E' in reaction else None
+                Ea = reaction['Ea'] if 'Ea' in reaction else None
+
+                reactants = []
+
+                for reactant, reactant_info in reaction['reactants'].items():
+                    match = filter(lambda x: x.name == reactant, species_from_json)
+                    species = next(match, None)
+                    quantity = reactant_info['qty'] if 'qty' in reactant_info else None
+
+                    reactants.append(Reactant(species, quantity))
+
+                products = []
+
+                for product, product_info in reaction['products'].items():
+                    match = filter(lambda x: x.name == product, species_from_json)
+                    species = next(match, None)
+                    yield_value = product_info['yield'] if 'yield' in product_info else None
+
+                    products.append(Product(species, yield_value))
+
+                reactions.append(Reaction(name, reaction_type, reactants, products, A, B, D, E, Ea))
+
+            # Set initial conditions
+            # make sure to convert the pressure units to atm
+            pressure = 0
+            if 'initial value [Pa]' in data['conditions']['environmental conditions']['pressure']:
+                pressure = float(data['conditions']['environmental conditions']['pressure']['initial value [Pa]']) / 101325
+            elif 'initial value [atm]' in data['conditions']['environmental conditions']['pressure']:
+                pressure = float(data['conditions']['environmental conditions']['pressure']['initial value [atm]'])
+            elif 'initial value [bar]' in data['conditions']['environmental conditions']['pressure']:
+                pressure = float(data['conditions']['environmental conditions']['pressure']['initial value [bar]']) * 0.986923
+            elif 'initial value [kPa]' in data['conditions']['environmental conditions']['pressure']: 
+                pressure = float(data['conditions']['environmental conditions']['pressure']['initial value [kPa]']) / 101.325
+            elif 'initial value [hPa]' in data['conditions']['environmental conditions']['pressure']:
+                pressure = float(data['conditions']['environmental conditions']['pressure']['initial value [hPa]']) / 1013.25
+            elif 'initial value [mbar]' in data['conditions']['environmental conditions']['pressure']:
+                pressure = float(data['conditions']['environmental conditions']['pressure']['initial value [mbar]']) / 1013.25
+
+            # make sure to convert the temperature units to K
+            temperature = 0
+            if 'initial value [K]' in data['conditions']['environmental conditions']['temperature']:
+                temperature = float(data['conditions']['environmental conditions']['temperature']['initial value [K]'])
+            elif 'initial value [C]' in data['conditions']['environmental conditions']['temperature']:
+                temperature = float(data['conditions']['environmental conditions']['temperature']['initial value [C]']) + 273.15
+            elif 'initial value [F]' in data['conditions']['environmental conditions']['temperature']:
+                temperature = (float(data['conditions']['environmental conditions']['temperature']['initial value [F]']) - 32) * 5/9 + 273.15
+
+            species_concentrations = []
+            for chem_spec, chem_spec_info in data['conditions']['chemical species'].items():
+                match = filter(lambda x: x.name == chem_spec, species_from_json)
+                species = next(match, None)
+
+                # make sure to convert the concentration units to mol m-3
+                concentration = 0
+                if 'initial value [mol m-3]' in data['conditions']['chemical species'][chem_spec]:
+                    concentration = float(chem_spec_info['initial value [mol m-3]'])
+                elif 'initial value [mol cm-3]' in data['conditions']['chemical species'][chem_spec]:
+                    concentration = float(chem_spec_info['initial value [mol cm-3]']) * 1e3
+                elif 'initial value [molec m-3]' in data['conditions']['chemical species'][chem_spec]:
+                    concentration = float(chem_spec_info['initial value [molec m-3]']) / 6.02214076e23
+                elif 'initial value [molec cm-3]' in data['conditions']['chemical species'][chem_spec]:
+                    concentration = float(chem_spec_info['initial value [molec cm-3]']) * 1e3 / 6.02214076e23
+
+                species_concentrations.append(SpeciesConcentration(species, concentration))
+
+            # TODO: Add reaction rates
+            reaction_rates = []
 
 
+            self.initial_conditions = Conditions(pressure, temperature, species_concentrations, reaction_rates)
+
+            # Set evolving conditions
+            time = []
+            conditions = []
+
+            headers = data['conditions']['evolving conditions'][0]
+
+            evol_from_json = data['conditions']['evolving conditions']
+            for i in range(1, len(evol_from_json)):
+                time.append(evol_from_json[i][0])
+
+                # TODO: Add species concentrations and reaction rates
+
+# for testing purposes
+def __main__():
+    # Create a new instance of the BoxModel class.
+    box_model = BoxModel()
+
+    box_model.readFromJson("./pretty_json.json")
+
+if __name__ == "__main__":
+    __main__()
