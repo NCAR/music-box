@@ -383,9 +383,16 @@ class BoxModel:
 
                 species_concentrations.append(SpeciesConcentration(species, concentration))
 
-            # TODO: Add reaction rates
+            # TODO: verify reaction rates
             reaction_rates = []
 
+            for reaction in data['initial conditions']:
+                match = filter(lambda x: x.name == reaction.split('.')[1], reactions)
+                reaction = next(match, None)
+
+                rate = data['initial conditions'][reaction]
+
+                reaction_rates.append(ReactionRate(reaction, rate))
 
             self.initial_conditions = Conditions(pressure, temperature, species_concentrations, reaction_rates)
 
@@ -405,9 +412,8 @@ class BoxModel:
                 if 'ENV.temperature.K' in headers:
                     temperature = float(evol_from_json[i][headers.index('ENV.temperature.K')])
 
-                # TODO: make sure species concentrations and reaction rates handle all cases
                 concentrations = []
-                concentration_headers = list(filter(lambda x: 'molm-3' in x, headers))
+                concentration_headers = list(filter(lambda x: 'CONC' in x, headers))
                 for j in range(len(concentration_headers)):
                     match = filter(lambda x: x.name == concentration_headers[j].split('.')[1], species_from_json)
                     species = next(match, None)
