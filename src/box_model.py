@@ -10,6 +10,7 @@ from music_box_species import Species
 from music_box_model_options import BoxModelOptions
 from music_box_conditions import Conditions
 from music_box_species_concentration import SpeciesConcentration
+from music_box_reaction_rate import ReactionRate
 
 class BoxModel:
     """
@@ -398,7 +399,32 @@ class BoxModel:
             for i in range(1, len(evol_from_json)):
                 time.append(evol_from_json[i][0])
 
-                # TODO: Add species concentrations and reaction rates
+                if 'ENV.pressure.Pa' in headers:
+                    pressure = float(evol_from_json[i][headers.index('ENV.pressure.Pa')]) / 101325
+
+                if 'ENV.temperature.K' in headers:
+                    temperature = float(evol_from_json[i][headers.index('ENV.temperature.K')])
+
+                # TODO: make sure species concentrations and reaction rates handle all cases
+                concentrations = []
+                concentration_headers = list(filter(lambda x: 'molm-3' in x, headers))
+                for j in range(len(concentration_headers)):
+                    match = filter(lambda x: x.name == concentration_headers[j].split('.')[1], species_from_json)
+                    species = next(match, None)
+
+                    concentration = float(evol_from_json[i][headers.index(concentration_headers[j])])
+                    concentrations.append(SpeciesConcentration(species, concentration))
+
+                rates = []
+                rate_headers = list(filter(lambda x: 's-1' in x, headers))
+                for k in range(len(rate_headers)):
+                    match = filter(lambda x: x.name == rate_headers[k].split('.')[1], reactions)
+                    reaction = next(match, None)
+
+                    rate = float(evol_from_json[i][headers.index(rate_headers[k])])
+                    rates.append(ReactionRate(reaction, rate))
+
+                conditions.append(Conditions(pressure, temperature, concentrations, rates))    
 
 # for testing purposes
 def __main__():
