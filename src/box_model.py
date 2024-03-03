@@ -204,7 +204,47 @@ class BoxModel:
         """
         # TODO: Implement the logic to solve the box model simulation.
         # Update the internal state of the BoxModel instance to reflect the simulation results.
-        pass
+        
+
+        # TODO: Implement micm config setup
+        #solver = MICM(config)
+
+        #simulation time in minutes
+        sim_length_min = self.box_model_options.simulation_length * 60
+
+        #sets up initial conditions to be current conditions
+        curr_conditions = self.initial_conditions
+
+
+        #sets up next condition if evolving conditions is not empty
+        next_conditions = None
+        next_conditions_time = 0
+        next_conditions_index = 0
+        if(len(self.evolving_conditions.conditions) != 0):
+            next_conditions_index = 0
+            next_conditions = self.evolving_conditions.conditions[0]
+            next_conditions_time = self.evolving_conditions.times[0]
+            
+
+        #runs the simulation at each timestep
+        for curr_time in range(0, sim_length_min + 1, self.box_model_options.chem_step_time):
+
+            #iterates evolvings conditons if enough time has elapsed
+            if(next_conditions != None and next_conditions_time <= curr_time):
+                curr_conditions = next_conditions
+
+                #iterates next_conditions if there are remaining evolving conditions
+                if(len(self.evolving_conditions.conditions) > next_conditions_index + 1):
+                    next_conditions_index += 1
+                    next_conditions = self.evolving_conditions.conditions[next_conditions_index]
+                    next_conditions_time = self.evolving_conditions.times[next_conditions_index]
+                else:
+                    next_conditions = None
+                    
+
+            # TODO: Implement micm solver solve
+            #solver.solve(curr_time, curr_conditions)
+
 
     def readFromJson(self, path_to_json):
         """
