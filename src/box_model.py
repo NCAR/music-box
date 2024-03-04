@@ -11,6 +11,7 @@ from music_box_model_options import BoxModelOptions
 from music_box_conditions import Conditions
 from music_box_species_concentration import SpeciesConcentration
 from music_box_reaction_rate import ReactionRate
+import utils
 
 class BoxModel:
     """
@@ -257,38 +258,9 @@ class BoxModel:
             data = json.load(json_file)
 
             # Set box model options
-            # make sure to convert the time units to minutes
-            chem_step_time = None
-            if 'chemistry time step [sec]' in data['conditions']['box model options']:
-                chem_step_time = float(data['conditions']['box model options']['chemistry time step [sec]']) / 60
-            elif 'chemistry time step [min]' in data['conditions']['box model options']:
-                chem_step_time = float(data['conditions']['box model options']['chemistry time step [min]'])
-            elif 'chemistry time step [hour]' in data['conditions']['box model options']:
-                chem_step_time = float(data['conditions']['box model options']['chemistry time step [hour]']) * 60
-            elif 'chemistry time step [day]' in data['conditions']['box model options']:
-                chem_step_time = float(data['conditions']['box model options']['chemistry time step [day]']) * 60 * 24
-
-            # make sure to convert the time units to hours
-            output_step_time = None
-            if 'output time step [sec]' in data['conditions']['box model options']:
-                output_step_time = float(data['conditions']['box model options']['output time step [sec]']) / 3600
-            elif 'output time step [min]' in data['conditions']['box model options']:
-                output_step_time = float(data['conditions']['box model options']['output time step [min]']) / 60
-            elif 'output time step [hour]' in data['conditions']['box model options']:
-                output_step_time = float(data['conditions']['box model options']['output time step [hour]'])
-            elif 'output time step [day]' in data['conditions']['box model options']:
-                output_step_time = float(data['conditions']['box model options']['output time step [day]']) * 24
-
-            # make sure to convert the time units to hours
-            simulation_length = None
-            if 'simulation length [sec]' in data['conditions']['box model options']:
-                simulation_length = float(data['conditions']['box model options']['simulation length [sec]']) / 3600
-            elif 'simulation length [min]' in data['conditions']['box model options']:
-                simulation_length = float(data['conditions']['box model options']['simulation length [min]']) / 60
-            elif 'simulation length [hour]' in data['conditions']['box model options']:
-                simulation_length = float(data['conditions']['box model options']['simulation length [hour]'])
-            elif 'simulation length [day]' in data['conditions']['box model options']:
-                simulation_length = float(data['conditions']['box model options']['simulation length [day]']) * 24
+            chem_step_time = utils.convert_time(data['conditions']['box model options'], 'chemistry time step') * 60
+            output_step_time = utils.convert_time(data['conditions']['box model options'], 'output time step')
+            simulation_length = utils.convert_time(data['conditions']['box model options'], 'simulation length')
 
             grid = data['conditions']['box model options']['grid']
 
@@ -341,52 +313,23 @@ class BoxModel:
                 reactions.append(Reaction(name, reaction_type, reactants, products, A, B, D, E, Ea))
 
             # Set initial conditions
-            # make sure to convert the pressure units to atm
-            pressure = 0
-            if 'initial value [Pa]' in data['conditions']['environmental conditions']['pressure']:
-                pressure = float(data['conditions']['environmental conditions']['pressure']['initial value [Pa]']) / 101325
-            elif 'initial value [atm]' in data['conditions']['environmental conditions']['pressure']:
-                pressure = float(data['conditions']['environmental conditions']['pressure']['initial value [atm]'])
-            elif 'initial value [bar]' in data['conditions']['environmental conditions']['pressure']:
-                pressure = float(data['conditions']['environmental conditions']['pressure']['initial value [bar]']) * 0.986923
-            elif 'initial value [kPa]' in data['conditions']['environmental conditions']['pressure']: 
-                pressure = float(data['conditions']['environmental conditions']['pressure']['initial value [kPa]']) / 101.325
-            elif 'initial value [hPa]' in data['conditions']['environmental conditions']['pressure']:
-                pressure = float(data['conditions']['environmental conditions']['pressure']['initial value [hPa]']) / 1013.25
-            elif 'initial value [mbar]' in data['conditions']['environmental conditions']['pressure']:
-                pressure = float(data['conditions']['environmental conditions']['pressure']['initial value [mbar]']) / 1013.25
+            pressure = utils.convert_pressure(data['conditions']['environmental conditions']['pressure'], 'initial value')
 
-            # make sure to convert the temperature units to K
-            temperature = 0
-            if 'initial value [K]' in data['conditions']['environmental conditions']['temperature']:
-                temperature = float(data['conditions']['environmental conditions']['temperature']['initial value [K]'])
-            elif 'initial value [C]' in data['conditions']['environmental conditions']['temperature']:
-                temperature = float(data['conditions']['environmental conditions']['temperature']['initial value [C]']) + 273.15
-            elif 'initial value [F]' in data['conditions']['environmental conditions']['temperature']:
-                temperature = (float(data['conditions']['environmental conditions']['temperature']['initial value [F]']) - 32) * 5/9 + 273.15
+            temperature = utils.convert_temperature(data['conditions']['environmental conditions']['temperature'], 'initial value')
 
             species_concentrations = []
-            for chem_spec, chem_spec_info in data['conditions']['chemical species'].items():
+            for chem_spec in data['conditions']['chemical species']:
                 match = filter(lambda x: x.name == chem_spec, species_from_json)
                 species = next(match, None)
 
-                # make sure to convert the concentration units to mol m-3
-                concentration = 0
-                if 'initial value [mol m-3]' in data['conditions']['chemical species'][chem_spec]:
-                    concentration = float(chem_spec_info['initial value [mol m-3]'])
-                elif 'initial value [mol cm-3]' in data['conditions']['chemical species'][chem_spec]:
-                    concentration = float(chem_spec_info['initial value [mol cm-3]']) * 1e3
-                elif 'initial value [molec m-3]' in data['conditions']['chemical species'][chem_spec]:
-                    concentration = float(chem_spec_info['initial value [molec m-3]']) / 6.02214076e23
-                elif 'initial value [molec cm-3]' in data['conditions']['chemical species'][chem_spec]:
-                    concentration = float(chem_spec_info['initial value [molec cm-3]']) * 1e3 / 6.02214076e23
+                concentration = utils.convert_concentration(data['conditions']['chemical species'][chem_spec], 'initial value')
 
                 species_concentrations.append(SpeciesConcentration(species, concentration))
 
             # TODO: verify reaction rates
             reaction_rates = []
 
-            for reaction in data['initial conditions']:
+            for reaction in data['conditions']['initial conditions']:
                 match = filter(lambda x: x.name == reaction.split('.')[1], reactions)
                 reaction = next(match, None)
 
