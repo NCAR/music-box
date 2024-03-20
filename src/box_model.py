@@ -272,7 +272,7 @@ class BoxModel:
             for species in data['mechanism']['species']['camp-data']:
                 name = species['name']
                 absolute_tolerance = species['absolute tolerance'] if 'absolute tolerance' in species else None
-                molecular_weight = species['molecular weight [kg mol-1]'] if 'molecular weight [kg mol-1]' in species else None
+                molecular_weight = species['molecular weight'] if 'molecular weight' in species else None
 
                 # TODO: Add phase and density to species
 
@@ -303,12 +303,13 @@ class BoxModel:
 
                 products = []
 
-                for product, product_info in reaction['products'].items():
-                    match = filter(lambda x: x.name == product, species_from_json)
-                    species = next(match, None)
-                    yield_value = product_info['yield'] if 'yield' in product_info else None
+                if 'products' in reaction:
+                    for product, product_info in reaction['products'].items():
+                        match = filter(lambda x: x.name == product, species_from_json)
+                        species = next(match, None)
+                        yield_value = product_info['yield'] if 'yield' in product_info else None
 
-                    products.append(Product(species, yield_value))
+                        products.append(Product(species, yield_value))
 
                 reactions.append(Reaction(name, reaction_type, reactants, products, A, B, D, E, Ea))
 
@@ -317,6 +318,7 @@ class BoxModel:
 
             temperature = utils.convert_temperature(data['conditions']['environmental conditions']['temperature'], 'initial value')
 
+            # Set initial species concentrations
             species_concentrations = []
             for chem_spec in data['conditions']['chemical species']:
                 match = filter(lambda x: x.name == chem_spec, species_from_json)
@@ -326,16 +328,16 @@ class BoxModel:
 
                 species_concentrations.append(SpeciesConcentration(species, concentration))
 
-            # TODO: verify reaction rates
+            # Set initial reaction rates
             reaction_rates = []
 
             for reaction in data['conditions']['initial conditions']:
                 match = filter(lambda x: x.name == reaction.split('.')[1], reactions)
-                reaction = next(match, None)
+                reaction_from_list = next(match, None)
 
-                rate = data['initial conditions'][reaction]
+                rate = data['conditions']['initial conditions'][reaction]
 
-                reaction_rates.append(ReactionRate(reaction, rate))
+                reaction_rates.append(ReactionRate(reaction_from_list, rate))
 
             self.initial_conditions = Conditions(pressure, temperature, species_concentrations, reaction_rates)
 
@@ -367,7 +369,14 @@ class BoxModel:
                 rates = []
                 rate_headers = list(filter(lambda x: 's-1' in x, headers))
                 for k in range(len(rate_headers)):
-                    match = filter(lambda x: x.name == rate_headers[k].split('.')[1], reactions)
+                    name_to_match = rate_headers[k].split('.')
+
+                    if name_to_match[0] == 'LOSS' or name_to_match[0] == 'EMIS':
+                        name_to_match = name_to_match[0] + '_' + name_to_match[1]
+                    else:
+                        name_to_match = name_to_match[1]
+
+                    match = filter(lambda x: x.name == name_to_match, reactions)
                     reaction = next(match, None)
 
                     rate = float(evol_from_json[i][headers.index(rate_headers[k])])
@@ -380,7 +389,7 @@ def __main__():
     # Create a new instance of the BoxModel class.
     box_model = BoxModel()
 
-    box_model.readFromJson("./pretty_json.json")
+    box_model.readFromJson("./pretty_test.json")
 
 if __name__ == "__main__":
     __main__()
