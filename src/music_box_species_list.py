@@ -1,4 +1,5 @@
 from typing import List
+from music_box_species import Species
 
 class SpeciesList:
     """
@@ -19,6 +20,30 @@ class SpeciesList:
         """
         self.species = species if species is not None else []
         self.relative_tolerance = relative_tolerance
+
+    @classmethod
+    def from_UI_JSON(cls, UI_JSON):
+        """
+        Create a new instance of the SpeciesList class from a JSON object.
+
+        Args:
+            UI_JSON (dict): A JSON object representing the species list.
+
+        Returns:
+            SpeciesList: A new instance of the SpeciesList class.
+        """
+        species_from_json = []
+
+        for species in UI_JSON['mechanism']['species']['camp-data']:
+            name = species['name']
+            absolute_tolerance = species['absolute tolerance'] if 'absolute tolerance' in species else None
+            molecular_weight = species['molecular weight'] if 'molecular weight' in species else None
+
+            # TODO: Add phase and density to species
+
+            species_from_json.append(Species(name, absolute_tolerance, None, molecular_weight, None))
+
+        return cls(species)
 
     def add_species(self, species):
         """

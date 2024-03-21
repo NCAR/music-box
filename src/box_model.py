@@ -2,7 +2,7 @@ import json
 
 from music_box_evolving_conditions import EvolvingConditions
 from music_box_reaction_list import ReactionList
-from music_box_reaction import Reaction
+from music_box_reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
 from music_box_reactant import Reactant
 from music_box_product import Product
 from music_box_species_list import SpeciesList
@@ -258,138 +258,26 @@ class BoxModel:
             data = json.load(json_file)
 
             # Set box model options
-            chem_step_time = utils.convert_time(data['conditions']['box model options'], 'chemistry time step') * 60
-            output_step_time = utils.convert_time(data['conditions']['box model options'], 'output time step')
-            simulation_length = utils.convert_time(data['conditions']['box model options'], 'simulation length')
-
-            grid = data['conditions']['box model options']['grid']
-
-            self.box_model_options = BoxModelOptions(chem_step_time, output_step_time, simulation_length, grid)
+            self.box_model_options = BoxModelOptions.from_UI_JSON(data)
 
             # Set species list
-            species_from_json = []
-
-            for species in data['mechanism']['species']['camp-data']:
-                name = species['name']
-                absolute_tolerance = species['absolute tolerance'] if 'absolute tolerance' in species else None
-                molecular_weight = species['molecular weight'] if 'molecular weight' in species else None
-
-                # TODO: Add phase and density to species
-
-                species_from_json.append(Species(name, absolute_tolerance, None, molecular_weight, None))
-
-            self.species_list = SpeciesList(species)
+            self.species_list = SpeciesList.from_UI_JSON(data)
 
             # Set reaction list
-            reactions = []
-
-            for reaction in data['mechanism']['reactions']['camp-data'][0]['reactions']:
-                name = reaction['MUSICA name'] if 'MUSICA name' in reaction else None
-                reaction_type = reaction['type']
-                A = reaction['A'] if 'A' in reaction else None
-                B = reaction['B'] if 'B' in reaction else None
-                D = reaction['D'] if 'D' in reaction else None
-                E = reaction['E'] if 'E' in reaction else None
-                Ea = reaction['Ea'] if 'Ea' in reaction else None
-
-                reactants = []
-
-                for reactant, reactant_info in reaction['reactants'].items():
-                    match = filter(lambda x: x.name == reactant, species_from_json)
-                    species = next(match, None)
-                    quantity = reactant_info['qty'] if 'qty' in reactant_info else None
-
-                    reactants.append(Reactant(species, quantity))
-
-                products = []
-
-                if 'products' in reaction:
-                    for product, product_info in reaction['products'].items():
-                        match = filter(lambda x: x.name == product, species_from_json)
-                        species = next(match, None)
-                        yield_value = product_info['yield'] if 'yield' in product_info else None
-
-                        products.append(Product(species, yield_value))
-
-                reactions.append(Reaction(name, reaction_type, reactants, products, A, B, D, E, Ea))
+            self.reaction_list = ReactionList.from_UI_JSON(data, self.species_list)
 
             # Set initial conditions
-            pressure = utils.convert_pressure(data['conditions']['environmental conditions']['pressure'], 'initial value')
-
-            temperature = utils.convert_temperature(data['conditions']['environmental conditions']['temperature'], 'initial value')
-
-            # Set initial species concentrations
-            species_concentrations = []
-            for chem_spec in data['conditions']['chemical species']:
-                match = filter(lambda x: x.name == chem_spec, species_from_json)
-                species = next(match, None)
-
-                concentration = utils.convert_concentration(data['conditions']['chemical species'][chem_spec], 'initial value')
-
-                species_concentrations.append(SpeciesConcentration(species, concentration))
-
-            # Set initial reaction rates
-            reaction_rates = []
-
-            for reaction in data['conditions']['initial conditions']:
-                match = filter(lambda x: x.name == reaction.split('.')[1], reactions)
-                reaction_from_list = next(match, None)
-
-                rate = data['conditions']['initial conditions'][reaction]
-
-                reaction_rates.append(ReactionRate(reaction_from_list, rate))
-
-            self.initial_conditions = Conditions(pressure, temperature, species_concentrations, reaction_rates)
+            self.initial_conditions = Conditions.from_UI_JSON(data, self.species_list, self.reaction_list)
 
             # Set evolving conditions
-            time = []
-            conditions = []
-
-            headers = data['conditions']['evolving conditions'][0]
-
-            evol_from_json = data['conditions']['evolving conditions']
-            for i in range(1, len(evol_from_json)):
-                time.append(evol_from_json[i][0])
-
-                if 'ENV.pressure.Pa' in headers:
-                    pressure = float(evol_from_json[i][headers.index('ENV.pressure.Pa')]) / 101325
-
-                if 'ENV.temperature.K' in headers:
-                    temperature = float(evol_from_json[i][headers.index('ENV.temperature.K')])
-
-                concentrations = []
-                concentration_headers = list(filter(lambda x: 'CONC' in x, headers))
-                for j in range(len(concentration_headers)):
-                    match = filter(lambda x: x.name == concentration_headers[j].split('.')[1], species_from_json)
-                    species = next(match, None)
-
-                    concentration = float(evol_from_json[i][headers.index(concentration_headers[j])])
-                    concentrations.append(SpeciesConcentration(species, concentration))
-
-                rates = []
-                rate_headers = list(filter(lambda x: 's-1' in x, headers))
-                for k in range(len(rate_headers)):
-                    name_to_match = rate_headers[k].split('.')
-
-                    if name_to_match[0] == 'LOSS' or name_to_match[0] == 'EMIS':
-                        name_to_match = name_to_match[0] + '_' + name_to_match[1]
-                    else:
-                        name_to_match = name_to_match[1]
-
-                    match = filter(lambda x: x.name == name_to_match, reactions)
-                    reaction = next(match, None)
-
-                    rate = float(evol_from_json[i][headers.index(rate_headers[k])])
-                    rates.append(ReactionRate(reaction, rate))
-
-                conditions.append(Conditions(pressure, temperature, concentrations, rates))    
+            self.evolving_conditions = EvolvingConditions.from_UI_JSON(data, self.species_list, self.reaction_list)    
 
 # for testing purposes
 def __main__():
     # Create a new instance of the BoxModel class.
     box_model = BoxModel()
 
-    box_model.readFromJson("./pretty_test.json")
+    box_model.readFromJson("./reactions_pretty.json")
 
 if __name__ == "__main__":
     __main__()

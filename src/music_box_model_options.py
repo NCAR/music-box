@@ -1,3 +1,5 @@
+import utils
+
 class BoxModelOptions:
     """
     Represents options for a box model simulation.
@@ -23,3 +25,22 @@ class BoxModelOptions:
         self.output_step_time = output_step_time
         self.simulation_length = simulation_length
         self.grid = grid
+
+    @classmethod
+    def from_UI_JSON(cls, UI_JSON):
+        """
+        Create a new instance of the BoxModelOptions class from a JSON object.
+
+        Args:
+            UI_JSON (dict): A JSON object representing the user interface options.
+
+        Returns:
+            BoxModelOptions: A new instance of the BoxModelOptions class.
+        """
+        chem_step_time = utils.convert_time(UI_JSON['conditions']['box model options'], 'chemistry time step') * 60
+        output_step_time = utils.convert_time(UI_JSON['conditions']['box model options'], 'output time step')
+        simulation_length = utils.convert_time(UI_JSON['conditions']['box model options'], 'simulation length')
+
+        grid = UI_JSON['conditions']['box model options']['grid']
+        
+        return cls(chem_step_time, output_step_time, simulation_length, grid)
