@@ -42,8 +42,8 @@ class SpeciesList:
             # TODO: Add phase and density to species
 
             species_from_json.append(Species(name, absolute_tolerance, None, molecular_weight, None))
-
-        return cls(species)
+        
+        return cls(species_from_json)
 
     def add_species(self, species):
         """
