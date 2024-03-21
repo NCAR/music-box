@@ -107,7 +107,7 @@ class ReactionList:
             else:
                 reactions.append(Reaction(name, reaction_type, reactants, products))
 
-        return cls(reactions)
+        return cls(reactions=reactions)
 
     def add_reaction(self, reaction):
         """
