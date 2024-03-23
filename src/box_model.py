@@ -161,30 +161,78 @@ class BoxModel:
             
             reac["reactants"] = reactants
 
-            products = {}
+            if not isinstance(reaction, Branched):
+                products = {}
 
-            #Adds products
-            for product in reaction.products:
-                yield_value = {}
+                #Adds products
+                for product in reaction.products:
+                    yield_value = {}
 
-                 #Adds product yield if value is set
-                if product.yield_value != None:
-                    yield_value["yield"] = product.yield_value
-                products[product.name] = yield_value
+                    #Adds product yield if value is set
+                    if product.yield_value != None:
+                        yield_value["yield"] = product.yield_value
+                    products[product.name] = yield_value
+                
+                reac["products"] = products
             
-            reac["products"] = products
+            # Add reaction parameters if necessary
+            if isinstance(reaction, Branched):
+                alkoxy_products = {}
+
+                # Adds alkoxy products
+                for alkoxy_product in reaction.alkoxy_products:
+                    yield_value = {}
+
+                    # Adds alkoxy product yield if value is set
+                    if alkoxy_product.yield_value != None:
+                        yield_value["yield"] = alkoxy_product.yield_value
+                    alkoxy_products[alkoxy_product.name] = yield_value
+                
+                reac["alkoxy products"] = alkoxy_products
+
+                nitrate_products = {}
+
+                # Adds nitrate products
+                for nitrate_product in reaction.nitrate_products:
+                    yield_value = {}
+
+                    # Adds nitrate product yield if value is set
+                    if nitrate_product.yield_value != None:
+                        yield_value["yield"] = nitrate_product.yield_value
+                    nitrate_products[nitrate_product.name] = yield_value
+                
+                reac["nitrate products"] = nitrate_products
+
+                # Adds parameters for the reaction
+                reac["X"] = reaction.X
+                reac["Y"] = reaction.Y
+                reac["a0"] = reaction.a0
+                reac["n"] = reaction.n
             
-            # Add reaction parameters (A, B, D, E, Ea) if values are set
-            if reaction.A is not None:
+            elif isinstance(reaction, Arrhenius):
+                # Adds parameters for the reaction
                 reac["A"] = reaction.A
-            if reaction.B is not None:
                 reac["B"] = reaction.B
-            if reaction.D is not None:
                 reac["D"] = reaction.D
-            if reaction.E is not None:
                 reac["E"] = reaction.E
-            if reaction.Ea is not None:
                 reac["Ea"] = reaction.Ea
+            
+            elif isinstance(reaction, Tunneling):
+                # Adds parameters for the reaction
+                reac["A"] = reaction.A
+                reac["B"] = reaction.B
+                reac["C"] = reaction.C
+            
+            elif isinstance(reaction, Troe_Ternary):
+                # Adds parameters for the reaction
+                reac["k0_A"] = reaction.k0_A
+                reac["k0_B"] = reaction.k0_B
+                reac["k0_C"] = reaction.k0_C
+                reac["kinf_A"] = reaction.kinf_A
+                reac["kinf_B"] = reaction.kinf_B
+                reac["kinf_C"] = reaction.kinf_C
+                reac["Fc"] = reaction.Fc
+                reac["N"] = reaction.N
             
             #Adds reaction name if value is set
             if(reaction.name != None):
@@ -277,7 +325,9 @@ def __main__():
     # Create a new instance of the BoxModel class.
     box_model = BoxModel()
 
-    box_model.readFromJson("./reactions_pretty.json")
+    box_model.readFromJson("./pretty_test.json")
+
+    print(box_model.generateReactionConfig())
 
 if __name__ == "__main__":
     __main__()
