@@ -12,6 +12,7 @@ from music_box_conditions import Conditions
 from music_box_species_concentration import SpeciesConcentration
 from music_box_reaction_rate import ReactionRate
 import utils
+import musica
 
 class BoxModel:
     """
@@ -248,6 +249,20 @@ class BoxModel:
 
         return json.dumps(reactionsJson)
     
+    def create_solver(self, path_to_config):
+        """
+        Creates a micm solver object using the CAMP configuration files.
+
+        Args:
+            path_to_config (str): The path to CAMP configuration directory.
+
+        Returns:
+            None
+        """
+        # Create a solver object using the configuration file
+        self.solver = musica.create_micm(path_to_config)
+
+        
     def solve(self):
         """
         TODO: Solve the box model simulation.
@@ -324,10 +339,9 @@ class BoxModel:
 def __main__():
     # Create a new instance of the BoxModel class.
     box_model = BoxModel()
+    box_model.create_solver("configs/chapman")
 
-    box_model.readFromJson("./pretty_test.json")
 
-    print(box_model.generateReactionConfig())
 
 if __name__ == "__main__":
     __main__()
