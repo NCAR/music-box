@@ -44,7 +44,7 @@ class BoxModel:
         self.species_list = species_list
         self.reaction_list = reaction_list
         self.initial_conditions = initial_conditions
-        self.evolving_conditions = evolving_conditions
+        self.evolving_conditions = evolving_conditions if evolving_conditions is not None else []
         self.config_file = config_file if config_file is not None else "camp_data/config.json"
 
 
@@ -262,7 +262,7 @@ class BoxModel:
         # Create a solver object using the configuration file
         self.solver = musica.create_micm(path_to_config)
 
-        
+
     def solve(self):
         """
         TODO: Solve the box model simulation.
@@ -271,44 +271,51 @@ class BoxModel:
         # Update the internal state of the BoxModel instance to reflect the simulation results.
         
 
-        # TODO: Implement micm config setup
-        #solver = MICM(config)
-
         #simulation time in minutes
         sim_length_min = self.box_model_options.simulation_length * 60
 
         #sets up initial conditions to be current conditions
         curr_conditions = self.initial_conditions
 
+        #sets up initial concentraion values
+        curr_concentrations = self.initial_conditions.get_concentration_array()
+
 
         #sets up next condition if evolving conditions is not empty
         next_conditions = None
         next_conditions_time = 0
         next_conditions_index = 0
-        if(len(self.evolving_conditions.conditions) != 0):
+        if(len(self.evolving_conditions) != 0):
             next_conditions_index = 0
             next_conditions = self.evolving_conditions.conditions[0]
             next_conditions_time = self.evolving_conditions.times[0]
             
 
         #runs the simulation at each timestep
-        for curr_time in range(0, sim_length_min + 1, self.box_model_options.chem_step_time):
+        curr_time = 0
+        while(curr_time < sim_length_min):
 
             #iterates evolvings conditons if enough time has elapsed
             if(next_conditions != None and next_conditions_time <= curr_time):
                 curr_conditions = next_conditions
 
                 #iterates next_conditions if there are remaining evolving conditions
-                if(len(self.evolving_conditions.conditions) > next_conditions_index + 1):
+                if(len(self.evolving_conditions) > next_conditions_index + 1):
                     next_conditions_index += 1
                     next_conditions = self.evolving_conditions.conditions[next_conditions_index]
                     next_conditions_time = self.evolving_conditions.times[next_conditions_index]
                 else:
                     next_conditions = None
-                    
 
-            # TODO: Implement micm solver solve
-            #solver.solve(curr_time, curr_conditions)
+            #updates concentrations if they are present in the evolving conditions
+            if(len(curr_conditions.get_concentration_array()) != 0):
+                curr_concentrations = curr_conditions.get_concentration_array()
+
+            curr_concentations = musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, curr_concentrations)
+
+            #increments time
+            curr_time += self.box_model_options.chem_step_time
+            #print(curr_concentrations)
 
 
     def readFromJson(self, path_to_json):
@@ -338,8 +345,18 @@ class BoxModel:
 # for testing purposes
 def __main__():
     # Create a new instance of the BoxModel class.
-    box_model = BoxModel()
+
+    options = BoxModelOptions(5, 1, 2.5)
+    inital_condtions = Conditions(1.0, 298.0)
+    inital_condtions.add_species_concentration(SpeciesConcentration(Species(name="N2"),  3.29e1 ))
+    inital_condtions.add_species_concentration(SpeciesConcentration(Species(name="O2"), 8.84e0))
+    inital_condtions.add_species_concentration(SpeciesConcentration(Species(name="Ar"), 3.92e-1))
+    inital_condtions.add_species_concentration(SpeciesConcentration(Species(name="CO2"),  1.69e-2))
+    inital_condtions.add_species_concentration(SpeciesConcentration(Species(name="O"), 1.0e-5))
+    box_model = BoxModel(box_model_options=options, initial_conditions=inital_condtions)
+
     box_model.create_solver("configs/chapman")
+    box_model.solve()
 
 
 

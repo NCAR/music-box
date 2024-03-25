@@ -75,7 +75,7 @@ class Conditions:
         Args:
             species_concentration (SpeciesConcentration): The SpeciesConcentration instance to be added.
         """
-        self.species_concentration.append(species_concentration)
+        self.species_concentrations.append(species_concentration)
 
     def add_reaction_rate(self, reaction_rate):
         """
@@ -85,3 +85,38 @@ class Conditions:
             reaction_rate (ReactionRate): The ReactionRate instance to be added.
         """
         self.reaction_rates.append(reaction_rate)
+
+    def get_concentration_array(self):
+        """
+        Retrieves an array of concentrations from the species_concentrations list.
+
+        Returns:
+            list: An array containing concentrations of each species.
+
+        Notes:
+            This function extracts the concentration attribute from each SpeciesConcentration object in 
+            the species_concentrations list and returns them as a single array to be used by the micm solver.
+        """
+        concentration_array = []
+        for species_concentration in self.species_concentrations:
+            concentration_array.append(species_concentration.concentration)
+
+        return concentration_array
+
+    def get_reaction_rate_array(self):
+        """
+        Retrieves an array of reaction rates from the reaction_rates list.
+
+        Returns:
+            list: An array containing reaction rates for each reaction.
+
+        Notes:
+            This function extracts the rate attribute from each ReactionRate object in
+            the reaction_rates list and returns them as a single array to be used by the micm solver.
+        """
+        rate_array = []
+        for reaction_rate in self.reaction_rates:
+            rate_array.append(reaction_rate.rate)
+
+        return rate_array
+
