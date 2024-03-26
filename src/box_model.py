@@ -315,7 +315,7 @@ class BoxModel:
             #increments time
             curr_time += self.box_model_options.chem_step_time  
         
-    def readFromJson(self, path_to_json):
+    def readFromUIJson(self, path_to_json):
         """
         TODO: Read the box model configuration from json and sets config
         """
@@ -357,6 +357,9 @@ def __main__():
     box_model = BoxModel()
     box_model.readConditionsFromJson("configs/test_config/my_config.json")
     box_model.create_solver("configs/test_config/camp_data")
+    box_model.solve()
+
+
     box_model.solve()
 
 
