@@ -271,8 +271,9 @@ class BoxModel:
         # Update the internal state of the BoxModel instance to reflect the simulation results.
         
 
-        #simulation time in minutes
-        sim_length_min = self.box_model_options.simulation_length * 60
+        #simulation time in seconds
+        sim_length_seconds = self.box_model_options.simulation_length * 60 * 60
+        print(sim_length_seconds)
 
         #sets up initial conditions to be current conditions
         curr_conditions = self.initial_conditions
@@ -292,10 +293,12 @@ class BoxModel:
             next_conditions = self.evolving_conditions.conditions[0]
             next_conditions_time = self.evolving_conditions.times[0]
             
-
+        print(self.box_model_options.chem_step_time)
         #runs the simulation at each timestep
         curr_time = 0
-        while(curr_time < sim_length_min):
+        
+        while(curr_time < sim_length_seconds):
+            print(curr_concentrations)
 
             #iterates evolvings conditons if enough time has elapsed
             if(next_conditions != None and next_conditions_time <= curr_time):
@@ -317,11 +320,8 @@ class BoxModel:
             musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, curr_concentrations)
             
             #increments time
-            curr_time += self.box_model_options.chem_step_time
-
-            print(curr_concentrations)
-            
-
+            curr_time += self.box_model_options.chem_step_time  
+        
     def readFromJson(self, path_to_json):
         """
         TODO: Read the box model configuration from json and sets config
