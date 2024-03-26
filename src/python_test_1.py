@@ -41,14 +41,16 @@ def __main__():
     k2 = 1.2e-4 * math.exp(75 / temperature) * (temperature / 50)**7* (1.0 + 0.5 * pressure)
 
 
-    #gets analytical concentrations 
+    
     curr_time = time_step
 
     idx_A = 0
-    
-    while curr_time < sim_length:
+    idx_B = 1
+    idx_C = 2
 
-        row = []
+    #gets analytical concentrations 
+    while curr_time <= sim_length:
+
         initial_A = analytical_concentrations[0][idx_A]
         A_conc = initial_A * math.exp(-(k1)* curr_time)
         B_conc = initial_A * (k1 / (k2 - k1)) * (math.exp(-k1 * curr_time) - math.exp(-k2 * curr_time))
@@ -57,8 +59,12 @@ def __main__():
         analytical_concentrations.append([A_conc, B_conc, C_conc])
         curr_time += time_step
 
+    #asserts concentrations
+    for i in range(len(model_concentrations)):
+        assert math.isclose(model_concentrations[i][idx_A], analytical_concentrations[i][idx_A], rel_tol=1e-8), f"Arrays differ at index ({i}, 0)"
+        assert math.isclose(model_concentrations[i][idx_B], analytical_concentrations[i][idx_B], rel_tol=1e-8), f"Arrays differ at index ({i}, 1)"
+        assert math.isclose(model_concentrations[i][idx_C], analytical_concentrations[i][idx_C], rel_tol=1e-8), f"Arrays differ at index ({i}, 2)"
 
-    #TODO: Assert concentrations
 
 
 if __name__ == "__main__":
