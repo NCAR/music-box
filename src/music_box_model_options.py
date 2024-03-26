@@ -49,7 +49,7 @@ class BoxModelOptions:
     @classmethod
     def from_config_JSON(cls, config_JSON):
 
-        chem_step_time = utils.convert_time(config_JSON['box model options'], 'chemistry time step') * 60 * 60 
+        chem_step_time = utils.convert_time(config_JSON['box model options'], 'chemistry time step')
         output_step_time = utils.convert_time(config_JSON['box model options'], 'output time step') 
         simulation_length = utils.convert_time(config_JSON['box model options'], 'simulation length')
 

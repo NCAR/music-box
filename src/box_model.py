@@ -269,11 +269,6 @@ class BoxModel:
         """
         # TODO: Implement the logic to solve the box model simulation.
         # Update the internal state of the BoxModel instance to reflect the simulation results.
-        
-
-        #simulation time in seconds
-        sim_length_seconds = self.box_model_options.simulation_length * 60 * 60
-        print(sim_length_seconds)
 
         #sets up initial conditions to be current conditions
         curr_conditions = self.initial_conditions
@@ -292,12 +287,10 @@ class BoxModel:
             next_conditions_index = 0
             next_conditions = self.evolving_conditions.conditions[0]
             next_conditions_time = self.evolving_conditions.times[0]
-            
-        print(self.box_model_options.chem_step_time)
+        
         #runs the simulation at each timestep
         curr_time = 0
-        
-        while(curr_time < sim_length_seconds):
+        while(curr_time <= (self.box_model_options.simulation_length)):
             print(curr_concentrations)
 
             #iterates evolvings conditons if enough time has elapsed
