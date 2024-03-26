@@ -1,6 +1,6 @@
 def convert_time(data, key):
     """
-    Convert the time from the input data to hours.
+    Convert the time from the input data to seconds.
 
     Args:
         data (dict): The input data.
@@ -26,29 +26,29 @@ def convert_time(data, key):
 
 def convert_pressure(data, key):
     """
-    Convert the pressure from the input data to atmospheres.
+    Convert the pressure from the input data to Pascals.
 
     Args:
         data (dict): The input data.
         key (str): The key for the pressure in the input data.
 
     Returns:
-        float: The pressure in atmospheres.
+        float: The pressure in Pascals.
     """
     pressure = None
     for unit in ['Pa', 'atm', 'bar', 'kPa', 'hPa', 'mbar']:
         if f'{key} [{unit}]' in data:
             pressure_value = float(data[f'{key} [{unit}]'])
             if unit == 'Pa':
-                pressure = pressure_value / 101325
-            elif unit == 'atm':
                 pressure = pressure_value
+            elif unit == 'atm':
+                pressure = pressure_value * 101325
             elif unit == 'bar':
-                pressure = pressure_value * 0.986923
+                pressure = pressure_value * 100000
             elif unit == 'kPa':
-                pressure = pressure_value / 101.325
+                pressure = pressure_value * 1000
             elif unit == 'hPa' or unit == 'mbar':
-                pressure = pressure_value / 1013.25
+                pressure = pressure_value * 100
             break
     return pressure
 
@@ -78,14 +78,14 @@ def convert_temperature(data, key):
 
 def convert_concentration(data, key):
     """
-    Convert the concentration from the input data to molecules per cubic centimeter.
+    Convert the concentration from the input data to molecules per cubic meter.
     
     Args:
         data (dict): The input data.
         key (str): The key for the concentration in the input data.
         
     Returns:
-        float: The concentration in molecules per cubic centimeter.
+        float: The concentration in molecules per cubic meter.
     """
     concentration = None
     for unit in ['mol m-3', 'mol cm-3', 'molec m-3', 'molec cm-3']:
