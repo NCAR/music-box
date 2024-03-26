@@ -292,7 +292,7 @@ class BoxModel:
             headers.append("time")
             headers.append("ENV.temperature")
             headers.append("ENV.pressure")
-            for spec in self.species_list:
+            for spec in self.species_list.species:
                 headers.append("CONC." + spec.name)
             
             output_array.append(headers)
@@ -375,6 +375,9 @@ class BoxModel:
 
             # Set initial conditions
             self.initial_conditions = Conditions.from_config_JSON(data)
+
+            # Set species list
+            self.species_list = SpeciesList.from_config_JSON(data)
 
 
 # for testing purposes

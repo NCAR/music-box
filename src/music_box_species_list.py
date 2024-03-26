@@ -44,6 +44,22 @@ class SpeciesList:
             species_from_json.append(Species(name, absolute_tolerance, None, molecular_weight, None))
         
         return cls(species_from_json)
+    
+    @classmethod
+    def from_config_JSON(cls, config_JSON):
+
+        species_from_json = []
+
+        for name, properties in config_JSON['chemical species'].items():
+            absolute_tolerance = properties.get('absolute tolerance')
+            molecular_weight = properties.get('molecular weight')
+
+            # TODO: Add phase and density to species
+
+            species_from_json.append(Species(name, absolute_tolerance, None, molecular_weight, None))
+
+        return cls(species_from_json)
+
 
     def add_species(self, species):
         """
