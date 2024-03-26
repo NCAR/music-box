@@ -11,7 +11,7 @@ from music_box_model_options import BoxModelOptions
 from music_box_conditions import Conditions
 from music_box_species_concentration import SpeciesConcentration
 from music_box_reaction_rate import ReactionRate
-import utils
+import csv
 import musica
 
 class BoxModel:
@@ -263,7 +263,7 @@ class BoxModel:
         self.solver = musica.create_micm(path_to_config)
 
 
-    def solve(self):
+    def solve(self, path_to_output = None):
         """
         TODO: Solve the box model simulation.
         """
@@ -275,9 +275,6 @@ class BoxModel:
 
         #sets up initial concentraion values
         curr_concentrations = self.initial_conditions.get_concentration_array()
-       
-
-
 
         #sets up next condition if evolving conditions is not empty
         next_conditions = None
@@ -287,11 +284,32 @@ class BoxModel:
             next_conditions_index = 0
             next_conditions = self.evolving_conditions.conditions[0]
             next_conditions_time = self.evolving_conditions.times[0]
+
+        #initializes file headers if output file is present
+        output_array = []
+        if(path_to_output != None):
+            headers = []
+            headers.append("time")
+            headers.append("ENV.temperature")
+            headers.append("ENV.pressure")
+            for spec in self.species_list:
+                headers.append("CONC." + spec.name)
+            
+            output_array.append(headers)
         
         #runs the simulation at each timestep
         curr_time = 0
-        while(curr_time <= (self.box_model_options.simulation_length)):
-            print(curr_concentrations)
+        while(curr_time <= self.box_model_options.simulation_length):
+
+            #appends row to output if file is present
+            if(path_to_output != None):
+                row = []
+                row.append(curr_time)
+                row.append(curr_conditions.temperature)
+                row.append(curr_conditions.pressure)
+                for conc in curr_concentrations:
+                    row.append(conc)
+                output_array.append(row)
 
             #iterates evolvings conditons if enough time has elapsed
             if(next_conditions != None and next_conditions_time <= curr_time):
@@ -311,9 +329,18 @@ class BoxModel:
 
             #solves and updates concentration values in concentration array
             musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, curr_concentrations)
+
             
+                
+
             #increments time
             curr_time += self.box_model_options.chem_step_time  
+        
+        #outputs to file if output is present
+        if(path_to_output != None):
+            with open(path_to_output, 'w', newline='') as output:
+                writer = csv.writer(output)
+                writer.writerows(output_array)
         
     def readFromUIJson(self, path_to_json):
         """
@@ -354,13 +381,8 @@ class BoxModel:
 def __main__():
     # Create a new instance of the BoxModel class.
 
-    box_model = BoxModel()
-    box_model.readConditionsFromJson("configs/test_config/my_config.json")
-    box_model.create_solver("configs/test_config/camp_data")
-    box_model.solve()
+    pass
 
-
-    box_model.solve()
 
 
 
