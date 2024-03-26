@@ -7,20 +7,20 @@ def convert_time(data, key):
         key (str): The key for the time in the input data.
 
     Returns:
-        float: The time in hours.
+        float: The time in seconds.
     """
     time = None
     for unit in ['sec', 'min', 'hour', 'day']:
         if f'{key} [{unit}]' in data:
             time_value = float(data[f'{key} [{unit}]'])
             if unit == 'sec':
-                time = time_value / 3600
-            elif unit == 'min':
-                time = time_value / 60
-            elif unit == 'hour':
                 time = time_value
+            elif unit == 'min':
+                time = time_value * 60
+            elif unit == 'hour':
+                time = time_value * 3600
             elif unit == 'day':
-                time = time_value * 24
+                time = time_value * 86400
             break
     return time
 

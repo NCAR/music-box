@@ -37,7 +37,7 @@ class BoxModelOptions:
         Returns:
             BoxModelOptions: A new instance of the BoxModelOptions class.
         """
-        chem_step_time = utils.convert_time(UI_JSON['conditions']['box model options'], 'chemistry time step') * 60 * 60 
+        chem_step_time = utils.convert_time(UI_JSON['conditions']['box model options'], 'chemistry time step') 
         output_step_time = utils.convert_time(UI_JSON['conditions']['box model options'], 'output time step')
         simulation_length = utils.convert_time(UI_JSON['conditions']['box model options'], 'simulation length')
 
