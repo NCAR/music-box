@@ -1,5 +1,6 @@
 from typing import List
 from music_box_reaction_rate import ReactionRate
+from music_box_species import Species
 from music_box_species_concentration import SpeciesConcentration
 import utils
 
@@ -67,6 +68,36 @@ class Conditions:
             reaction_rates.append(ReactionRate(reaction_from_list, rate))
 
         return cls(pressure, temperature, species_concentrations, reaction_rates)
+    
+    @classmethod
+    def from_config_JSON(cls, config_JSON):
+        pressure = utils.convert_pressure(config_JSON['environmental conditions']['pressure'], 'initial value')
+
+        temperature = utils.convert_temperature(config_JSON['environmental conditions']['temperature'], 'initial value')
+
+        # Set initial species concentrations
+        species_concentrations = []
+        for chem_spec in config_JSON['chemical species']:
+            species = Species(name = chem_spec)
+
+            concentration = utils.convert_concentration(config_JSON['chemical species'][chem_spec], 'initial value')
+
+            species_concentrations.append(SpeciesConcentration(species, concentration))
+
+        # Set initial reaction rates
+        reaction_rates = []
+
+        for reaction in config_JSON['initial conditions']:
+            
+            reaction_from_list = Species(name=reaction)
+
+            rate = config_JSON['conditions']['initial conditions'][reaction]
+
+            reaction_rates.append(ReactionRate(reaction_from_list, rate))
+
+        return cls(pressure, temperature, species_concentrations, reaction_rates)
+
+
 
     def add_species_concentration(self, species_concentration):
         """

@@ -41,8 +41,8 @@ class BoxModel:
             config_file (String): File path for the configuration file to be located. Default is "camp_data/config.json".
         """
         self.box_model_options = box_model_options
-        self.species_list = species_list
-        self.reaction_list = reaction_list
+        self.species_list = species_list if species_list is not None else []
+        self.reaction_list = reaction_list if reaction_list is not None else []
         self.initial_conditions = initial_conditions
         self.evolving_conditions = evolving_conditions if evolving_conditions is not None else []
         self.config_file = config_file if config_file is not None else "camp_data/config.json"
@@ -279,6 +279,8 @@ class BoxModel:
 
         #sets up initial concentraion values
         curr_concentrations = self.initial_conditions.get_concentration_array()
+       
+
 
 
         #sets up next condition if evolving conditions is not empty
@@ -304,19 +306,21 @@ class BoxModel:
                     next_conditions_index += 1
                     next_conditions = self.evolving_conditions.conditions[next_conditions_index]
                     next_conditions_time = self.evolving_conditions.times[next_conditions_index]
+
+                    #overrides concentrations if specified by conditions
+                    if(len(curr_conditions.get_concentration_array()) != 0):
+                        curr_concentrations = curr_conditions.get_concentration_array()
                 else:
                     next_conditions = None
 
-            #updates concentrations if they are present in the evolving conditions
-            if(len(curr_conditions.get_concentration_array()) != 0):
-                curr_concentrations = curr_conditions.get_concentration_array()
-
-            curr_concentations = musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, curr_concentrations)
-
+            #solves and updates concentration values in concentration array
+            musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, curr_concentrations)
+            
             #increments time
             curr_time += self.box_model_options.chem_step_time
-            #print(curr_concentrations)
 
+            print(curr_concentrations)
+            
 
     def readFromJson(self, path_to_json):
         """
@@ -324,7 +328,7 @@ class BoxModel:
         """
         # TODO: Implement the logic to update the box model config using a json.
 
-        with open(path_to_json, 'r', encoding='utf-16') as json_file:
+        with open(path_to_json, 'r') as json_file:
             data = json.load(json_file)
 
             # Set box model options
@@ -342,20 +346,24 @@ class BoxModel:
             # Set evolving conditions
             self.evolving_conditions = EvolvingConditions.from_UI_JSON(data, self.species_list, self.reaction_list)    
 
+    def readConditionsFromJson(self, path_to_json):
+
+        with open(path_to_json, 'r') as json_file:
+            data = json.load(json_file)
+            # Set box model options
+            self.box_model_options = BoxModelOptions.from_config_JSON(data)
+
+            # Set initial conditions
+            self.initial_conditions = Conditions.from_config_JSON(data)
+
+
 # for testing purposes
 def __main__():
     # Create a new instance of the BoxModel class.
 
-    options = BoxModelOptions(5, 1, 2.5)
-    inital_condtions = Conditions(1.0, 298.0)
-    inital_condtions.add_species_concentration(SpeciesConcentration(Species(name="N2"),  3.29e1 ))
-    inital_condtions.add_species_concentration(SpeciesConcentration(Species(name="O2"), 8.84e0))
-    inital_condtions.add_species_concentration(SpeciesConcentration(Species(name="Ar"), 3.92e-1))
-    inital_condtions.add_species_concentration(SpeciesConcentration(Species(name="CO2"),  1.69e-2))
-    inital_condtions.add_species_concentration(SpeciesConcentration(Species(name="O"), 1.0e-5))
-    box_model = BoxModel(box_model_options=options, initial_conditions=inital_condtions)
-
-    box_model.create_solver("configs/chapman")
+    box_model = BoxModel()
+    box_model.readConditionsFromJson("configs/test_config/my_config.json")
+    box_model.create_solver("configs/test_config/camp_data")
     box_model.solve()
 
 

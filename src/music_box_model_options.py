@@ -44,3 +44,15 @@ class BoxModelOptions:
         grid = UI_JSON['conditions']['box model options']['grid']
         
         return cls(chem_step_time, output_step_time, simulation_length, grid)
+    
+
+    @classmethod
+    def from_config_JSON(cls, config_JSON):
+
+        chem_step_time = utils.convert_time(config_JSON['box model options'], 'chemistry time step') * 60
+        output_step_time = utils.convert_time(config_JSON['box model options'], 'output time step')
+        simulation_length = utils.convert_time(config_JSON['box model options'], 'simulation length')
+
+        grid = config_JSON['box model options']['grid']
+        
+        return cls(chem_step_time, output_step_time, simulation_length, grid)
