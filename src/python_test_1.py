@@ -21,7 +21,7 @@ def __main__():
     conc_b_index = output[0].index('CONC.B')
     conc_c_index = output[0].index('CONC.C')
 
-    #extracts model concentratins from data output
+    #extracts model concentrations from data output
     model_concentrations = [[row[conc_a_index], row[conc_b_index], row[conc_c_index]] for row in output[1:]]
 
 
