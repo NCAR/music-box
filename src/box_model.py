@@ -1,4 +1,5 @@
 import json
+import os
 
 from music_box_evolving_conditions import EvolvingConditions
 from music_box_reaction_list import ReactionList
@@ -59,18 +60,90 @@ class BoxModel:
         evolving_condition = EvolvingConditions(time=[time_point], conditions=[conditions])
         self.evolvingConditions.append(evolving_condition)
 
-    def generateConfig(self):
+    def generateConfig(self, directory):
         """
         Generate configuration JSON for the box model simulation.
 
         Returns:
         tuple: A tuple containing the species configuration JSON and the reaction configuration JSON.
         """
+        output_path = "./src/configs/" + directory
 
-        speciesConfig = self.generateSpeciesConfig()
-        reactionConfig = self.generateReactionConfig()
+        # Check if directory exists and create it if it doesn't
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+            os.makedirs(output_path + "/camp_data")    
 
-        return speciesConfig, reactionConfig
+        # Make camp_data config 
+        with open(output_path + "/camp_data/config.json", 'w') as camp_config_file:
+            data = {
+                "camp-files": [
+                    "species.json",
+                    "reactions.json"
+                ]
+            }
+
+            camp_config_file.write(json.dumps(data))
+
+        # Make species and reactions configs
+        with open(output_path + "/camp_data/species.json", 'w') as species_file:
+            species_file.write(self.generateSpeciesConfig())
+
+        with open(output_path + "/camp_data/reactions.json", 'w') as reactions_file:
+            reactions_file.write(self.generateReactionConfig())
+
+        # Make box model options config
+        with open(output_path + "/" + directory + "_config.json", 'w') as config_file:
+            data = {}
+
+            data["box model options"] = {
+                "grid": self.box_model_options.grid,
+                "chemistry time step [sec]": self.box_model_options.chem_step_time,
+                "output time step [sec]": self.box_model_options.output_step_time,
+                "simulation length [sec]": self.box_model_options.simulation_length,
+            }
+
+            data["chemical species"] = {}
+
+            if self.initial_conditions.species_concentrations is not None:
+                for species_concentration in self.initial_conditions.species_concentrations:
+                    data["chemical species"][species_concentration.species.name] = { "initial value [mol m-3]": species_concentration.concentration }
+
+            data["environmental conditions"] = {
+                "pressure": {
+                    "initial value [Pa]": self.initial_conditions.pressure,
+                },
+                "temperature": {
+                    "initial value [K]": self.initial_conditions.temperature,
+                },
+            }
+
+            data["evolving conditions"] = {
+                "evolving_conditions.csv": {},
+            }
+
+            data["initial conditions"] = {}
+
+            for reaction_rate in self.initial_conditions.reaction_rates:
+                name = "PHOT." + reaction_rate.reaction.name + ".s-1"
+                data["initial conditions"][name] = reaction_rate.rate
+
+            data["model components"] = [
+                {
+                    "type": "CAMP",
+                    "configuration file": "camp_data/config.json",
+                    "override species": {
+                        "M": {
+                        "mixing ratio mol mol-1": 1
+                        }
+                    },
+                    "suppress output": {
+                        "M": {}
+                    }
+                }
+            ]
+
+            config_file.write(json.dumps(data))
 
     def generateSpeciesConfig(self):
         """
@@ -83,11 +156,11 @@ class BoxModel:
         speciesArray = []
 
         #Adds relative tolerance if value is set
-        if(self.species_list.relative_tolerance != None):
-            relativeTolerance = {}
-            relativeTolerance["Type"] = "RELATIVE_TOLERANCE"
-            relativeTolerance["value"] = self.species_list.relative_tolerance
-            speciesArray.append(relativeTolerance)
+        # if(self.species_list.relative_tolerance != None):
+        #     relativeTolerance = {}
+        #     relativeTolerance["Type"] = "RELATIVE_TOLERANCE"
+        #     relativeTolerance["value"] = self.species_list.relative_tolerance
+        #     speciesArray.append(relativeTolerance)
 
         #Adds species to config
         for species in self.species_list.species:
@@ -157,7 +230,7 @@ class BoxModel:
 
                 #Adds reactant quantity if value is set
                 if reactant.quantity != None:
-                    quantity["quantity"] = reactant.quantity
+                    quantity["qty"] = reactant.quantity
                 reactants[reactant.name] = quantity
             
             reac["reactants"] = reactants
@@ -390,8 +463,13 @@ class BoxModel:
 # for testing purposes
 def __main__():
     # Create a new instance of the BoxModel class.
+    box_model = BoxModel()
 
-    pass
+    # Read the box model configuration from a json file.
+    box_model.readFromUIJson("../initial.json")
+
+    # Generate configuration JSON for the box model simulation.
+    box_model.generateConfig("UI_test")
 
 
 
