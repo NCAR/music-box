@@ -75,25 +75,34 @@ class Conditions:
 
         temperature = utils.convert_temperature(config_JSON['environmental conditions']['temperature'], 'initial value')
 
+
         # Set initial species concentrations
         species_concentrations = []
-        for chem_spec in config_JSON['chemical species']:
-            species = Species(name = chem_spec)
 
-            concentration = utils.convert_concentration(config_JSON['chemical species'][chem_spec], 'initial value')
+        #reads initial conditions from csv if it is given
+        if 'initial conditions' in config_JSON:
+            initial_conditions_csv = config_JSON['initial conditions']
+            #read_initial_conditions_from_csv(initial_conditions_csv)
 
-            species_concentrations.append(SpeciesConcentration(species, concentration))
+        #reads from config file directly if present
+        if 'chemical species' in config_JSON:
+            for chem_spec in config_JSON['chemical species']:
+                species = Species(name = chem_spec)
+                concentration = utils.convert_concentration(config_JSON['chemical species'][chem_spec], 'initial value')
 
+                species_concentrations.append(SpeciesConcentration(species, concentration))
+
+        #TODO: may or may not be necessary
         # Set initial reaction rates
         reaction_rates = []
 
-        for reaction in config_JSON['initial conditions']:
+        # for reaction in config_JSON['initial conditions']:
             
-            reaction_from_list = Species(name=reaction)
+        #     reaction_from_list = Species(name=reaction)
 
-            rate = config_JSON['conditions']['initial conditions'][reaction]
+        #     rate = config_JSON['conditions']['initial conditions'][reaction]
 
-            reaction_rates.append(ReactionRate(reaction_from_list, rate))
+        #     reaction_rates.append(ReactionRate(reaction_from_list, rate))
 
         return cls(pressure, temperature, species_concentrations, reaction_rates)
 
