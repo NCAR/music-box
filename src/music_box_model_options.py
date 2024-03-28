@@ -52,6 +52,7 @@ class BoxModelOptions:
         chem_step_time = utils.convert_time(config_JSON['box model options'], 'chemistry time step')
         output_step_time = utils.convert_time(config_JSON['box model options'], 'output time step') 
         simulation_length = utils.convert_time(config_JSON['box model options'], 'simulation length')
+        print(simulation_length)
 
         grid = config_JSON['box model options']['grid']
         

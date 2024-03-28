@@ -14,7 +14,7 @@ def __main__():
     box_model.readConditionsFromJson(conditions_path)
     box_model.create_solver(camp_path)
 
-    #solves and saves output
+    # solves and saves output
     output = box_model.solve(path_to_output = "test_2_output.csv")
 
     #print(output)
