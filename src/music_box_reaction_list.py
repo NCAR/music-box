@@ -33,6 +33,8 @@ class ReactionList:
         Returns:
             ReactionList: A new instance of the ReactionList class.
         """
+        list_name = UI_JSON['mechanism']['reactions']['camp-data'][0]['name']
+
         reactions = []
 
         for reaction in UI_JSON['mechanism']['reactions']['camp-data'][0]['reactions']:
@@ -107,7 +109,7 @@ class ReactionList:
             else:
                 reactions.append(Reaction(name, reaction_type, reactants, products))
 
-        return cls(reactions=reactions)
+        return cls(list_name, reactions)
 
     def add_reaction(self, reaction):
         """
