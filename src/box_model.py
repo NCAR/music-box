@@ -124,6 +124,10 @@ class BoxModel:
 
             data["initial conditions"] = {}
 
+            for reaction_rate in self.initial_conditions.reaction_rates:
+                name = "PHOT." + reaction_rate.reaction.name + ".s-1"
+                data["initial conditions"][name] = reaction_rate.rate
+
             data["model components"] = [
                 {
                     "type": "CAMP",
@@ -421,7 +425,7 @@ class BoxModel:
         """
         # TODO: Implement the logic to update the box model config using a json.
 
-        with open(path_to_json, 'r', encoding='UTF-16') as json_file:
+        with open(path_to_json, 'r') as json_file:
             data = json.load(json_file)
 
             # Set box model options
@@ -459,10 +463,10 @@ def __main__():
     box_model = BoxModel()
 
     # Read the box model configuration from a json file.
-    box_model.readFromUIJson("./pretty_json.json")
+    box_model.readFromUIJson("../initial.json")
 
     # Generate configuration JSON for the box model simulation.
-    box_model.generateConfig("reactions_config_test")
+    box_model.generateConfig("UI_test")
 
 
 
