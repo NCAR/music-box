@@ -14,7 +14,6 @@ def convert_time(data, key):
     for unit in ['sec', 'min', 'hour', 'hr', 'day']:
         if f'{key} [{unit}]' in data:
             time_value = float(data[f'{key} [{unit}]'])
-            print(time_value)
             if unit == 'sec':
                 time = time_value
             elif unit == 'min':
