@@ -1,3 +1,5 @@
+import json
+import os
 from typing import List
 from music_box_species import Species
 
@@ -46,17 +48,43 @@ class SpeciesList:
         return cls(species_from_json)
     
     @classmethod
-    def from_config_JSON(cls, config_JSON):
+    def from_config_JSON(cls, path_to_json, config_JSON):
 
         species_from_json = []
 
-        for name, properties in config_JSON['chemical species'].items():
-            absolute_tolerance = properties.get('absolute tolerance')
-            molecular_weight = properties.get('molecular weight')
+        #gets config file path
+        config_file_path = os.path.dirname(path_to_json) + "/" + config_JSON['model components'][0]['configuration file']
 
-            # TODO: Add phase and density to species
+        #opnens config path to read species file
+        with open(config_file_path, 'r') as json_file:
+            config = json.load(json_file)
 
-            species_from_json.append(Species(name, absolute_tolerance, None, molecular_weight, None))
+            #assumes species file is first in the list
+            if(len(config['camp-files']) > 0):
+                species_file_path = os.path.dirname(config_file_path) + "/" + config['camp-files'][0]
+                with open(species_file_path, 'r') as species_file:
+                    species_data = json.load(species_file)
+                    #loads species by names from camp files
+                    for properties in species_data['camp-data']:
+                        name = properties.get('name')
+                        species_from_json.append(Species(name, None, None, None, None))
+
+
+        #chceks if species are in the config file and updates attributes accordingly
+        for chem_spec in config_JSON['chemical species']:
+            for species in species_from_json:
+                if species.name == chem_spec:
+                    # Add attributes to species
+                    if 'absolute tolerance' in chem_spec:
+                        species.absolute_tolerance = chem_spec['absolute tolerance']
+                    if 'molecular weight' in chem_spec:
+                        species.molecular_weight = chem_spec['molecular weight']
+                    if 'density' in chem_spec:
+                        species.density = chem_spec['density']
+                    if 'phase' in chem_spec:
+                        species.phase = chem_spec['phase']
+                    
+
 
         return cls(species_from_json)
 

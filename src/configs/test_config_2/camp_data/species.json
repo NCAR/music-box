@@ -1,1 +1,24 @@
-{"camp-data": [ {"name": "a-pinene", "type": "CHEM_SPEC"}, {"name": "O3", "type": "CHEM_SPEC"}, {"name": "SOA1", "type": "CHEM_SPEC"}, {"name": "SOA2", "type": "CHEM_SPEC"}, {"name": "irr__bab3e78d-d1d7-4c6b-9f6f-bbbd303c0901", "type": "CHEM_SPEC"}]}
+{
+    "camp-data": [
+        {
+            "name": "a-pinene",
+            "type": "CHEM_SPEC"
+        },
+        {
+            "name": "O3",
+            "type": "CHEM_SPEC"
+        },
+        {
+            "name": "SOA1",
+            "type": "CHEM_SPEC"
+        },
+        {
+            "name": "SOA2",
+            "type": "CHEM_SPEC"
+        },
+        {
+            "name": "irr__bab3e78d-d1d7-4c6b-9f6f-bbbd303c0901",
+            "type": "CHEM_SPEC"
+        }
+    ]
+}
