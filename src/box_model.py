@@ -303,10 +303,10 @@ class BoxModel:
         #runs the simulation at each timestep
         while(curr_time <= self.box_model_options.simulation_length):
 
-            if(next_output_time <= curr_time):
-                
+            #outputs to output_array if enough time has elapsed
+            if(next_output_time <= curr_time):   
                 row = []
-                row.append(curr_time)
+                row.append(next_output_time)
                 row.append(curr_conditions.temperature)
                 row.append(curr_conditions.pressure)
                 for conc in curr_concentrations:
