@@ -70,7 +70,7 @@ class Conditions:
         return cls(pressure, temperature, species_concentrations, reaction_rates)
     
     @classmethod
-    def from_config_JSON(cls, config_JSON):
+    def from_config_JSON(cls, config_JSON, species_list):
         pressure = utils.convert_pressure(config_JSON['environmental conditions']['pressure'], 'initial value')
 
         temperature = utils.convert_temperature(config_JSON['environmental conditions']['temperature'], 'initial value')
@@ -91,6 +91,11 @@ class Conditions:
                 concentration = utils.convert_concentration(config_JSON['chemical species'][chem_spec], 'initial value')
 
                 species_concentrations.append(SpeciesConcentration(species, concentration))
+        
+        for species in species_list.species:
+            if not any(conc.species.name == species.name for conc in species_concentrations):
+                species_concentrations.append(SpeciesConcentration(species, 0)) 
+
 
         #TODO: may or may not be necessary
         # Set initial reaction rates
