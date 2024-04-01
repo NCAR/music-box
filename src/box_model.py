@@ -278,35 +278,55 @@ class BoxModel:
                 reac["nitrate products"] = nitrate_products
 
                 # Adds parameters for the reaction
-                reac["X"] = reaction.X
-                reac["Y"] = reaction.Y
-                reac["a0"] = reaction.a0
-                reac["n"] = reaction.n
+                if reaction.X is not None:
+                    reac["X"] = reaction.X
+                if reaction.Y is not None:
+                    reac["Y"] = reaction.Y
+                if reaction.a0 is not None:
+                    reac["a0"] = reaction.a0
+                if reaction.n is not None:
+                    reac["n"] = reaction.n
             
             elif isinstance(reaction, Arrhenius):
                 # Adds parameters for the reaction
-                reac["A"] = reaction.A
-                reac["B"] = reaction.B
-                reac["D"] = reaction.D
-                reac["E"] = reaction.E
-                reac["Ea"] = reaction.Ea
+                if reaction.A is not None:
+                    reac["A"] = reaction.A
+                if reaction.B is not None:
+                    reac["B"] = reaction.B
+                if reaction.D is not None:
+                    reac["D"] = reaction.D
+                if reaction.E is not None:
+                    reac["E"] = reaction.E
+                if reaction.Ea is not None:
+                    reac["C"] = reaction.Ea
             
             elif isinstance(reaction, Tunneling):
                 # Adds parameters for the reaction
-                reac["A"] = reaction.A
-                reac["B"] = reaction.B
-                reac["C"] = reaction.C
+                if reaction.A is not None:
+                    reac["A"] = reaction.A
+                if reaction.B is not None:
+                    reac["B"] = reaction.B
+                if reaction.C is not None:
+                    reac["C"] = reaction.C
             
             elif isinstance(reaction, Troe_Ternary):
                 # Adds parameters for the reaction
-                reac["k0_A"] = reaction.k0_A
-                reac["k0_B"] = reaction.k0_B
-                reac["k0_C"] = reaction.k0_C
-                reac["kinf_A"] = reaction.kinf_A
-                reac["kinf_B"] = reaction.kinf_B
-                reac["kinf_C"] = reaction.kinf_C
-                reac["Fc"] = reaction.Fc
-                reac["N"] = reaction.N
+                if reaction.k0_A is not None:
+                    reac["k0_A"] = reaction.k0_A
+                if reaction.k0_B is not None:
+                    reac["k0_B"] = reaction.k0_B
+                if reaction.k0_C is not None:
+                    reac["k0_C"] = reaction.k0_C
+                if reaction.kinf_A is not None:
+                    reac["kinf_A"] = reaction.kinf_A
+                if reaction.kinf_B is not None:
+                    reac["kinf_B"] = reaction.kinf_B
+                if reaction.kinf_C is not None:
+                    reac["kinf_C"] = reaction.kinf_C
+                if reaction.Fc is not None:
+                    reac["Fc"] = reaction.Fc
+                if reaction.N is not None:
+                    reac["N"] = reaction.N
             
             #Adds reaction name if value is set
             if(reaction.name != None):
@@ -466,7 +486,7 @@ def __main__():
     box_model = BoxModel()
 
     # Read the box model configuration from a json file.
-    box_model.readFromUIJson("../initial.json")
+    box_model.readFromUIJson("../recreate.json")
 
     # Generate configuration JSON for the box model simulation.
     box_model.generateConfig("UI_test")

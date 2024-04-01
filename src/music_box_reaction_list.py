@@ -79,32 +79,32 @@ class ReactionList:
 
                     nitrate_products.append(Product(species, yield_value))
 
-                X = reaction['X']
-                Y = reaction['Y']
-                a0 = reaction['a0']
-                n = reaction['n']
+                X = reaction['X'] if reaction['X'] != 1 else None
+                Y = reaction['Y'] if reaction['Y'] != 0 else None
+                a0 = reaction['a0'] if reaction['a0'] != 1 else None
+                n = reaction['n'] if reaction['n'] != 0 else None
                 reactions.append(Branched(name, reaction_type, reactants, alkoxy_products, nitrate_products, X, Y, a0, n))
             elif reaction_type == 'ARRHENIUS':
-                A = reaction['A']
-                B = reaction['B']
-                D = reaction['D']
-                E = reaction['E']
-                Ea = reaction['Ea']
+                A = reaction['A'] if reaction['A'] != 1 else None
+                B = reaction['B'] if reaction['B'] != 0 else None
+                D = reaction['D'] if reaction['D'] != 300 else None
+                E = reaction['E'] if reaction['E'] != 0 else None
+                Ea = reaction['Ea'] if reaction['Ea'] != 0 else None
                 reactions.append(Arrhenius(name, reaction_type, reactants, products, A, B, D, E, Ea))
             elif reaction_type == 'WENNBERG_TUNNELING':
-                A = reaction['A']
-                B = reaction['B']
-                C = reaction['C']
+                A = reaction['A'] if reaction['A'] != 1 else None
+                B = reaction['B'] if reaction['B'] != 0 else None
+                C = reaction['C'] if reaction['C'] != 0 else None
                 reactions.append(Tunneling(name, reaction_type, reactants, products, A, B, C))
             elif reaction_type == 'TROE' or reaction_type == 'TERNARY_CHEMICAL_ACTIVATION':
-                k0_A = reaction['k0_A']
-                k0_B = reaction['k0_B']
-                k0_C = reaction['k0_C']
-                kinf_A = reaction['kinf_A']
-                kinf_B = reaction['kinf_B']
-                kinf_C = reaction['kinf_C']
-                Fc = reaction['Fc']
-                N = reaction['N']
+                k0_A = reaction['k0_A'] if reaction['k0_A'] != 1 else None
+                k0_B = reaction['k0_B'] if reaction['k0_B'] != 0 else None
+                k0_C = reaction['k0_C'] if reaction['k0_C'] != 0 else None
+                kinf_A = reaction['kinf_A'] if reaction['kinf_A'] != 1 else None
+                kinf_B = reaction['kinf_B'] if reaction['kinf_B'] != 0 else None
+                kinf_C = reaction['kinf_C'] if reaction['kinf_C'] != 0 else None
+                Fc = reaction['Fc'] if reaction['Fc'] != 0.6 else None
+                N = reaction['N'] if reaction['N'] != 1 else None
                 reactions.append(Troe_Ternary(name, reaction_type, reactants, products, k0_A, k0_B, k0_C, kinf_A, kinf_B, kinf_C, Fc, N))
             else:
                 reactions.append(Reaction(name, reaction_type, reactants, products))
