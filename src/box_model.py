@@ -470,9 +470,6 @@ class BoxModel:
                     
                 else:
                     next_conditions = None
-
-
-            #print(ordered_rate_constants)
             
             #solves and updates concentration values in concentration array
             musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, ordered_concentrations, ordered_rate_constants)
@@ -544,13 +541,19 @@ class BoxModel:
     def order_reaction_rates(self, curr_conditions, rate_constant_ordering):
         rate_constants = {}
         for rate in curr_conditions.reaction_rates:
-            rate_constants[rate.reaction.name] = rate.rate
+
+            if(rate.reaction.reaction_type == "PHOTOLYSIS"):
+                key = "PHOTO." + rate.reaction.name
+            elif(rate.reaction.reaction_type == "LOSS"):
+                key = "LOSS." + rate.reaction.name
+            elif (rate.reaction.reaction_type == "EMISSION"):
+                key = "EMIS." + rate.reaction.name
+            rate_constants[key] = rate.rate
 
         ordered_rate_constants = len(rate_constants.keys()) * [0.0]
         for key, value in rate_constants.items():
 
-            #TODO: Hardcoding photolysis prefix for now
-            ordered_rate_constants[rate_constant_ordering["PHOTO." + key]] = value
+            ordered_rate_constants[rate_constant_ordering[key]] = value
         return ordered_rate_constants
     
     @classmethod
