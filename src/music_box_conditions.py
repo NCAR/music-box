@@ -66,7 +66,8 @@ class Conditions:
             rate = UI_JSON['conditions']['initial conditions'][reaction]
 
             reaction_rates.append(ReactionRate(reaction_from_list, rate))
-
+           
+         
         return cls(pressure, temperature, species_concentrations, reaction_rates)
     
     @classmethod
@@ -101,13 +102,10 @@ class Conditions:
         # Set initial reaction rates
         reaction_rates = []
 
-        # for reaction in config_JSON['initial conditions']:
-            
-        #     reaction_from_list = Species(name=reaction)
+        for reaction in reaction_list.reactions:
+            if reaction.name != None and not any(reac.reaction.name == reaction.name for reac in reaction_rates):
+                reaction_rates.append(ReactionRate(reaction, 0)) 
 
-        #     rate = config_JSON['conditions']['initial conditions'][reaction]
-
-        #     reaction_rates.append(ReactionRate(reaction_from_list, rate))
 
         return cls(pressure, temperature, species_concentrations, reaction_rates)
 
@@ -177,15 +175,15 @@ class Conditions:
             self.pressure = new_conditions.pressure
         if new_conditions.temperature is not None:
             self.temperature = new_conditions.temperature
-        for conc in new_conditions.species_concentrations:
-           
+        for conc in new_conditions.species_concentrations:     
             match = filter(lambda x: x.species.name == conc.species.name, self.species_concentrations)
-           
-
-        for rate in new_conditions.reaction_rates:
-            
-            match = filter(lambda x: x.reaction.name == rate.reaction.name, self.reaction_rates)
             for item in list(match):
-                print(item)
-        #self.reaction_rates = new_conditions.reaction_rates
+                item.concentration = conc.concentration
+    
+        for rate in new_conditions.reaction_rates:
+               
+            match = filter(lambda x: x.reaction.name == rate.reaction.name, self.reaction_rates)
+            
+            for item in list(match):
+                item.rate = rate.rate
 

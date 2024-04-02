@@ -47,6 +47,7 @@ class BoxModel:
         self.initial_conditions = initial_conditions
         self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([], [])
         self.config_file = config_file if config_file is not None else "camp_data/config.json"
+        
 
 
     def add_evolving_condition(self, time_point, conditions):
@@ -385,16 +386,21 @@ class BoxModel:
         headers.append("time")
         headers.append("ENV.temperature")
         headers.append("ENV.pressure")
+
+        rate_constant_ordering = musica.user_defined_reaction_rates(self.solver)
+        species_constant_ordering = musica.species_ordering(self.solver)
         
-        for spec in self.species_list.species:
-            headers.append("CONC." + spec.name)
+        for spec in species_constant_ordering.keys():
+            headers.append("CONC." + spec)
         
         output_array.append(headers)
+        
         
         
         curr_time = 0
         next_output_time = curr_time
         #runs the simulation at each timestep
+
 
         
         while(curr_time <= self.box_model_options.simulation_length):
@@ -421,14 +427,22 @@ class BoxModel:
                     next_conditions = self.evolving_conditions.conditions[next_conditions_index]
                     next_conditions_time = self.evolving_conditions.times[next_conditions_index]
 
+                    ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering)
+                    ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering)
+                    
+
                     #overrides concentrations if specified by conditions
                     if(len(curr_conditions.get_concentration_array()) != 0):
                         curr_concentrations = curr_conditions.get_concentration_array()
+                    
                 else:
                     next_conditions = None
 
+
+
+           
             #solves and updates concentration values in concentration array
-            musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, curr_concentrations, [])
+            musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, ordered_concentrations, ordered_rate_constants)
 
         
             #increments time
@@ -491,6 +505,32 @@ class BoxModel:
 
     def userDefinedReactionRates(self):
         return musica.user_defined_reaction_rates(self.solver)
+    
+    @classmethod
+    def order_reaction_rates(self, curr_conditions, rate_constant_ordering):
+        rate_constants = {}
+        for rate in curr_conditions.reaction_rates:
+            rate_constants[rate.reaction.name] = rate.rate
+
+        ordered_rate_constants = len(rate_constants.keys()) * [0.0]
+        for key, value in rate_constants.items():
+
+            #TODO: Hardcoding photolysis prefix for now
+            ordered_rate_constants[rate_constant_ordering["PHOTO." + key]] = value
+        return ordered_rate_constants
+    
+    @classmethod
+    def order_species_concentrations(self, curr_conditions, species_constant_ordering):
+        concentrations = {}
+        for concentraton in curr_conditions.species_concentrations:
+            concentrations[concentraton.species.name] = concentraton.concentration
+            
+        ordered_concentrations = len(concentrations.keys()) * [0.0]
+        for key, value in concentrations.items():
+
+            ordered_concentrations[species_constant_ordering[key]] = value
+        return ordered_concentrations
+
 
 
 # for testing purposes
