@@ -70,7 +70,7 @@ class Conditions:
         return cls(pressure, temperature, species_concentrations, reaction_rates)
     
     @classmethod
-    def from_config_JSON(cls, config_JSON, species_list):
+    def from_config_JSON(cls, config_JSON, species_list, reaction_list):
         pressure = utils.convert_pressure(config_JSON['environmental conditions']['pressure'], 'initial value')
 
         temperature = utils.convert_temperature(config_JSON['environmental conditions']['temperature'], 'initial value')
