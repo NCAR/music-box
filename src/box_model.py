@@ -145,6 +145,30 @@ class BoxModel:
             ]
 
             config_file.write(json.dumps(data))
+        
+        # Make evolving conditions config
+        with open(output_path + "/evolving_conditions.csv", 'w', newline='') as evolving_conditions_file:
+            writer = csv.writer(evolving_conditions_file)
+            writer.writerow(self.evolving_conditions.headers)
+
+            for i in range(len(self.evolving_conditions.times)):
+                row = [self.evolving_conditions.times[i]]
+
+                for header in self.evolving_conditions.headers[1:]:
+                    if header == "ENV.pressure.Pa":
+                        row.append(self.evolving_conditions.conditions[i].pressure)
+                    elif header == "ENV.temperature.K":
+                        row.append(self.evolving_conditions.conditions[i].temperature)
+                    elif header.startswith("CONC."):
+                        species_name = header.split('.')[1]
+                        species_concentration = next((x for x in self.evolving_conditions.conditions[i].species_concentrations if x.species.name == species_name), None)
+                        row.append(species_concentration.concentration)
+                    elif header.endswith(".s-1"):
+                        reaction_name = header.split('.')[1]
+                        reaction_rate = next((x for x in self.evolving_conditions.conditions[i].reaction_rates if x.reaction.name == reaction_name), None)
+                        row.append(reaction_rate.rate)
+
+                writer.writerow(row)
 
     def generateSpeciesConfig(self):
         """
@@ -374,7 +398,7 @@ class BoxModel:
         next_conditions = None
         next_conditions_time = 0
         next_conditions_index = 0
-        if(len(self.evolving_conditions) != 0):
+        if(len(self.evolving_conditions.conditions) != 0):
             next_conditions_index = 0
             next_conditions = self.evolving_conditions.conditions[0]
             next_conditions_time = self.evolving_conditions.times[0]

@@ -14,7 +14,7 @@ class EvolvingConditions:
         conditions (List[Conditions]): A list of associated conditions.
     """
 
-    def __init__(self, times=None, conditions=None):
+    def __init__(self, headers=None, times=None, conditions=None):
         """
         Initializes a new instance of the EvolvingConditions class.
 
@@ -22,6 +22,7 @@ class EvolvingConditions:
             time (List[float]): A list of time points. Default is an empty list.
             conditions (List[Conditions]): A list of associated conditions. Default is an empty list.
         """
+        self.headers = headers if headers is not None else []
         self.times = times if times is not None else []
         self.conditions = conditions if conditions is not None else []
 
@@ -80,7 +81,7 @@ class EvolvingConditions:
 
             conditions.append(Conditions(pressure, temperature, concentrations, rates))
 
-        return cls(times, conditions)
+        return cls(headers, times, conditions)
     
     @classmethod
     def from_config_JSON(cls, path_to_json ,config_JSON, species_list, reaction_list):
