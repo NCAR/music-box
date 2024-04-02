@@ -420,7 +420,6 @@ class BoxModel:
         output_array.append(headers)
         
         
-        
         curr_time = 0
         next_output_time = curr_time
         #runs the simulation at each timestep
@@ -451,8 +450,7 @@ class BoxModel:
                     next_conditions = self.evolving_conditions.conditions[next_conditions_index]
                     next_conditions_time = self.evolving_conditions.times[next_conditions_index]
 
-                    ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering)
-                    ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering)
+                   
                     
 
                     #overrides concentrations if specified by conditions
@@ -463,7 +461,8 @@ class BoxModel:
                     next_conditions = None
 
 
-
+            ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering)
+            ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering)
            
             #solves and updates concentration values in concentration array
             musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, ordered_concentrations, ordered_rate_constants)
