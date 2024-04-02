@@ -1,3 +1,5 @@
+import os
+import json
 from typing import List
 from music_box_reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
 from music_box_reactant import Reactant
@@ -38,76 +40,37 @@ class ReactionList:
         reactions = []
 
         for reaction in UI_JSON['mechanism']['reactions']['camp-data'][0]['reactions']:
-            name = reaction['MUSICA name'] if 'MUSICA name' in reaction else None
-            reaction_type = reaction['type']
 
-            reactants = []
+            reactions.append(ReactionList.get_reactions_from_JSON(reaction, species_list))
 
-            for reactant, reactant_info in reaction['reactants'].items():
-                match = filter(lambda x: x.name == reactant, species_list.species)
-                species = next(match, None)
-                quantity = reactant_info['qty'] if 'qty' in reactant_info else None
+        return cls(list_name, reactions)
+    
+    @classmethod
+    def from_config_JSON(cls, path_to_json, config_JSON, species_list):
 
-                reactants.append(Reactant(species, quantity))
+        reactions = []
+        list_name = None
 
-            products = []
+        #gets config file path
+        config_file_path = os.path.dirname(path_to_json) + "/" + config_JSON['model components'][0]['configuration file']
 
-            if 'products' in reaction:
-                for product, product_info in reaction['products'].items():
-                    match = filter(lambda x: x.name == product, species_list.species)
-                    species = next(match, None)
-                    yield_value = product_info['yield'] if 'yield' in product_info else None
+        #opnens config path to read reaction file
+        with open(config_file_path, 'r') as json_file:
+            config = json.load(json_file)
 
-                    products.append(Product(species, yield_value))
+            #assumes reactions file is second in the list
+            if(len(config['camp-files']) > 1):
+                reaction_file_path = os.path.dirname(config_file_path) + "/" + config['camp-files'][1]
+                with open(reaction_file_path, 'r') as reaction_file:
+                    reaction_data = json.load(reaction_file)
                     
-            if reaction_type == 'WENNBERG_NO_RO2':
-                alkoxy_products = []
+                    #assumes there is only one mechanism
 
-                for alkoxy_product, alkoxy_product_info in reaction['alkoxy products'].items():
-                    match = filter(lambda x: x.name == alkoxy_product, species_list.species)
-                    species = next(match, None)
-                    yield_value = alkoxy_product_info['yield'] if 'yield' in alkoxy_product_info else None
+                    list_name = reaction_data['camp-data'][0]['name']
+                    for reaction in reaction_data['camp-data'][0]['reactions']:
+                        reactions.append(ReactionList.get_reactions_from_JSON(reaction, species_list))
 
-                    alkoxy_products.append(Product(species, yield_value))
-
-                nitrate_products = []
-
-                for nitrate_product, nitrate_product_info in reaction['nitrate products'].items():
-                    match = filter(lambda x: x.name == nitrate_product, species_list.species)
-                    species = next(match, None)
-                    yield_value = nitrate_product_info['yield'] if 'yield' in nitrate_product_info else None
-
-                    nitrate_products.append(Product(species, yield_value))
-
-                X = reaction['X'] if reaction['X'] != 1 else None
-                Y = reaction['Y'] if reaction['Y'] != 0 else None
-                a0 = reaction['a0'] if reaction['a0'] != 1 else None
-                n = reaction['n'] if reaction['n'] != 0 else None
-                reactions.append(Branched(name, reaction_type, reactants, alkoxy_products, nitrate_products, X, Y, a0, n))
-            elif reaction_type == 'ARRHENIUS':
-                A = reaction['A'] if reaction['A'] != 1 else None
-                B = reaction['B'] if reaction['B'] != 0 else None
-                D = reaction['D'] if reaction['D'] != 300 else None
-                E = reaction['E'] if reaction['E'] != 0 else None
-                Ea = reaction['Ea'] if reaction['Ea'] != 0 else None
-                reactions.append(Arrhenius(name, reaction_type, reactants, products, A, B, D, E, Ea))
-            elif reaction_type == 'WENNBERG_TUNNELING':
-                A = reaction['A'] if reaction['A'] != 1 else None
-                B = reaction['B'] if reaction['B'] != 0 else None
-                C = reaction['C'] if reaction['C'] != 0 else None
-                reactions.append(Tunneling(name, reaction_type, reactants, products, A, B, C))
-            elif reaction_type == 'TROE' or reaction_type == 'TERNARY_CHEMICAL_ACTIVATION':
-                k0_A = reaction['k0_A'] if reaction['k0_A'] != 1 else None
-                k0_B = reaction['k0_B'] if reaction['k0_B'] != 0 else None
-                k0_C = reaction['k0_C'] if reaction['k0_C'] != 0 else None
-                kinf_A = reaction['kinf_A'] if reaction['kinf_A'] != 1 else None
-                kinf_B = reaction['kinf_B'] if reaction['kinf_B'] != 0 else None
-                kinf_C = reaction['kinf_C'] if reaction['kinf_C'] != 0 else None
-                Fc = reaction['Fc'] if reaction['Fc'] != 0.6 else None
-                N = reaction['N'] if reaction['N'] != 1 else None
-                reactions.append(Troe_Ternary(name, reaction_type, reactants, products, k0_A, k0_B, k0_C, kinf_A, kinf_B, kinf_C, Fc, N))
-            else:
-                reactions.append(Reaction(name, reaction_type, reactants, products))
+       
 
         return cls(list_name, reactions)
 
@@ -119,3 +82,85 @@ class ReactionList:
             reaction (Reaction): The Reaction instance to be added.
         """
         self.reactions.append(reaction)
+
+    @classmethod
+    def get_reactants_from_JSON(self, reaction, species_list):
+        reactants = []
+
+        for reactant, reactant_info in reaction['reactants'].items():
+            match = filter(lambda x: x.name == reactant, species_list.species)
+            species = next(match, None)
+            quantity = reactant_info['qty'] if 'qty' in reactant_info else None
+
+            reactants.append(Reactant(species, quantity))
+        return reactants
+    
+    @classmethod
+    def get_products_from_JSON(self, reaction, species_list):
+        products = []
+        if 'products' in reaction:
+                for product, product_info in reaction['products'].items():
+                    match = filter(lambda x: x.name == product, species_list.species)
+                    species = next(match, None)
+                    yield_value = product_info['yield'] if 'yield' in product_info else None
+
+                    products.append(Product(species, yield_value))
+        return products
+    
+    @classmethod
+    def get_reactions_from_JSON(self, reaction, species_list):
+
+        name = reaction['MUSICA name'] if 'MUSICA name' in reaction else None
+        reaction_type = reaction['type']
+    
+        reactants = ReactionList.get_reactants_from_JSON(reaction, species_list)
+        products = ReactionList.get_products_from_JSON(reaction, species_list)
+                
+        if reaction_type == 'WENNBERG_NO_RO2':
+            alkoxy_products = []
+
+            for alkoxy_product, alkoxy_product_info in reaction.get('alkoxy products', {}).items():
+                match = filter(lambda x: x.name == alkoxy_product, species_list.species)
+                species = next(match, None)
+                yield_value = alkoxy_product_info.get('yield')
+
+                alkoxy_products.append(Product(species, yield_value))
+
+            nitrate_products = []
+
+            for nitrate_product, nitrate_product_info in reaction.get('nitrate products', {}).items():
+                match = filter(lambda x: x.name == nitrate_product, species_list.species)
+                species = next(match, None)
+                yield_value = nitrate_product_info.get('yield')
+
+                nitrate_products.append(Product(species, yield_value))
+
+            X = reaction.get('X') if reaction.get('X') != 1 else None
+            Y = reaction.get('Y') if reaction.get('Y') != 0 else None
+            a0 = reaction.get('a0') if reaction.get('a0') != 1 else None
+            n = reaction.get('n') if reaction.get('n') != 0 else None
+            return Branched(name, reaction_type, reactants, alkoxy_products, nitrate_products, X, Y, a0, n)
+        elif reaction_type == 'ARRHENIUS':
+            A = reaction.get('A') if reaction.get('A') != 1 else None
+            B = reaction.get('B') if reaction.get('B') != 0 else None
+            D = reaction.get('D') if reaction.get('D') != 300 else None
+            E = reaction.get('E') if reaction.get('E') != 0 else None
+            Ea = reaction.get('Ea') if reaction.get('Ea') != 0 else None
+            return Arrhenius(name, reaction_type, reactants, products, A, B, D, E, Ea)
+        elif reaction_type == 'WENNBERG_TUNNELING':
+            A = reaction.get('A') if reaction.get('A') != 1 else None
+            B = reaction.get('B') if reaction.get('B') != 0 else None
+            C = reaction.get('C') if reaction.get('C') != 0 else None
+            return Tunneling(name, reaction_type, reactants, products, A, B, C)
+        elif reaction_type == 'TROE' or reaction_type == 'TERNARY_CHEMICAL_ACTIVATION':
+            k0_A = reaction.get('k0_A') if reaction.get('k0_A') != 1 else None
+            k0_B = reaction.get('k0_B') if reaction.get('k0_B') != 0 else None
+            k0_C = reaction.get('k0_C') if reaction.get('k0_C') != 0 else None
+            kinf_A = reaction.get('kinf_A') if reaction.get('kinf_A') != 1 else None
+            kinf_B = reaction.get('kinf_B') if reaction.get('kinf_B') != 0 else None
+            kinf_C = reaction.get('kinf_C') if reaction.get('kinf_C') != 0 else None
+            Fc = reaction.get('Fc') if reaction.get('Fc') != 0.6 else None
+            N = reaction.get('N') if reaction.get('N') != 1 else None
+            return Troe_Ternary(name, reaction_type, reactants, products, k0_A, k0_B, k0_C, kinf_A, kinf_B, kinf_C, Fc, N)
+        else:
+            return Reaction(name, reaction_type, reactants, products)

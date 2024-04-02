@@ -164,4 +164,28 @@ class Conditions:
             rate_array.append(reaction_rate.rate)
 
         return rate_array
+    
+
+    def update_conditions(self, new_conditions):
+        """
+        Updates the conditions with new conditions when evolving conditions are present.
+
+        Args:
+            new_conditions (Conditions): The new conditions to be updated.
+        """
+        if new_conditions.pressure is not None:
+            self.pressure = new_conditions.pressure
+        if new_conditions.temperature is not None:
+            self.temperature = new_conditions.temperature
+        for conc in new_conditions.species_concentrations:
+           
+            match = filter(lambda x: x.species.name == conc.species.name, self.species_concentrations)
+           
+
+        for rate in new_conditions.reaction_rates:
+            
+            match = filter(lambda x: x.reaction.name == rate.reaction.name, self.reaction_rates)
+            for item in list(match):
+                print(item)
+        #self.reaction_rates = new_conditions.reaction_rates
 

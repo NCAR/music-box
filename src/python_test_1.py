@@ -8,17 +8,18 @@ def __main__():
     box_model = BoxModel()
 
     #configures box model
-    # conditions_path = "./src/configs/test_config_1/my_config.json"
-    # camp_path = "./src/configs/test_config_1/camp_data"
+    conditions_path = "configs/test_config_1/my_config.json"
+    camp_path = "configs/test_config_1/camp_data"
 
-    conditions_path = "./src/configs/UI_test/UI_test_config.json"
-    camp_path = "./src/configs/UI_test/camp_data"
+    # conditions_path = "./src/configs/UI_test/UI_test_config.json"
+    # camp_path = "./src/configs/UI_test/camp_data"
     
     box_model.readConditionsFromJson(conditions_path)
     box_model.create_solver(camp_path)
 
+
     #solves and saves output
-    output = box_model.solve()
+    output = box_model.solve(path_to_output="output.csv")
 
     conc_a_index = output[0].index('CONC.A')
     conc_b_index = output[0].index('CONC.B')

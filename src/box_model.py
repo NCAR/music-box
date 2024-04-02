@@ -42,10 +42,10 @@ class BoxModel:
             config_file (String): File path for the configuration file to be located. Default is "camp_data/config.json".
         """
         self.box_model_options = box_model_options
-        self.species_list = species_list if species_list is not None else []
-        self.reaction_list = reaction_list if reaction_list is not None else []
+        self.species_list = species_list if species_list is not None else SpeciesList()
+        self.reaction_list = reaction_list if reaction_list is not None else ReactionList()
         self.initial_conditions = initial_conditions
-        self.evolving_conditions = evolving_conditions if evolving_conditions is not None else []
+        self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([], [])
         self.config_file = config_file if config_file is not None else "camp_data/config.json"
 
 
@@ -395,6 +395,8 @@ class BoxModel:
         curr_time = 0
         next_output_time = curr_time
         #runs the simulation at each timestep
+
+        
         while(curr_time <= self.box_model_options.simulation_length):
 
             #outputs to output_array if enough time has elapsed
@@ -410,7 +412,8 @@ class BoxModel:
         
             #iterates evolvings conditons if enough time has elapsed
             if(next_conditions != None and next_conditions_time <= curr_time):
-                curr_conditions = next_conditions
+                #curr_conditions = next_conditions
+                curr_conditions.update_conditions(next_conditions)
 
                 #iterates next_conditions if there are remaining evolving conditions
                 if(len(self.evolving_conditions) > next_conditions_index + 1):
@@ -425,7 +428,7 @@ class BoxModel:
                     next_conditions = None
 
             #solves and updates concentration values in concentration array
-            musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, curr_concentrations)
+            musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, curr_concentrations, [])
 
         
             #increments time
@@ -474,10 +477,20 @@ class BoxModel:
             # Set species list
             self.species_list = SpeciesList.from_config_JSON(path_to_json, data)
 
-            # Set initial conditions
-            self.initial_conditions = Conditions.from_config_JSON(data, self.species_list )
+            self.reaction_list = ReactionList.from_config_JSON(path_to_json, data, self.species_list)
 
+            # Set initial conditions
+            self.initial_conditions = Conditions.from_config_JSON(data, self.species_list, self.reaction_list)
+
+            # Set initial conditions
+            self.evolving_conditions = EvolvingConditions.from_config_JSON(path_to_json, data, self.species_list, self.reaction_list)
             
+
+    def speciesOrdering(self):
+        return musica.species_ordering(self.solver)
+
+    def userDefinedReactionRates(self):
+        return musica.user_defined_reaction_rates(self.solver)
 
 
 # for testing purposes
