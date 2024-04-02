@@ -1,0 +1,118 @@
+{
+    "camp-data": [
+        {
+            "type": "MECHANISM",
+            "name": "music box interactive configuration",
+            "reactions": [
+                {
+                    "type": "ARRHENIUS",
+                    "A": 8e-12,
+                    "Ea": 2.8428e-20,
+                    "B": 0,
+                    "D": 300,
+                    "E": 0,
+                    "reactants": {
+                        "O": {
+                            "qty": 1
+                        },
+                        "O3": {
+                            "qty": 1
+                        }
+                    },
+                    "products": {
+                        "O2": {
+                            "yield": 2
+                        },
+                        "irr__228bcf53-cf76-46cb-b952-68a76a044353": {
+                            "yield": 1
+                        }
+                    }
+                },
+                {
+                    "type": "ARRHENIUS",
+                    "A": 6e-34,
+                    "Ea": 0,
+                    "B": -2.4,
+                    "D": 300,
+                    "E": 0,
+                    "reactants": {
+                        "O": {
+                            "qty": 1
+                        },
+                        "O2": {
+                            "qty": 1
+                        },
+                        "M": {
+                            "qty": 1
+                        }
+                    },
+                    "products": {
+                        "O3": {
+                            "yield": 1
+                        },
+                        "M": {
+                            "yield": 1
+                        },
+                        "irr__2f09b69b-d831-453a-9d3d-716c6df06d9b": {
+                            "yield": 1
+                        }
+                    }
+                },
+                {
+                    "type": "ARRHENIUS",
+                    "A": 2.15e-11,
+                    "Ea": -1.518e-21,
+                    "B": 0,
+                    "D": 300,
+                    "E": 0,
+                    "reactants": {
+                        "O1D": {
+                            "qty": 1
+                        },
+                        "N2": {
+                            "qty": 1
+                        }
+                    },
+                    "products": {
+                        "O": {
+                            "yield": 1
+                        },
+                        "N2": {
+                            "yield": 1
+                        },
+                        "irr__bddff497-90b2-4af9-9b1d-39cb2bc5ea39": {
+                            "yield": 1
+                        }
+                    }
+                },
+                {
+                    "type": "ARRHENIUS",
+                    "A": 3.3e-11,
+                    "Ea": -7.59e-22,
+                    "B": 0,
+                    "D": 300,
+                    "E": 0,
+                    "reactants": {
+                        "O1D": {
+                            "qty": 1
+                        },
+                        "O2": {
+                            "qty": 1
+                        }
+                    },
+                    "products": {
+                        "O": {
+                            "yield": 1
+                        },
+                        "O2": {
+                            "yield": 1
+                        },
+                        "irr__cf3f20f2-140d-4cb7-a99d-8a37c3c25705": {
+                            "yield": 1
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

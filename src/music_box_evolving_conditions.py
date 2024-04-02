@@ -95,7 +95,7 @@ class EvolvingConditions:
             # Construct the path to the evolving conditions file
             evolving_conditions_path = os.path.dirname(path_to_json) + "/" + list(config_JSON['evolving conditions'].keys())[0]
             evolving_conditions =  EvolvingConditions.read_conditions_from_file( evolving_conditions_path, species_list, reaction_list)
-        
+       
         return evolving_conditions
             
 
@@ -178,7 +178,8 @@ class EvolvingConditions:
                 conditions.append(Conditions(pressure, temperature, concentrations, rates))
 
         # Return a new instance of the class with the times and conditions
-        return cls(times, conditions)
+        
+        return cls(times = times, conditions = conditions)
 
     
     #allows len overload for this class

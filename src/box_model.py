@@ -398,10 +398,16 @@ class BoxModel:
         next_conditions = None
         next_conditions_time = 0
         next_conditions_index = 0
-        if(len(self.evolving_conditions.conditions) != 0):
-            next_conditions_index = 0
-            next_conditions = self.evolving_conditions.conditions[0]
-            next_conditions_time = self.evolving_conditions.times[0]
+        if(len(self.evolving_conditions) != 0):
+            if(self.evolving_conditions.times[0] != 0):
+                next_conditions_index = 0
+                next_conditions = self.evolving_conditions.conditions[0]
+                next_conditions_time = self.evolving_conditions.times[0]
+            elif(len(self.evolving_conditions) > 1):
+                next_conditions_index = 1
+                next_conditions = self.evolving_conditions.conditions[1]
+                next_conditions_time = self.evolving_conditions.times[1]    
+                
 
         #initalizes output headers
         output_array = []
@@ -428,10 +434,9 @@ class BoxModel:
         next_output_time = curr_time
         #runs the simulation at each timestep
 
-
+        
         
         while(curr_time <= self.box_model_options.simulation_length):
-
             #outputs to output_array if enough time has elapsed
             if(next_output_time <= curr_time):   
                 row = []
@@ -445,8 +450,10 @@ class BoxModel:
         
             #iterates evolvings conditons if enough time has elapsed
             if(next_conditions != None and next_conditions_time <= curr_time):
+               
                 #curr_conditions = next_conditions
                 curr_conditions.update_conditions(next_conditions)
+                
 
                 #iterates next_conditions if there are remaining evolving conditions
                 if(len(self.evolving_conditions) > next_conditions_index + 1):
@@ -459,14 +466,17 @@ class BoxModel:
                     if(len(curr_conditions.get_concentration_array()) != 0):
                         ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering)
                     
+                    ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering)
+                    
                 else:
                     next_conditions = None
 
 
+            #print(ordered_rate_constants)
             
-           
             #solves and updates concentration values in concentration array
             musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, ordered_concentrations, ordered_rate_constants)
+           
 
         
             #increments time
@@ -550,6 +560,7 @@ class BoxModel:
             concentrations[concentraton.species.name] = concentraton.concentration
             
         ordered_concentrations = len(concentrations.keys()) * [0.0]
+        
         for key, value in concentrations.items():
 
             ordered_concentrations[species_constant_ordering[key]] = value
