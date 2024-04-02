@@ -48,7 +48,7 @@ class EvolvingConditions:
 
             pressure = None
             if 'ENV.pressure.Pa' in headers:
-                pressure = float(evol_from_json[i][headers.index('ENV.pressure.Pa')]) / 101325
+                pressure = float(evol_from_json[i][headers.index('ENV.pressure.Pa')])
 
             temperature = None
             if 'ENV.temperature.K' in headers:
