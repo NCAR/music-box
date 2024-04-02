@@ -85,72 +85,18 @@ class EvolvingConditions:
     @classmethod
     def from_config_JSON(cls, path_to_json ,config_JSON, species_list, reaction_list):
         # Initialize empty lists for times and conditions
-        times = []
-        conditions = []
+        
+
+        evolving_conditions = EvolvingConditions()
         
         # Check if 'evolving conditions' is a key in the JSON config
         if 'evolving conditions' in config_JSON:
             # Construct the path to the evolving conditions file
             evolving_conditions_path = os.path.dirname(path_to_json) + "/" + list(config_JSON['evolving conditions'].keys())[0]
-            print(evolving_conditions_path)
-
-            # Open the evolving conditions file and read it as a CSV
-            with open(evolving_conditions_path, 'r') as csv_file:
-                evolving_conditions = list(csv.reader(csv_file))
-
-                # The first row of the CSV contains headers
-                headers = evolving_conditions[0]
-                
-                # Iterate over the remaining rows of the CSV
-                for i in range(1, len(evolving_conditions)):
-                    # The first column of each row is a time value
-                    times.append(float(evolving_conditions[i][0]))
-
-                    # Initialize pressure and temperature as None
-                    pressure = None
-                    temperature = None
-
-                    # If pressure and temperature headers are present in the CSV, extract their values
-                    if 'ENV.pressure.Pa' in headers:
-                        pressure = float(evolving_conditions[i][headers.index('ENV.pressure.Pa')])
-                    if 'ENV.temperature.K' in headers:
-                        temperature = float(evolving_conditions[i][headers.index('ENV.temperature.K')])
-
-                    # Initialize concentrations list and extract concentration headers
-                    concentrations = []
-                    concentration_headers = list(filter(lambda x: 'CONC' in x, headers))
-
-                    # For each concentration header, find the matching species and append its concentration to the list
-                    for j in range(len(concentration_headers)):
-                        match = filter(lambda x: x.name == concentration_headers[j].split('.')[1], species_list.species)
-                        species = next(match, None)
-                        concentration = float(evolving_conditions[i][headers.index(concentration_headers[j])])
-                       
-                        concentrations.append(SpeciesConcentration(species, concentration))
-                        
-
-                    # Initialize rates list and extract rate headers
-                    rates = []
-                    rate_headers = list(filter(lambda x: 's-1' in x, headers))
-
-                    # For each rate header, find the matching reaction and append its rate to the list
-                    for k in range(len(rate_headers)):
-                        name_to_match = rate_headers[k].split('.')
-                        
-                        if name_to_match[0] == 'LOSS' or name_to_match[0] == 'EMIS':
-                            name_to_match = name_to_match[0] + '_' + name_to_match[1]
-                        else:
-                            name_to_match = name_to_match[1]
-                        match = filter(lambda x: x.name == name_to_match, reaction_list.reactions)
-                        reaction = next(match, None)
-                        rate = float(evolving_conditions[i][headers.index(rate_headers[k])])
-                        rates.append(ReactionRate(reaction, rate))
-
-                    # Append the conditions for this time point to the conditions list
-                    conditions.append(Conditions(pressure, temperature, concentrations, rates))
-
-        # Return a new instance of the class with the times and conditions
-        return cls(times, conditions)
+            evolving_conditions =  EvolvingConditions.read_conditions_from_file( evolving_conditions_path, species_list, reaction_list)
+        
+        return evolving_conditions
+            
 
     def add_condition(self, time_point, conditions):
         """
@@ -163,16 +109,76 @@ class EvolvingConditions:
         self.time.append(time_point)
         self.conditions.append(conditions)
     
-    def read_conditions_from_file(self, file_path):
+    @classmethod
+    def read_conditions_from_file(cls, file_path, species_list, reaction_list):
         """
         TODO: Read conditions from a file and update the evolving conditions.
 
         Args:
             file_path (str): The path to the file containing conditions UI_JSON.
         """
-        # TODO: Implement the logic to read conditions from the specified file.
-        # This method is a placeholder, and the actual implementation is required.
-        pass
+
+        times = []
+        conditions = []
+        
+        # Open the evolving conditions file and read it as a CSV
+        with open(file_path, 'r') as csv_file:
+            evolving_conditions = list(csv.reader(csv_file))
+
+            # The first row of the CSV contains headers
+            headers = evolving_conditions[0]
+            
+            # Iterate over the remaining rows of the CSV
+            for i in range(1, len(evolving_conditions)):
+                # The first column of each row is a time value
+                times.append(float(evolving_conditions[i][0]))
+
+                # Initialize pressure and temperature as None
+                pressure = None
+                temperature = None
+
+                # If pressure and temperature headers are present in the CSV, extract their values
+                if 'ENV.pressure.Pa' in headers:
+                    pressure = float(evolving_conditions[i][headers.index('ENV.pressure.Pa')])
+                if 'ENV.temperature.K' in headers:
+                    temperature = float(evolving_conditions[i][headers.index('ENV.temperature.K')])
+
+                # Initialize concentrations list and extract concentration headers
+                concentrations = []
+                concentration_headers = list(filter(lambda x: 'CONC' in x, headers))
+
+                # For each concentration header, find the matching species and append its concentration to the list
+                for j in range(len(concentration_headers)):
+                    match = filter(lambda x: x.name == concentration_headers[j].split('.')[1], species_list.species)
+                    species = next(match, None)
+                    concentration = float(evolving_conditions[i][headers.index(concentration_headers[j])])
+                    
+                    concentrations.append(SpeciesConcentration(species, concentration))
+                    
+
+                # Initialize rates list and extract rate headers
+                rates = []
+                rate_headers = list(filter(lambda x: 's-1' in x, headers))
+
+                # For each rate header, find the matching reaction and append its rate to the list
+                for k in range(len(rate_headers)):
+                    name_to_match = rate_headers[k].split('.')
+                    
+                    if name_to_match[0] == 'LOSS' or name_to_match[0] == 'EMIS':
+                        name_to_match = name_to_match[0] + '_' + name_to_match[1]
+                    else:
+                        name_to_match = name_to_match[1]
+                    match = filter(lambda x: x.name == name_to_match, reaction_list.reactions)
+                    reaction = next(match, None)
+                    rate = float(evolving_conditions[i][headers.index(rate_headers[k])])
+                    rates.append(ReactionRate(reaction, rate))
+
+                # Append the conditions for this time point to the conditions list
+                conditions.append(Conditions(pressure, temperature, concentrations, rates))
+
+        # Return a new instance of the class with the times and conditions
+        return cls(times, conditions)
+
     
     #allows len overload for this class
     def __len__(self):
