@@ -414,8 +414,12 @@ class BoxModel:
         rate_constant_ordering = musica.user_defined_reaction_rates(self.solver)
         species_constant_ordering = musica.species_ordering(self.solver)
         
-        for spec in species_constant_ordering.keys():
+        ordered_species_headers =  [k for k, v in sorted(species_constant_ordering.items(), key=lambda item: item[1])]
+        for spec in ordered_species_headers:
             headers.append("CONC." + spec)
+
+        ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering)
+        ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering)
         
         output_array.append(headers)
         
@@ -434,7 +438,7 @@ class BoxModel:
                 row.append(next_output_time)
                 row.append(curr_conditions.temperature)
                 row.append(curr_conditions.pressure)
-                for conc in curr_concentrations:
+                for conc in ordered_concentrations:
                     row.append(conc)
                 output_array.append(row)
                 next_output_time += self.box_model_options.output_step_time
@@ -451,18 +455,15 @@ class BoxModel:
                     next_conditions_time = self.evolving_conditions.times[next_conditions_index]
 
                    
-                    
-
                     #overrides concentrations if specified by conditions
                     if(len(curr_conditions.get_concentration_array()) != 0):
-                        curr_concentrations = curr_conditions.get_concentration_array()
+                        ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering)
                     
                 else:
                     next_conditions = None
 
 
-            ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering)
-            ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering)
+            
            
             #solves and updates concentration values in concentration array
             musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, ordered_concentrations, ordered_rate_constants)
