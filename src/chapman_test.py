@@ -15,7 +15,7 @@ def __main__():
     #solves and saves output
     model_output = box_model.solve()
 
-    #read python_test_3.csv into test_output
+    #read chapman_test.csv into test_output
     with open('chapman_test.csv', 'r') as file:
         reader = csv.reader(file)
         test_output = list(reader)
