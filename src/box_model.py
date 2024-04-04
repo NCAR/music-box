@@ -84,7 +84,7 @@ class BoxModel:
                 ]
             }
 
-            camp_config_file.write(json.dumps(data))
+            camp_config_file.write(json.dumps(data, indent=4))
 
         # Make species and reactions configs
         with open(output_path + "/camp_data/species.json", 'w') as species_file:
@@ -144,7 +144,7 @@ class BoxModel:
                 }
             ]
 
-            config_file.write(json.dumps(data))
+            config_file.write(json.dumps(data, indent=4))
         
         # Make evolving conditions config
         with open(output_path + "/evolving_conditions.csv", 'w', newline='') as evolving_conditions_file:
@@ -219,7 +219,7 @@ class BoxModel:
             "camp-data" : speciesArray
         }
 
-        return json.dumps(species_json)
+        return json.dumps(species_json, indent=4)
     
     
     def generateReactionConfig(self):
@@ -323,7 +323,7 @@ class BoxModel:
                 if reaction.E is not None:
                     reac["E"] = reaction.E
                 if reaction.Ea is not None:
-                    reac["C"] = reaction.Ea
+                    reac["Ea"] = reaction.Ea
             
             elif isinstance(reaction, Tunneling):
                 # Adds parameters for the reaction
@@ -365,7 +365,7 @@ class BoxModel:
             "camp-data" : [reacList]
         }
 
-        return json.dumps(reactionsJson)
+        return json.dumps(reactionsJson, indent=4)
     
     def create_solver(self, path_to_config):
         """
@@ -578,7 +578,7 @@ def __main__():
     box_model = BoxModel()
 
     # Read the box model configuration from a json file.
-    box_model.readFromUIJson("../recreate.json")
+    box_model.readFromUIJson("../chapman.json")
 
     # Generate configuration JSON for the box model simulation.
     box_model.generateConfig("UI_test")

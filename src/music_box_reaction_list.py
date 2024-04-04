@@ -135,32 +135,32 @@ class ReactionList:
 
                 nitrate_products.append(Product(species, yield_value))
 
-            X = reaction.get('X') if reaction.get('X') != 1 else None
-            Y = reaction.get('Y') if reaction.get('Y') != 0 else None
-            a0 = reaction.get('a0') if reaction.get('a0') != 1 else None
-            n = reaction.get('n') if reaction.get('n') != 0 else None
+            X = reaction.get('X')
+            Y = reaction.get('Y')
+            a0 = reaction.get('a0')
+            n = reaction.get('n')
             return Branched(name, reaction_type, reactants, alkoxy_products, nitrate_products, X, Y, a0, n)
         elif reaction_type == 'ARRHENIUS':
-            A = reaction.get('A') if reaction.get('A') != 1 else None
-            B = reaction.get('B') if reaction.get('B') != 0 else None
-            D = reaction.get('D') if reaction.get('D') != 300 else None
-            E = reaction.get('E') if reaction.get('E') != 0 else None
-            Ea = reaction.get('Ea') if reaction.get('Ea') != 0 else None
+            A = reaction.get('A')
+            B = reaction.get('B')
+            D = reaction.get('D')
+            E = reaction.get('E')
+            Ea = reaction.get('Ea')
             return Arrhenius(name, reaction_type, reactants, products, A, B, D, E, Ea)
         elif reaction_type == 'WENNBERG_TUNNELING':
-            A = reaction.get('A') if reaction.get('A') != 1 else None
-            B = reaction.get('B') if reaction.get('B') != 0 else None
-            C = reaction.get('C') if reaction.get('C') != 0 else None
+            A = reaction.get('A')
+            B = reaction.get('B')
+            C = reaction.get('C')
             return Tunneling(name, reaction_type, reactants, products, A, B, C)
         elif reaction_type == 'TROE' or reaction_type == 'TERNARY_CHEMICAL_ACTIVATION':
-            k0_A = reaction.get('k0_A') if reaction.get('k0_A') != 1 else None
-            k0_B = reaction.get('k0_B') if reaction.get('k0_B') != 0 else None
-            k0_C = reaction.get('k0_C') if reaction.get('k0_C') != 0 else None
-            kinf_A = reaction.get('kinf_A') if reaction.get('kinf_A') != 1 else None
-            kinf_B = reaction.get('kinf_B') if reaction.get('kinf_B') != 0 else None
-            kinf_C = reaction.get('kinf_C') if reaction.get('kinf_C') != 0 else None
-            Fc = reaction.get('Fc') if reaction.get('Fc') != 0.6 else None
-            N = reaction.get('N') if reaction.get('N') != 1 else None
+            k0_A = reaction.get('k0_A')
+            k0_B = reaction.get('k0_B')
+            k0_C = reaction.get('k0_C')
+            kinf_A = reaction.get('kinf_A')
+            kinf_B = reaction.get('kinf_B')
+            kinf_C = reaction.get('kinf_C')
+            Fc = reaction.get('Fc')
+            N = reaction.get('N')
             return Troe_Ternary(name, reaction_type, reactants, products, k0_A, k0_B, k0_C, kinf_A, kinf_B, kinf_C, Fc, N)
         else:
             return Reaction(name, reaction_type, reactants, products)
