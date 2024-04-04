@@ -449,7 +449,7 @@ class BoxModel:
                 next_output_time += self.box_model_options.output_step_time
         
             #iterates evolvings conditons if enough time has elapsed
-            if(next_conditions != None and next_conditions_time <= curr_time):
+            while(next_conditions != None and next_conditions_time <= curr_time):
                
                 #curr_conditions = next_conditions
                 curr_conditions.update_conditions(next_conditions)
