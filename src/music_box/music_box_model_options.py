@@ -1,4 +1,5 @@
-import utils
+from .utils import convert_time, convert_pressure, convert_temperature, convert_concentration
+
 
 class BoxModelOptions:
     """
@@ -37,9 +38,9 @@ class BoxModelOptions:
         Returns:
             BoxModelOptions: A new instance of the BoxModelOptions class.
         """
-        chem_step_time = utils.convert_time(UI_JSON['conditions']['box model options'], 'chemistry time step') 
-        output_step_time = utils.convert_time(UI_JSON['conditions']['box model options'], 'output time step')
-        simulation_length = utils.convert_time(UI_JSON['conditions']['box model options'], 'simulation length')
+        chem_step_time = convert_time(UI_JSON['conditions']['box model options'], 'chemistry time step') 
+        output_step_time = convert_time(UI_JSON['conditions']['box model options'], 'output time step')
+        simulation_length = convert_time(UI_JSON['conditions']['box model options'], 'simulation length')
 
         grid = UI_JSON['conditions']['box model options']['grid']
         
@@ -49,9 +50,9 @@ class BoxModelOptions:
     @classmethod
     def from_config_JSON(cls, config_JSON):
 
-        chem_step_time = utils.convert_time(config_JSON['box model options'], 'chemistry time step')
-        output_step_time = utils.convert_time(config_JSON['box model options'], 'output time step') 
-        simulation_length = utils.convert_time(config_JSON['box model options'], 'simulation length')
+        chem_step_time = convert_time(config_JSON['box model options'], 'chemistry time step')
+        output_step_time = convert_time(config_JSON['box model options'], 'output time step') 
+        simulation_length = convert_time(config_JSON['box model options'], 'simulation length')
 
         grid = config_JSON['box model options']['grid']
         

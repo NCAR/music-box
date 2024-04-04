@@ -1,11 +1,11 @@
 
-from box_model import BoxModel
+from music_box import MusicBox
 
 import math
 
 
 def __main__():
-    box_model = BoxModel()
+    box_model = MusicBox()
 
     #configures box model
     conditions_path = "configs/analytical_config/my_config.json"

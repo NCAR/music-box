@@ -1,8 +1,9 @@
 from typing import List
-from music_box_reaction_rate import ReactionRate
-from music_box_species import Species
-from music_box_species_concentration import SpeciesConcentration
-import utils
+from .music_box_reaction_rate import ReactionRate
+from .music_box_species import Species
+from .music_box_species_concentration import SpeciesConcentration
+from .utils import convert_time, convert_pressure, convert_temperature, convert_concentration
+
 
 class Conditions:
     """
@@ -42,9 +43,9 @@ class Conditions:
         Returns:
             Conditions: A new instance of the Conditions class.
         """
-        pressure = utils.convert_pressure(UI_JSON['conditions']['environmental conditions']['pressure'], 'initial value')
+        pressure = convert_pressure(UI_JSON['conditions']['environmental conditions']['pressure'], 'initial value')
 
-        temperature = utils.convert_temperature(UI_JSON['conditions']['environmental conditions']['temperature'], 'initial value')
+        temperature = convert_temperature(UI_JSON['conditions']['environmental conditions']['temperature'], 'initial value')
 
         # Set initial species concentrations
         species_concentrations = []
@@ -52,7 +53,7 @@ class Conditions:
             match = filter(lambda x: x.name == chem_spec, species_list.species)
             species = next(match, None)
 
-            concentration = utils.convert_concentration(UI_JSON['conditions']['chemical species'][chem_spec], 'initial value')
+            concentration = convert_concentration(UI_JSON['conditions']['chemical species'][chem_spec], 'initial value')
 
             species_concentrations.append(SpeciesConcentration(species, concentration))
 
@@ -76,9 +77,9 @@ class Conditions:
     
     @classmethod
     def from_config_JSON(cls, config_JSON, species_list, reaction_list):
-        pressure = utils.convert_pressure(config_JSON['environmental conditions']['pressure'], 'initial value')
+        pressure = convert_pressure(config_JSON['environmental conditions']['pressure'], 'initial value')
 
-        temperature = utils.convert_temperature(config_JSON['environmental conditions']['temperature'], 'initial value')
+        temperature = convert_temperature(config_JSON['environmental conditions']['temperature'], 'initial value')
 
 
         # Set initial species concentrations
@@ -93,7 +94,7 @@ class Conditions:
         if 'chemical species' in config_JSON:
             for chem_spec in config_JSON['chemical species']:
                 species = Species(name = chem_spec)
-                concentration = utils.convert_concentration(config_JSON['chemical species'][chem_spec], 'initial value')
+                concentration = convert_concentration(config_JSON['chemical species'][chem_spec], 'initial value')
 
                 species_concentrations.append(SpeciesConcentration(species, concentration))
         

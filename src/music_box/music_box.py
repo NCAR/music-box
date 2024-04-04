@@ -1,21 +1,16 @@
 import json
 import os
 
-from music_box_evolving_conditions import EvolvingConditions
-from music_box_reaction_list import ReactionList
-from music_box_reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
-from music_box_reactant import Reactant
-from music_box_product import Product
-from music_box_species_list import SpeciesList
-from music_box_species import Species
-from music_box_model_options import BoxModelOptions
-from music_box_conditions import Conditions
-from music_box_species_concentration import SpeciesConcentration
-from music_box_reaction_rate import ReactionRate
+from .music_box_evolving_conditions import EvolvingConditions
+from .music_box_reaction_list import ReactionList
+from .music_box_reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
+from .music_box_species_list import SpeciesList
+from .music_box_model_options import BoxModelOptions
+from .music_box_conditions import Conditions
 import csv
 import musica
 
-class BoxModel:
+class MusicBox:
     """
     Represents a box model with attributes such as box model options, species list, reaction list,
     initial conditions, and evolving conditions.
@@ -571,20 +566,3 @@ class BoxModel:
         return ordered_concentrations
 
 
-
-# for testing purposes
-def __main__():
-    # Create a new instance of the BoxModel class.
-    box_model = BoxModel()
-
-    # Read the box model configuration from a json file.
-    box_model.readFromUIJson("../chapman.json")
-
-    # Generate configuration JSON for the box model simulation.
-    box_model.generateConfig("UI_test")
-
-
-
-
-if __name__ == "__main__":
-    __main__()
