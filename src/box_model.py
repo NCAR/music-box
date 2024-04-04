@@ -420,6 +420,7 @@ class BoxModel:
         rate_constant_ordering = musica.user_defined_reaction_rates(self.solver)
         species_constant_ordering = musica.species_ordering(self.solver)
         
+        #adds species headers to output
         ordered_species_headers =  [k for k, v in sorted(species_constant_ordering.items(), key=lambda item: item[1])]
         for spec in ordered_species_headers:
             headers.append("CONC." + spec)
