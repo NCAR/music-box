@@ -6,8 +6,8 @@ def __main__():
     box_model = BoxModel()
 
     #configures box model
-    conditions_path = "configs/test_config_3/my_config.json"
-    camp_path = "configs/test_config_3/camp_data"
+    conditions_path = "configs/chapman_config/my_config.json"
+    camp_path = "configs/chapman_config/camp_data"
 
     box_model.readConditionsFromJson(conditions_path)
     box_model.create_solver(camp_path)
@@ -16,7 +16,7 @@ def __main__():
     model_output = box_model.solve()
 
     #read python_test_3.csv into test_output
-    with open('python_test_3.csv', 'r') as file:
+    with open('chapman_test.csv', 'r') as file:
         reader = csv.reader(file)
         test_output = list(reader)
 

@@ -8,8 +8,8 @@ def __main__():
     box_model = BoxModel()
 
     #configures box model
-    conditions_path = "configs/test_config_1/my_config.json"
-    camp_path = "configs/test_config_1/camp_data"
+    conditions_path = "configs/analytical_config/my_config.json"
+    camp_path = "configs/analytical_config/camp_data"
 
     # conditions_path = "./src/configs/UI_test/UI_test_config.json"
     # camp_path = "./src/configs/UI_test/camp_data"
