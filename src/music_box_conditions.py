@@ -56,6 +56,10 @@ class Conditions:
 
             species_concentrations.append(SpeciesConcentration(species, concentration))
 
+        for species in species_list.species:
+            if not any(conc.species.name == species.name for conc in species_concentrations):
+                species_concentrations.append(SpeciesConcentration(species, 0)) 
+
         # Set initial reaction rates
         reaction_rates = []
 
