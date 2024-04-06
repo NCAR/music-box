@@ -45,7 +45,7 @@ class EvolvingConditions:
 
         evol_from_json = UI_JSON['conditions']['evolving conditions']
         for i in range(1, len(evol_from_json)):
-            times.append(evol_from_json[i][0])
+            times.append(float(evol_from_json[i][0]))
 
             pressure = None
             if 'ENV.pressure.Pa' in headers:
