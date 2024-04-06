@@ -506,7 +506,28 @@ class MusicBox:
             self.initial_conditions = Conditions.from_UI_JSON(data, self.species_list, self.reaction_list)
 
             # Set evolving conditions
-            self.evolving_conditions = EvolvingConditions.from_UI_JSON(data, self.species_list, self.reaction_list)    
+            self.evolving_conditions = EvolvingConditions.from_UI_JSON(data, self.species_list, self.reaction_list)  
+
+    def readFromUIJsonString(self, data):
+        """
+        TODO: Read the box model configuration from json and sets config
+        """
+        # TODO: Implement the logic to update the box model config using a json.
+
+        # Set box model options
+        self.box_model_options = BoxModelOptions.from_UI_JSON(data)
+
+        # Set species list
+        self.species_list = SpeciesList.from_UI_JSON(data)
+
+        # Set reaction list
+        self.reaction_list = ReactionList.from_UI_JSON(data, self.species_list)
+
+        # Set initial conditions
+        self.initial_conditions = Conditions.from_UI_JSON(data, self.species_list, self.reaction_list)
+
+        # Set evolving conditions
+        self.evolving_conditions = EvolvingConditions.from_UI_JSON(data, self.species_list, self.reaction_list)    
 
     def readConditionsFromJson(self, path_to_json):
 
