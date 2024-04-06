@@ -159,9 +159,15 @@ class MusicBox:
                         species_concentration = next((x for x in self.evolving_conditions.conditions[i].species_concentrations if x.species.name == species_name), None)
                         row.append(species_concentration.concentration)
                     elif header.endswith(".s-1"):
-                        reaction_name = header.split('.')[1]
+                        reaction_name = header.split('.')
+
+                        if reaction_name[0] == 'LOSS' or reaction_name[0] == 'EMIS':
+                            reaction_name = reaction_name[0] + '_' + reaction_name[1]
+                        else:
+                            reaction_name = reaction_name[1]
+
                         reaction_rate = next((x for x in self.evolving_conditions.conditions[i].reaction_rates if x.reaction.name == reaction_name), None)
-                        row.append(reaction_rate.rate)
+                        row.append(reaction_rate.rate) 
 
                 writer.writerow(row)
 
@@ -549,7 +555,7 @@ class MusicBox:
         ordered_rate_constants = len(rate_constants.keys()) * [0.0]
         for key, value in rate_constants.items():
 
-            ordered_rate_constants[rate_constant_ordering[key]] = value
+            ordered_rate_constants[rate_constant_ordering[key]] = float(value)
         return ordered_rate_constants
     
     @classmethod
