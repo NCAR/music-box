@@ -9,100 +9,35 @@ MusicBox: A MUSICA model for boxes and columns.
 
 Copyright (C) 2020 National Center for Atmospheric Research
 
-# Windows Users
+# CMake build
 
-> [!IMPORTANT]  
-> By default git will checkout the repository with `\r\n`. When running 
-> `make test`, if you see something related to `BAD COMMAND` or a file not found issue
-> it is most likely because all of your files are using windows line endings instead of linux line endings.
-> Because all of our docker files are based off of linux, things will fail.
+The cmake creates an executable called `music_box`, as well as a set of tests.
 
-To fix this, please configure git to use linux line endings.
+## Windows
 
 ```
-git config --global core.autocrlf false
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+ctest -C Release --output-on-failure
 ```
 
-# Install and run from local git clone
+## Linux, Mac
 
 ```
-git clone https://github.com/NCAR/music-box
-cd music-box
-git submodule init
-git submodule update
-docker build -t music-box .
-docker run --rm -it music-box
-```
-
-Running those commands will put you in a docker container, at which point you can run
-
-```
-cd /music-box/build
+mkdir build
+cd build
+cmake ..
+make
 make test
 ```
 
-and you will see tests run, and hopefully pass.
+# Docker
 
-There are a number of examples you can run and modify.
-
-```
-cd /music-box/examples/camp_examples/bright_chamber/use_case_7/
-/music-box/build/music_box use_case_7_config.json 
-```
-
-# Install and run (interactive version)
-
-The only requirement for running MusicBox is that you have [Docker Desktop](https://www.docker.com/get-started) installed and running. With Docker Desktop running, open a terminal window and run the following command: (The first time you run this command, the MusicBox code will be downloaded from Docker Hub, which may take a few minutes.)
+To build the docker image
 
 ```
-docker run -p 8000:8000 -it --rm ncar/music-box
+docker build -t music_box .
+docker run --rm -it music_box
 ```
-
-Leaving the terminal window open, open a web browser and navigate to the following address: [`localhost:8000`](http://localhost:8000). From there, you can configure and run a simulation, plot results, and download the raw model output for further analysis.
-
-When you are ready to stop the MusicBox server, return to the terminal window and stop the server with `Control-C`. If you would like to remove MusicBox from your machine, open a terminal window and run the following command:
-
-```
-docker system prune
-docker image rm ncar/music-box
-```
-
-# Install and run (command-line version)
-**[View options for MusicBox configuration](config_options.md)**
-
-You can follow these instructions if you are only interested in using the command-line version of MusicBox and will not be using the browser-based model driver.
-
-You will need to have [Docker Desktop](https://www.docker.com/get-started) installed and running. Then, from a terminal window run:
-
-```
-docker run -it --rm ncar/music-box bash
-```
-
-## Running MusicBox with the CAMP Solver
-
-CAMP can be specified as the chemical solver by configuring the [model components](config_options.md#model-components) section of the configuration file. To run the model using the CAMP solver under one of the model configurations in the `examples/` folder:
-```
-cd /build
-cp -r examples/camp_examples/dark_chamber/use_case_1/camp_data .
-cp examples/camp_examples/dark_chamber/use_case_1/use_case_1_config.json .
-./music_box use_case_1_config.json
-```
-
-
-
-**The results will be in a file named `output.csv`.**
-
-
-
-# Documentation
-
-MusicBox documentation can be built using [Doxygen](https://www.doxygen.nl). After [installing](https://www.doxygen.nl/download.html) Doxygen, from the root MusicBox folder run:
-
-```
-cd doc
-doxygen
-```
-Then, open `music-box/doc/html/index.html` in a browser.
-
-The documentation includes more detailed instructions for configuring the model, along with developer resources.
-

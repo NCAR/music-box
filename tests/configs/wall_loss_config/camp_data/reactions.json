@@ -1,0 +1,65 @@
+{
+    "camp-data": [
+        {
+            "type": "MECHANISM",
+            "name": "music box interactive configuration",
+            "reactions": [
+                {
+                    "type": "PHOTOLYSIS",
+                
+                    
+                    "MUSICA name": "LOSS_SOA1 wall loss",
+                    "reactants": {
+                        "SOA1": {}
+                    },
+                    "products": {
+                        "irr__b27a3f9c-d866-409c-ba72-dd9b12620387": {
+                            "yield": 1
+                        }
+                    }
+                },
+                {
+                    "type": "PHOTOLYSIS",
+                 
+                    
+                    "MUSICA name": "LOSS_SOA2 wall loss",
+                    "reactants": {
+                        "SOA2": {}
+                    },
+                    "products": {
+                        "irr__da4d4fe9-644a-4824-9394-e79d2fbd460f": {
+                            "yield": 1
+                        }
+                    }
+                },
+                {
+                    "type": "ARRHENIUS",
+                    "A": 8.8e-17,
+                    "Ea": 0,
+                    "B": 0,
+                    "D": 300,
+                    "E": 0,
+                    "reactants": {
+                        "O3": {
+                            "qty": 1
+                        },
+                        "a-pinene": {
+                            "qty": 1
+                        }
+                    },
+                    "products": {
+                        "SOA1": {
+                            "yield": 0.18
+                        },
+                        "SOA2": {
+                            "yield": 0.09
+                        },
+                        "irr__f290a9b8-ac95-47cf-958b-f73a1e7fcd48": {
+                            "yield": 1
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

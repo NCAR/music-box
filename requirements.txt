@@ -1,0 +1,5 @@
+musica
+pandas
+pipx
+pytest
+twine
