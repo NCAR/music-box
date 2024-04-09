@@ -4,9 +4,9 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
-
-    matrix:
-      os: [ubuntu-latest, macos-latest, windows-latest]
+    strategy:
+        matrix:
+          os: [ubuntu-latest, macos-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
     steps:
