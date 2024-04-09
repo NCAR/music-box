@@ -1,1 +1,3 @@
 musica
+pandas
+pytest
