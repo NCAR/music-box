@@ -1,0 +1,14 @@
+[build-system]
+requires = ["flit_core >=3.2,<4", "musica"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "acom_music_box"
+authors = [{name = "NCAR/ACOM", email = "musica-support@ucar.edu"}]
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: Apache Software License"]
+dynamic = ["version", "description"]
+
+[project.urls]
+Home = "https://github.com/NCAR/music-box"
