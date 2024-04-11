@@ -1,1 +1,40 @@
-{"camp-data": [{"name": "M", "type": "CHEM_SPEC", "tracer type": "CONSTANT"}, {"name": "a-pinene", "type": "CHEM_SPEC"}, {"name": "O3", "type": "CHEM_SPEC"}, {"name": "SOA1", "type": "CHEM_SPEC"}, {"name": "SOA2", "type": "CHEM_SPEC"}, {"name": "irr__b27a3f9c-d866-409c-ba72-dd9b12620387", "type": "CHEM_SPEC"}, {"name": "irr__da4d4fe9-644a-4824-9394-e79d2fbd460f", "type": "CHEM_SPEC"}, {"name": "irr__f290a9b8-ac95-47cf-958b-f73a1e7fcd48", "type": "CHEM_SPEC"}]}
+{
+    "camp-data": [
+        {"type" : "RELATIVE_TOLERANCE",
+        "value" : 1e-4
+        },
+        {
+            "name": "M",
+            "type": "CHEM_SPEC",
+            "tracer type": "CONSTANT"
+        },
+        {
+            "name": "a-pinene",
+            "type": "CHEM_SPEC"
+        },
+        {
+            "name": "O3",
+            "type": "CHEM_SPEC"
+        },
+        {
+            "name": "SOA1",
+            "type": "CHEM_SPEC"
+        },
+        {
+            "name": "SOA2",
+            "type": "CHEM_SPEC"
+        },
+        {
+            "name": "irr__b27a3f9c-d866-409c-ba72-dd9b12620387",
+            "type": "CHEM_SPEC"
+        },
+        {
+            "name": "irr__da4d4fe9-644a-4824-9394-e79d2fbd460f",
+            "type": "CHEM_SPEC"
+        },
+        {
+            "name": "irr__f290a9b8-ac95-47cf-958b-f73a1e7fcd48",
+            "type": "CHEM_SPEC"
+        }
+    ]
+}

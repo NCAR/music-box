@@ -12,7 +12,7 @@ class SpeciesList:
         relativeTolerance (float): The relative tolerance for the species list.
     """
 
-    def __init__(self, species=None, relative_tolerance=0.0):
+    def __init__(self, species=None, relative_tolerance=1.0e-4):
         """
         Initializes a new instance of the SpeciesList class.
 
@@ -66,8 +66,9 @@ class SpeciesList:
                     species_data = json.load(species_file)
                     #loads species by names from camp files
                     for properties in species_data['camp-data']:
-                        name = properties.get('name')
-                        species_from_json.append(Species(name, None, None, None, None))
+                        if properties.get('name') is not None:
+                            name = properties.get('name')
+                            species_from_json.append(Species(name, None, None, None, None))
 
 
         #chceks if species are in the config file and updates attributes accordingly

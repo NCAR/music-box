@@ -182,11 +182,11 @@ class MusicBox:
         speciesArray = []
 
         #Adds relative tolerance if value is set
-        # if(self.species_list.relative_tolerance != None):
-        #     relativeTolerance = {}
-        #     relativeTolerance["Type"] = "RELATIVE_TOLERANCE"
-        #     relativeTolerance["value"] = self.species_list.relative_tolerance
-        #     speciesArray.append(relativeTolerance)
+        if(self.species_list.relative_tolerance != None):
+            relativeTolerance = {}
+            relativeTolerance["Type"] = "RELATIVE_TOLERANCE"
+            relativeTolerance["value"] = self.species_list.relative_tolerance
+            speciesArray.append(relativeTolerance)
 
         #Adds species to config
         for species in self.species_list.species:
@@ -588,7 +588,7 @@ class MusicBox:
         ordered_concentrations = len(concentrations.keys()) * [0.0]
         
         for key, value in concentrations.items():
-
+            print(key) 
             ordered_concentrations[species_constant_ordering[key]] = value
         return ordered_concentrations
 
