@@ -182,11 +182,11 @@ class MusicBox:
         speciesArray = []
 
         #Adds relative tolerance if value is set
-        # if(self.species_list.relative_tolerance != None):
-        #     relativeTolerance = {}
-        #     relativeTolerance["Type"] = "RELATIVE_TOLERANCE"
-        #     relativeTolerance["value"] = self.species_list.relative_tolerance
-        #     speciesArray.append(relativeTolerance)
+        if(self.species_list.relative_tolerance != None):
+            relativeTolerance = {}
+            relativeTolerance["type"] = "RELATIVE_TOLERANCE"
+            relativeTolerance["value"] = self.species_list.relative_tolerance
+            speciesArray.append(relativeTolerance)
 
         #Adds species to config
         for species in self.species_list.species:
@@ -420,6 +420,7 @@ class MusicBox:
 
         rate_constant_ordering = musica.user_defined_reaction_rates(self.solver)
         species_constant_ordering = musica.species_ordering(self.solver)
+  
         
         #adds species headers to output
         ordered_species_headers =  [k for k, v in sorted(species_constant_ordering.items(), key=lambda item: item[1])]
@@ -428,6 +429,7 @@ class MusicBox:
 
         ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering)
         ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering)
+   
         
         output_array.append(headers)
         
@@ -453,28 +455,30 @@ class MusicBox:
             #iterates evolvings conditons if enough time has elapsed
             while(next_conditions != None and next_conditions_time <= curr_time):
                
-                #curr_conditions = next_conditions
                 curr_conditions.update_conditions(next_conditions)
                 
-
                 #iterates next_conditions if there are remaining evolving conditions
                 if(len(self.evolving_conditions) > next_conditions_index + 1):
                     next_conditions_index += 1
                     next_conditions = self.evolving_conditions.conditions[next_conditions_index]
                     next_conditions_time = self.evolving_conditions.times[next_conditions_index]
-
-                   
-                    #overrides concentrations if specified by conditions
-                    if(len(curr_conditions.get_concentration_array()) != 0):
-                        ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering)
                     
                     ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering)
                     
                 else:
                     next_conditions = None
             
+            
+            #updates M accordingly
+            if 'M' in species_constant_ordering:
+                BOLTZMANN_CONSTANT = 1.380649e-23
+                AVOGADRO_CONSTANT = 6.02214076e23;  
+                GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT
+                ordered_concentrations[species_constant_ordering['M']] = curr_conditions.pressure / (GAS_CONSTANT * curr_conditions.temperature)
+
             #solves and updates concentration values in concentration array
             musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, ordered_concentrations, ordered_rate_constants)
+
            
 
         
@@ -582,13 +586,13 @@ class MusicBox:
     @classmethod
     def order_species_concentrations(self, curr_conditions, species_constant_ordering):
         concentrations = {}
+
         for concentraton in curr_conditions.species_concentrations:
             concentrations[concentraton.species.name] = concentraton.concentration
             
         ordered_concentrations = len(concentrations.keys()) * [0.0]
         
         for key, value in concentrations.items():
-
             ordered_concentrations[species_constant_ordering[key]] = value
         return ordered_concentrations
 

@@ -14,7 +14,7 @@ class TestChapman:
         box_model.create_solver(camp_path)
 
         #solves and saves output
-        model_output = box_model.solve()
+        model_output = box_model.solve(path_to_output='chapman_test.csv')
 
         #read chapman_test.csv into test_output
         with open('expected_results/chapman_test.csv', 'r') as file:
