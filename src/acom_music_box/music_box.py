@@ -455,21 +455,13 @@ class MusicBox:
             #iterates evolvings conditons if enough time has elapsed
             while(next_conditions != None and next_conditions_time <= curr_time):
                
-                #curr_conditions = next_conditions
                 curr_conditions.update_conditions(next_conditions)
                 
-
                 #iterates next_conditions if there are remaining evolving conditions
                 if(len(self.evolving_conditions) > next_conditions_index + 1):
                     next_conditions_index += 1
                     next_conditions = self.evolving_conditions.conditions[next_conditions_index]
                     next_conditions_time = self.evolving_conditions.times[next_conditions_index]
-
-                   
-                    #overrides concentrations if specified by conditions
-                    # if(len(curr_conditions.get_concentration_array()) != 0):
-                    #     print("HERE")
-                    #     ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering)
                     
                     ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering)
                     
