@@ -420,6 +420,7 @@ class MusicBox:
 
         rate_constant_ordering = musica.user_defined_reaction_rates(self.solver)
         species_constant_ordering = musica.species_ordering(self.solver)
+  
         
         #adds species headers to output
         ordered_species_headers =  [k for k, v in sorted(species_constant_ordering.items(), key=lambda item: item[1])]
@@ -428,6 +429,7 @@ class MusicBox:
 
         ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering)
         ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering)
+   
         
         output_array.append(headers)
         
@@ -473,6 +475,14 @@ class MusicBox:
                 else:
                     next_conditions = None
             
+            
+            #updates M accordingly
+            if 'M' in species_constant_ordering:
+                BOLTZMANN_CONSTANT = 1.380649e-23
+                AVOGADRO_CONSTANT = 6.02214076e23;  
+                GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT
+                ordered_concentrations[species_constant_ordering['M']] = curr_conditions.pressure / (GAS_CONSTANT * curr_conditions.temperature)
+
             #solves and updates concentration values in concentration array
             musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, ordered_concentrations, ordered_rate_constants)
            
@@ -582,13 +592,13 @@ class MusicBox:
     @classmethod
     def order_species_concentrations(self, curr_conditions, species_constant_ordering):
         concentrations = {}
+
         for concentraton in curr_conditions.species_concentrations:
             concentrations[concentraton.species.name] = concentraton.concentration
             
         ordered_concentrations = len(concentrations.keys()) * [0.0]
         
         for key, value in concentrations.items():
-            print(key) 
             ordered_concentrations[species_constant_ordering[key]] = value
         return ordered_concentrations
 

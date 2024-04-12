@@ -1,5 +1,6 @@
 {
     "camp-data": [
+
         {"type" : "RELATIVE_TOLERANCE",
         "value" : 1e-4
         },
