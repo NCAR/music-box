@@ -184,7 +184,7 @@ class MusicBox:
         #Adds relative tolerance if value is set
         if(self.species_list.relative_tolerance != None):
             relativeTolerance = {}
-            relativeTolerance["Type"] = "RELATIVE_TOLERANCE"
+            relativeTolerance["type"] = "RELATIVE_TOLERANCE"
             relativeTolerance["value"] = self.species_list.relative_tolerance
             speciesArray.append(relativeTolerance)
 
