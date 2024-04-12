@@ -20,7 +20,7 @@ class TestAnalytical:
 
 
         #solves and saves output
-        output = box_model.solve(path_to_output="output.csv")
+        output = box_model.solve()
 
         conc_a_index = output[0].index('CONC.A')
         conc_b_index = output[0].index('CONC.B')
