@@ -467,8 +467,9 @@ class MusicBox:
 
                    
                     #overrides concentrations if specified by conditions
-                    if(len(curr_conditions.get_concentration_array()) != 0):
-                        ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering)
+                    # if(len(curr_conditions.get_concentration_array()) != 0):
+                    #     print("HERE")
+                    #     ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering)
                     
                     ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering)
                     
@@ -485,6 +486,7 @@ class MusicBox:
 
             #solves and updates concentration values in concentration array
             musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, ordered_concentrations, ordered_rate_constants)
+
            
 
         
