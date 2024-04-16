@@ -365,6 +365,9 @@ class MusicBox:
             if(reaction.name != None):
                 reac["MUSICA name"] = reaction.name
 
+            if(reaction.scaling_factor != None):
+                reac["scaling factor"] = reaction.scaling_factor
+
             reactionsArray.append(reac)
 
         reacList["reactions"] = reactionsArray
