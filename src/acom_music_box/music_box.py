@@ -124,6 +124,12 @@ class MusicBox:
                 if(reaction_rate.reaction.reaction_type == "PHOTOLYSIS"):
                     name = "PHOT." + reaction_rate.reaction.name + ".s-1"
                     data["initial conditions"][name] = reaction_rate.rate
+                elif(reaction_rate.reaction.reaction_type == "LOSS"):
+                    name = "LOSS." + reaction_rate.reaction.name + ".s-1"
+                    data["initial conditions"][name] = reaction_rate.rate
+                elif (reaction_rate.reaction.reaction_type =="EMISSION"):
+                    name = "EMISSION." + reaction_rate.reaction.name + ".s-1"
+                    data["initial conditions"][name] = reaction_rate.rate
 
             data["model components"] = [
                 {
