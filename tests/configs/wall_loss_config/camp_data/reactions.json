@@ -7,7 +7,7 @@
                 {
                     "type": "PHOTOLYSIS",
                 
-                    
+                    "scaling factor": 1,
                     "MUSICA name": "LOSS_SOA1 wall loss",
                     "reactants": {
                         "SOA1": {}
@@ -21,7 +21,7 @@
                 {
                     "type": "PHOTOLYSIS",
                  
-                    
+                    "scaling factor": 1,
                     "MUSICA name": "LOSS_SOA2 wall loss",
                     "reactants": {
                         "SOA2": {}

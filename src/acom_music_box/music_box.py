@@ -121,8 +121,9 @@ class MusicBox:
             data["initial conditions"] = {}
 
             for reaction_rate in self.initial_conditions.reaction_rates:
-                name = "PHOT." + reaction_rate.reaction.name + ".s-1"
-                data["initial conditions"][name] = reaction_rate.rate
+                if(reaction_rate.reaction.reaction_type == "PHOTOLYSIS"):
+                    name = "PHOT." + reaction_rate.reaction.name + ".s-1"
+                    data["initial conditions"][name] = reaction_rate.rate
 
             data["model components"] = [
                 {

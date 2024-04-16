@@ -22,7 +22,8 @@
         }
     },
     "initial conditions": {
-        "initial_conditions.csv": {}
+        "PHOT.LOSS_SOA1 wall loss.s-1": 0.01,
+        "PHOT.LOSS_SOA2 wall loss.s-1": 0.05
     },
     "model components": [
         {

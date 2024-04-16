@@ -84,11 +84,22 @@ class Conditions:
 
         # Set initial species concentrations
         species_concentrations = []
+        reaction_rates = []
 
         #reads initial conditions from csv if it is given
         if 'initial conditions' in config_JSON:
-            initial_conditions_csv = config_JSON['initial conditions']
+            #initial_conditions_csv = config_JSON['initial conditions']
+
             #read_initial_conditions_from_csv(initial_conditions_csv)
+            for reaction_rate in config_JSON['initial conditions']:
+               
+                match = filter(lambda x: x.name == reaction_rate.split('.')[1], reaction_list.reactions)
+                
+                reaction = next(match, None)
+
+                rate = config_JSON['initial conditions'][reaction_rate]
+
+                reaction_rates.append(ReactionRate(reaction, rate))
 
         #reads from config file directly if present
         if 'chemical species' in config_JSON:
@@ -105,13 +116,12 @@ class Conditions:
 
         #TODO: may or may not be necessary
         # Set initial reaction rates
-        reaction_rates = []
 
         for reaction in reaction_list.reactions:
             if reaction.name != None and not any(reac.reaction.name == reaction.name for reac in reaction_rates):
                 reaction_rates.append(ReactionRate(reaction, 0)) 
 
-
+        
         return cls(pressure, temperature, species_concentrations, reaction_rates)
 
 
