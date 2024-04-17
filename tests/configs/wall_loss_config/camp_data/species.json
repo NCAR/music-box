@@ -1,13 +1,12 @@
 {
     "camp-data": [
-
-        {"type" : "RELATIVE_TOLERANCE",
-        "value" : 1e-4
+        {
+            "type": "RELATIVE_TOLERANCE",
+            "value": 0.0001
         },
         {
             "name": "M",
-            "type": "CHEM_SPEC",
-            "tracer type": "CONSTANT"
+            "type": "CHEM_SPEC"
         },
         {
             "name": "a-pinene",
@@ -26,15 +25,15 @@
             "type": "CHEM_SPEC"
         },
         {
-            "name": "irr__b27a3f9c-d866-409c-ba72-dd9b12620387",
+            "name": "irr__3fddcf85-062e-4a73-be2c-8f3bbe3af3da",
             "type": "CHEM_SPEC"
         },
         {
-            "name": "irr__da4d4fe9-644a-4824-9394-e79d2fbd460f",
+            "name": "irr__49b12001-dc96-4a05-9715-e3cd05cb37d5",
             "type": "CHEM_SPEC"
         },
         {
-            "name": "irr__f290a9b8-ac95-47cf-958b-f73a1e7fcd48",
+            "name": "irr__d726e081-c0f1-4649-8947-4919aefd6ac8",
             "type": "CHEM_SPEC"
         }
     ]

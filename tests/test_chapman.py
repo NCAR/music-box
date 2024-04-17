@@ -11,6 +11,7 @@ class TestChapman:
         camp_path = "configs/chapman_config/camp_data"
 
         box_model.readConditionsFromJson(conditions_path)
+
         box_model.create_solver(camp_path)
 
         #solves and saves output

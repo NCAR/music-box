@@ -1,3 +1,5 @@
+import csv
+import os
 from typing import List
 from .music_box_reaction_rate import ReactionRate
 from .music_box_species import Species
@@ -76,7 +78,7 @@ class Conditions:
         return cls(pressure, temperature, species_concentrations, reaction_rates)
     
     @classmethod
-    def from_config_JSON(cls, config_JSON, species_list, reaction_list):
+    def from_config_JSON(cls, path_to_json, config_JSON, species_list, reaction_list):
         pressure = convert_pressure(config_JSON['environmental conditions']['pressure'], 'initial value')
 
         temperature = convert_temperature(config_JSON['environmental conditions']['temperature'], 'initial value')
@@ -87,20 +89,12 @@ class Conditions:
         reaction_rates = []
 
         #reads initial conditions from csv if it is given
-        if 'initial conditions' in config_JSON:
-            #initial_conditions_csv = config_JSON['initial conditions']
+        if 'initial conditions' in config_JSON and len(list(config_JSON['initial conditions'].keys())) > 0:
 
-            #read_initial_conditions_from_csv(initial_conditions_csv)
-            for reaction_rate in config_JSON['initial conditions']:
-               
-                match = filter(lambda x: x.name == reaction_rate.split('.')[1], reaction_list.reactions)
-                
-                reaction = next(match, None)
+            initial_conditions_path = os.path.dirname(path_to_json) + "/" + list(config_JSON['initial conditions'].keys())[0]
+            reaction_rates = Conditions.read_initial_rates_from_file(initial_conditions_path, reaction_list)
 
-                rate = config_JSON['initial conditions'][reaction_rate]
-
-                reaction_rates.append(ReactionRate(reaction, rate))
-
+            
         #reads from config file directly if present
         if 'chemical species' in config_JSON:
             for chem_spec in config_JSON['chemical species']:
@@ -124,6 +118,35 @@ class Conditions:
         
         return cls(pressure, temperature, species_concentrations, reaction_rates)
 
+
+    @classmethod
+    def read_initial_rates_from_file(cls, file_path, reaction_list):
+
+        reaction_rates = []
+
+        with open(file_path, 'r') as csv_file:
+            initial_conditions = list(csv.reader(csv_file))
+                                      
+            if(len(initial_conditions) > 1):
+                # The first row of the CSV contains headers
+                headers = initial_conditions[0]
+
+                # The second row of the CSV contains rates
+                rates = initial_conditions[1]
+
+                
+                for i in range(0, len(headers)):
+
+
+                    reaction_rate = headers[i]
+
+                    match = filter(lambda x: x.name == reaction_rate.split('.')[1], reaction_list.reactions)
+                    
+                    reaction = next(match, None)
+                    rate = rates[i]
+
+                    reaction_rates.append(ReactionRate(reaction, rate))
+        return reaction_rates
 
 
     def add_species_concentration(self, species_concentration):
