@@ -111,6 +111,7 @@ class ReactionList:
     def get_reactions_from_JSON(self, reaction, species_list):
 
         name = reaction['MUSICA name'] if 'MUSICA name' in reaction else None
+        scaling_factor = reaction['scaling factor'] if 'scaling factor' in reaction else None
         reaction_type = reaction['type']
     
         reactants = ReactionList.get_reactants_from_JSON(reaction, species_list)
@@ -163,4 +164,4 @@ class ReactionList:
             N = reaction.get('N')
             return Troe_Ternary(name, reaction_type, reactants, products, k0_A, k0_B, k0_C, kinf_A, kinf_B, kinf_C, Fc, N)
         else:
-            return Reaction(name, reaction_type, reactants, products)
+            return Reaction(name, reaction_type, reactants, products, scaling_factor)

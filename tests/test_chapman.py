@@ -11,10 +11,11 @@ class TestChapman:
         camp_path = "configs/chapman_config/camp_data"
 
         box_model.readConditionsFromJson(conditions_path)
+
         box_model.create_solver(camp_path)
 
         #solves and saves output
-        model_output = box_model.solve(path_to_output='chapman_test.csv')
+        model_output = box_model.solve()
 
         #read chapman_test.csv into test_output
         with open('expected_results/chapman_test.csv', 'r') as file:
