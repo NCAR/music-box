@@ -11,7 +11,7 @@ class Reaction:
         products (List[Product]): A list of Product instances representing the products. Default is an empty list.
     """
 
-    def __init__(self, name=None, reaction_type=None, reactants=None, products=None):
+    def __init__(self, name=None, reaction_type=None, reactants=None, products=None, scaling_factor=None):
         """
         Initializes a new instance of the Reaction class.
 
@@ -25,6 +25,7 @@ class Reaction:
         self.reaction_type = reaction_type
         self.reactants = reactants if reactants is not None else []
         self.products = products if products is not None else []
+        self.scaling_factor = scaling_factor
 
     def add_reactant(self, reactant):
         """

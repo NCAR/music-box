@@ -118,11 +118,11 @@ class MusicBox:
                 "evolving_conditions.csv": {},
             }
 
-            data["initial conditions"] = {}
+            data["initial conditions"] = {
+                "initial_conditions.csv": {}
+            }
 
-            for reaction_rate in self.initial_conditions.reaction_rates:
-                name = "PHOT." + reaction_rate.reaction.name + ".s-1"
-                data["initial conditions"][name] = reaction_rate.rate
+           
 
             data["model components"] = [
                 {
@@ -140,6 +140,7 @@ class MusicBox:
             ]
 
             config_file.write(json.dumps(data, indent=4))
+        
         
         # Make evolving conditions config
         with open(output_path + "/evolving_conditions.csv", 'w', newline='') as evolving_conditions_file:
@@ -170,6 +171,29 @@ class MusicBox:
                         row.append(reaction_rate.rate) 
 
                 writer.writerow(row)
+
+
+
+        reaction_names = []
+        reaction_rates = []
+
+        for reaction_rate in self.initial_conditions.reaction_rates:
+            if reaction_rate.reaction.reaction_type == "PHOTOLYSIS":
+                name = "PHOT." + reaction_rate.reaction.name + ".s-1"
+            elif reaction_rate.reaction.reaction_type == "LOSS":
+                name = "LOSS." + reaction_rate.reaction.name + ".s-1"
+            elif reaction_rate.reaction.reaction_type == "EMISSION":
+                name = "EMISSION." + reaction_rate.reaction.name + ".s-1"
+
+            reaction_names.append(name)
+            reaction_rates.append(reaction_rate.rate)
+        #writes reaction rates inital conditions to file
+        with open(output_path + "/initial_conditions.csv", 'w', newline='') as initial_conditions_file:
+            writer = csv.writer(initial_conditions_file)
+            writer.writerow(reaction_names)
+            writer.writerow(reaction_rates)
+
+
 
     def generateSpeciesConfig(self):
         """
@@ -357,6 +381,9 @@ class MusicBox:
             #Adds reaction name if value is set
             if(reaction.name != None):
                 reac["MUSICA name"] = reaction.name
+
+            if(reaction.scaling_factor != None):
+                reac["scaling factor"] = reaction.scaling_factor
 
             reactionsArray.append(reac)
 
@@ -552,7 +579,7 @@ class MusicBox:
             self.reaction_list = ReactionList.from_config_JSON(path_to_json, data, self.species_list)
 
             # Set initial conditions
-            self.initial_conditions = Conditions.from_config_JSON(data, self.species_list, self.reaction_list)
+            self.initial_conditions = Conditions.from_config_JSON(path_to_json, data, self.species_list, self.reaction_list)
 
             # Set initial conditions
             self.evolving_conditions = EvolvingConditions.from_config_JSON(path_to_json, data, self.species_list, self.reaction_list)

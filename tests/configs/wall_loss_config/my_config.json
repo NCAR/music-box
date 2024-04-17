@@ -1,9 +1,9 @@
 {
     "box model options": {
         "grid": "box",
-        "chemistry time step [sec]": 1,
-        "output time step [sec]": 1,
-        "simulation length [hr]": 1
+        "chemistry time step [sec]": 1.0,
+        "output time step [sec]": 1.0,
+        "simulation length [sec]": 3600.0
     },
     "chemical species": {
         "a-pinene": {
@@ -11,15 +11,36 @@
         },
         "O3": {
             "initial value [mol m-3]": 2e-05
+        },
+        "M": {
+            "initial value [mol m-3]": 0
+        },
+        "SOA1": {
+            "initial value [mol m-3]": 0
+        },
+        "SOA2": {
+            "initial value [mol m-3]": 0
+        },
+        "irr__3fddcf85-062e-4a73-be2c-8f3bbe3af3da": {
+            "initial value [mol m-3]": 0
+        },
+        "irr__49b12001-dc96-4a05-9715-e3cd05cb37d5": {
+            "initial value [mol m-3]": 0
+        },
+        "irr__d726e081-c0f1-4649-8947-4919aefd6ac8": {
+            "initial value [mol m-3]": 0
         }
     },
     "environmental conditions": {
+        "pressure": {
+            "initial value [Pa]": 101325.0
+        },
         "temperature": {
             "initial value [K]": 298.15
-        },
-        "pressure": {
-            "initial value [Pa]": 101325
         }
+    },
+    "evolving conditions": {
+        "evolving_conditions.csv": {}
     },
     "initial conditions": {
         "initial_conditions.csv": {}
