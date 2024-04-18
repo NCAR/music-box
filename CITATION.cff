@@ -9,5 +9,13 @@ authors:
     given-names: Kyle
   - family-names: Conley
     given-names: Andrew
+  - family-names: De la Garza
+    given-names: Evan
+  - family-names: Drury
+    given-names: Walker
+  - family-names: Garza
+    given-names: Alexander
+  - family-names: Fattig
+    given-names: Brendan
 license: Apache-2.0
 url: "https://github.com/NCAR/music-box"
