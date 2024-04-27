@@ -48,7 +48,7 @@ class Conditions:
             reaction_list (ReactionList): A ReactionList containing the reactions involved in the simulation.
 
         Returns:
-            object: An instance of the class with the settings from the UI JSON object.
+            object: An instance of the Conditions class with the settings from the UI JSON object.
         """
         pressure = convert_pressure(UI_JSON['conditions']['environmental conditions']['pressure'], 'initial value')
 
@@ -97,7 +97,7 @@ class Conditions:
             reaction_list (ReactionList): A ReactionList containing the reactions involved in the simulation.
 
         Returns:
-            object: An instance of the class with the settings from the configuration JSON object.
+            object: An instance of the Conditions class with the settings from the configuration JSON object.
         """
         pressure = convert_pressure(config_JSON['environmental conditions']['pressure'], 'initial value')
 
