@@ -37,13 +37,18 @@ class Conditions:
     @classmethod
     def from_UI_JSON(cls, UI_JSON, species_list, reaction_list):
         """
-        Create a new instance of the Conditions class from a JSON object.
+        Creates an instance of the class from a UI JSON object.
+
+        This class method takes a UI JSON object, a species list, and a reaction list, 
+        and uses them to create a new instance of the class.
 
         Args:
-            UI_JSON (dict): A JSON object representing the conditions.
+            UI_JSON (dict): The UI JSON object containing the initial conditions and settings.
+            species_list (SpeciesList): A SpeciesList containing the species involved in the simulation.
+            reaction_list (ReactionList): A ReactionList containing the reactions involved in the simulation.
 
         Returns:
-            Conditions: A new instance of the Conditions class.
+            object: An instance of the Conditions class with the settings from the UI JSON object.
         """
         pressure = convert_pressure(UI_JSON['conditions']['environmental conditions']['pressure'], 'initial value')
 
@@ -79,6 +84,21 @@ class Conditions:
     
     @classmethod
     def from_config_JSON(cls, path_to_json, config_JSON, species_list, reaction_list):
+        """
+        Creates an instance of the class from a configuration JSON object.
+
+        This class method takes a path to a JSON file, a configuration JSON object, a species list, 
+        and a reaction list, and uses them to create a new instance of the class.
+
+        Args:
+            path_to_json (str): The path to the JSON file containing the initial conditions and settings.
+            config_JSON (dict): The configuration JSON object containing the initial conditions and settings.
+            species_list (SpeciesList): A SpeciesList containing the species involved in the simulation.
+            reaction_list (ReactionList): A ReactionList containing the reactions involved in the simulation.
+
+        Returns:
+            object: An instance of the Conditions class with the settings from the configuration JSON object.
+        """
         pressure = convert_pressure(config_JSON['environmental conditions']['pressure'], 'initial value')
 
         temperature = convert_temperature(config_JSON['environmental conditions']['temperature'], 'initial value')
@@ -107,8 +127,6 @@ class Conditions:
             if not any(conc.species.name == species.name for conc in species_concentrations):
                 species_concentrations.append(SpeciesConcentration(species, 0)) 
 
-
-        #TODO: may or may not be necessary
         # Set initial reaction rates
 
         for reaction in reaction_list.reactions:
@@ -121,6 +139,19 @@ class Conditions:
 
     @classmethod
     def read_initial_rates_from_file(cls, file_path, reaction_list):
+        """
+        Reads initial reaction rates from a file.
+
+        This class method takes a file path and a ReactionList, reads the file, and 
+        sets the initial reaction rates based on the contents of the file.
+
+        Args:
+            file_path (str): The path to the file containing the initial reaction rates.
+            reaction_list (ReactionList): A ReactionList containing the reactions involved in the simulation.
+
+        Returns:
+            list: A list where each element represents the initial rate of a reaction.
+        """
 
         reaction_rates = []
 

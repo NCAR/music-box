@@ -17,11 +17,12 @@ class EvolvingConditions:
 
     def __init__(self, headers=None, times=None, conditions=None):
         """
-        Initializes a new instance of the EvolvingConditions class.
+        Initializes an instance of the EvolvingConditions class.
 
         Args:
-            time (List[float]): A list of time points. Default is an empty list.
-            conditions (List[Conditions]): A list of associated conditions. Default is an empty list.
+            headers (list, optional): A list of headers for the data. Defaults to None.
+            times (list, optional): A list of times at which the conditions are recorded. Defaults to None.
+            conditions (list, optional): A list of conditions at each time point. Defaults to None.
         """
         self.headers = headers if headers is not None else []
         self.times = times if times is not None else []
@@ -33,7 +34,7 @@ class EvolvingConditions:
         Create a new instance of the EvolvingConditions class from a JSON object.
 
         Args:
-            UI_JSON (dict): A JSON object representing the evolving conditions.
+        UI_JSON (dict): A JSON object representing the evolving conditions.
 
         Returns:
             EvolvingConditions: A new instance of the EvolvingConditions class.
@@ -86,8 +87,22 @@ class EvolvingConditions:
     
     @classmethod
     def from_config_JSON(cls, path_to_json ,config_JSON, species_list, reaction_list):
-        # Initialize empty lists for times and conditions
-        
+        """
+        Creates an instance of the EvolvingConditions class from a configuration JSON object.
+
+        This class method takes a path to a JSON file, a configuration JSON object, a SpeciesList, 
+        and a ReactionList, and uses them to create a new instance of the EvolvingConditions class.
+
+        Args:
+            path_to_json (str): The path to the JSON file containing the initial conditions and settings.
+            config_JSON (dict): The configuration JSON object containing the initial conditions and settings.
+            species_list (SpeciesList): A SpeciesList containing the species involved in the simulation.
+            reaction_list (ReactionList): A ReactionList containing the reactions involved in the simulation.
+
+        Returns:
+            EvolvingConditions: An instance of the EvolvingConditions class with the settings from the configuration JSON object.
+        """
+
 
         evolving_conditions = EvolvingConditions()
         
@@ -186,4 +201,14 @@ class EvolvingConditions:
     
     #allows len overload for this class
     def __len__(self):
+        """
+        Returns the number of time points in the EvolvingConditions instance.
+
+        This method is a part of Python's data model methods and allows the built-in 
+        `len()` function to work with an instance of the EvolvingConditions class. 
+        It should return the number of time points for which conditions are recorded.
+
+        Returns:
+            int: The number of time points in the EvolvingConditions instance.
+        """
         return len(self.times)

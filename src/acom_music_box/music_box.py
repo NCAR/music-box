@@ -58,10 +58,13 @@ class MusicBox:
 
     def generateConfig(self, directory):
         """
-        Generate configuration JSON for the box model simulation.
+        Generate configuration JSON for the box model simulation and writes it to files in the specified directory.
+
+        Args:
+            directory (str): The directory where the configuration files will be written.
 
         Returns:
-        tuple: A tuple containing the species configuration JSON and the reaction configuration JSON.
+            None
         """
         output_path = "./src/configs/" + directory
 
@@ -411,10 +414,20 @@ class MusicBox:
 
     def solve(self, path_to_output = None):
         """
-        TODO: Solve the box model simulation.
+        Solves the box model simulation and optionally writes the output to a file.
+
+        This function runs the box model simulation using the current settings and 
+        conditions. If a path is provided, it writes the output of the simulation to 
+        the specified file.
+
+        Args:
+            path_to_output (str, optional): The path to the file where the output will 
+            be written. If None, no output file is created. Defaults to None.
+
+        Returns:
+            list: A 2D list where each inner list represents the results of the simulation 
+            at a specific time step.
         """
-        # TODO: Implement the logic to solve the box model simulation.
-        # Update the internal state of the BoxModel instance to reflect the simulation results.
 
         #sets up initial conditions to be current conditions
         curr_conditions = self.initial_conditions
@@ -523,9 +536,21 @@ class MusicBox:
         
     def readFromUIJson(self, path_to_json):
         """
-        TODO: Read the box model configuration from json and sets config
+        Reads and parses a JSON file from the MusicBox Interactive UI to set up the box model simulation.
+
+        This function takes the path to a JSON file, reads the file, and parses the JSON 
+        to set up the box model simulation.
+
+        Args:
+            path_to_json (str): The path to the JSON file from the UI.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the JSON file cannot be read or parsed.
         """
-        # TODO: Implement the logic to update the box model config using a json.
+
 
         with open(path_to_json, 'r') as json_file:
             data = json.load(json_file)
@@ -547,9 +572,18 @@ class MusicBox:
 
     def readFromUIJsonString(self, data):
         """
-        TODO: Read the box model configuration from json and sets config
+        Reads and parses a JSON string from the MusicBox Interactive UI to set up the box model simulation.
+
+        Args:
+            json_string (str): The JSON string from the UI.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the JSON string cannot be parsed.
         """
-        # TODO: Implement the logic to update the box model config using a json.
+  
 
         # Set box model options
         self.box_model_options = BoxModelOptions.from_UI_JSON(data)
@@ -586,13 +620,42 @@ class MusicBox:
             
 
     def speciesOrdering(self):
+        """
+        Retrieves the ordering of species used in the solver.
+
+        This function calls the `species_ordering` function from the `musica` module, 
+        passing the solver instance from the current object.
+
+        Returns:
+            dict: The ordered dictionary of species used in the solver.
+        """
         return musica.species_ordering(self.solver)
 
     def userDefinedReactionRates(self):
-        return musica.user_defined_reaction_rates(self.solver)
-    
+        """
+        Retrieves the user-defined reaction rates from the solver.
+
+        This function calls the `user_defined_reaction_rates` function from the `musica` module, 
+        passing the solver instance from the current object.
+
+        Returns:
+            dict: The dictionary of user-defined reaction rates used in the solver.
+        """
     @classmethod
     def order_reaction_rates(self, curr_conditions, rate_constant_ordering):
+        """
+        Orders the reaction rates based on the provided ordering.
+
+        This function takes the current conditions and a specified ordering for the rate constants, 
+        and reorders the reaction rates accordingly.
+
+        Args:
+            rate_constants (dict): A dictionary of rate constants.
+            rate_constant_ordering (dict): A dictionary that maps rate constant keys to indices for ordering.
+
+        Returns:
+            list: An ordered list of rate constants.
+        """
         rate_constants = {}
         for rate in curr_conditions.reaction_rates:
 
