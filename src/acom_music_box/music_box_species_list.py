@@ -18,7 +18,7 @@ class SpeciesList:
 
         Args:
             species (List[Species]): A list of Species instances. Default is an empty list.
-            relative_tolerance (float): The relative tolerance for the species list. Default is 0.0.
+            relative_tolerance (float): The relative tolerance for the species list. Default is 1.0e-4.
         """
         self.species = species if species is not None else []
         self.relative_tolerance = relative_tolerance
@@ -29,7 +29,7 @@ class SpeciesList:
         Create a new instance of the SpeciesList class from a JSON object.
 
         Args:
-            UI_JSON (dict): A JSON object representing the species list.
+            UI_JSON (dict): A JSON object from MusicBox Interactive representing the species list.
 
         Returns:
             SpeciesList: A new instance of the SpeciesList class.
@@ -49,6 +49,15 @@ class SpeciesList:
     
     @classmethod
     def from_config_JSON(cls, path_to_json, config_JSON):
+        """
+        Create a new instance of the SpeciesList class from a JSON object.
+
+        Args:
+            UI_JSON (dict): A JSON object from a config JSON representing the species list.
+
+        Returns:
+            SpeciesList: A new instance of the SpeciesList class.
+        """
 
         species_from_json = []
 

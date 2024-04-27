@@ -30,10 +30,10 @@ class BoxModelOptions:
     @classmethod
     def from_UI_JSON(cls, UI_JSON):
         """
-        Create a new instance of the BoxModelOptions class from a JSON object.
+        Create a new instance of the BoxModelOptions class from a JSON object from the MusicBox Interactive UI.
 
         Args:
-            UI_JSON (dict): A JSON object representing the user interface options.
+            UI_JSON (dict): A JSON object representing the box model options from the user interface options.
 
         Returns:
             BoxModelOptions: A new instance of the BoxModelOptions class.
@@ -49,6 +49,15 @@ class BoxModelOptions:
 
     @classmethod
     def from_config_JSON(cls, config_JSON):
+        """
+        Create a new instance of the BoxModelOptions class from a JSON object from a configuration JSON.
+
+        Args:
+            UI_JSON (dict): A JSON object representing box model options.
+
+        Returns:
+            BoxModelOptions: A new instance of the BoxModelOptions class.
+        """
 
         chem_step_time = convert_time(config_JSON['box model options'], 'chemistry time step')
         output_step_time = convert_time(config_JSON['box model options'], 'output time step') 

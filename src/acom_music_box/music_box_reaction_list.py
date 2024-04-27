@@ -15,10 +15,14 @@ class ReactionList:
 
     def __init__(self, name=None, reactions=None):
         """
-        Initializes a new instance of the ReactionList class.
+        Initializes an instance of the ReactionList class.
+
+        This method initializes an instance of the ReactionList class with an optional name and list of reactions. 
+        If these parameters are not provided, they will be set to None.
 
         Args:
-            reactions (List[Reaction]): A list of Reaction instances. Default is an empty list.
+            name (str, optional): The name of the reaction list. Defaults to None.
+            reactions (list, optional): A list of reactions in the reaction list. Defaults to None.
         """
 
         self.name = name
@@ -30,7 +34,7 @@ class ReactionList:
         Create a new instance of the ReactionList class from a JSON object.
 
         Args:
-            UI_JSON (dict): A JSON object representing the reaction list.
+            UI_JSON (dict): A JSON object from the MusicBox Interactive UI representing the reaction list.
 
         Returns:
             ReactionList: A new instance of the ReactionList class.
@@ -47,6 +51,15 @@ class ReactionList:
     
     @classmethod
     def from_config_JSON(cls, path_to_json, config_JSON, species_list):
+        """
+        Create a new instance of the ReactionList class from a JSON object.
+
+        Args:
+            UI_JSON (dict): A JSON object a config JSON representing the reaction list.
+
+        Returns:
+            ReactionList: A new instance of the ReactionList class.
+        """
 
         reactions = []
         list_name = None
@@ -109,6 +122,19 @@ class ReactionList:
     
     @classmethod
     def get_reactions_from_JSON(self, reaction, species_list):
+        """
+        Retrieves reactions from a JSON object.
+
+        This method takes a reaction and a SpeciesList, and retrieves the corresponding reactions 
+        from a JSON object.
+
+        Args:
+            reaction (dict): A dictionary representing a reaction.
+            species_list (SpeciesList): A SpeciesList containing the species involved in the reactions.
+
+        Returns:
+            Reaction: A Reaction object created from the provided JSON reaction.
+        """
 
         name = reaction['MUSICA name'] if 'MUSICA name' in reaction else None
         scaling_factor = reaction['scaling factor'] if 'scaling factor' in reaction else None
