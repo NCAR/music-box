@@ -601,6 +601,18 @@ class MusicBox:
         self.evolving_conditions = EvolvingConditions.from_UI_JSON(data, self.species_list, self.reaction_list)    
 
     def readConditionsFromJson(self, path_to_json):
+        """
+        Reads and parses a JSON file from the CAMP JSON file to set up the box model simulation.
+
+        Args:
+            path_to_json (str): The JSON path to the JSON file.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the JSON string cannot be parsed.
+        """
 
         with open(path_to_json, 'r') as json_file:
             data = json.load(json_file)

@@ -98,6 +98,20 @@ class ReactionList:
 
     @classmethod
     def get_reactants_from_JSON(self, reaction, species_list):
+        """
+        Retrieves reactants from a JSON object.
+
+        This method iterates over the 'reactants' field of the provided JSON object,
+        matches each reactant with a species from the provided species list, and
+        creates a Reactant object for each one.
+
+        Args:
+            reaction (dict): A dictionary representing a reaction, as parsed from JSON.
+            species_list (SpeciesList): A list of all possible species.
+
+        Returns:
+            list: A list of Reactant objects representing the reactants of the reaction.
+        """
         reactants = []
 
         for reactant, reactant_info in reaction['reactants'].items():
@@ -110,6 +124,21 @@ class ReactionList:
     
     @classmethod
     def get_products_from_JSON(self, reaction, species_list):
+        """
+        Extracts products from a JSON object.
+
+        This method checks if the 'products' field is present in the provided JSON object.
+        If it is, the method iterates over the 'products' field, matches each product with
+        a species from the provided species list, and creates a Product object for each one.
+
+        Args:
+            reaction (dict): A dictionary representing a reaction, as parsed from JSON.
+            species_list (SpeciesList): A list of all possible species.
+
+        Returns:
+            list: A list of Product objects representing the products of the reaction, or
+                an empty list if the 'products' field is not present in the JSON object.
+        """
         products = []
         if 'products' in reaction:
                 for product, product_info in reaction['products'].items():
