@@ -9,6 +9,7 @@ from .music_box_model_options import BoxModelOptions
 from .music_box_conditions import Conditions
 import csv
 import musica
+import music_box_logger
 
 class MusicBox:
     """
@@ -36,12 +37,14 @@ class MusicBox:
             evolving_conditions (List[EvolvingConditions]): List of evolving conditions over time.
             config_file (String): File path for the configuration file to be located. Default is "camp_data/config.json".
         """
-        self.box_model_options = box_model_options
+        self.box_model_options = box_model_options if box_model_options is not None else BoxModelOptions()
         self.species_list = species_list if species_list is not None else SpeciesList()
         self.reaction_list = reaction_list if reaction_list is not None else ReactionList()
-        self.initial_conditions = initial_conditions
+        self.initial_conditions = initial_conditions if initial_conditions is not None else Conditions()
         self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([], [])
         self.config_file = config_file if config_file is not None else "camp_data/config.json"
+        
+        self.solver = None
         
 
 
@@ -428,7 +431,7 @@ class MusicBox:
             list: A 2D list where each inner list represents the results of the simulation 
             at a specific time step.
         """
-
+       
         #sets up initial conditions to be current conditions
         curr_conditions = self.initial_conditions
 
@@ -448,7 +451,7 @@ class MusicBox:
                 next_conditions_index = 1
                 next_conditions = self.evolving_conditions.conditions[1]
                 next_conditions_time = self.evolving_conditions.times[1]    
-                
+               
 
         #initalizes output headers
         output_array = []
@@ -458,10 +461,16 @@ class MusicBox:
         headers.append("ENV.temperature")
         headers.append("ENV.pressure")
 
+        music_box_logger.progress("solve0152 self.solver = {}".format(self.solver))
+
+        if (self.solver is None):
+            music_box_logger.progress("Warning: MusicBox object {} has no solver."
+                .format(self))
         rate_constant_ordering = musica.user_defined_reaction_rates(self.solver)
+
         species_constant_ordering = musica.species_ordering(self.solver)
   
-        
+
         #adds species headers to output
         ordered_species_headers =  [k for k, v in sorted(species_constant_ordering.items(), key=lambda item: item[1])]
         for spec in ordered_species_headers:
@@ -478,9 +487,11 @@ class MusicBox:
         next_output_time = curr_time
         #runs the simulation at each timestep
 
-        
+        music_box_logger.progress("solve03 path_to_output = {}".format(path_to_output))
+       
         
         while(curr_time <= self.box_model_options.simulation_length):
+
             #outputs to output_array if enough time has elapsed
             if(next_output_time <= curr_time):   
                 row = []
@@ -507,8 +518,10 @@ class MusicBox:
                     
                 else:
                     next_conditions = None
+
+            music_box_logger.progress("solve033 species_constant_ordering = {}".format(species_constant_ordering))
             
-            
+           
             #updates M accordingly
             if 'M' in species_constant_ordering:
                 BOLTZMANN_CONSTANT = 1.380649e-23
@@ -516,21 +529,22 @@ class MusicBox:
                 GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT
                 ordered_concentrations[species_constant_ordering['M']] = curr_conditions.pressure / (GAS_CONSTANT * curr_conditions.temperature)
 
+            music_box_logger.progress("solve035 args = {} {} {} {} {}".format(self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, ordered_concentrations, ordered_rate_constants))
             #solves and updates concentration values in concentration array
+            if (not ordered_concentrations):
+                music_box_logger.progress("Warning: ordered_concentrations list is empty.")               
             musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, ordered_concentrations, ordered_rate_constants)
-
-           
 
         
             #increments time
             curr_time += self.box_model_options.chem_step_time  
-        
+            
         #outputs to file if output is present
         if(path_to_output != None):
             with open(path_to_output, 'w', newline='') as output:
                 writer = csv.writer(output)
                 writer.writerows(output_array)
-        
+
         #returns output_array 
         return output_array
         
