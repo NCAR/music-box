@@ -487,9 +487,7 @@ class MusicBox:
         next_output_time = curr_time
         #runs the simulation at each timestep
 
-        music_box_logger.progress("solve03 path_to_output = {}".format(path_to_output))
        
-        
         while(curr_time <= self.box_model_options.simulation_length):
 
             #outputs to output_array if enough time has elapsed
@@ -518,9 +516,7 @@ class MusicBox:
                     
                 else:
                     next_conditions = None
-
-            music_box_logger.progress("solve033 species_constant_ordering = {}".format(species_constant_ordering))
-            
+           
            
             #updates M accordingly
             if 'M' in species_constant_ordering:
@@ -529,7 +525,6 @@ class MusicBox:
                 GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT
                 ordered_concentrations[species_constant_ordering['M']] = curr_conditions.pressure / (GAS_CONSTANT * curr_conditions.temperature)
 
-            music_box_logger.progress("solve035 args = {} {} {} {} {}".format(self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, ordered_concentrations, ordered_rate_constants))
             #solves and updates concentration values in concentration array
             if (not ordered_concentrations):
                 music_box_logger.progress("Warning: ordered_concentrations list is empty.")               
