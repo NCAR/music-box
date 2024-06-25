@@ -17,5 +17,7 @@ authors:
     given-names: Alexander
   - family-names: Fattig
     given-names: Brendan
+  - family-names: Drews
+    given-names: Carl
 license: Apache-2.0
 url: "https://github.com/NCAR/music-box"
