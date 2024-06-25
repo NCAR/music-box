@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     # create solver and solve
     myBox.create_solver(musicBoxHomeDir + myBox.config_file)
-    mySolution = myBox.solve()
+    mySolution = myBox.solve(musicBoxHomeDir + "my_solution.csv")
     music_box_logger.progress("mySolution = {}".format(mySolution))
 
     music_box_logger.progress("End time: {}".format(datetime.datetime.now()))
