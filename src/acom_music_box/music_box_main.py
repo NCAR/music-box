@@ -1,10 +1,10 @@
 from acom_music_box import MusicBox
+from acom_music_box import music_box_logger
+
 
 import math
 import datetime
 import sys
-
-import music_box_logger
 
 
 

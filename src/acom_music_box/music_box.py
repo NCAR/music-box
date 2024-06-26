@@ -7,9 +7,11 @@ from .music_box_reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_T
 from .music_box_species_list import SpeciesList
 from .music_box_model_options import BoxModelOptions
 from .music_box_conditions import Conditions
+from acom_music_box import music_box_logger
+
 import csv
 import musica
-import music_box_logger
+
 
 class MusicBox:
     """
