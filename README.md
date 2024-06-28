@@ -6,6 +6,7 @@ MusicBox: A MUSICA model for boxes and columns.
 
 [![License](https://img.shields.io/github/license/NCAR/music-box.svg)](https://github.com/NCAR/music-box/blob/main/LICENSE)
 [![CI Status](https://github.com/NCAR/music-box/actions/workflows/test.yml/badge.svg)](https://github.com/NCAR/music-box/actions/workflows/test.yml)
+[![PyPI version](https://badge.fury.io/py/acom_music_box.svg)](https://pypi.org/p/acom_music_box)
 
 Copyright (C) 2020 National Center for Atmospheric Research
 
