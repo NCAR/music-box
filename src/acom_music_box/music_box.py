@@ -463,7 +463,6 @@ class MusicBox:
         headers.append("ENV.temperature")
         headers.append("ENV.pressure")
 
-        #music_box_logger.progress("solve0152 self.solver = {}".format(self.solver))
 
         if (self.solver is None):
             music_box_logger.progress("Warning: MusicBox object {} has no solver."
