@@ -465,7 +465,7 @@ class MusicBox:
 
 
         if (self.solver is None):
-            music_box_logger.progress("Warning: MusicBox object {} has no solver."
+            raise Exception("Error: MusicBox object {} has no solver."
                 .format(self))
         rate_constant_ordering = musica.user_defined_reaction_rates(self.solver)
 
