@@ -1,10 +1,12 @@
 from acom_music_box import MusicBox
-from acom_music_box import music_box_logger
 
 
 import math
 import datetime
 import sys
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 
@@ -29,12 +31,14 @@ def getArgsDictionary(argPairs):
 
 
 
-if __name__ == "__main__":
-    music_box_logger.progress("{}".format(__file__))
-    music_box_logger.progress("Start time: {}".format(datetime.datetime.now()))
+def main():
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+    logger.info("{}".format(__file__))
+    logger.info("Start time: {}".format(datetime.datetime.now()))
     
-    music_box_logger.progress("Hello, MusicBox World!")
+    logger.info("Hello, MusicBox World!")
     
+
     # retrieve and parse the command-line arguments
     myArgs = getArgsDictionary(sys.argv)
     
@@ -46,13 +50,17 @@ if __name__ == "__main__":
     # create and load a MusicBox object
     myBox = MusicBox()
     myBox.readConditionsFromJson(musicBoxHomeDir + "my_config.json")
-    music_box_logger.progress("myBox = {}".format(myBox))
+    logger.info("myBox = {}".format(myBox))
 
     # create solver and solve
     myBox.create_solver(musicBoxHomeDir + myBox.config_file)
-    music_box_logger.progress("myBox.solver = {}".format(myBox.solver))
+    logger.info("myBox.solver = {}".format(myBox.solver))
     mySolution = myBox.solve(musicBoxHomeDir + "my_solution.csv")
-    music_box_logger.progress("mySolution = {}".format(mySolution))
+    logger.info("mySolution = {}".format(mySolution))
 
-    music_box_logger.progress("End time: {}".format(datetime.datetime.now()))
+    logger.info("End time: {}".format(datetime.datetime.now()))
     sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()

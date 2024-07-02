@@ -11,8 +11,11 @@ classifiers = ["License :: OSI Approved :: Apache Software License"]
 dynamic = ["version", "description"]
 
 dependencies = [
-  "musica==0.6.1.dev0"
+  "musica==0.7.0"
 ]
 
 [project.urls]
 Home = "https://github.com/NCAR/music-box"
+
+[project.scripts]
+music_box = "acom_music_box.music_box_main:main"

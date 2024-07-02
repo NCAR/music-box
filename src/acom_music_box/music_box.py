@@ -1,16 +1,19 @@
 import json
 import os
 
+import logging
+logger = logging.getLogger(__name__)
+
 from .music_box_evolving_conditions import EvolvingConditions
 from .music_box_reaction_list import ReactionList
 from .music_box_reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
 from .music_box_species_list import SpeciesList
 from .music_box_model_options import BoxModelOptions
 from .music_box_conditions import Conditions
-from acom_music_box import music_box_logger
 
 import csv
 import musica
+
 
 
 class MusicBox:
@@ -414,7 +417,7 @@ class MusicBox:
             None
         """
         # Create a solver object using the configuration file
-        self.solver = musica.create_micm(path_to_config)
+        self.solver = musica.create_solver(path_to_config)
 
 
     def solve(self, path_to_output = None):
@@ -519,17 +522,22 @@ class MusicBox:
                     next_conditions = None
            
            
+            #  calculate air density from the ideal gas law
+            BOLTZMANN_CONSTANT = 1.380649e-23
+            AVOGADRO_CONSTANT = 6.02214076e23;  
+            GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT
+            air_density = curr_conditions.pressure / (GAS_CONSTANT * curr_conditions.temperature) 
+
             #updates M accordingly
             if 'M' in species_constant_ordering:
-                BOLTZMANN_CONSTANT = 1.380649e-23
-                AVOGADRO_CONSTANT = 6.02214076e23;  
-                GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT
-                ordered_concentrations[species_constant_ordering['M']] = curr_conditions.pressure / (GAS_CONSTANT * curr_conditions.temperature)
+                ordered_concentrations[species_constant_ordering['M']] = air_density
 
             #solves and updates concentration values in concentration array
             if (not ordered_concentrations):
-                music_box_logger.progress("Warning: ordered_concentrations list is empty.")               
-            musica.micm_solve(self.solver, self.box_model_options.chem_step_time, curr_conditions.temperature, curr_conditions.pressure, ordered_concentrations, ordered_rate_constants)
+                logger.info("Warning: ordered_concentrations list is empty.")
+            musica.micm_solve(self.solver, self.box_model_options.chem_step_time,
+                curr_conditions.temperature, curr_conditions.pressure, air_density,
+                ordered_concentrations, ordered_rate_constants)
 
         
             #increments time
@@ -537,6 +545,7 @@ class MusicBox:
             
         #outputs to file if output is present
         if(path_to_output != None):
+            logger.info("path_to_output = {}".format(path_to_output))
             with open(path_to_output, 'w', newline='') as output:
                 writer = csv.writer(output)
                 writer.writerows(output_array)
