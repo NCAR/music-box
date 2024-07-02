@@ -29,7 +29,7 @@ def getArgsDictionary(argPairs):
 
 
 
-if __name__ == "__main__":
+def main():
     music_box_logger.progress("{}".format(__file__))
     music_box_logger.progress("Start time: {}".format(datetime.datetime.now()))
     
@@ -56,3 +56,6 @@ if __name__ == "__main__":
 
     music_box_logger.progress("End time: {}".format(datetime.datetime.now()))
     sys.exit(0)
+
+if __name__ == "__main__":
+   main()
