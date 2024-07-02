@@ -9,6 +9,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 import argparse
+import os
 
 
 
@@ -47,24 +48,30 @@ def main():
     logger.info("Hello, MusicBox World!")
     
     # retrieve and parse the command-line arguments
-    logger.info("sys.argv = {}".format(sys.argv))
     myArgs = getArgsDictionary(sys.argv[1:])
     logger.info("Command line = {}".format(myArgs))
 
-    # set up the home configuration directory
-    musicBoxHomeDir = "music-box\\tests\\configs\\analytical_config\\"      # default
-    if ("homeDir" in myArgs):
-        musicBoxHomeDir = myArgs.get("homeDir")
-    
+    # set up the home configuration file
+    musicBoxConfigFile = "music-box\\tests\\configs\\analytical_config\\my_config.json"      # default
+    if ("configFile" in myArgs):
+        musicBoxConfigFile = myArgs.get("configFile")
+
+    # set up the output directory
+    musicBoxOutputDir = ".\\"      # default
+    if ("outputDir" in myArgs):
+        musicBoxOutputDir = myArgs.get("outputDir")
+
     # create and load a MusicBox object
     myBox = MusicBox()
-    myBox.readConditionsFromJson(musicBoxHomeDir + "my_config.json")
+    myBox.readConditionsFromJson(musicBoxConfigFile)
     logger.info("myBox = {}".format(myBox))
 
-    # create solver and solve
-    myBox.create_solver(musicBoxHomeDir + myBox.config_file)
+    # create solver and solve, writing output to requested directory
+    campConfig = os.path.dirname(musicBoxConfigFile) + "\\" + myBox.config_file
+    logger.info("CAMP config = {}".format(campConfig))
+    myBox.create_solver(campConfig)
     logger.info("myBox.solver = {}".format(myBox.solver))
-    mySolution = myBox.solve(musicBoxHomeDir + "my_solution.csv")
+    mySolution = myBox.solve(musicBoxOutputDir + "\\my_solution.csv")
     logger.info("mySolution = {}".format(mySolution))
 
     logger.info("End time: {}".format(datetime.datetime.now()))
