@@ -19,3 +19,4 @@ Home = "https://github.com/NCAR/music-box"
 
 [project.scripts]
 music_box = "acom_music_box:main"
+third_party = "acom_music_box:third_party"

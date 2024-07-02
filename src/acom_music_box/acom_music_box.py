@@ -57,5 +57,8 @@ def main():
     music_box_logger.progress("End time: {}".format(datetime.datetime.now()))
     sys.exit(0)
 
+def third_party():
+   print("This is a third-party function.")
+
 if __name__ == "__main__":
    main()
