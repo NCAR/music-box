@@ -8,26 +8,34 @@ import sys
 import logging
 logger = logging.getLogger(__name__)
 
+import argparse
 
+
+
+# configure argparse for key-value pairs
+class KeyValueAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        for value in values:
+            key, val = value.split('=')
+            setattr(namespace, key, val)
 
 # Retrieve named arguments from the command line and
 # return in a dictionary of keywords.
-# argPairs = list of arguments, probably from sys.argv
+# argPairs = list of arguments, probably from sys.argv[1:]
 #       named arguments are formatted like this=3.14159
 # return dictionary of keywords and values
 def getArgsDictionary(argPairs):
-   argDict = {}
+    parser = argparse.ArgumentParser(description='Process some key=value pairs.')
+    parser.add_argument(
+        'key_value_pairs',
+        nargs='+',  # This means one or more arguments are expected
+        action=KeyValueAction,
+        help='Arguments in key=value format'
+    )
 
-   for argPair in argPairs:
-      # the arguments are: arg=value
-      pairValue = argPair.split('=')
-      if (len(pairValue) < 2):
-         argDict[pairValue[0]] = None
-         continue
+    argDict = vars(parser.parse_args(argPairs))      # return dictionary
 
-      argDict[pairValue[0]] = pairValue[1]
-
-   return(argDict)
+    return(argDict)
 
 
 
@@ -38,10 +46,11 @@ def main():
     
     logger.info("Hello, MusicBox World!")
     
-
     # retrieve and parse the command-line arguments
-    myArgs = getArgsDictionary(sys.argv)
-    
+    logger.info("sys.argv = {}".format(sys.argv))
+    myArgs = getArgsDictionary(sys.argv[1:])
+    logger.info("Command line = {}".format(myArgs))
+
     # set up the home configuration directory
     musicBoxHomeDir = "music-box\\tests\\configs\\analytical_config\\"      # default
     if ("homeDir" in myArgs):
