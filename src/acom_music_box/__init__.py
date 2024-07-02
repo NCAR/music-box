@@ -20,4 +20,4 @@ from .music_box_conditions import Conditions
 from .music_box_evolving_conditions import EvolvingConditions
 from acom_music_box import music_box_logger
 from .music_box import MusicBox
-
+from .acom_music_box import main
