@@ -46,6 +46,7 @@ def main():
     logger.info("Start time: {}".format(datetime.datetime.now()))
     
     logger.info("Hello, MusicBox World!")
+    logger.info("Working directory = {}".format(os.getcwd()))
     
     # retrieve and parse the command-line arguments
     myArgs = getArgsDictionary(sys.argv[1:])
