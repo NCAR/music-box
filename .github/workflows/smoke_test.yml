@@ -32,6 +32,5 @@ jobs:
     
     - name: Run the smoke tests
       run: |
-        pip install .
         music_box configFile="tests\configs\analytical_config\my_config.json" outputDir="tests\configs\analytical_config"
 
