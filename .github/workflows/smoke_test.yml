@@ -27,12 +27,7 @@ jobs:
     - name: Install this package
       run: pip install -e .
     
-    - name: Debug information
-      run: |
-        pwd
-        ls -a
-    
     - name: Run the smoke tests
       run: |
-        music_box configFile="tests\configs\analytical_config\my_config.json" outputDir="tests\configs\analytical_config"
+        music_box configFile=tests/configs/analytical_config/my_config.json outputDir=tests/configs/analytical_config
 
