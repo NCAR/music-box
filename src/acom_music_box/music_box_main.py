@@ -68,11 +68,11 @@ def main():
     logger.info("myBox = {}".format(myBox))
 
     # create solver and solve, writing output to requested directory
-    campConfig = os.path.dirname(musicBoxConfigFile) + "\\" + myBox.config_file
+    campConfig = os.path.join(os.path.dirname(musicBoxConfigFile), myBox.config_file)
     logger.info("CAMP config = {}".format(campConfig))
     myBox.create_solver(campConfig)
     logger.info("myBox.solver = {}".format(myBox.solver))
-    mySolution = myBox.solve(musicBoxOutputDir + "\\my_solution.csv")
+    mySolution = myBox.solve(os.path.join(musicBoxOutputDir, "mySolution.csv"))
     logger.info("mySolution = {}".format(mySolution))
 
     logger.info("End time: {}".format(datetime.datetime.now()))
