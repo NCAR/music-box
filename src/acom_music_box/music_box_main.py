@@ -31,7 +31,7 @@ def getArgsDictionary(argPairs):
         'key_value_pairs',
         nargs='+',  # This means one or more arguments are expected
         action=KeyValueAction,
-        help='Arguments in key=value format'
+        help="Arguments in key=value format. Example: configFile=my_config.json"
     )
 
     argDict = vars(parser.parse_args(argPairs))      # return dictionary
