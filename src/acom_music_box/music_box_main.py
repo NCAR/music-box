@@ -53,7 +53,7 @@ def main():
     logger.info("Command line = {}".format(myArgs))
 
     # set up the home configuration file
-    musicBoxConfigFile = "music-box\\tests\\configs\\analytical_config\\my_config.json"      # default
+    musicBoxConfigFile = None
     if ("configFile" in myArgs):
         musicBoxConfigFile = myArgs.get("configFile")
 
@@ -62,6 +62,13 @@ def main():
     if ("outputDir" in myArgs):
         musicBoxOutputDir = myArgs.get("outputDir")
 
+    # check for required arguments and provide examples
+    if (musicBoxConfigFile is None):
+        errorString = "Error: The configFile parameter is required."
+        errorString += (" Example: configFile={}"
+            .format(os.path.join("tests", "configs", "analytical_config", "my_config.json")))
+        raise Exception(errorString)
+                
     # create and load a MusicBox object
     myBox = MusicBox()
     myBox.readConditionsFromJson(musicBoxConfigFile)
