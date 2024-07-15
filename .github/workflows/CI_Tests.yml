@@ -1,4 +1,4 @@
-name: smoke
+name: CI Tests
 
 on: [push, workflow_dispatch]
 
