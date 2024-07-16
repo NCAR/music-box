@@ -12,7 +12,8 @@ class BoxModelOptions:
         simulationLength (float): Length of the simulation in hours.
     """
 
-    def __init__(self, chem_step_time, output_step_time, simulation_length, grid="box"):
+    def __init__(self, chem_step_time=None, output_step_time=None, simulation_length=None, grid="box"):
+
         """
         Initializes a new instance of the BoxModelOptions class.
 

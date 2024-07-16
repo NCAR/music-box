@@ -19,7 +19,8 @@ class Conditions:
         reactionRates (List[ReactionRate]): A list of reaction rates.
     """
 
-    def __init__(self, pressure, temperature, species_concentrations=None, reaction_rates=None):
+    def __init__(self, pressure=None, temperature=None, species_concentrations=None, reaction_rates=None):
+
         """
         Initializes a new instance of the Conditions class.
 
