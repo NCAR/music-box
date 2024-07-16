@@ -14,12 +14,6 @@ Copyright (C) 2020 National Center for Atmospheric Research
 
 The project is configured to be installed using `pip` by the `pyproject.toml` file. 
 
-This package requires [`musica`](https://pypi.org/project/musica/) to be installed in order to run. `musica` can be installed by running:
-
-```
-pip install musica==0.6.1.dev0
-```
-
 To install the `music-box` package into a Python environment, run the following command from the root directory:
 
 ```
