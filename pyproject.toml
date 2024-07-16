@@ -4,7 +4,17 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "acom_music_box"
-authors = [{name = "NCAR/ACOM", email = "musica-support@ucar.edu"}]
+authors = [
+  { name = "Matthew Dawson", email = "mattdawson@ucar.edu" },
+  { name = "Kyle Shores", email = "kshores@ucar.edu" },
+  { name = "Andrew Conley", email = "aconley@ucar.edu" },
+  { name = "Evan De la Garza"},
+  { name = "Walker Drury"},
+  { name = "Alexander Garza"},
+  { name = "Brendan Fattig"},
+  { name = "Carl Drews", email = "drews@ucar.edu" }
+]
+maintainers = [{ name = "ACOM MUSICA Developers", email = "musica-support@ucar.edu" }]
 readme = "README.md"
 license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: Apache Software License"]
