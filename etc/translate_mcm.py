@@ -1,5 +1,4 @@
 import sqlite3
-import re
 from tabulate import tabulate
 
 counted = """
@@ -48,6 +47,29 @@ def get_all(cursor, stmt):
     cursor.execute(stmt)
     stmt = cursor.fetchall()
     return stmt
+  
+def group_reactions_by_rate_type(reactions):
+    null = []
+    tokenized = []
+    photolysis = []
+    for reaction in reactions:
+        if reaction[2] is None:
+            null.append(reaction)
+        elif reaction[2] == 'Tokenized':
+            tokenized.append(reaction)
+        elif reaction[2] == 'Photolysis':
+            photolysis.append(reaction)
+    return (null, tokenized, photolysis)
+
+
+def convert_tokenized_rates(rates):
+    pass
+
+def convert_photolysis_rates(rates):
+    pass
+
+def convert_null_rates(rates):
+    pass
 
 def translate_mcm():
     conn = sqlite3.connect('data/mcm.db')
@@ -66,5 +88,10 @@ def translate_mcm():
 
     for reaction in reactions[:15]:
         print(reaction)
+    
+    (null, tokenized, photolysis) = group_reactions_by_rate_type(reactions)
+    tokenized = convert_tokenized_rates(tokenized)
+    photolysis = convert_photolysis_rates(photolysis)
+    null = convert_null_rates(null)
 
 translate_mcm()
