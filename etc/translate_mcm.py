@@ -82,11 +82,15 @@ def convert_tokenized_rates(rates, tokenized_rates):
       else:
         named_tokenized.append(rate)
   
-  for list in [temperature_dependent, power_rates, named_tokenized]:
-    for rate in list[:3]:
-      print(rate)
-    print()
-  print(tokenized_rates)
+  # for list in [temperature_dependent, power_rates, named_tokenized]:
+  #   for rate in list[:10]:
+  #     print(rate[1])
+  #   print()
+  # print(tokenized_rates)
+
+  # this will match all of the tokens, 
+  # but also EXP and TEMP. So if you use it, filter out the ones you don't want
+  tokens = r'\b[A-Z]+[A-Z0-9]*\b'
 
   counts = [
     ('Temperature Dependent', len(temperature_dependent)),
