@@ -67,23 +67,42 @@ def group_reactions_by_rate_type(reactions):
       photolysis.append(reaction)
   return (null, tokenized, photolysis)
 
-
 def convert_tokenized_rates(rates):
   pass
 
 def convert_photolysis_rates(rates, photolysis_parameters):
-  print(photolysis_parameters)
   multiples = [i for i in rates if '*' in i[1]]
   non_multiples = [i for i in rates if '*' not in i[1]]
-  # for rate in non_multiples[:15]:
-  #   print(rate)
-  # print()
-  # for rate in multiples[:15]:
-  #   print(rate)
+  counts = [
+    ('Multiples', len(multiples)),
+    ('Non Multiples', len(non_multiples)),
+    ('Total', len(multiples) + len(non_multiples))
+  ]
+  print()
+  print(tabulate(counts, headers=['Photolysis Type', 'Count'], tablefmt='github'))
 
 def convert_null_rates(rates):
-  pass
+  temperature_dependent = []
+  ro2_reactions = []
+  non_ro2_reactions = []
+  for rate in rates:
+    if 'TEMP' in rate[1]:
+      temperature_dependent.append(rate)
+    else:
+      if 'RO2' in rate[1]:
+        ro2_reactions.append(rate)
+      else:
+        non_ro2_reactions.append(rate)
+  counts = [
+    ('Temperature Dependent', len(temperature_dependent)),
+    ('RO2 Dependent', len(ro2_reactions)),
+    ('Non RO2 Dependent', len(non_ro2_reactions)),
+    ('Total', len(temperature_dependent) + len(ro2_reactions) + len(non_ro2_reactions))
+  ]
 
+  print()
+  print(tabulate(counts, headers=['Null Type', 'Count'], tablefmt='github'))
+  
 def translate_mcm():
   conn = sqlite3.connect('data/mcm.db')
   cursor = conn.cursor()
@@ -92,6 +111,7 @@ def translate_mcm():
   number_of_rate_types = get_all(cursor, statements["mcm_reactions_with_rate_type"])
   number_of_rate_types = [(('Null' if rate_type is None else rate_type), count) for rate_type, count in number_of_rate_types]
   total_number_of_rate_types = sum([x[1] for x in number_of_rate_types])
+  number_of_rate_types.append(('Total', total_number_of_rate_types)) 
 
   assert(total_number_of_mcm_reactions == total_number_of_rate_types)
   print(tabulate(number_of_rate_types, headers=['Rate Type', 'Count'], tablefmt='github'))
