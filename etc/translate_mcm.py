@@ -1,5 +1,6 @@
 import sqlite3
 from tabulate import tabulate
+import re
 
 counted = """
 WITH ReactantCounts AS (
@@ -36,6 +37,7 @@ statements = {
   "rate_types": "SELECT RateType, COUNT(*) FROM Rates GROUP BY RateType;",
   "mcm_reactions_with_rate_type": "SELECT rates.RateType, COUNT(*) FROM Reactions r INNER JOIN Rates rates ON r.Rate = rates.Rate WHERE MEchanism = 'MCM' GROUP BY rates.RateType;",
   "photolysis_rate_paramters": "SELECT J, l, m, n FROM PhotolysisParameters;",
+  "tokenized_rates": "SELECT Token, Definition FROM Tokens;",
   "counted": counted
 }
 
@@ -67,8 +69,33 @@ def group_reactions_by_rate_type(reactions):
       photolysis.append(reaction)
   return (null, tokenized, photolysis)
 
-def convert_tokenized_rates(rates):
-  pass
+def convert_tokenized_rates(rates, tokenized_rates):
+  temperature_dependent = []
+  power_rates = []
+  named_tokenized = []
+  for rate in rates:
+    if 'TEMP' in rate[1]:
+      temperature_dependent.append(rate)
+    else:
+      if '@' in rate[1]:
+        power_rates.append(rate)
+      else:
+        named_tokenized.append(rate)
+  
+  for list in [temperature_dependent, power_rates, named_tokenized]:
+    for rate in list[:3]:
+      print(rate)
+    print()
+  print(tokenized_rates)
+
+  counts = [
+    ('Temperature Dependent', len(temperature_dependent)),
+    ('Power', len(power_rates)),
+    ('Named Tokenized Rates', len(named_tokenized)),
+    ('Total', len(temperature_dependent) + len(power_rates) + len(named_tokenized))
+  ]
+  print()
+  print(tabulate(counts, headers=['Tokenized Type', 'Count'], tablefmt='github'))
 
 def convert_photolysis_rates(rates, photolysis_parameters):
   multiples = [i for i in rates if '*' in i[1]]
@@ -127,9 +154,11 @@ def translate_mcm():
       'n': convert_to_float(i[3])
     } for i in photolysis_parameters
   }
+  tokenized_rates = get_all(cursor, statements["tokenized_rates"])
+  tokenized_rates = {i[0]: i[1] for i in tokenized_rates}
 
   (null, tokenized, photolysis) = group_reactions_by_rate_type(reactions)
-  tokenized = convert_tokenized_rates(tokenized)
+  tokenized = convert_tokenized_rates(tokenized, tokenized_rates)
   photolysis = convert_photolysis_rates(photolysis, photolysis_parameters)
   null = convert_null_rates(null)
 
