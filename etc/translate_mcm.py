@@ -1,6 +1,25 @@
 import sqlite3
 from tabulate import tabulate
-import re
+import sympy as sp
+
+def parse_and_simplify(equation_str, symbols, tokenized_rates_expr):
+    # Parse the equation string into a sympy expression
+    equation = sp.sympify(equation_str, locals=symbols)
+    
+    # Keep substituting until no more substitutions are needed
+    changed = True
+    while changed:
+        changed = False
+        for token, expr in tokenized_rates_expr.items():
+            new_equation = equation.subs(symbols[token], expr)
+            if new_equation != equation:
+                changed = True
+                equation = new_equation
+
+    # Simplify the resulting expression
+    simplified_expression = sp.simplify(equation)
+    
+    return simplified_expression
 
 counted = """
 WITH ReactantCounts AS (
@@ -61,6 +80,9 @@ def group_reactions_by_rate_type(reactions):
   tokenized = []
   photolysis = []
   for reaction in reactions:
+    elements = list(reaction)
+    elements[1] = elements[1].replace('D', 'E').replace('@', '**')
+    reaction = tuple(elements)
     if reaction[2] is None:
       null.append(reaction)
     elif reaction[2] == 'Tokenized':
@@ -88,6 +110,19 @@ def convert_tokenized_rates(rates, tokenized_rates):
   #   print()
   # print(tokenized_rates)
 
+  symbols = list(tokenized_rates.keys())
+  symbols.extend(['TEMP', 'RO2', 'HO2', 'M', 'O2', 'NO', 'NO3'])
+  symbols = {var: sp.symbols(var) for var in symbols}
+  tokenized_rates_expr = {key: sp.sympify(val, locals=symbols) for key, val in tokenized_rates.items()}
+
+  table = []
+  for rate in rates[:10]:
+    exp = parse_and_simplify(rate[1], symbols, tokenized_rates_expr)
+    table.append((rate[1], exp))
+  print()
+  print(tabulate(table, headers=['Token', 'Simplified Expression'], tablefmt='github'))
+
+  
   # this will match all of the tokens, 
   # but also EXP and TEMP. So if you use it, filter out the ones you don't want
   tokens = r'\b[A-Z]+[A-Z0-9]*\b'
@@ -159,7 +194,7 @@ def translate_mcm():
     } for i in photolysis_parameters
   }
   tokenized_rates = get_all(cursor, statements["tokenized_rates"])
-  tokenized_rates = {i[0]: i[1] for i in tokenized_rates}
+  tokenized_rates = {i[0]: i[1].replace('D', 'E').replace('@', '**') for i in tokenized_rates}
 
   (null, tokenized, photolysis) = group_reactions_by_rate_type(reactions)
   tokenized = convert_tokenized_rates(tokenized, tokenized_rates)
