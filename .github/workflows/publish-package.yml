@@ -31,21 +31,19 @@ jobs:
 
     - name: Update version in __init__.py
       run: |
-        branch_name="version-bump-${{ env.next_dev_version }}"
-        echo "branch_name=$branch_name" >> $GITHUB_ENV
-        git checkout -b $branch_name
+        git checkout -b version_bump
         sed -i "s/__version__ = .*/__version__ = \"$next_dev_version\"/" src/acom_music_box/__init__.py
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Actions"
         git add src/acom_music_box/__init__.py
         git commit -m "Bump version to ${{ env.next_dev_version }}"
-        git push origin HEAD:$branch_name
+        git push origin HEAD:version_bump
 
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v6
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        branch: $branch_name
+        branch: version_bump
         title: "Version Bump to ${{ env.next_dev_version }}"
         body: "Automatically bumped version to ${{ env.next_dev_version }}."
         base: main
