@@ -11,6 +11,7 @@ jobs:
   determine_version:
     name: Determine Next Dev Version
     runs-on: ubuntu-latest
+    if: github.event_name != 'release'
     steps:
     - uses: actions/checkout@v4
 
@@ -23,10 +24,33 @@ jobs:
           dev_number=$(echo $current_version | grep -oP '\.dev\K[0-9]+')
           next_dev_version="$base_version.dev$((dev_number+1))"
         else
-          next_dev_version="$current_version.dev1"
+          next_dev_version="$current_version.dev0"
         fi
         echo "Next dev version: $next_dev_version"
         echo "next_dev_version=$next_dev_version" >> $GITHUB_ENV
+
+    - name: Create new branch
+      run: |
+        branch_name="version-bump-${{ env.next_dev_version }}"
+        git checkout -b $branch_name
+
+    - name: Update version in __init__.py
+      run: |
+        sed -i "s/__version__ = .*/__version__ = \"$next_dev_version\"/" src/acom_music_box/__init__.py
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Actions"
+        git add src/acom_music_box/__init__.py
+        git commit -m "Bump version to ${{ env.next_dev_version }}"
+        git push origin HEAD:$branch_name
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: $branch_name
+        title: "Version Bump to ${{ env.next_dev_version }}"
+        body: "Automatically bumped version to ${{ env.next_dev_version }}."
+        base: main
 
   # build_sdist:
   #   name: Build
