@@ -39,12 +39,13 @@ jobs:
         git add src/acom_music_box/__init__.py
         git commit -m "Bump version to ${{ env.next_dev_version }}"
         git push origin HEAD:$unique_branch_name
+        echo "branch_name=$unique_branch_name" >> $GITHUB_ENV
 
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v6
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        branch: ${{ steps.update_version.outputs.unique_branch_name }}
+        branch: ${{ env.branch_name }}
         title: "Version Bump to ${{ env.next_dev_version }}"
         body: "Automatically bumped version to ${{ env.next_dev_version }}."
         base: main
