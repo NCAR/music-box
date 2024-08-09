@@ -406,7 +406,7 @@ class MusicBox:
 
         return json.dumps(reactionsJson, indent=4)
     
-    def create_solver(self, path_to_config):
+    def create_solver(self, path_to_config, solver_type = musica.micmsolver.rosenbrock, number_of_grid_cells = 1):
         """
         Creates a micm solver object using the CAMP configuration files.
 
@@ -417,10 +417,10 @@ class MusicBox:
             None
         """
         # Create a solver object using the configuration file
-        self.solver = musica.create_solver(path_to_config)
+        self.solver = musica.create_solver(path_to_config, musica.micmsolver.rosenbrock, number_of_grid_cells)
 
 
-    def solve(self, path_to_output = None):
+    def solve(self, output_path = None):
         """
         Solves the box model simulation and optionally writes the output to a file.
 
@@ -439,9 +439,6 @@ class MusicBox:
        
         #sets up initial conditions to be current conditions
         curr_conditions = self.initial_conditions
-
-        #sets up initial concentraion values
-        curr_concentrations = self.initial_conditions.get_concentration_array()
 
         #sets up next condition if evolving conditions is not empty
         next_conditions = None
@@ -528,9 +525,9 @@ class MusicBox:
             GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT
             air_density = curr_conditions.pressure / (GAS_CONSTANT * curr_conditions.temperature) 
 
-            #updates M accordingly
-            if 'M' in species_constant_ordering:
-                ordered_concentrations[species_constant_ordering['M']] = air_density
+            # #updates M accordingly
+            # if 'M' in species_constant_ordering:
+            #     ordered_concentrations[species_constant_ordering['M']] = air_density
 
             #solves and updates concentration values in concentration array
             if (not ordered_concentrations):
@@ -544,9 +541,9 @@ class MusicBox:
             curr_time += self.box_model_options.chem_step_time  
             
         #outputs to file if output is present
-        if(path_to_output != None):
-            logger.info("path_to_output = {}".format(path_to_output))
-            with open(path_to_output, 'w', newline='') as output:
+        if(output_path != None):
+            logger.info("path_to_output = {}".format(output_path))
+            with open(output_path, 'w', newline='') as output:
                 writer = csv.writer(output)
                 writer.writerows(output_array)
 
