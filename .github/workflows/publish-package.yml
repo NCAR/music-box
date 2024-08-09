@@ -1,35 +1,49 @@
-name: Publish a pypi package
+name: Publish Python Package
 
 on:
+  workflow_dispatch:
   release:
-    types: [created]
+    types:
+      - published
 
 jobs:
-  publish_to_pypi:
+  build_sdist:
+    name: Build
     runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build SDist and Wheel
+      run: pipx run build --sdist --wheel
+
+    - name: Check metadata
+      run: pipx run twine check dist/*
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: cibw-sdist
+        path: dist/*
+
+  upload_all:
+    name: Upload release
+    needs: [build_sdist]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/acom_music_box
     permissions:
-      contents: read
-      packages: write
+      id-token: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: cibw-*
+        path: dist
+        merge-multiple: true
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Build and publish package
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          pipx run build
-          pipx run twine check dist/*
-          python -m twine upload --repository pypi dist/*
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
