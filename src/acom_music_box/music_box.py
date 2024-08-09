@@ -525,10 +525,6 @@ class MusicBox:
             GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT
             air_density = curr_conditions.pressure / (GAS_CONSTANT * curr_conditions.temperature) 
 
-            # #updates M accordingly
-            # if 'M' in species_constant_ordering:
-            #     ordered_concentrations[species_constant_ordering['M']] = air_density
-
             #solves and updates concentration values in concentration array
             if (not ordered_concentrations):
                 logger.info("Warning: ordered_concentrations list is empty.")
