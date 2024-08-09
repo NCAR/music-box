@@ -2,102 +2,48 @@ name: Publish Python Package
 
 on:
   workflow_dispatch:
-  push:
   release:
     types:
       - published
 
 jobs:
-  determine_version:
-    name: Determine Next Dev Version
+  build_sdist:
+    name: Build
     runs-on: ubuntu-latest
-    if: github.event_name != 'release'
     steps:
     - uses: actions/checkout@v4
 
-    - name: Determine next dev version
-      id: dev_version
-      run: |
-        current_version=$(grep '__version__' src/acom_music_box/__init__.py | awk -F'"' '{print $2}')
-        if [[ "$current_version" == *".dev"* ]]; then
-          base_version=$(echo $current_version | sed 's/\.dev[0-9]*//')
-          dev_number=$(echo $current_version | grep -oP '\.dev\K[0-9]+')
-          next_dev_version="$base_version.dev$((dev_number+1))"
-        else
-          next_dev_version="$current_version.dev0"
-        fi
-        echo "Next dev version: $next_dev_version"
-        echo "next_dev_version=$next_dev_version" >> $GITHUB_ENV
+    - name: Build SDist and Wheel
+      run: pipx run build --sdist --wheel
 
-    - name: Update version in __init__.py
-      id: update_version
-      run: |
-        unique_branch_name="version_bump_$(date +%s)"
-        git checkout -b $unique_branch_name
-        sed -i "s/__version__ = .*/__version__ = \"$next_dev_version\"/" src/acom_music_box/__init__.py
-        git status
-        git diff
-        git config --local user.email "actions@github.com"
-        git config --local user.name "GitHub Actions"
-        git add src/acom_music_box/__init__.py
-        git commit -m "Bump version to ${{ env.next_dev_version }}"
-        git push --force origin HEAD:$unique_branch_name
-        echo "branch_name=$unique_branch_name" >> $GITHUB_ENV
+    - name: Check metadata
+      run: pipx run twine check dist/*
 
-    - name: Check branch existence
-      run: git branch -a
-
-    - name: List recent commits
-      run: git log --oneline -n 10
-
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v6
+    - uses: actions/upload-artifact@v4
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        branch: ${{ env.branch_name }}
-        title: "Version Bump to ${{ env.next_dev_version }}"
-        body: "Automatically bumped version to ${{ env.next_dev_version }}."
-        base: main
+        name: cibw-sdist
+        path: dist/*
 
-  # build_sdist:
-  #   name: Build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #     with:
-  #       submodules: true
+  upload_all:
+    name: Upload release
+    needs: [build_sdist]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/acom_music_box
+    permissions:
+      id-token: write
 
-  #   - name: Build SDist and Wheel
-  #     run: pipx run build --sdist --wheel
+    steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
 
-  #   - name: Check metadata
-  #     run: pipx run twine check dist/*
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: cibw-*
+        path: dist
+        merge-multiple: true
 
-  #   - uses: actions/upload-artifact@v4
-  #     with:
-  #       name: cibw-sdist
-  #       path: dist/*
-
-  # upload_all:
-  #   name: Upload release
-  #   needs: [build_sdist]
-  #   runs-on: ubuntu-latest
-  #   environment:
-  #     name: pypi
-  #     url: https://pypi.org/p/acom_music_box
-  #   permissions:
-  #     id-token: write
-
-  #   steps:
-  #   - uses: actions/setup-python@v5
-  #     with:
-  #       python-version: "3.x"
-
-  #   - uses: actions/download-artifact@v4
-  #     with:
-  #       pattern: cibw-*
-  #       path: dist
-  #       merge-multiple: true
-
-  #   - name: Publish package distributions to PyPI
-  #     uses: pypa/gh-action-pypi-publish@release/v1
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
