@@ -1,9 +1,9 @@
 import os
 import json
 from typing import List
-from .music_box_reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
-from .music_box_reactant import Reactant
-from .music_box_product import Product
+from reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
+from reactant import Reactant
+from product import Product
 
 class ReactionList:
     """
