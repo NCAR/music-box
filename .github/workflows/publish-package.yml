@@ -29,13 +29,10 @@ jobs:
         echo "Next dev version: $next_dev_version"
         echo "next_dev_version=$next_dev_version" >> $GITHUB_ENV
 
-    - name: Create new branch
+    - name: Update version in __init__.py
       run: |
         branch_name="version-bump-${{ env.next_dev_version }}"
         git checkout -b $branch_name
-
-    - name: Update version in __init__.py
-      run: |
         sed -i "s/__version__ = .*/__version__ = \"$next_dev_version\"/" src/acom_music_box/__init__.py
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Actions"
