@@ -30,7 +30,7 @@ jobs:
       run: pip install -e .
     
     - name: Run pytest
-      run: pytest tests
+      run: cd tests && pytest
     
     - name: Run the smoke tests
       run: |
