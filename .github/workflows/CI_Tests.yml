@@ -22,10 +22,15 @@ jobs:
         cache: 'pip' 
 
     - name: Install dependencies
-      run: python -m pip install --upgrade pip
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
     - name: Install this package
       run: pip install -e .
+    
+    - name: Run pytest
+      run: cd tests && pytest
     
     - name: Run the smoke tests
       run: |

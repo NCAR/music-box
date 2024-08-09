@@ -22,6 +22,7 @@ class SpeciesList:
         """
         self.species = species if species is not None else []
         self.relative_tolerance = relative_tolerance
+        self.tracer_type = None
 
     @classmethod
     def from_UI_JSON(cls, UI_JSON):
@@ -62,7 +63,7 @@ class SpeciesList:
         species_from_json = []
 
         #gets config file path
-        config_file_path = os.path.dirname(path_to_json) + "/" + config_JSON['model components'][0]['configuration file']
+        config_file_path = os.path.join(os.path.dirname(path_to_json), config_JSON['model components'][0]['configuration file'])
 
         #opnens config path to read species file
         with open(config_file_path, 'r') as json_file:
@@ -74,28 +75,16 @@ class SpeciesList:
                 with open(species_file_path, 'r') as species_file:
                     species_data = json.load(species_file)
                     #loads species by names from camp files
-                    for properties in species_data['camp-data']:
-                        if properties.get('name') is not None:
-                            name = properties.get('name')
-                            species_from_json.append(Species(name, None, None, None, None))
-
-
-        #chceks if species are in the config file and updates attributes accordingly
-        for chem_spec in config_JSON['chemical species']:
-            for species in species_from_json:
-                if species.name == chem_spec:
-                    # Add attributes to species
-                    if 'absolute tolerance' in chem_spec:
-                        species.absolute_tolerance = chem_spec['absolute tolerance']
-                    if 'molecular weight' in chem_spec:
-                        species.molecular_weight = chem_spec['molecular weight']
-                    if 'density' in chem_spec:
-                        species.density = chem_spec['density']
-                    if 'phase' in chem_spec:
-                        species.phase = chem_spec['phase']
+                    for species in species_data['camp-data']:
+                        if species['type'] == 'CHEM_SPEC':
+                            tolerance = species.get('absolute tolerance', None)
+                            molecular_weight = species.get('molecular weight [kg mol-1]', None)
+                            phase = species.get('phase', None)
+                            diffusion_coefficient = species.get('diffusion coefficient [m2 s-1]', None)
+                            tracer_type = species.get('tracer type', None)
+                            name = species.get('name')
+                            species_from_json.append(Species(name=name, absolute_tolerance=tolerance, molecular_weight=molecular_weight, phase=phase, diffusion_coefficient=diffusion_coefficient, tracer_type=tracer_type))
                     
-
-
         return cls(species_from_json)
 
 

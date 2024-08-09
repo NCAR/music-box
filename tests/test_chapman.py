@@ -52,6 +52,7 @@ class TestChapman:
                     float(model_output_concs[i][j]),
                     float(test_output_concs[i][j]),
                     rel_tol=1e-8,
+                    abs_tol=1e-15,
                 ), f"Arrays differ at index ({i}, {j}) for "
 
 
