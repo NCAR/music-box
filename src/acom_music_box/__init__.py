@@ -1,7 +1,7 @@
 """
 This is the music_box package.
 
-This package contains modules for handling various aspects of a music box, 
+This package contains modules for handling various aspects of a music box,
 including species, products, reactants, reactions, and more.
 """
 __version__ = "2.1.1"
@@ -19,4 +19,3 @@ from .music_box_conditions import Conditions
 
 from .music_box_evolving_conditions import EvolvingConditions
 from .music_box import MusicBox
-

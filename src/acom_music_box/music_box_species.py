@@ -10,7 +10,13 @@ class Species:
         density (float): The density of the species in kg m^-3.
     """
 
-    def __init__(self, name=None, absolute_tolerance=None, phase=None, molecular_weight=None, density=None):
+    def __init__(
+            self,
+            name=None,
+            absolute_tolerance=None,
+            phase=None,
+            molecular_weight=None,
+            density=None):
         """
         Initializes a new instance of the Species class.
 
@@ -25,4 +31,4 @@ class Species:
         self.absolute_tolerance = absolute_tolerance
         self.phase = phase
         self.molecular_weight = molecular_weight
-        self.density = density 
+        self.density = density

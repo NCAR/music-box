@@ -93,8 +93,10 @@ class TestFullGassPhaseMechanism:
         model_output_header = model_output[0]
         test_output_header = test_output[0]
 
-        output_indices = [model_output_header.index(conc) for conc in concs_to_test]
-        test_output_indices = [test_output_header.index(conc) for conc in concs_to_test]
+        output_indices = [model_output_header.index(
+            conc) for conc in concs_to_test]
+        test_output_indices = [
+            test_output_header.index(conc) for conc in concs_to_test]
 
         model_output_concs = [
             [row[i] for i in output_indices] for row in model_output[1:]
