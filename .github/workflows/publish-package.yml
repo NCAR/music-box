@@ -33,6 +33,7 @@ jobs:
       run: |
         git checkout -b version_bump
         sed -i "s/__version__ = .*/__version__ = \"$next_dev_version\"/" src/acom_music_box/__init__.py
+        git diff
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Actions"
         git add src/acom_music_box/__init__.py
