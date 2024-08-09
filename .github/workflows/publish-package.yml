@@ -29,7 +29,7 @@ jobs:
 
   upload_all:
     name: Upload release
-    needs: [build_wheels, build_sdist]
+    needs: [build_sdist]
     runs-on: ubuntu-latest
     environment:
       name: pypi
