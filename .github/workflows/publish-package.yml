@@ -32,6 +32,7 @@ jobs:
     - name: Update version in __init__.py
       run: |
         branch_name="version-bump-${{ env.next_dev_version }}"
+        echo "branch_name=$branch_name" >> $GITHUB_ENV
         git checkout -b $branch_name
         sed -i "s/__version__ = .*/__version__ = \"$next_dev_version\"/" src/acom_music_box/__init__.py
         git config --local user.email "actions@github.com"
