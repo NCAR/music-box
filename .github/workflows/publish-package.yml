@@ -27,40 +27,6 @@ jobs:
         name: cibw-sdist
         path: dist/*.tar.gz
 
-  build_wheels:
-    name: Build wheels on ${{ matrix.os }} with Python ${{ matrix.python-version }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.12"]
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: true
-
-    - uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - uses: pypa/cibuildwheel@v2.17
-      env:
-        CIBW_ARCHS_MACOS: arm64 x86_64
-        CIBW_SKIP: cp27-* cp34-* cp35-* cp36-* *musllinux*
-        CIBW_BUILD: cp37-* cp38-* cp39-* cp310-* cp311-* cp312-*
-
-    - name: Verify clean directory
-      run: git diff --exit-code
-      shell: bash
-
-    - name: Upload wheels
-      uses: actions/upload-artifact@v4
-      with:
-        name: cibw-wheels-${{ matrix.os }}-py${{ matrix.python-version }}
-        path: wheelhouse/*.whl
-
   upload_all:
     name: Upload release
     needs: [build_wheels, build_sdist]
