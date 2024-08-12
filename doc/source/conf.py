@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'acom_music_box'
+project = 'Music Box'
 copyright = f'2024-{datetime.datetime.now().year}, NCAR/UCAR'
 author = 'NCAR/UCAR'
 
@@ -42,3 +42,5 @@ html_theme_options = {
     "pygment_light_style": "tango",
     "pygment_dark_style": "monokai"
 }
+
+html_favicon = '_static/favicon.png'
