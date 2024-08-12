@@ -1,5 +1,5 @@
-acom\_music\_box package
-========================
+MusicBox
+========
 
 Submodules
 ----------
