@@ -5,6 +5,9 @@ from .music_box_reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_T
 from .music_box_reactant import Reactant
 from .music_box_product import Product
 
+import logging
+logger = logging.getLogger(__name__)
+
 class ReactionList:
     """
     Represents a list of chemical reactions.
@@ -114,12 +117,14 @@ class ReactionList:
         """
         reactants = []
 
-        for reactant, reactant_info in reaction['reactants'].items():
-            match = filter(lambda x: x.name == reactant, species_list.species)
-            species = next(match, None)
-            quantity = reactant_info['qty'] if 'qty' in reactant_info else None
+        if ('reactants' in reaction.keys()):
+            for reactant, reactant_info in reaction['reactants'].items():
+                match = filter(lambda x: x.name == reactant, species_list.species)
+                species = next(match, None)
+                #logger.info("reactant = {}   species = {}".format(reactant, species))
+                quantity = reactant_info['qty'] if 'qty' in reactant_info else None
 
-            reactants.append(Reactant(species, quantity))
+                reactants.append(Reactant(species, quantity))
         return reactants
     
     @classmethod
