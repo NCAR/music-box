@@ -121,7 +121,6 @@ class ReactionList:
             for reactant, reactant_info in reaction['reactants'].items():
                 match = filter(lambda x: x.name == reactant, species_list.species)
                 species = next(match, None)
-                #logger.info("reactant = {}   species = {}".format(reactant, species))
                 quantity = reactant_info['qty'] if 'qty' in reactant_info else None
 
                 reactants.append(Reactant(species, quantity))
