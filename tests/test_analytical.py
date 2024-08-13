@@ -11,9 +11,6 @@ class TestAnalytical:
         conditions_path = "configs/analytical_config/my_config.json"
         camp_path = "configs/analytical_config/camp_data"
 
-        # conditions_path = "./src/configs/UI_test/UI_test_config.json"
-        # camp_path = "./src/configs/UI_test/camp_data"
-
         box_model.readConditionsFromJson(conditions_path)
         box_model.create_solver(camp_path)
 
