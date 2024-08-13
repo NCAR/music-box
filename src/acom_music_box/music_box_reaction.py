@@ -1,5 +1,6 @@
 from typing import List
 
+
 class Reaction:
     """
     Represents a chemical reaction with attributes such as name, type, reactants, and products.
@@ -12,7 +13,13 @@ class Reaction:
         scaling_factor (float, optional): A scaling factor for the reaction rate. Defaults to None.
     """
 
-    def __init__(self, name=None, reaction_type=None, reactants=None, products=None, scaling_factor=None):
+    def __init__(
+            self,
+            name=None,
+            reaction_type=None,
+            reactants=None,
+            products=None,
+            scaling_factor=None):
         """
         Initializes a new instance of the Reaction class.
 
@@ -31,7 +38,7 @@ class Reaction:
 
     def __str__(self):
         return f"{self.name}: {self.reaction_type}"
-    
+
     def __repr__(self):
         return f"{self.name}: {self.reaction_type}"
 
@@ -53,14 +60,25 @@ class Reaction:
         """
         self.products.append(product)
 
+
 class Branched(Reaction):
-       
-    def __init__(self, name=None, reaction_type=None, reactants=None, alkoxy_products=None, nitrate_products=None, X=None, Y=None, a0=None, n=None):
+
+    def __init__(
+            self,
+            name=None,
+            reaction_type=None,
+            reactants=None,
+            alkoxy_products=None,
+            nitrate_products=None,
+            X=None,
+            Y=None,
+            a0=None,
+            n=None):
         """
         Initializes an instance of the Branched class.
 
-        This method initializes an instance of the Branched class with optional parameters for name, 
-        reaction type, reactants, alkoxy products, nitrate products, X, Y, a0, and n. If these parameters 
+        This method initializes an instance of the Branched class with optional parameters for name,
+        reaction type, reactants, alkoxy products, nitrate products, X, Y, a0, and n. If these parameters
         are not provided, they will be set to None.
 
         Args:
@@ -74,8 +92,13 @@ class Branched(Reaction):
             a0 (float, optional): A parameter related to the reaction. Defaults to None.
             n (float, optional): A parameter related to the reaction. Defaults to None.
         """
-            
-        super().__init__(name, reaction_type, reactants, alkoxy_products + nitrate_products)
+
+        super().__init__(
+            name,
+            reaction_type,
+            reactants,
+            alkoxy_products +
+            nitrate_products)
         self.X = X
         self.Y = Y
         self.a0 = a0
@@ -83,13 +106,24 @@ class Branched(Reaction):
         self.alkoxy_products = alkoxy_products
         self.nitrate_products = nitrate_products
 
+
 class Arrhenius(Reaction):
-    def __init__(self, name=None, reaction_type=None, reactants=None, products=None, A=None, B=None, D=None, E=None, Ea=None):
+    def __init__(
+            self,
+            name=None,
+            reaction_type=None,
+            reactants=None,
+            products=None,
+            A=None,
+            B=None,
+            D=None,
+            E=None,
+            Ea=None):
         """
         Initializes an instance of the Arrhenius class.
 
-        This method initializes an instance of the Arrhenius class with optional parameters for name, 
-        reaction type, reactants, products, and Arrhenius parameters A, B, D, E, Ea. If these parameters 
+        This method initializes an instance of the Arrhenius class with optional parameters for name,
+        reaction type, reactants, products, and Arrhenius parameters A, B, D, E, Ea. If these parameters
         are not provided, they will be set to None.
 
         Args:
@@ -110,13 +144,22 @@ class Arrhenius(Reaction):
         self.E = E
         self.Ea = Ea
 
+
 class Tunneling(Reaction):
-    def __init__(self, name=None, reaction_type=None, reactants=None, products=None, A=None, B=None, C=None):
+    def __init__(
+            self,
+            name=None,
+            reaction_type=None,
+            reactants=None,
+            products=None,
+            A=None,
+            B=None,
+            C=None):
         """
         Initializes an instance of the Tunneling class.
 
-        This method initializes an instance of the Tunneling class with optional parameters for name, 
-        reaction type, reactants, products, and Tunneling parameters A, B, C. If these parameters 
+        This method initializes an instance of the Tunneling class with optional parameters for name,
+        reaction type, reactants, products, and Tunneling parameters A, B, C. If these parameters
         are not provided, they will be set to None.
 
         Args:
@@ -133,13 +176,27 @@ class Tunneling(Reaction):
         self.B = B
         self.C = C
 
+
 class Troe_Ternary(Reaction):
-    def __init__(self, name=None, reaction_type=None, reactants=None, products=None, k0_A=None, k0_B=None, k0_C=None, kinf_A=None, kinf_B=None, kinf_C=None, Fc=None, N=None):
+    def __init__(
+            self,
+            name=None,
+            reaction_type=None,
+            reactants=None,
+            products=None,
+            k0_A=None,
+            k0_B=None,
+            k0_C=None,
+            kinf_A=None,
+            kinf_B=None,
+            kinf_C=None,
+            Fc=None,
+            N=None):
         """
         Initializes an instance of the Troe_Ternary class.
 
-        This method initializes an instance of the Troe_Ternary class with optional parameters for name, 
-        reaction type, reactants, products, and Troe_Ternary parameters k0_A, k0_B, k0_C, kinf_A, kinf_B, 
+        This method initializes an instance of the Troe_Ternary class with optional parameters for name,
+        reaction type, reactants, products, and Troe_Ternary parameters k0_A, k0_B, k0_C, kinf_A, kinf_B,
         kinf_C, Fc, N. If these parameters are not provided, they will be set to None.
 
         Args:

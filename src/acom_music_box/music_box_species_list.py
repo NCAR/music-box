@@ -3,6 +3,7 @@ import os
 from typing import List
 from .music_box_species import Species
 
+
 class SpeciesList:
     """
     Represents a list of species with a relative tolerance.
@@ -44,10 +45,16 @@ class SpeciesList:
 
             # TODO: Add phase and density to species
 
-            species_from_json.append(Species(name, absolute_tolerance, None, molecular_weight, None))
-        
+            species_from_json.append(
+                Species(
+                    name,
+                    absolute_tolerance,
+                    None,
+                    molecular_weight,
+                    None))
+
         return cls(species_from_json)
-    
+
     @classmethod
     def from_config_JSON(cls, path_to_json, config_JSON):
         """
@@ -62,31 +69,42 @@ class SpeciesList:
 
         species_from_json = []
 
-        #gets config file path
-        config_file_path = os.path.join(os.path.dirname(path_to_json), config_JSON['model components'][0]['configuration file'])
+        # gets config file path
+        config_file_path = os.path.join(
+            os.path.dirname(path_to_json),
+            config_JSON['model components'][0]['configuration file'])
 
-        #opnens config path to read species file
+        # opnens config path to read species file
         with open(config_file_path, 'r') as json_file:
             config = json.load(json_file)
 
-            #assumes species file is first in the list
-            if(len(config['camp-files']) > 0):
-                species_file_path = os.path.dirname(config_file_path) + "/" + config['camp-files'][0]
+            # assumes species file is first in the list
+            if (len(config['camp-files']) > 0):
+                species_file_path = os.path.dirname(
+                    config_file_path) + "/" + config['camp-files'][0]
                 with open(species_file_path, 'r') as species_file:
                     species_data = json.load(species_file)
-                    #loads species by names from camp files
+                    # loads species by names from camp files
                     for species in species_data['camp-data']:
                         if species['type'] == 'CHEM_SPEC':
                             tolerance = species.get('absolute tolerance', None)
-                            molecular_weight = species.get('molecular weight [kg mol-1]', None)
+                            molecular_weight = species.get(
+                                'molecular weight [kg mol-1]', None)
                             phase = species.get('phase', None)
-                            diffusion_coefficient = species.get('diffusion coefficient [m2 s-1]', None)
+                            diffusion_coefficient = species.get(
+                                'diffusion coefficient [m2 s-1]', None)
                             tracer_type = species.get('tracer type', None)
                             name = species.get('name')
-                            species_from_json.append(Species(name=name, absolute_tolerance=tolerance, molecular_weight=molecular_weight, phase=phase, diffusion_coefficient=diffusion_coefficient, tracer_type=tracer_type))
-                    
-        return cls(species_from_json)
+                            species_from_json.append(
+                                Species(
+                                    name=name,
+                                    absolute_tolerance=tolerance,
+                                    molecular_weight=molecular_weight,
+                                    phase=phase,
+                                    diffusion_coefficient=diffusion_coefficient,
+                                    tracer_type=tracer_type))
 
+        return cls(species_from_json)
 
     def add_species(self, species):
         """
