@@ -1,9 +1,9 @@
 import csv
 import os
 from typing import List
-from reaction_rate import ReactionRate
-from species import Species
-from species_concentration import SpeciesConcentration
+from .reaction_rate import ReactionRate
+from .species import Species
+from .species_concentration import SpeciesConcentration
 from .utils import convert_time, convert_pressure, convert_temperature, convert_concentration
 
 

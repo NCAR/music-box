@@ -1,9 +1,9 @@
 import os
 import json
 from typing import List
-from reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
-from reactant import Reactant
-from product import Product
+from .reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
+from .reactant import Reactant
+from .product import Product
 
 class ReactionList:
     """

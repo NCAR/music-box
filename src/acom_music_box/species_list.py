@@ -1,7 +1,7 @@
 import json
 import os
 from typing import List
-from species import Species
+from .species import Species
 
 class SpeciesList:
     """

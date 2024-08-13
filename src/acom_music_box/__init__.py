@@ -7,16 +7,16 @@ including species, products, reactants, reactions, and more.
 __version__ = "2.1.5"
 
 from .utils import convert_time, convert_pressure, convert_temperature, convert_concentration
-from species import Species
-from product import Product
-from reactant import Reactant
-from reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
-from species_list import SpeciesList
-from model_options import BoxModelOptions
-from species_concentration import SpeciesConcentration
-from reaction_rate import ReactionRate
-from conditions import Conditions
+from .species import Species
+from .product import Product
+from .reactant import Reactant
+from .reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
+from .species_list import SpeciesList
+from .model_options import BoxModelOptions
+from .species_concentration import SpeciesConcentration
+from .reaction_rate import ReactionRate
+from .conditions import Conditions
 
-from evolving_conditions import EvolvingConditions
+from .evolving_conditions import EvolvingConditions
 from .music_box import MusicBox
 
