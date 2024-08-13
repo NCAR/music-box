@@ -1,7 +1,12 @@
 # Build and deploy documentation to GitHub Pages
 name: GitHub Pages
 
-on: [ push, pull_request ]
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
 
 env:
   DEFAULT_BRANCH: "release"
