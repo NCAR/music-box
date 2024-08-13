@@ -1,5 +1,9 @@
 import csv
 import os
+
+import logging
+logger = logging.getLogger(__name__)
+
 from typing import List
 from .music_box_reaction_rate import ReactionRate
 from .music_box_species import Species
@@ -129,9 +133,10 @@ class Conditions:
                 species_concentrations.append(SpeciesConcentration(species, 0)) 
 
         # Set initial reaction rates
-
         for reaction in reaction_list.reactions:
-            if reaction.name != None and not any(reac.reaction.name == reaction.name for reac in reaction_rates):
+            if (reaction.name is None):
+                continue
+            if not any(rate.reaction.name == reaction.name for rate in reaction_rates):
                 reaction_rates.append(ReactionRate(reaction, 0)) 
 
         
