@@ -38,6 +38,12 @@ class Conditions:
         self.temperature = temperature
         self.species_concentrations = species_concentrations if species_concentrations is not None else []
         self.reaction_rates = reaction_rates if reaction_rates is not None else []
+    
+    def __repr__(self):
+        return f"Conditions(pressure={self.pressure}, temperature={self.temperature}, species_concentrations={self.species_concentrations}, reaction_rates={self.reaction_rates})"
+    
+    def __str__(self):
+        return f"Pressure: {self.pressure}, Temperature: {self.temperature}, Species Concentrations: {self.species_concentrations}, Reaction Rates: {self.reaction_rates}"
 
     @classmethod
     def from_UI_JSON(cls, UI_JSON, species_list, reaction_list):
@@ -129,6 +135,8 @@ class Conditions:
                 species_concentrations.append(SpeciesConcentration(species, concentration))
         
         for species in species_list.species:
+            if species.tracer_type == 'THIRD_BODY':
+                continue
             if not any(conc.species.name == species.name for conc in species_concentrations):
                 species_concentrations.append(SpeciesConcentration(species, 0)) 
 
