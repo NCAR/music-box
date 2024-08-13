@@ -18,4 +18,3 @@ class Reactant:
         self.name = species.name
         self.species = species
         self.quantity = quantity
-
