@@ -9,7 +9,14 @@ class Species:
         molecular_weight (float): The molecular weight of the species in kg mol^-1.
     """
 
-    def __init__(self, name=None, absolute_tolerance=None, phase=None, molecular_weight=None, tracer_type=None, diffusion_coefficient=None):
+    def __init__(
+            self,
+            name=None,
+            absolute_tolerance=None,
+            phase=None,
+            molecular_weight=None,
+            tracer_type=None,
+            diffusion_coefficient=None):
         """
         Initializes a new instance of the Species class.
 
@@ -27,11 +34,12 @@ class Species:
         self.molecular_weight = molecular_weight
         self.tracer_type = tracer_type
         self.diffusion_coefficient = diffusion_coefficient
-    
+
     def __repr__(self):
-        return (f"Species(name={self.name!r}, absolute_tolerance={self.absolute_tolerance!r}, "
-                f"phase={self.phase!r}, molecular_weight={self.molecular_weight!r}, "
-                f"tracer_type={self.tracer_type!r}, diffusion_coefficient={self.diffusion_coefficient!r})")
+        return (
+            f"Species(name={self.name!r}, absolute_tolerance={self.absolute_tolerance!r}, "
+            f"phase={self.phase!r}, molecular_weight={self.molecular_weight!r}, "
+            f"tracer_type={self.tracer_type!r}, diffusion_coefficient={self.diffusion_coefficient!r})")
 
     def __str__(self):
         return (f"Species: {self.name}, Phase: {self.phase}, "

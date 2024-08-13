@@ -1,3 +1,5 @@
+import os
+import argparse
 from acom_music_box import MusicBox
 
 
@@ -7,10 +9,6 @@ import sys
 
 import logging
 logger = logging.getLogger(__name__)
-
-import argparse
-import os
-
 
 
 # configure argparse for key-value pairs
@@ -25,8 +23,11 @@ class KeyValueAction(argparse.Action):
 # argPairs = list of arguments, probably from sys.argv[1:]
 #       named arguments are formatted like this=3.14159
 # return dictionary of keywords and values
+
+
 def getArgsDictionary(argPairs):
-    parser = argparse.ArgumentParser(description='Process some key=value pairs.')
+    parser = argparse.ArgumentParser(
+        description='Process some key=value pairs.')
     parser.add_argument(
         'key_value_pairs',
         nargs='+',  # This means one or more arguments are expected
@@ -36,18 +37,17 @@ def getArgsDictionary(argPairs):
 
     argDict = vars(parser.parse_args(argPairs))      # return dictionary
 
-    return(argDict)
-
+    return (argDict)
 
 
 def main():
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     logger.info("{}".format(__file__))
     logger.info("Start time: {}".format(datetime.datetime.now()))
-    
+
     logger.info("Hello, MusicBox World!")
     logger.info("Working directory = {}".format(os.getcwd()))
-    
+
     # retrieve and parse the command-line arguments
     myArgs = getArgsDictionary(sys.argv[1:])
     logger.info("Command line = {}".format(myArgs))
@@ -65,17 +65,24 @@ def main():
     # check for required arguments and provide examples
     if (musicBoxConfigFile is None):
         errorString = "Error: The configFile parameter is required."
-        errorString += (" Example: configFile={}"
-            .format(os.path.join("tests", "configs", "analytical_config", "my_config.json")))
+        errorString += (
+            " Example: configFile={}" .format(
+                os.path.join(
+                    "tests",
+                    "configs",
+                    "analytical_config",
+                    "my_config.json")))
         raise Exception(errorString)
-                
+
     # create and load a MusicBox object
     myBox = MusicBox()
     myBox.readConditionsFromJson(musicBoxConfigFile)
     logger.info("myBox = {}".format(myBox))
 
     # create solver and solve, writing output to requested directory
-    campConfig = os.path.join(os.path.dirname(musicBoxConfigFile), myBox.config_file)
+    campConfig = os.path.join(
+        os.path.dirname(musicBoxConfigFile),
+        myBox.config_file)
     logger.info("CAMP config = {}".format(campConfig))
     myBox.create_solver(campConfig)
     logger.info("myBox.solver = {}".format(myBox.solver))

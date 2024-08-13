@@ -20,6 +20,6 @@ class ReactionRate:
 
     def __str__(self):
         return f"{self.reaction.name}: {self.rate}"
-    
+
     def __repr__(self):
         return f"{self.reaction.name}: {self.rate}"
