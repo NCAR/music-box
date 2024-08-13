@@ -1,4 +1,4 @@
-musica==0.7.0
+musica==0.7.3
 pandas
 pipx
 pytest
