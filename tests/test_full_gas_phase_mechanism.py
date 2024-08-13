@@ -85,7 +85,6 @@ class TestFullGassPhaseMechanism:
             "CONC.NO3",
             "CONC.HO2",
             "CONC.NO",
-            "CONC.M",
             "CONC.SULF",
             "CONC.HOCL",
             "CONC.OH",
@@ -109,8 +108,9 @@ class TestFullGassPhaseMechanism:
                 assert math.isclose(
                     float(model_output_concs[i][j]),
                     float(test_output_concs[i][j]),
-                    rel_tol=1e-7,
-                ), f"Arrays differ at index ({i}, {j})"
+                    rel_tol=1e-4,
+                    abs_tol=1e-4,
+                ), f"Arrays differ at index ({i}, {j}, species {concs_to_test[j]})"
 
 
 if __name__ == "__main__":

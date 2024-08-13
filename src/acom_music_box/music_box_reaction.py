@@ -29,6 +29,12 @@ class Reaction:
         self.products = products if products is not None else []
         self.scaling_factor = scaling_factor
 
+    def __str__(self):
+        return f"{self.name}: {self.reaction_type}"
+    
+    def __repr__(self):
+        return f"{self.name}: {self.reaction_type}"
+
     def add_reactant(self, reactant):
         """
         Add a Reactant instance to the list of reactants.
