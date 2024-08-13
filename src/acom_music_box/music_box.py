@@ -488,7 +488,7 @@ class MusicBox:
         next_output_time = curr_time
         #runs the simulation at each timestep
 
-       
+
         while(curr_time <= self.box_model_options.simulation_length):
 
             #outputs to output_array if enough time has elapsed
@@ -502,7 +502,7 @@ class MusicBox:
                 output_array.append(row)
                 next_output_time += self.box_model_options.output_step_time
         
-            #iterates evolvings conditons if enough time has elapsed
+            #iterates evolving  conditions if enough time has elapsed
             while(next_conditions != None and next_conditions_time <= curr_time):
                
                 curr_conditions.update_conditions(next_conditions)
@@ -523,7 +523,8 @@ class MusicBox:
             BOLTZMANN_CONSTANT = 1.380649e-23
             AVOGADRO_CONSTANT = 6.02214076e23;  
             GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT
-            air_density = curr_conditions.pressure / (GAS_CONSTANT * curr_conditions.temperature) 
+            air_density = curr_conditions.pressure / (GAS_CONSTANT * curr_conditions.temperature)
+
 
             #solves and updates concentration values in concentration array
             if (not ordered_concentrations):
@@ -535,7 +536,7 @@ class MusicBox:
         
             #increments time
             curr_time += self.box_model_options.chem_step_time  
-            
+        
         #outputs to file if output is present
         if(output_path != None):
             logger.info("path_to_output = {}".format(output_path))
@@ -705,7 +706,7 @@ class MusicBox:
             concentrations[concentraton.species.name] = concentraton.concentration
             
         ordered_concentrations = len(concentrations.keys()) * [0.0]
-        
+
         for key, value in concentrations.items():
             ordered_concentrations[species_constant_ordering[key]] = value
         return ordered_concentrations

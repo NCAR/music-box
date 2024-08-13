@@ -108,9 +108,12 @@ class EvolvingConditions:
         
         # Check if 'evolving conditions' is a key in the JSON config
         if 'evolving conditions' in config_JSON:
-            # Construct the path to the evolving conditions file
-            evolving_conditions_path = os.path.dirname(path_to_json) + "/" + list(config_JSON['evolving conditions'].keys())[0]
-            evolving_conditions =  EvolvingConditions.read_conditions_from_file( evolving_conditions_path, species_list, reaction_list)
+            if len(config_JSON['evolving conditions'].keys()) > 0:
+                # Construct the path to the evolving conditions file
+                evolving_conditions_path = (os.path.dirname(path_to_json) + "/"
+                    + list(config_JSON['evolving conditions'].keys())[0])
+                evolving_conditions =  EvolvingConditions.read_conditions_from_file(
+                    evolving_conditions_path, species_list, reaction_list)
        
         return evolving_conditions
             
