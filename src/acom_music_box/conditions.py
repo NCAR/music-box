@@ -1,7 +1,7 @@
 from .utils import convert_time, convert_pressure, convert_temperature, convert_concentration
-from .music_box_species_concentration import SpeciesConcentration
-from .music_box_species import Species
-from .music_box_reaction_rate import ReactionRate
+from .species_concentration import SpeciesConcentration
+from .species import Species
+from .reaction_rate import ReactionRate
 from typing import List
 import csv
 import os
