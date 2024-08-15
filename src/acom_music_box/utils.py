@@ -10,7 +10,7 @@ def convert_time(data, key):
         float: The time in seconds.
     """
     time = None
-    
+
     for unit in ['sec', 'min', 'hour', 'hr', 'day']:
         if f'{key} [{unit}]' in data:
             time_value = float(data[f'{key} [{unit}]'])
@@ -24,6 +24,7 @@ def convert_time(data, key):
                 time = time_value * 86400
             break
     return time
+
 
 def convert_pressure(data, key):
     """
@@ -53,6 +54,7 @@ def convert_pressure(data, key):
             break
     return pressure
 
+
 def convert_temperature(data, key):
     """
     Convert the temperature from the input data to Kelvin.
@@ -73,18 +75,19 @@ def convert_temperature(data, key):
             elif unit == 'C':
                 temperature = temperature_value + 273.15
             elif unit == 'F':
-                temperature = (temperature_value - 32) * 5/9 + 273.15
+                temperature = (temperature_value - 32) * 5 / 9 + 273.15
             break
     return temperature
+
 
 def convert_concentration(data, key):
     """
     Convert the concentration from the input data to molecules per cubic meter.
-    
+
     Args:
         data (dict): The input data.
         key (str): The key for the concentration in the input data.
-        
+
     Returns:
         float: The concentration in molecules per cubic meter.
     """
