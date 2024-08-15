@@ -1,6 +1,0 @@
-[submodule "libs/micm"]
-	path = libs/micm
-	url = https://github.com/NCAR/micm.git
-[submodule "libs/camp"]
-	path = libs/camp
-	url = https://github.com/open-atmos/camp.git
