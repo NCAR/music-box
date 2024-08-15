@@ -1,16 +1,27 @@
 import musica
 import csv
-from .music_box_conditions import Conditions
-from .music_box_model_options import BoxModelOptions
-from .music_box_species_list import SpeciesList
-from .music_box_reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
-from .music_box_reaction_list import ReactionList
-from .music_box_evolving_conditions import EvolvingConditions
+from .conditions import Conditions
+from .model_options import BoxModelOptions
+from .species_list import SpeciesList
+from .reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
+from .reaction_list import ReactionList
+from .evolving_conditions import EvolvingConditions
 import json
 import os
 
 import logging
 logger = logging.getLogger(__name__)
+
+from .evolving_conditions import EvolvingConditions
+from .reaction_list import ReactionList
+from .reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
+from .species_list import SpeciesList
+from .model_options import BoxModelOptions
+from .conditions import Conditions
+
+import csv
+import musica
+
 
 
 class MusicBox:

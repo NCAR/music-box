@@ -28,4 +28,4 @@ dependencies = [
 Home = "https://github.com/NCAR/music-box"
 
 [project.scripts]
-music_box = "acom_music_box.music_box_main:main"
+music_box = "acom_music_box.main:main"

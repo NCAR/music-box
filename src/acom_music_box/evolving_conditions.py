@@ -1,9 +1,9 @@
 import csv
 import os
 from typing import List
-from .music_box_conditions import Conditions
-from .music_box_species_concentration import SpeciesConcentration
-from .music_box_reaction_rate import ReactionRate
+from .conditions import Conditions
+from .species_concentration import SpeciesConcentration
+from .reaction_rate import ReactionRate
 
 
 class EvolvingConditions:
