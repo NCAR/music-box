@@ -706,15 +706,27 @@ class MusicBox:
 
             if (rate.reaction.reaction_type == "PHOTOLYSIS"):
                 key = "PHOTO." + rate.reaction.name
-            elif (rate.reaction.reaction_type == "LOSS"):
+            elif (rate.reaction.reaction_type == "FIRST_ORDER_LOSS"):
                 key = "LOSS." + rate.reaction.name
             elif (rate.reaction.reaction_type == "EMISSION"):
                 key = "EMIS." + rate.reaction.name
             rate_constants[key] = rate.rate
 
-        ordered_rate_constants = len(rate_constants.keys()) * [0.0]
-        for key, value in rate_constants.items():
+        # print(curr_conditions.reaction_rates)
+        print(len(rate_constant_ordering.keys()))
+        print(len(rate_constants.keys()))
 
+        musica_rates = set(rate_constants.keys())
+        box_rates = set(rate_constant_ordering.keys())
+
+        print(box_rates.difference(musica_rates))
+
+        ordered_rate_constants = len(rate_constants.keys()) * [0.0]
+        # print(sorted(rate_constant_ordering.values()))
+        # print(len(ordered_rate_constants))
+        for key, value in rate_constants.items():
+            # print(f"key: {key}, rate_constant_ordering[key]: {rate_constant_ordering[key]}")
+            # print(ordered_rate_constants)
             ordered_rate_constants[rate_constant_ordering[key]] = float(value)
         return ordered_rate_constants
 
