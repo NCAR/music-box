@@ -1,0 +1,119 @@
+{
+  "box model options": {
+    "grid": "box",
+    "chemistry time step [min]": 1,
+    "output time step [min]": 1,
+    "simulation length [hr]": 3
+  },
+  "chemical species": {
+    "NO": {
+      "initial value [mol m-3]": 4.1e-09
+    },
+    "NO2": {
+      "initial value [mol m-3]": 4.1e-08
+    },
+    "HNO3": {
+      "initial value [mol m-3]": 4.1e-08
+    },
+    "O3": {
+      "initial value [mol m-3]": 2e-06
+    },
+    "H2O2": {
+      "initial value [mol m-3]": 4.5e-08
+    },
+    "CO": {
+      "initial value [mol m-3]": 8.6e-06
+    },
+    "SO2": {
+      "initial value [mol m-3]": 3.3e-08
+    },
+    "HCL": {
+      "initial value [mol m-3]": 2.9e-08
+    },
+    "CH4": {
+      "initial value [mol m-3]": 9e-05
+    },
+    "ETHA": {
+      "initial value [mol m-3]": 4.1e-08
+    },
+    "FORM": {
+      "initial value [mol m-3]": 4.9e-08
+    },
+    "MEOH": {
+      "initial value [mol m-3]": 4.9e-09
+    },
+    "MEPX": {
+      "initial value [mol m-3]": 2e-08
+    },
+    "ALD2": {
+      "initial value [mol m-3]": 4.1e-08
+    },
+    "PAR": {
+      "initial value [mol m-3]": 8.2e-08
+    },
+    "ETH": {
+      "initial value [mol m-3]": 8.2e-09
+    },
+    "OLE": {
+      "initial value [mol m-3]": 9.4e-10
+    },
+    "IOLE": {
+      "initial value [mol m-3]": 1.3e-11
+    },
+    "TOL": {
+      "initial value [mol m-3]": 4.1e-09
+    },
+    "XYL": {
+      "initial value [mol m-3]": 4.1e-09
+    },
+    "NTR": {
+      "initial value [mol m-3]": 4.1e-09
+    },
+    "PAN": {
+      "initial value [mol m-3]": 3.3e-08
+    },
+    "AACD": {
+      "initial value [mol m-3]": 8.2e-09
+    },
+    "ROOH": {
+      "initial value [mol m-3]": 1e-09
+    },
+    "ISOP": {
+      "initial value [mol m-3]": 2e-07
+    },
+    "O2": {
+      "initial value [mol m-3]": 8.56
+    },
+    "H2": {
+      "initial value [mol m-3]": 2.3e-05
+    },
+    "H2O": {
+      "initial value [mol m-3]": 0.128
+    }
+  },
+  "environmental conditions": {
+    "temperature": {
+      "initial value [K]": 298.15
+    },
+    "pressure": {
+      "initial value [Pa]": 101325
+    }
+  },
+  "initial conditions": {
+    "initial_conditions.csv": {}
+  },
+  "model components": [
+    {
+      "type": "CAMP",
+      "configuration file": "camp_data/config.json",
+      "override species": {
+        "M": {
+          "mixing ratio mol mol-1": 1
+        }
+      },
+      "suppress output": {
+        "M": {}
+      }
+    }
+  ]
+}

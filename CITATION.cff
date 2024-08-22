@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+title: MusicBox
+version: v2.1.0
+authors:
+  - family-names: Dawson
+    given-names: Matthew
+  - family-names: Shores
+    given-names: Kyle
+  - family-names: Conley
+    given-names: Andrew
+  - family-names: De la Garza
+    given-names: Evan
+  - family-names: Drury
+    given-names: Walker
+  - family-names: Garza
+    given-names: Alexander
+  - family-names: Fattig
+    given-names: Brendan
+  - family-names: Drews
+    given-names: Carl
+license: Apache-2.0
+url: "https://github.com/NCAR/music-box"

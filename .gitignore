@@ -5,3 +5,6 @@ CMakeFiles/
 doc/html/
 doc/latex/
 data/
+__pycache__/
+*.pyc
+dist
