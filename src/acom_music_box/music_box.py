@@ -633,6 +633,8 @@ class MusicBox:
         # Set evolving conditions
         self.evolving_conditions = EvolvingConditions.from_UI_JSON(
             data, self.species_list, self.reaction_list)
+            
+        return
 
     def readConditionsFromJson(self, path_to_json):
         """
@@ -667,27 +669,51 @@ class MusicBox:
             # Set initial conditions
             self.evolving_conditions = EvolvingConditions.from_config_JSON(
                 path_to_json, data, self.species_list, self.reaction_list)
-
+             
             # read initial concentrations from CSV
-            # Added by Carl Drews - August 21, 2024
-            # ToDo: Figure out who goes first: JSON initial values or CSV initial values?
-            config_JSON = data
-            if ('initial conditions' in config_JSON
-                and len(list(config_JSON['initial conditions'].keys())) > 0):
-                initial_conditions_path = os.path.dirname(
-                    path_to_json) + "/" + list(config_JSON['initial conditions'].keys())[0]
-                logger.info("initial_conditions_pathh = {}".format(initial_conditions_path))
-                initial_concentrations = EvolvingConditions.read_conditions_from_file(
-                    initial_conditions_path, self.species_list, self.reaction_list)
-                logger.info("Initial_concentrationss = {}"
-                    .format(initial_concentrations.conditions[0].species_concentrations))
-                    
-                # assign initial concentrations to the variables.
-                specValues = initial_concentrations.conditions[0].species_concentrations
-                for specValue in specValues:
-                    logger.info("Init var = {}   value = {}"
-                        .format(specValue.species.name, specValue.concentration))
+            initial_concentrations_csv = self.readSetInitialConcentrations(data, path_to_json)
+            
+            # append csv values to self.initial_conditions.species_concentrations
+            # CSV values take precedence over JSON values by overwriting them.
+            if (True):
+                for concentration in self.initial_conditions.species_concentrations:
+                    logger.info("concentrationn = {}".format(concentration))
+            self.initial_conditions.species_concentrations.extend(initial_concentrations_csv)
+            
+        return
+
           
+    def readSetInitialConcentrations(self, config_JSON, path_to_json):
+        """
+        Retrieves initial concentrations from CSV file and assigns to vars.
+
+        Args:
+            config_JSON = already loaded and parsed.
+            Look here for "initial conditions".
+
+        Returns:
+        """
+        if (not 'initial conditions' in config_JSON):
+            return
+        if (len(list(config_JSON['initial conditions'].keys())) == 0):
+            return
+
+        initial_conditions_path = os.path.dirname(
+            path_to_json) + "/" + list(config_JSON['initial conditions'].keys())[0]
+        logger.info("initial_conditions_pathh = {}".format(initial_conditions_path))
+        initial_concentrations = EvolvingConditions.read_conditions_from_file(
+            initial_conditions_path, self.species_list, self.reaction_list)
+        logger.info("Initial_concentrationss = {}"
+            .format(initial_concentrations.conditions[0].species_concentrations))
+                    
+        # caller will assign initial concentrations to the variables
+        specValues = initial_concentrations.conditions[0].species_concentrations
+        if (True):
+            for specValue in specValues:
+                logger.info("Initial {} from CSV".format(specValue))
+
+        return(specValues)
+        
 
     def speciesOrdering(self):
         """
