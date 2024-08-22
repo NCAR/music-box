@@ -500,6 +500,7 @@ class MusicBox:
         # runs the simulation at each timestep
 
         while (curr_time <= self.box_model_options.simulation_length):
+            logger.info("curr_time = {}".format(curr_time))
 
             # outputs to output_array if enough time has elapsed
             if (next_output_time <= curr_time):
@@ -517,6 +518,7 @@ class MusicBox:
                     next_conditions is not None and next_conditions_time <= curr_time):
 
                 curr_conditions.update_conditions(next_conditions)
+                logger.info("Updatedd conditionss = {}".format(curr_conditions.species_concentrations))
 
                 # iterates next_conditions if there are remaining evolving
                 # conditions
@@ -666,6 +668,27 @@ class MusicBox:
             self.evolving_conditions = EvolvingConditions.from_config_JSON(
                 path_to_json, data, self.species_list, self.reaction_list)
 
+            # read initial concentrations from CSV
+            # Added by Carl Drews - August 21, 2024
+            # ToDo: Figure out who goes first: JSON initial values or CSV initial values?
+            config_JSON = data
+            if ('initial conditions' in config_JSON
+                and len(list(config_JSON['initial conditions'].keys())) > 0):
+                initial_conditions_path = os.path.dirname(
+                    path_to_json) + "/" + list(config_JSON['initial conditions'].keys())[0]
+                logger.info("initial_conditions_pathh = {}".format(initial_conditions_path))
+                initial_concentrations = EvolvingConditions.read_conditions_from_file(
+                    initial_conditions_path, self.species_list, self.reaction_list)
+                logger.info("Initial_concentrationss = {}"
+                    .format(initial_concentrations.conditions[0].species_concentrations))
+                    
+                # assign initial concentrations to the variables.
+                specValues = initial_concentrations.conditions[0].species_concentrations
+                for specValue in specValues:
+                    logger.info("Init var = {}   value = {}"
+                        .format(specValue.species.name, specValue.concentration))
+          
+
     def speciesOrdering(self):
         """
         Retrieves the ordering of species used in the solver.
@@ -705,19 +728,26 @@ class MusicBox:
         """
         rate_constants = {}
         for rate in curr_conditions.reaction_rates:
+            if (not rate.reaction):
+                continue
 
+            key = None
             if (rate.reaction.reaction_type == "PHOTOLYSIS"):
                 key = "PHOTO." + rate.reaction.name
-            elif (rate.reaction.reaction_type == "LOSS"):
+            elif (rate.reaction.reaction_type == "LOSS"
+                or rate.reaction.reaction_type == "FIRST_ORDER_LOSS"):
                 key = "LOSS." + rate.reaction.name
             elif (rate.reaction.reaction_type == "EMISSION"):
                 key = "EMIS." + rate.reaction.name
-            rate_constants[key] = rate.rate
+            logger.info("keyy = {}   rate.ratee = {}".format(key, rate.rate))
+            
+            if key:
+                rate_constants[key] = rate.rate
 
-        ordered_rate_constants = len(rate_constants.keys()) * [0.0]
+        ordered_rate_constants = (len(rate_constants.keys()) + 1) * [0.0]   # bogus + 1
         for key, value in rate_constants.items():
-
             ordered_rate_constants[rate_constant_ordering[key]] = float(value)
+
         return ordered_rate_constants
 
     @classmethod
@@ -733,5 +763,6 @@ class MusicBox:
         ordered_concentrations = len(concentrations.keys()) * [0.0]
 
         for key, value in concentrations.items():
+            logger.info("keyy = {}   valuee = {}".format(key, value))
             ordered_concentrations[species_constant_ordering[key]] = value
         return ordered_concentrations

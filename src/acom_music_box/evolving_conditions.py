@@ -5,6 +5,9 @@ from .conditions import Conditions
 from .species_concentration import SpeciesConcentration
 from .reaction_rate import ReactionRate
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class EvolvingConditions:
     """
@@ -163,6 +166,7 @@ class EvolvingConditions:
         conditions = []
 
         # Open the evolving conditions file and read it as a CSV
+        logger.info("Evolving conditions file_pathhh = {}".format(file_path))
         with open(file_path, 'r') as csv_file:
             evolving_conditions = list(csv.reader(csv_file))
 
@@ -173,6 +177,7 @@ class EvolvingConditions:
                 # Iterate over the remaining rows of the CSV
                 for i in range(1, len(evolving_conditions)):
                     # The first column of each row is a time value
+                    logger.info("first columnn = {}".format(evolving_conditions[i][0]))
                     times.append(float(evolving_conditions[i][0]))
 
                     # Initialize pressure and temperature as None
@@ -197,13 +202,18 @@ class EvolvingConditions:
                     # For each concentration header, find the matching species
                     # and append its concentration to the list
                     for j in range(len(concentration_headers)):
+                        speciesName = concentration_headers[j].split('.')[1]
                         match = filter(
-                            lambda x: x.name == concentration_headers[j].split('.')[1],
-                            species_list.species)
+                            lambda x: x.name == speciesName, species_list.species)
                         species = next(match, None)
                         concentration = float(
                             evolving_conditions[i][headers.index(concentration_headers[j])])
 
+                        logger.info("speciess = {} {}".format(speciesName, species))
+                        if not species:
+                            logger.warning("Unrecognized species {} in {}"
+                                .format(speciesName, file_path))
+                            continue
                         concentrations.append(
                             SpeciesConcentration(
                                 species, concentration))
