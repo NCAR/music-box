@@ -179,8 +179,13 @@ class Conditions:
         for reaction in reaction_list.reactions:
             if (reaction.name is None):
                 continue
-            if not any(rate.reaction.name ==
-                       reaction.name for rate in reaction_rates):
+            reaction_exists = False
+            for rate in reaction_rates:
+                if rate.reaction.name == reaction.name:
+                    reaction_exists = True
+                    break
+
+            if not reaction_exists:
                 reaction_rates.append(ReactionRate(reaction, 0))
 
         return cls(
