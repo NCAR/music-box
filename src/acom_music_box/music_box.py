@@ -172,8 +172,7 @@ class MusicBox:
                     elif header.startswith("CONC."):
                         species_name = header.split('.')[1]
                         species_concentration = next(
-                            (x for x in self.evolving_conditions.conditions[i].species_concentrations if x.species.name == species_name),
-                            None)
+                            (x for x in self.evolving_conditions.conditions[i].species_concentrations if x.species.name == species_name), None)
                         row.append(species_concentration.concentration)
                     elif header.endswith(".s-1"):
                         reaction_name = header.split('.')
@@ -185,8 +184,7 @@ class MusicBox:
                             reaction_name = reaction_name[1]
 
                         reaction_rate = next(
-                            (x for x in self.evolving_conditions.conditions[i].reaction_rates if x.reaction.name == reaction_name),
-                            None)
+                            (x for x in self.evolving_conditions.conditions[i].reaction_rates if x.reaction.name == reaction_name), None)
                         row.append(reaction_rate.rate)
 
                 writer.writerow(row)
