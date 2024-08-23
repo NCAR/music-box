@@ -10,6 +10,7 @@ import json
 import os
 
 import logging
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -554,6 +555,7 @@ class MusicBox:
         # outputs to file if output is present
         if (output_path is not None):
             logger.info("path_to_output = {}".format(output_path))
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
             with open(output_path, 'w', newline='') as output:
                 writer = csv.writer(output)
                 writer.writerows(output_array)
@@ -706,7 +708,7 @@ class MusicBox:
 
             if (rate.reaction.reaction_type == "PHOTOLYSIS"):
                 key = "PHOTO." + rate.reaction.name
-            elif (rate.reaction.reaction_type == "LOSS"):
+            elif (rate.reaction.reaction_type == "FIRST_ORDER_LOSS"):
                 key = "LOSS." + rate.reaction.name
             elif (rate.reaction.reaction_type == "EMISSION"):
                 key = "EMIS." + rate.reaction.name
@@ -714,7 +716,6 @@ class MusicBox:
 
         ordered_rate_constants = len(rate_constants.keys()) * [0.0]
         for key, value in rate_constants.items():
-
             ordered_rate_constants[rate_constant_ordering[key]] = float(value)
         return ordered_rate_constants
 
