@@ -714,14 +714,6 @@ class MusicBox:
                 key = "EMIS." + rate.reaction.name
             rate_constants[key] = rate.rate
 
-        logger.debug(f"MUSICA provided {len(rate_constant_ordering.keys())} user defined reaction rates")
-        logger.debug(f"Music box expects {len(rate_constants.keys())}")
-
-        musica_rates = set(rate_constant_ordering.keys())
-        box_rates = set(rate_constants.keys())
-
-        logger.debug(f"Musica contains these rates, and music box doesn't' {musica_rates.difference(box_rates)}")
-
         ordered_rate_constants = len(rate_constants.keys()) * [0.0]
         for key, value in rate_constants.items():
             ordered_rate_constants[rate_constant_ordering[key]] = float(value)
