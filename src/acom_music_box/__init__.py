@@ -4,7 +4,7 @@ This is the music_box package.
 This package contains modules for handling various aspects of a music box,
 including species, products, reactants, reactions, and more.
 """
-__version__ = "2.2.0"
+__version__ = "2.2.1"
 
 from .utils import convert_time, convert_pressure, convert_temperature, convert_concentration
 from .species import Species
