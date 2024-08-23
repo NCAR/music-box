@@ -222,18 +222,12 @@ class Conditions:
                 # The second row of the CSV contains rates
                 rates = initial_conditions[1]
 
-                for i in range(0, len(headers)):
+                for reaction_rate, rate in zip(headers, rates):
+                    type, name, *rest = reaction_rate.split('.')
+                    for reaction in reaction_list.reactions:
+                        if reaction.name == name and reaction.short_type() == type:
+                            reaction_rates.append(ReactionRate(reaction, rate))
 
-                    reaction_rate = headers[i]
-
-                    match = filter(
-                        lambda x: x.name == reaction_rate.split('.')[1],
-                        reaction_list.reactions)
-
-                    reaction = next(match, None)
-                    rate = rates[i]
-
-                    reaction_rates.append(ReactionRate(reaction, rate))
         return reaction_rates
 
     def add_species_concentration(self, species_concentration):
