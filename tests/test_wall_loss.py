@@ -16,7 +16,7 @@ class TestWallLoss:
         box_model.create_solver(camp_path)
 
         # solves and saves output
-        model_output = box_model.solve(output_path="output/wall_loss_test.csv")
+        model_output = box_model.solve()
 
         # read wall_loss_test.csv into test_output
         with open("expected_results/wall_loss_test.csv", "r") as file:
