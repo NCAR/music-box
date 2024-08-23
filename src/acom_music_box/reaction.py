@@ -59,7 +59,7 @@ class Reaction:
             product (Product): The Product instance to be added.
         """
         self.products.append(product)
-    
+
     def short_type(self):
         """
         Return the first letter of the reaction type.
