@@ -25,11 +25,11 @@ class TestTS1:
 
         concs_to_test = [
             "CONC.H2O",
-            "CONC.Ar",
-            "CONC.CO2",
-            "CONC.O1D",
-            "CONC.O2",
+            "CONC.TEPOMUC",
+            "CONC.BENZENE",
             "CONC.O3",
+            "CONC.NH3",
+            "CONC.CH4",
             "CONC.O",
         ]
         model_output_header = model_output[0]
