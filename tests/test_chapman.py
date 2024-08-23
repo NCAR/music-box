@@ -55,7 +55,7 @@ class TestChapman:
                     float(test_output_concs[i][j]),
                     rel_tol=1e-8,
                     abs_tol=1e-15,
-                ), f"Arrays differ at index ({i}, {j}) for "
+                ), f"Arrays differ at index ({i}, {j}) for species {concs_to_test[j]}"
 
 
 if __name__ == "__main__":

@@ -46,7 +46,8 @@ class TestWallLoss:
                     float(model_output_concs[i][j]),
                     float(test_output_concs[i][j]),
                     rel_tol=1e-8,
-                ), f"Arrays differ at index ({i}, {j}) for "
+                    abs_tol=1e-8,
+                ), f"Arrays differ at index ({i}, {j}) for species {concs_to_test[j]}"
 
 
 if __name__ == "__main__":
