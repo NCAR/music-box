@@ -10,6 +10,7 @@ import json
 import os
 
 import logging
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -554,6 +555,7 @@ class MusicBox:
         # outputs to file if output is present
         if (output_path is not None):
             logger.info("path_to_output = {}".format(output_path))
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
             with open(output_path, 'w', newline='') as output:
                 writer = csv.writer(output)
                 writer.writerows(output_array)
@@ -712,21 +714,16 @@ class MusicBox:
                 key = "EMIS." + rate.reaction.name
             rate_constants[key] = rate.rate
 
-        # print(curr_conditions.reaction_rates)
-        print(len(rate_constant_ordering.keys()))
-        print(len(rate_constants.keys()))
+        logger.debug(f"MUSICA provided {len(rate_constant_ordering.keys())} user defined reaction rates")
+        logger.debug(f"Music box expects {len(rate_constants.keys())}")
 
-        musica_rates = set(rate_constants.keys())
-        box_rates = set(rate_constant_ordering.keys())
+        musica_rates = set(rate_constant_ordering.keys())
+        box_rates = set(rate_constants.keys())
 
-        print(box_rates.difference(musica_rates))
+        logger.debug(f"Musica contains these rates, and music box doesn't' {musica_rates.difference(box_rates)}")
 
         ordered_rate_constants = len(rate_constants.keys()) * [0.0]
-        # print(sorted(rate_constant_ordering.values()))
-        # print(len(ordered_rate_constants))
         for key, value in rate_constants.items():
-            # print(f"key: {key}, rate_constant_ordering[key]: {rate_constant_ordering[key]}")
-            # print(ordered_rate_constants)
             ordered_rate_constants[rate_constant_ordering[key]] = float(value)
         return ordered_rate_constants
 

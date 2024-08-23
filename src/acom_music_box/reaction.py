@@ -59,6 +59,24 @@ class Reaction:
             product (Product): The Product instance to be added.
         """
         self.products.append(product)
+    
+    def short_type(self):
+        """
+        Return the first letter of the reaction type.
+
+        Returns:
+            str: The first letter of the reaction type.
+        """
+        type_map = {
+            "EMISSION": "EMIS",
+            "PHOTOLYSIS": "PHOT",
+            "FIRST_ORDER_LOSS": "LOSS",
+            "BRANCHED": "BRAN",
+            "ARRHENIUS": "ARRH",
+            "TUNNELING": "TUNN",
+            "TROE_TERNARY": "TROE",
+        }
+        return type_map.get(self.reaction_type, "UNKNOWN")
 
 
 class Branched(Reaction):

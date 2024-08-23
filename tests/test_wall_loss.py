@@ -16,7 +16,7 @@ class TestWallLoss:
         box_model.create_solver(camp_path)
 
         # solves and saves output
-        model_output = box_model.solve()
+        model_output = box_model.solve(output_path="output/wall_loss_test.csv")
 
         # read wall_loss_test.csv into test_output
         with open("expected_results/wall_loss_test.csv", "r") as file:
@@ -46,7 +46,8 @@ class TestWallLoss:
                     float(model_output_concs[i][j]),
                     float(test_output_concs[i][j]),
                     rel_tol=1e-8,
-                ), f"Arrays differ at index ({i}, {j}) for "
+                    abs_tol=1e-8,
+                ), f"Arrays differ at index ({i}, {j}) for species {concs_to_test[j]}"
 
 
 if __name__ == "__main__":
