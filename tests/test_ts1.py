@@ -8,8 +8,8 @@ class TestTS1:
         box_model = MusicBox()
 
         # configures box model
-        conditions_path = "configs/chapman_config/my_config.json"
-        camp_path = "configs/chapman_config/camp_data"
+        conditions_path = "configs/ts1_config/my_config.json"
+        camp_path = "configs/ts1_config/camp_data"
 
         box_model.readConditionsFromJson(conditions_path)
 
@@ -18,8 +18,8 @@ class TestTS1:
         # solves and saves output
         model_output = box_model.solve()
 
-        # read chapman_test.csv into test_output
-        with open("expected_results/chapman_test.csv", "r") as file:
+        # read ts1_test.csv into test_output
+        with open("expected_results/ts1_test.csv", "r") as file:
             reader = csv.reader(file)
             test_output = list(reader)
 
