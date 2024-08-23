@@ -694,9 +694,9 @@ class MusicBox:
         Returns:
         """
         if (not 'initial conditions' in config_JSON):
-            return
+            return([])
         if (len(list(config_JSON['initial conditions'].keys())) == 0):
-            return
+            return([])
 
         initial_conditions_path = os.path.dirname(
             path_to_json) + "/" + list(config_JSON['initial conditions'].keys())[0]
