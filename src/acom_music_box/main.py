@@ -76,6 +76,7 @@ def main():
 
     # create and load a MusicBox object
     myBox = MusicBox()
+    logging.info("configuration file = {}".format(musicBoxConfigFile))
     myBox.readConditionsFromJson(musicBoxConfigFile)
     logger.info("myBox = {}".format(myBox))
 
@@ -87,7 +88,7 @@ def main():
     myBox.create_solver(campConfig)
     logger.info("myBox.solver = {}".format(myBox.solver))
     mySolution = myBox.solve(os.path.join(musicBoxOutputDir, "mySolution.csv"))
-    logger.info("mySolution = {}".format(mySolution))
+    # logger.info("mySolution = {}".format(mySolution))
 
     logger.info("End time: {}".format(datetime.datetime.now()))
     sys.exit(0)
