@@ -75,15 +75,43 @@ def safeFloat(numString):
 # and their MusicBox equivalents.
 def getMusicaDictionary():
    varMap = {
-      "Nairobi": [-1.2921, 36.8219],
-      "Kampala": [0.3476, 32.5825],
-      "Kigali": [-1.9441, 30.0619],
-      "Dodoma": [-6.1630, 35.7516],
-      "Lilongwe": [-13.9626, 33.7741],
-      "Lusaka": [-15.3875, 28.3228]
+      "H2O": "H2O",
+      "TEPOMUC": "jtepo",
+      "BENZENE": "jbenzene",
+      "O3": "O3",
+      "NH3": "NH3",
+      "CH4": "CH4",
+      "O": "O"
    }
 
    return(dict(sorted(varMap.items())))
+
+
+
+# Read array values at a single lat-lon-time point.
+# waccmMusicaDict = mapping from WACCM names to MusicBox
+# latitude, longitude = geo-coordinates of retrieval point
+# when = date and time to extract
+# modelDir = directory containing model output
+# return xarray of variable names and values
+def readWACCM(waccmMusicaDict, latitude, longitude,
+  when, modelDir):
+
+  # create the filename
+  waccmFilename = ("f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{:4d}-{:02d}-{:02}-00000.nc"
+    .format(when.year, when.month, when.day))
+  logger.info("WACCM file = {}".format(waccmFilename))
+
+  # open dataset for reading
+  waccmDataSet = xarray.open_dataset("{}/{}".format(modelDir, waccmFilename))
+  if (True):
+    # diagnostic to look at dataset structure
+    logger.info("WACCM dataset = {}".format(waccmDataSet))
+
+  # close the NetCDF file
+  waccmDataSet.close()
+
+  return(None)
 
 
 
@@ -106,6 +134,15 @@ def main():
     if ("musicaDir" in myArgs):
         musicaDir = myArgs.get("musicaDir")
 
+    # get the date-time to retrieve
+    dateStr = None
+    if ("date" in myArgs):
+      dateStr = myArgs.get("date")
+
+    timeStr = "00:00"
+    if ("time" in myArgs):
+      timeStr = myArgs.get("time")
+
     # get the geographical location to retrieve
     lat = None
     if ("latitude" in myArgs):
@@ -115,8 +152,19 @@ def main():
     if ("longitude" in myArgs):
         lon = safeFloat(myArgs.get("longitude"))
 
-    logger.info("Retrieve WACCM conditions at ({} North, {} East)."
-        .format(lat, lon))
+    retrieveWhen = datetime.datetime.strptime(
+      "{} {}".format(dateStr, timeStr), "%Y%m%d %H:%M")
+
+    logger.info("Retrieve WACCM conditions at ({} North, {} East)   when {}."
+        .format(lat, lon, retrieveWhen))
+
+    # Read named variables from WACCM model output.
+    varValues = readWACCM(getMusicaDictionary(),
+      lat, lon, retrieveWhen, waccmDir)
+
+    # Perform any conversions needed, or derive variables.
+
+    # Write CSV file for MusicBox initial conditions.
 
     logger.info("End time: {}".format(datetime.datetime.now()))
     sys.exit(0)     # no error
