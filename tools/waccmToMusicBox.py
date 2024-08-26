@@ -77,13 +77,11 @@ def getMusicaDictionary():
    varMap = {
       "T": "temperature",
       "PS": "pressure",
-      "H2O": "H2O",
-      "TEPOMUC": "jtepo",   # test var not in WACCM
-      "BENZENE": "jbenzene",
+      "N2O": "N2O",
+      "H2O2": "H2O2",
       "O3": "O3",
       "NH3": "NH3",
-      "CH4": "CH4",
-      "O": "O"             # test var not in WACCM
+      "CH4": "CH4"
    }
 
    return(dict(sorted(varMap.items())))
@@ -155,7 +153,8 @@ unitIndex = 2
 def convertWaccm(varDict):
   # convert Ammonia to milli-moles
   nh3Tuple = varDict["NH3"]
-  varDict["NH3"] = (nh3Tuple[0], nh3Tuple[valueIndex] * 1000, "milli" + nh3Tuple[2])
+  varDict["NH3"] = (nh3Tuple[0], nh3Tuple[valueIndex] * 1000, "milli" + nh3Tuple[unitIndex])
+
   return(varDict)
 
 
