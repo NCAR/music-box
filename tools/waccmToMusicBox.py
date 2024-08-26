@@ -142,18 +142,51 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
 
 
 
+# set up indexes for the tuple
+musicaIndex = 0
+valueIndex = 1
+unitIndex = 2
+
 # Perform any numeric conversion needed.
 # varDict = originally read from WACCM, tuples are (musicaName, value, units)
 # return varDict with values modified
 def convertWaccm(varDict):
-   # set up indexes for the tuple
-   musicaIndex = 0
-   valueIndex = 1
-   unitIndex = 2
+  # convert Ammonia to milli-moles
+  nh3Tuple = varDict["NH3"]
+  varDict["NH3"] = (nh3Tuple[0], nh3Tuple[valueIndex] * 1000, "milli" + nh3Tuple[2])
+  return(varDict)
 
-   nh3Tuple = varDict["NH3"]
-   varDict["NH3"] = (nh3Tuple[0], nh3Tuple[valueIndex] * 1000, "milli" + nh3Tuple[2])
-   return(varDict)
+
+
+# Write CSV file suitable for initial_conditions.csv in MusicBox
+# initValues = dictionary of Musica varnames and (WACCM name, value, units)
+def writeInitCSV(initValues, filename):
+  fp = open(filename, "w")
+
+  # write the column titles
+  firstColumn = True
+  for key, value in initValues.items():
+    if (firstColumn):
+      firstColumn = False
+    else:
+      fp.write(",")
+
+    fp.write(key)
+  fp.write("\n")
+
+  # write the variable values
+  firstColumn = True
+  for key, value in initValues.items():
+    if (firstColumn):
+      firstColumn = False
+    else:
+      fp.write(",")
+
+    fp.write("{}".format(value[valueIndex]))
+  fp.write("\n")
+
+  fp.close()
+  return
 
 
 
@@ -206,10 +239,12 @@ def main():
     logger.info("Original WACCM varValues = {}".format(varValues))
 
     # Perform any conversions needed, or derive variables.
-    convertWaccm(varValues)
+    varValues = convertWaccm(varValues)
     logger.info("Converted WACCM varValues = {}".format(varValues))
 
     # Write CSV file for MusicBox initial conditions.
+    csvName = "{}/{}".format(musicaDir, "initial_conditions.csv")
+    writeInitCSV(varValues, csvName)
 
     logger.info("End time: {}".format(datetime.datetime.now()))
     sys.exit(0)     # no error
