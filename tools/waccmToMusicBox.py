@@ -81,7 +81,7 @@ def getMusicaDictionary():
       "O3": "O3",
       "NH3": "NH3",
       "CH4": "CH4",
-      "O": "O"
+      "O": "O"          # test var not in WACCM
    }
 
    return(dict(sorted(varMap.items())))
@@ -93,7 +93,7 @@ def getMusicaDictionary():
 # latitude, longitude = geo-coordinates of retrieval point
 # when = date and time to extract
 # modelDir = directory containing model output
-# return xarray of variable names and values
+# return dictionary of MUSICA variable names, values, and units
 def readWACCM(waccmMusicaDict, latitude, longitude,
   when, modelDir):
 
@@ -108,10 +108,37 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
     # diagnostic to look at dataset structure
     logger.info("WACCM dataset = {}".format(waccmDataSet))
 
+  # retrieve all vars at a single point
+  whenStr = when.strftime("%Y-%m-%d %H:%M:%S")
+  logger.info("whenStr = {}".format(whenStr))
+  singlePoint = waccmDataSet.sel(lon=longitude, lat=latitude, lev=1000.0,
+    time=whenStr, method="nearest")
+  if (True):
+    # diagnostic to look at single point structure
+    logger.info("WACCM singlePoint = {}".format(singlePoint))
+
+  # loop through vars and build another dictionary
+  musicaDict = {}
+  for waccmKey, musicaName in waccmMusicaDict.items():
+    logger.info("WACCM Chemical = {}".format(waccmKey))
+    if not waccmKey in singlePoint:
+      logger.warning("Requested variable {} not found in WACCM model output."
+        .format(waccmKey))
+      musicaTuple = (waccmKey, None, None)
+      musicaDict[musicaName] = musicaTuple
+      continue
+
+    chemSinglePoint = singlePoint[waccmKey]
+    if (True):
+      logger.info("{} = {}".format(waccmKey, chemSinglePoint))
+      logger.info("{} = {} {}".format(waccmKey, chemSinglePoint.values, chemSinglePoint.units))
+    musicaTuple = (waccmKey, chemSinglePoint.values, chemSinglePoint.units)
+    musicaDict[musicaName] = musicaTuple
+
   # close the NetCDF file
   waccmDataSet.close()
 
-  return(None)
+  return(musicaDict)
 
 
 
@@ -161,6 +188,7 @@ def main():
     # Read named variables from WACCM model output.
     varValues = readWACCM(getMusicaDictionary(),
       lat, lon, retrieveWhen, waccmDir)
+    logger.info("WACCM varValues = {}".format(varValues))
 
     # Perform any conversions needed, or derive variables.
 
