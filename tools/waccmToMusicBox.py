@@ -76,12 +76,12 @@ def safeFloat(numString):
 def getMusicaDictionary():
    varMap = {
       "H2O": "H2O",
-      "TEPOMUC": "jtepo",
+      "TEPOMUC": "jtepo",   # test var not in WACCM
       "BENZENE": "jbenzene",
       "O3": "O3",
       "NH3": "NH3",
       "CH4": "CH4",
-      "O": "O"          # test var not in WACCM
+      "O": "O"             # test var not in WACCM
    }
 
    return(dict(sorted(varMap.items())))
@@ -142,6 +142,21 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
 
 
 
+# Perform any numeric conversion needed.
+# varDict = originally read from WACCM, tuples are (musicaName, value, units)
+# return varDict with values modified
+def convertWaccm(varDict):
+   # set up indexes for the tuple
+   musicaIndex = 0
+   valueIndex = 1
+   unitIndex = 2
+
+   nh3Tuple = varDict["NH3"]
+   varDict["NH3"] = (nh3Tuple[0], nh3Tuple[valueIndex] * 1000, "milli" + nh3Tuple[2])
+   return(varDict)
+
+
+
 # Main routine begins here.
 def main():
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -188,9 +203,11 @@ def main():
     # Read named variables from WACCM model output.
     varValues = readWACCM(getMusicaDictionary(),
       lat, lon, retrieveWhen, waccmDir)
-    logger.info("WACCM varValues = {}".format(varValues))
+    logger.info("Original WACCM varValues = {}".format(varValues))
 
     # Perform any conversions needed, or derive variables.
+    convertWaccm(varValues)
+    logger.info("Converted WACCM varValues = {}".format(varValues))
 
     # Write CSV file for MusicBox initial conditions.
 
