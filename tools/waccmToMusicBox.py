@@ -160,7 +160,7 @@ def convertWaccm(varDict):
 
 
 
-# Write CSV file suitable for initial_conditions.csv in MusicBox
+# Write CSV file suitable for initial_conditions.csv in MusicBox.
 # initValues = dictionary of Musica varnames and (WACCM name, value, units)
 def writeInitCSV(initValues, filename):
   fp = open(filename, "w")
@@ -186,6 +186,18 @@ def writeInitCSV(initValues, filename):
 
     fp.write("{}".format(value[valueIndex]))
   fp.write("\n")
+
+  fp.close()
+  return
+
+
+
+# Write JSON fragment suitable for my_config.json in MusicBox.
+# initValues = dictionary of Musica varnames and (WACCM name, value, units)
+def writeInitJSON(initValues, filename):
+  fp = open(filename, "w")
+
+  fp.write("Hello, JSON World!\n")
 
   fp.close()
   return
@@ -244,9 +256,15 @@ def main():
     varValues = convertWaccm(varValues)
     logger.info("Converted WACCM varValues = {}".format(varValues))
 
-    # Write CSV file for MusicBox initial conditions.
-    csvName = "{}/{}".format(musicaDir, "initial_conditions.csv")
-    writeInitCSV(varValues, csvName)
+    if (False):
+      # Write CSV file for MusicBox initial conditions.
+      csvName = "{}/{}".format(musicaDir, "initial_conditions.csv")
+      writeInitCSV(varValues, csvName)
+
+    else:
+      # Write JSON file for MusicBox initial conditions.
+      jsonName = "{}/{}".format(musicaDir, "initial_config.json")
+      writeInitJSON(varValues, jsonName)
 
     logger.info("End time: {}".format(datetime.datetime.now()))
     sys.exit(0)     # no error
