@@ -499,6 +499,7 @@ class MusicBox:
         # runs the simulation at each timestep
 
         while (curr_time <= self.box_model_options.simulation_length):
+            logger.info("curr_time = {}".format(curr_time))
 
             # outputs to output_array if enough time has elapsed
             if (next_output_time <= curr_time):
@@ -516,6 +517,7 @@ class MusicBox:
                     next_conditions is not None and next_conditions_time <= curr_time):
 
                 curr_conditions.update_conditions(next_conditions)
+                logger.info("Updatedd conditionss = {}".format(curr_conditions.species_concentrations))
 
                 # iterates next_conditions if there are remaining evolving
                 # conditions
@@ -631,6 +633,8 @@ class MusicBox:
         # Set evolving conditions
         self.evolving_conditions = EvolvingConditions.from_UI_JSON(
             data, self.species_list, self.reaction_list)
+            
+        return
 
     def readConditionsFromJson(self, path_to_json):
         """
@@ -665,6 +669,51 @@ class MusicBox:
             # Set initial conditions
             self.evolving_conditions = EvolvingConditions.from_config_JSON(
                 path_to_json, data, self.species_list, self.reaction_list)
+             
+            # read initial concentrations from CSV
+            initial_concentrations_csv = self.readSetInitialConcentrations(data, path_to_json)
+            
+            # append csv values to self.initial_conditions.species_concentrations
+            # CSV values take precedence over JSON values by overwriting them.
+            if (True):
+                for concentration in self.initial_conditions.species_concentrations:
+                    logger.info("concentrationn = {}".format(concentration))
+            self.initial_conditions.species_concentrations.extend(initial_concentrations_csv)
+            
+        return
+
+          
+    def readSetInitialConcentrations(self, config_JSON, path_to_json):
+        """
+        Retrieves initial concentrations from CSV file and assigns to vars.
+
+        Args:
+            config_JSON = already loaded and parsed.
+            Look here for "initial conditions".
+
+        Returns:
+        """
+        if (not 'initial conditions' in config_JSON):
+            return([])
+        if (len(list(config_JSON['initial conditions'].keys())) == 0):
+            return([])
+
+        initial_conditions_path = os.path.dirname(
+            path_to_json) + "/" + list(config_JSON['initial conditions'].keys())[0]
+        logger.info("initial_conditions_pathh = {}".format(initial_conditions_path))
+        initial_concentrations = EvolvingConditions.read_conditions_from_file(
+            initial_conditions_path, self.species_list, self.reaction_list)
+        logger.info("Initial_concentrationss = {}"
+            .format(initial_concentrations.conditions[0].species_concentrations))
+                    
+        # caller will assign initial concentrations to the variables
+        specValues = initial_concentrations.conditions[0].species_concentrations
+        if (True):
+            for specValue in specValues:
+                logger.info("Initial {} from CSV".format(specValue))
+
+        return(specValues)
+        
 
     def speciesOrdering(self):
         """
@@ -705,18 +754,25 @@ class MusicBox:
         """
         rate_constants = {}
         for rate in curr_conditions.reaction_rates:
+            if (not rate.reaction):
+                continue
 
+            key = None
             if (rate.reaction.reaction_type == "PHOTOLYSIS"):
                 key = "PHOTO." + rate.reaction.name
             elif (rate.reaction.reaction_type == "FIRST_ORDER_LOSS"):
                 key = "LOSS." + rate.reaction.name
             elif (rate.reaction.reaction_type == "EMISSION"):
                 key = "EMIS." + rate.reaction.name
-            rate_constants[key] = rate.rate
+            logger.info("keyy = {}   rate.ratee = {}".format(key, rate.rate))
+            
+            if key:
+                rate_constants[key] = rate.rate
 
-        ordered_rate_constants = len(rate_constants.keys()) * [0.0]
+        ordered_rate_constants = (len(rate_constants.keys()) + 1) * [0.0]   # bogus + 1
         for key, value in rate_constants.items():
             ordered_rate_constants[rate_constant_ordering[key]] = float(value)
+
         return ordered_rate_constants
 
     @classmethod
@@ -732,5 +788,6 @@ class MusicBox:
         ordered_concentrations = len(concentrations.keys()) * [0.0]
 
         for key, value in concentrations.items():
+            logger.info("keyy = {}   valuee = {}".format(key, value))
             ordered_concentrations[species_constant_ordering[key]] = value
         return ordered_concentrations

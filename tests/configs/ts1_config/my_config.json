@@ -1,0 +1,43 @@
+{
+  "box model options": {
+    "grid": "box",
+    "chemistry time step [sec]": 60.0,
+    "output time step [sec]": 600.0,
+    "simulation length [day]": 0.5
+  },
+  "chemical species": {
+    "CO2": {
+      "initial value [mol m-3]": 0.00146
+    },
+    "NH3": {
+      "initial value [mol m-3]": 0.03456
+    }
+  },
+  "environmental conditions": {
+    "temperature": {
+      "initial value [K]": 206.6374207
+    },
+    "pressure": {
+      "initial value [Pa]": 6152.049805
+    }
+  },
+  "evolving conditions": {
+  },
+  "initial conditions": {
+    "initial_conditions.csv": {}
+  },
+  "model components": [
+    {
+      "type": "CAMP",
+      "configuration file": "camp_data/config.json",
+      "override species": {
+        "M": {
+          "mixing ratio mol mol-1": 1.0
+        }
+      },
+      "suppress output": {
+        "M": {}
+      }
+    }
+  ]
+}

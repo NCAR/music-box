@@ -154,6 +154,7 @@ class Conditions:
 
             initial_conditions_path = os.path.dirname(
                 path_to_json) + "/" + list(config_JSON['initial conditions'].keys())[0]
+            logger.info("initial_conditions_pathh = {}".format(initial_conditions_path))
             reaction_rates = Conditions.read_initial_rates_from_file(
                 initial_conditions_path, reaction_list)
 
@@ -212,6 +213,7 @@ class Conditions:
 
         reaction_rates = []
 
+        logger.info("Conditions file_pathhh = {}".format(file_path))
         with open(file_path, 'r') as csv_file:
             initial_conditions = list(csv.reader(csv_file))
 
@@ -293,12 +295,19 @@ class Conditions:
             self.pressure = new_conditions.pressure
         if new_conditions.temperature is not None:
             self.temperature = new_conditions.temperature
+        logger.info("Before self.species_concentrations = {}".format(self.species_concentrations))
         for conc in new_conditions.species_concentrations:
+            logger.info("concc = {}".format(vars(conc)))
             match = filter(
                 lambda x: x.species.name == conc.species.name,
                 self.species_concentrations)
-            for item in list(match):
+
+            match = list(match)
+            logger.info("Before matchh = {}".format(match))
+            for item in match:
                 item.concentration = conc.concentration
+            logger.info("After matchh = {}".format(match))
+        logger.info("After self.species_concentrations = {}".format(self.species_concentrations))
 
         for rate in new_conditions.reaction_rates:
 
