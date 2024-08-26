@@ -75,6 +75,8 @@ def safeFloat(numString):
 # and their MusicBox equivalents.
 def getMusicaDictionary():
    varMap = {
+      "T": "temperature",
+      "PS": "pressure",
       "H2O": "H2O",
       "TEPOMUC": "jtepo",   # test var not in WACCM
       "BENZENE": "jbenzene",
