@@ -8,9 +8,9 @@
 
 #import os
 import argparse
-#import numpy
 import datetime
 import xarray
+import json
 import sys
 
 import logging
@@ -132,9 +132,9 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
 
     chemSinglePoint = singlePoint[waccmKey]
     if (True):
-      logger.info("{} = {}".format(waccmKey, chemSinglePoint))
-      logger.info("{} = {} {}".format(waccmKey, chemSinglePoint.values, chemSinglePoint.units))
-    musicaTuple = (waccmKey, chemSinglePoint.values, chemSinglePoint.units)
+      logger.info("{} = object {}".format(waccmKey, chemSinglePoint))
+      logger.info("{} = value {} {}".format(waccmKey, chemSinglePoint.values, chemSinglePoint.units))
+    musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)
     musicaDict[musicaName] = musicaTuple
 
   # close the NetCDF file
@@ -195,11 +195,22 @@ def writeInitCSV(initValues, filename):
 # Write JSON fragment suitable for my_config.json in MusicBox.
 # initValues = dictionary of Musica varnames and (WACCM name, value, units)
 def writeInitJSON(initValues, filename):
-  fp = open(filename, "w")
 
-  fp.write("Hello, JSON World!\n")
+  # set up dictionary of vars and initial values
+  dictName = "chemical species"
+  initConfig = {dictName: {} }
 
-  fp.close()
+  for key, value in initValues.items():
+    initConfig[dictName][key] = {
+      "initial value [{}]".format(value[unitIndex]): value[valueIndex]}
+
+  # write JSON content to the file
+  fpJson = open(filename, "w")
+
+  json.dump(initConfig, fpJson, indent=2)
+  fpJson.close()
+
+  fpJson.close()
   return
 
 
