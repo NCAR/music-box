@@ -134,7 +134,7 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
     if (True):
       logger.info("{} = object {}".format(waccmKey, chemSinglePoint))
       logger.info("{} = value {} {}".format(waccmKey, chemSinglePoint.values, chemSinglePoint.units))
-    musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)
+    musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)   # from 0-dim array
     musicaDict[musicaName] = musicaTuple
 
   # close the NetCDF file
