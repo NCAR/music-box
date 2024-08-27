@@ -8,8 +8,10 @@ import colorlog
 import subprocess
 import tempfile
 
+
 def format_examples_help(examples):
     return '\n'.join(f"{e.short_name}: {e.description}" for e in examples)
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -50,6 +52,7 @@ def parse_arguments():
     )
     return parser.parse_args()
 
+
 def setup_logging(verbosity, color_output):
     if verbosity >= 2:
         log_level = logging.DEBUG
@@ -58,9 +61,19 @@ def setup_logging(verbosity, color_output):
     else:
         log_level = logging.CRITICAL
 
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    formatter = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S')
     if color_output:
-        color_formatter = colorlog.ColoredFormatter('%(log_color)s%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S', log_colors={'DEBUG': 'green', 'INFO': 'cyan', 'WARNING': 'yellow', 'ERROR': 'red', 'CRITICAL': 'bold_red'})
+        color_formatter = colorlog.ColoredFormatter(
+            '%(log_color)s%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S',
+            log_colors={
+                'DEBUG': 'green',
+                'INFO': 'cyan',
+                'WARNING': 'yellow',
+                'ERROR': 'red',
+                'CRITICAL': 'bold_red'})
         console_handler = logging.StreamHandler()
         console_handler.setLevel(log_level)
         console_handler.setFormatter(color_formatter)
@@ -71,20 +84,23 @@ def setup_logging(verbosity, color_output):
         console_handler.setFormatter(formatter)
         logging.basicConfig(level=log_level, handlers=[console_handler])
 
+
 def plot_with_gnuplot(data, species_list):
     # Prepare columns and data for plotting
     columns = ['time'] + species_list
     data_to_plot = data[columns]
-    
+
     data_csv = data_to_plot.to_csv(index=False)
-    
+
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as data_file:
             data_file.write(data_csv.encode())
             data_file_path = data_file.name
-        
-        plot_commands = ',\n\t'.join(f"'{data_file_path}' using 1:{i+2} with lines title '{species}'" for i, species in enumerate(species_list))
-        
+
+        plot_commands = ',\n\t'.join(
+            f"'{data_file_path}' using 1:{i+2} with lines title '{species}'" for i,
+            species in enumerate(species_list))
+
         gnuplot_command = f"""
         set datafile separator ",";
         set terminal dumb size 120,25;
@@ -93,7 +109,7 @@ def plot_with_gnuplot(data, species_list):
         set title 'Time vs Species';
         plot {plot_commands}
         """
-        
+
         subprocess.run(['gnuplot', '-e', gnuplot_command], check=True)
     except FileNotFoundError:
         logging.critical("gnuplot is not installed. Skipping plotting.")
@@ -103,6 +119,7 @@ def plot_with_gnuplot(data, species_list):
         # Clean up the temporary file
         if data_file_path:
             os.remove(data_file_path)
+
 
 def main():
     start = datetime.datetime.now()
@@ -138,10 +155,10 @@ def main():
         myBox.config_file)
     myBox.create_solver(config_path)
     result = myBox.solve(musicBoxOutputPath)
-    
+
     if musicBoxOutputPath is None:
         print(result.to_csv(index=False))
-    
+
     if plot_species_list:
         # Prepare data for plotting
         plot_with_gnuplot(result, plot_species_list)
@@ -151,6 +168,7 @@ def main():
     logger.info(f"Elapsed time: {end - start} seconds")
 
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
