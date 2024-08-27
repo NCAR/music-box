@@ -1,21 +1,25 @@
-from acom_music_box import MusicBox
+from acom_music_box import MusicBox, Examples
+import os
 
 import math
-
 
 class TestAnalytical:
     def test_run(self):
         box_model = MusicBox()
 
         # configures box model
-        conditions_path = "configs/analytical_config/my_config.json"
-        camp_path = "configs/analytical_config/camp_data"
-
+        conditions_path = Examples.Analytical.path
         box_model.readConditionsFromJson(conditions_path)
+
+        camp_path = os.path.join(
+            os.path.dirname(conditions_path),
+            box_model.config_file)
+
         box_model.create_solver(camp_path)
 
         # solves and saves output
-        output = box_model.solve()
+        df = box_model.solve()
+        output = [df.columns.values.tolist()] + df.values.tolist()
 
         conc_a_index = output[0].index("CONC.A")
         conc_b_index = output[0].index("CONC.B")
