@@ -1,21 +1,29 @@
 import os
 import argparse
-from acom_music_box import MusicBox
+from acom_music_box import MusicBox, Examples
 import datetime
 import sys
 import logging
 import colorlog
 
+def format_examples_help(examples):
+    return '\n'.join(f"{e.short_name}: {e.description}" for e in examples)
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description='MusicBox simulation runner.',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument(
         '-c', '--config',
         type=str,
-        required=True,
-        help='Path to the configuration file.'
+        help='Path to the configuration file. If --example is provided, this argument is ignored.'
+    )
+    parser.add_argument(
+        '-e', '--example',
+        type=str,
+        choices=[e.short_name for e in Examples],
+        help=f'Name of the example to use. Overrides --config.\nAvailable examples:\n{format_examples_help(Examples)}'
     )
     parser.add_argument(
         '-o', '--output',
@@ -69,7 +77,12 @@ def main():
 
     logger.debug(f"Working directory = {os.getcwd()}")
 
-    musicBoxConfigFile = args.config
+    if args.example:
+        example = next(e for e in Examples if e.short_name == args.example)
+        musicBoxConfigFile = example.path
+        logger.info(f"Using example: {example}")
+    else:
+        musicBoxConfigFile = args.config
 
     musicBoxOutputPath = args.output
 
