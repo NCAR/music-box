@@ -153,9 +153,14 @@ unitIndex = 2
 # varDict = originally read from WACCM, tuples are (musicaName, value, units)
 # return varDict with values modified
 def convertWaccm(varDict):
-  # convert Ammonia to milli-moles
-  nh3Tuple = varDict["NH3"]
-  varDict["NH3"] = (nh3Tuple[0], nh3Tuple[valueIndex] * 1000, "milli" + nh3Tuple[unitIndex])
+
+  moleToM3 = 1000 / 22.4
+
+  for key, vTuple in varDict.items():
+    # convert moles / mole to moles / cubic meter
+    units = vTuple[unitIndex]
+    if (units == "mol/mol"):
+      varDict[key] = (vTuple[0], vTuple[valueIndex] * moleToM3, "mol m-3")
 
   return(varDict)
 
@@ -242,7 +247,7 @@ def insertIntoTemplate(initValues, templateDir, destDir):
   # locate the section for chemical concentrations
   chemSpeciesTag = "chemical species"
   chemSpecies = myConfig[chemSpeciesTag]
-  logger.info("chemSpecies = {}".format(chemSpecies))
+  logger.info("Replace chemSpecies = {}".format(chemSpecies))
   del myConfig[chemSpeciesTag]     # delete the existing section
 
   # set up dictionary of chemicals and initial values
