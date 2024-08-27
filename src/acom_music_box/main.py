@@ -99,7 +99,7 @@ def main():
     result = myBox.solve(musicBoxOutputPath)
     
     if musicBoxOutputPath is None:
-        print(result)
+        print(result.to_csv(index=False))
 
     end = datetime.datetime.now()
     logger.info(f"End time: {end}")
