@@ -425,7 +425,7 @@ class MusicBox:
         # Create a solver object using the configuration file
         self.solver = musica.create_solver(
             path_to_config,
-            musica.micmsolver.rosenbrock,
+            solver_type,
             number_of_grid_cells)
 
     def solve(self, output_path=None):
@@ -687,16 +687,6 @@ class MusicBox:
         """
         return musica.species_ordering(self.solver)
 
-    def userDefinedReactionRates(self):
-        """
-        Retrieves the user-defined reaction rates from the solver.
-
-        This function calls the `user_defined_reaction_rates` function from the `musica` module,
-        passing the solver instance from the current object.
-
-        Returns:
-            dict: The dictionary of user-defined reaction rates used in the solver.
-        """
     @classmethod
     def order_reaction_rates(self, curr_conditions, rate_constant_ordering):
         """

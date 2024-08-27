@@ -1,6 +1,6 @@
 import os
 import argparse
-from acom_music_box import MusicBox, Examples
+from acom_music_box import MusicBox, Examples, __version__ 
 import datetime
 import sys
 import logging
@@ -39,6 +39,11 @@ def parse_arguments():
         action='count',
         default=0,
         help='Increase logging verbosity. Use -v for info, -vv for debug.'
+    )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version=__version__,
     )
     parser.add_argument(
         '--color-output',
