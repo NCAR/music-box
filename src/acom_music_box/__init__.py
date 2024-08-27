@@ -19,3 +19,4 @@ from .conditions import Conditions
 
 from .evolving_conditions import EvolvingConditions
 from .music_box import MusicBox
+import acom_music_box.examples as Examples
