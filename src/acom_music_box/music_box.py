@@ -562,7 +562,7 @@ class MusicBox:
                 output_path = os.path.join(os.getcwd(), output_path)
             elif not os.path.basename(output_path):
                 raise ValueError(f"Invalid output path: '{output_path}' does not contain a filename.")
-            
+
             # Ensure the directory exists
             dir_path = os.path.dirname(output_path)
             if dir_path and not os.path.exists(dir_path):

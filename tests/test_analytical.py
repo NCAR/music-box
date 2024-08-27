@@ -3,6 +3,7 @@ import os
 
 import math
 
+
 class TestAnalytical:
     def test_run(self):
         box_model = MusicBox()
