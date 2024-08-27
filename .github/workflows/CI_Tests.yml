@@ -39,7 +39,7 @@ jobs:
     
     - name: Run the smoke tests
       run: |
-        music_box -c src/acom_music_box/examples/configs/analytical_config/my_config.json -o output.csv
+        music_box -c src/acom_music_box/examples/configs/analytical/my_config.json -o output.csv
         music_box -e Analytical -o output.csv
         music_box -e Analytical -o output.csv -vv --color-output
 
