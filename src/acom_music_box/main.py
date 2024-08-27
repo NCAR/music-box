@@ -46,7 +46,7 @@ def parse_arguments():
     parser.add_argument(
         '--plot',
         type=str,
-        help='Comma-separated list of species to plot (e.g., CONC.A,CONC.B).'
+        help='Plot a comma-separated list of species if gnuplot is available (e.g., CONC.A,CONC.B).'
     )
     return parser.parse_args()
 
