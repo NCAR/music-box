@@ -71,8 +71,9 @@ class ReactionList:
         list_name = None
 
         # gets config file path
-        config_file_path = os.path.dirname(
-            path_to_json) + "/" + config_JSON['model components'][0]['configuration file']
+        config_file_path = os.path.join(
+            os.path.dirname(path_to_json),
+            config_JSON['model components'][0]['configuration file'])
 
         # opnens config path to read reaction file
         with open(config_file_path, 'r') as json_file:
