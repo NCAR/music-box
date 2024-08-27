@@ -8,9 +8,9 @@ from .reaction_list import ReactionList
 from .evolving_conditions import EvolvingConditions
 import json
 import os
+import pandas as pd
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -552,16 +552,25 @@ class MusicBox:
             # increments time
             curr_time += self.box_model_options.chem_step_time
 
+        df = pd.DataFrame(output_array[1:], columns=output_array[0])
         # outputs to file if output is present
-        if (output_path is not None):
-            logger.info("path_to_output = {}".format(output_path))
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            with open(output_path, 'w', newline='') as output:
-                writer = csv.writer(output)
-                writer.writerows(output_array)
+        if output_path is not None:
 
-        # returns output_array
-        return output_array
+            # Check if the output_path is a full path or just a file name
+            if os.path.dirname(output_path) == '':
+                # If output_path is just a filename, use the current directory
+                output_path = os.path.join(os.getcwd(), output_path)
+            elif not os.path.basename(output_path):
+                raise ValueError(f"Invalid output path: '{output_path}' does not contain a filename.")
+
+            # Ensure the directory exists
+            dir_path = os.path.dirname(output_path)
+            if dir_path and not os.path.exists(dir_path):
+                os.makedirs(dir_path, exist_ok=True)
+
+            df.to_csv(output_path, index=False)
+
+        return df
 
     def readFromUIJson(self, path_to_json):
         """

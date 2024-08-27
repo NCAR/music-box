@@ -21,7 +21,9 @@ classifiers = ["License :: OSI Approved :: Apache Software License"]
 dynamic = ["version", "description"]
 
 dependencies = [
-  "musica==0.7.3"
+  "musica==0.7.3",
+  "colorlog",
+  "pandas"
 ]
 
 [project.urls]
