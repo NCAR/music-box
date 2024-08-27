@@ -4,6 +4,7 @@ from acom_music_box import MusicBox
 import datetime
 import sys
 import logging
+import colorlog
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -31,11 +32,27 @@ def parse_arguments():
 
 def setup_logging(verbose):
     log_level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=log_level,
-        format='%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
+
+    # Create a colorlog formatter
+    formatter = colorlog.ColoredFormatter(
+        '%(log_color)s%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        log_colors={
+            'DEBUG': 'cyan',
+            'INFO': 'green',
+            'WARNING': 'yellow',
+            'ERROR': 'red',
+            'CRITICAL': 'bold_red',
+        }
     )
+
+    # Create a console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(log_level)
+    console_handler.setFormatter(formatter)
+
+    # Configure the root logger
+    logging.basicConfig(level=log_level, handlers=[console_handler])
 
 
 def main():
