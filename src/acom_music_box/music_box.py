@@ -710,6 +710,8 @@ class MusicBox:
                 key = "LOSS." + rate.reaction.name
             elif (rate.reaction.reaction_type == "EMISSION"):
                 key = "EMIS." + rate.reaction.name
+            elif (rate.reaction.reaction_type == "USER_DEFINED"):
+                key = "USER." + rate.reaction.name
             rate_constants[key] = rate.rate
 
         ordered_rate_constants = len(rate_constants.keys()) * [0.0]

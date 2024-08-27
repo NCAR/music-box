@@ -75,6 +75,7 @@ class Reaction:
             "ARRHENIUS": "ARRH",
             "TUNNELING": "TUNN",
             "TROE_TERNARY": "TROE",
+            "USER_DEFINED": "USER",
         }
         return type_map.get(self.reaction_type, "UNKNOWN")
 
