@@ -8,6 +8,7 @@ from .reaction_list import ReactionList
 from .evolving_conditions import EvolvingConditions
 import json
 import os
+import pandas as pd
 
 import logging
 logger = logging.getLogger(__name__)
@@ -551,8 +552,10 @@ class MusicBox:
             # increments time
             curr_time += self.box_model_options.chem_step_time
 
+        df = pd.DataFrame(output_array[1:], columns=output_array[0])
         # outputs to file if output is present
         if output_path is not None:
+
             # Check if the output_path is a full path or just a file name
             if os.path.dirname(output_path) == '':
                 # If output_path is just a filename, use the current directory
@@ -564,14 +567,10 @@ class MusicBox:
             dir_path = os.path.dirname(output_path)
             if dir_path and not os.path.exists(dir_path):
                 os.makedirs(dir_path, exist_ok=True)
-            
-            # Write to the specified file path
-            with open(output_path, 'w', newline='') as output_file:
-                writer = csv.writer(output_file)
-                writer.writerows(output_array)
 
-        # returns output_array
-        return output_array
+            df.to_csv(output_path, index=False)
+
+        return df
 
     def readFromUIJson(self, path_to_json):
         """
