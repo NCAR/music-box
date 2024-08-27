@@ -234,6 +234,44 @@ def insertIntoTemplate(initValues, templateDir, destDir):
   # copy the template directory
   shutil.copytree(templateDir, destPath)
 
+  # find the standard configuration file and parse it
+  myConfigFile = os.path.join(destPath, "my_config.json")
+  with open(myConfigFile) as jsonFile:
+    myConfig = json.load(jsonFile)
+
+  # locate the section for chemical concentrations
+  chemSpeciesTag = "chemical species"
+  chemSpecies = myConfig[chemSpeciesTag]
+  logger.info("chemSpecies = {}".format(chemSpecies))
+  del myConfig[chemSpeciesTag]     # delete the existing section
+
+  # set up dictionary of chemicals and initial values
+  chemValueDict = {}
+  temperature = 0.0
+  pressure = 0.0
+  for key, value in initValues.items():
+    if (key == "temperature"):
+      temperature = safeFloat(value[valueIndex])
+      continue
+    if (key == "pressure"):
+      pressure = safeFloat(value[valueIndex])
+      continue
+
+    chemValueDict[key] = {
+      "initial value [{}]".format(value[unitIndex]): value[valueIndex]}
+
+  myConfig[chemSpeciesTag] = chemValueDict
+
+  # replace the values of temperature and pressure
+  envConditionsTag = "environmental conditions"
+  envConfig = myConfig[envConditionsTag]
+  envConfig["temperature"]["initial value [K]"] = temperature
+  envConfig["pressure"]["initial value [Pa]"] = pressure
+
+  # save over the former json file
+  with open(myConfigFile, "w") as myConfigFile:
+    json.dump(myConfig, myConfigFile, indent=2)
+
   return
 
 
