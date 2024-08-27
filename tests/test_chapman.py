@@ -1,4 +1,6 @@
-from acom_music_box import MusicBox
+from acom_music_box import MusicBox, Examples
+
+import os
 import csv
 import math
 
@@ -8,15 +10,18 @@ class TestChapman:
         box_model = MusicBox()
 
         # configures box model
-        conditions_path = "configs/chapman_config/my_config.json"
-        camp_path = "configs/chapman_config/camp_data"
-
+        conditions_path = Examples.Chapman.path
         box_model.readConditionsFromJson(conditions_path)
+
+        camp_path = os.path.join(
+            os.path.dirname(conditions_path),
+            box_model.config_file)
 
         box_model.create_solver(camp_path)
 
         # solves and saves output
-        model_output = box_model.solve()
+        df = box_model.solve()
+        model_output = [df.columns.values.tolist()] + df.values.tolist()
 
         # read chapman_test.csv into test_output
         with open("expected_results/chapman_test.csv", "r") as file:
