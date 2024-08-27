@@ -152,8 +152,10 @@ class Conditions:
         if 'initial conditions' in config_JSON and len(
                 list(config_JSON['initial conditions'].keys())) > 0:
 
-            initial_conditions_path = os.path.dirname(
-                path_to_json) + "/" + list(config_JSON['initial conditions'].keys())[0]
+            initial_conditions_path = os.path.join(
+                os.path.dirname(path_to_json),
+                list(config_JSON['initial conditions'].keys())[0])
+
             reaction_rates = Conditions.read_initial_rates_from_file(
                 initial_conditions_path, reaction_list)
 
