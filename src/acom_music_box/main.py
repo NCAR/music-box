@@ -43,7 +43,7 @@ def parse_arguments():
     parser.add_argument(
         '--version',
         action='version',
-        version=__version__,
+        version=f'MusicBox {__version__}',
     )
     parser.add_argument(
         '--color-output',
