@@ -1,18 +1,22 @@
-from acom_music_box import MusicBox
+from acom_music_box import MusicBox, Examples
+import os
 
 import csv
 import math
 
 
-class TestFullGassPhaseMechanism:
+class TestCarbonBond5:
     def test_run(self):
         box_model = MusicBox()
 
         # configures box model
-        conditions_path = "configs/full_gas_phase_mechanism_config/my_config.json"
-        camp_path = "configs/full_gas_phase_mechanism_config/camp_data"
-
+        conditions_path = Examples.CarbonBond5.path
         box_model.readConditionsFromJson(conditions_path)
+
+        camp_path = os.path.join(
+            os.path.dirname(conditions_path),
+            box_model.config_file)
+
         box_model.create_solver(camp_path)
 
         # solves and saves output
@@ -116,5 +120,5 @@ class TestFullGassPhaseMechanism:
 
 
 if __name__ == "__main__":
-    test = TestFullGassPhaseMechanism()
+    test = TestCarbonBond5()
     test.test_run()
