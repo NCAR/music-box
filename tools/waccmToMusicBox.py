@@ -12,6 +12,8 @@ import datetime
 import xarray
 import json
 import sys
+import os
+import shutil
 
 import logging
 logger = logging.getLogger(__name__)
@@ -214,6 +216,28 @@ def writeInitJSON(initValues, filename):
 
 
 
+# Reproduce the MusicBox configuration with new initial values.
+# initValues = dictionary of Musica varnames and (WACCM name, value, units)
+# templateDir = directory containing configuration files and camp_data
+# destDir = the template will be created in this directory
+def insertIntoTemplate(initValues, templateDir, destDir):
+
+  # copy the template directory to working area
+  destPath = os.path.basename(os.path.normpath(templateDir))
+  destPath = os.path.join(destDir, destPath)
+  logger.info("Create new configuration in = {}".format(destPath))
+
+  # remove directory if it already exists
+  if os.path.exists(destPath):
+    shutil.rmtree(destPath)
+
+  # copy the template directory
+  shutil.copytree(templateDir, destPath)
+
+  return
+
+
+
 # Main routine begins here.
 def main():
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -254,6 +278,10 @@ def main():
     retrieveWhen = datetime.datetime.strptime(
       "{} {}".format(dateStr, timeStr), "%Y%m%d %H:%M")
 
+    template = None
+    if ("template" in myArgs):
+        template = myArgs.get("template")
+
     logger.info("Retrieve WACCM conditions at ({} North, {} East)   when {}."
         .format(lat, lon, retrieveWhen))
 
@@ -266,15 +294,19 @@ def main():
     varValues = convertWaccm(varValues)
     logger.info("Converted WACCM varValues = {}".format(varValues))
 
-    if (False):
+    if (True):
       # Write CSV file for MusicBox initial conditions.
       csvName = "{}/{}".format(musicaDir, "initial_conditions.csv")
       writeInitCSV(varValues, csvName)
 
-    else:
+    if (True):
       # Write JSON file for MusicBox initial conditions.
       jsonName = "{}/{}".format(musicaDir, "initial_config.json")
       writeInitJSON(varValues, jsonName)
+
+    if (True and template is not None):
+      logger.info("Insert values into template {}".format(template))
+      insertIntoTemplate(varValues, template, musicaDir)
 
     logger.info("End time: {}".format(datetime.datetime.now()))
     sys.exit(0)     # no error
