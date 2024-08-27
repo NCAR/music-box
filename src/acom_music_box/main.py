@@ -87,7 +87,7 @@ def plot_with_gnuplot(data, species_list):
         
         gnuplot_command = f"""
         set datafile separator ",";
-        set terminal dumb size 120,30;
+        set terminal dumb size 120,25;
         set xlabel 'Time';
         set ylabel 'Value';
         set title 'Time vs Species';

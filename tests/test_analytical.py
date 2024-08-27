@@ -18,7 +18,8 @@ class TestAnalytical:
         box_model.create_solver(camp_path)
 
         # solves and saves output
-        output = box_model.solve()
+        df = box_model.solve()
+        output = [df.columns.values.tolist()] + df.values.tolist()
 
         conc_a_index = output[0].index("CONC.A")
         conc_b_index = output[0].index("CONC.B")

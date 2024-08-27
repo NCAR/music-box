@@ -20,7 +20,8 @@ class TestChapman:
         box_model.create_solver(camp_path)
 
         # solves and saves output
-        model_output = box_model.solve()
+        df = box_model.solve()
+        model_output = [df.columns.values.tolist()] + df.values.tolist()
 
         # read chapman_test.csv into test_output
         with open("expected_results/chapman_test.csv", "r") as file:

@@ -20,7 +20,8 @@ class TestWallLoss:
         box_model.create_solver(camp_path)
 
         # solves and saves output
-        model_output = box_model.solve()
+        df = box_model.solve()
+        model_output = [df.columns.values.tolist()] + df.values.tolist()
 
         # read wall_loss_test.csv into test_output
         with open("expected_results/wall_loss_test.csv", "r") as file:
