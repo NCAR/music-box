@@ -24,42 +24,43 @@ def parse_arguments():
     )
     parser.add_argument(
         '-v', '--verbose',
+        action='count',
+        default=0,
+        help='Increase logging verbosity. Use -v for info, -vv for debug.'
+    )
+    parser.add_argument(
+        '--color-output',
         action='store_true',
-        help='Enable debug logging.'
+        help='Enable color output for logs.'
     )
     return parser.parse_args()
 
+def setup_logging(verbosity, color_output):
+    if verbosity >= 2:
+        log_level = logging.DEBUG
+    elif verbosity == 1:
+        log_level = logging.INFO
+    else:
+        log_level = logging.CRITICAL
 
-def setup_logging(verbose):
-    log_level = logging.DEBUG if verbose else logging.INFO
-
-    # Create a colorlog formatter
-    formatter = colorlog.ColoredFormatter(
-        '%(log_color)s%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
-        log_colors={
-            'DEBUG': 'cyan',
-            'INFO': 'green',
-            'WARNING': 'yellow',
-            'ERROR': 'red',
-            'CRITICAL': 'bold_red',
-        }
-    )
-
-    # Create a console handler
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(log_level)
-    console_handler.setFormatter(formatter)
-
-    # Configure the root logger
-    logging.basicConfig(level=log_level, handlers=[console_handler])
-
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    if color_output:
+        color_formatter = colorlog.ColoredFormatter('%(log_color)s%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S', log_colors={'DEBUG': 'green', 'INFO': 'cyan', 'WARNING': 'yellow', 'ERROR': 'red', 'CRITICAL': 'bold_red'})
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(log_level)
+        console_handler.setFormatter(color_formatter)
+        logging.basicConfig(level=log_level, handlers=[console_handler])
+    else:
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(log_level)
+        console_handler.setFormatter(formatter)
+        logging.basicConfig(level=log_level, handlers=[console_handler])
 
 def main():
     start = datetime.datetime.now()
 
     args = parse_arguments()
-    setup_logging(args.verbose)
+    setup_logging(args.verbose, args.color_output)
 
     logger = logging.getLogger(__name__)
 
@@ -68,21 +69,16 @@ def main():
 
     logger.debug(f"Working directory = {os.getcwd()}")
 
-    # retrieve and parse the command-line arguments
-    logger.debug(f"Command line arguments: {vars(args)}")
-
-    # set up the home configuration file
     musicBoxConfigFile = args.config
 
-    # set up the output path (if provided)
     musicBoxOutputPath = args.output
 
-    # create and load a MusicBox object
+    # Create and load a MusicBox object
     myBox = MusicBox()
     logger.debug(f"Configuration file = {musicBoxConfigFile}")
     myBox.readConditionsFromJson(musicBoxConfigFile)
 
-    # create solver and solve
+    # Create solver and solve
     config_path = os.path.join(
         os.path.dirname(musicBoxConfigFile),
         myBox.config_file)
@@ -90,14 +86,13 @@ def main():
     result = myBox.solve(musicBoxOutputPath)
     
     if musicBoxOutputPath is None:
-        logger.info(result)
+        print(result)
 
     end = datetime.datetime.now()
     logger.info(f"End time: {end}")
     logger.info(f"Elapsed time: {end - start} seconds")
 
     sys.exit(0)
-
 
 if __name__ == "__main__":
     main()
