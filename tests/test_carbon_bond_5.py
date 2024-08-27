@@ -20,7 +20,8 @@ class TestCarbonBond5:
         box_model.create_solver(camp_path)
 
         # solves and saves output
-        model_output = box_model.solve()
+        df = box_model.solve()
+        model_output = [df.columns.values.tolist()] + df.values.tolist()
 
         # read wall_loss_test.csv into test_output
         with open("expected_results/full_gas_phase_mechanism.csv", "r") as file:
