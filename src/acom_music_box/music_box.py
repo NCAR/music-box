@@ -516,17 +516,15 @@ class MusicBox:
                     next_conditions is not None and next_conditions_time <= curr_time):
 
                 curr_conditions.update_conditions(next_conditions)
-
+                ordered_rate_constants = self.order_reaction_rates(
+                        curr_conditions, rate_constant_ordering)
+                
                 # iterates next_conditions if there are remaining evolving
                 # conditions
                 if (len(self.evolving_conditions) > next_conditions_index + 1):
                     next_conditions_index += 1
                     next_conditions = self.evolving_conditions.conditions[next_conditions_index]
                     next_conditions_time = self.evolving_conditions.times[next_conditions_index]
-
-                    ordered_rate_constants = self.order_reaction_rates(
-                        curr_conditions, rate_constant_ordering)
-
                 else:
                     next_conditions = None
 
