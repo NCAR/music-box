@@ -1,96 +1,84 @@
 import os
 import argparse
 from acom_music_box import MusicBox
-
-
-import math
 import datetime
 import sys
-
 import logging
-logger = logging.getLogger(__name__)
 
-
-# configure argparse for key-value pairs
-class KeyValueAction(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-        for value in values:
-            key, val = value.split('=')
-            setattr(namespace, key, val)
-
-# Retrieve named arguments from the command line and
-# return in a dictionary of keywords.
-# argPairs = list of arguments, probably from sys.argv[1:]
-#       named arguments are formatted like this=3.14159
-# return dictionary of keywords and values
-
-
-def getArgsDictionary(argPairs):
+def parse_arguments():
     parser = argparse.ArgumentParser(
-        description='Process some key=value pairs.')
-    parser.add_argument(
-        'key_value_pairs',
-        nargs='+',  # This means one or more arguments are expected
-        action=KeyValueAction,
-        help="Arguments in key=value format. Example: configFile=my_config.json"
+        description='MusicBox simulation runner.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
+    parser.add_argument(
+        '-c', '--config',
+        type=str,
+        required=True,
+        help='Path to the configuration file.'
+    )
+    parser.add_argument(
+        '-o', '--output',
+        type=str,
+        help='Path to save the output file, including the file name. If not provided, result will be printed to the console.'
+    )
+    parser.add_argument(
+        '-v', '--verbose',
+        action='store_true',
+        help='Enable debug logging.'
+    )
+    return parser.parse_args()
 
-    argDict = vars(parser.parse_args(argPairs))      # return dictionary
 
-    return (argDict)
+def setup_logging(verbose):
+    log_level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(
+        level=log_level,
+        format='%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
 
 
 def main():
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-    logger.info("{}".format(__file__))
-    logger.info("Start time: {}".format(datetime.datetime.now()))
+    start = datetime.datetime.now()
 
-    logger.info("Hello, MusicBox World!")
-    logger.info("Working directory = {}".format(os.getcwd()))
+    args = parse_arguments()
+    setup_logging(args.verbose)
+
+    logger = logging.getLogger(__name__)
+
+    logger.debug(f"{__file__}")
+    logger.info(f"Start time: {start}")
+
+    logger.debug(f"Working directory = {os.getcwd()}")
 
     # retrieve and parse the command-line arguments
-    myArgs = getArgsDictionary(sys.argv[1:])
-    logger.info("Command line = {}".format(myArgs))
+    logger.debug(f"Command line arguments: {vars(args)}")
 
     # set up the home configuration file
-    musicBoxConfigFile = None
-    if ("configFile" in myArgs):
-        musicBoxConfigFile = myArgs.get("configFile")
+    musicBoxConfigFile = args.config
 
-    # set up the output directory
-    musicBoxOutputDir = ".\\"      # default
-    if ("outputDir" in myArgs):
-        musicBoxOutputDir = myArgs.get("outputDir")
-
-    # check for required arguments and provide examples
-    if (musicBoxConfigFile is None):
-        errorString = "Error: The configFile parameter is required."
-        errorString += (
-            " Example: configFile={}" .format(
-                os.path.join(
-                    "tests",
-                    "configs",
-                    "analytical_config",
-                    "my_config.json")))
-        raise Exception(errorString)
+    # set up the output path (if provided)
+    musicBoxOutputPath = args.output
 
     # create and load a MusicBox object
     myBox = MusicBox()
-    logging.info("configuration file = {}".format(musicBoxConfigFile))
+    logger.debug(f"Configuration file = {musicBoxConfigFile}")
     myBox.readConditionsFromJson(musicBoxConfigFile)
-    logger.info("myBox = {}".format(myBox))
 
-    # create solver and solve, writing output to requested directory
-    campConfig = os.path.join(
+    # create solver and solve
+    config_path = os.path.join(
         os.path.dirname(musicBoxConfigFile),
         myBox.config_file)
-    logger.info("CAMP config = {}".format(campConfig))
-    myBox.create_solver(campConfig)
-    logger.info("myBox.solver = {}".format(myBox.solver))
-    mySolution = myBox.solve(os.path.join(musicBoxOutputDir, "mySolution.csv"))
-    # logger.info("mySolution = {}".format(mySolution))
+    myBox.create_solver(config_path)
+    result = myBox.solve(musicBoxOutputPath)
+    
+    if musicBoxOutputPath is None:
+        logger.info(result)
 
-    logger.info("End time: {}".format(datetime.datetime.now()))
+    end = datetime.datetime.now()
+    logger.info(f"End time: {end}")
+    logger.info(f"Elapsed time: {end - start} seconds")
+
     sys.exit(0)
 
 

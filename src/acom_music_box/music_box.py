@@ -10,7 +10,6 @@ import json
 import os
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -553,11 +552,22 @@ class MusicBox:
             curr_time += self.box_model_options.chem_step_time
 
         # outputs to file if output is present
-        if (output_path is not None):
-            logger.info("path_to_output = {}".format(output_path))
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            with open(output_path, 'w', newline='') as output:
-                writer = csv.writer(output)
+        if output_path is not None:
+            # Check if the output_path is a full path or just a file name
+            if os.path.dirname(output_path) == '':
+                # If output_path is just a filename, use the current directory
+                output_path = os.path.join(os.getcwd(), output_path)
+            elif not os.path.basename(output_path):
+                raise ValueError(f"Invalid output path: '{output_path}' does not contain a filename.")
+            
+            # Ensure the directory exists
+            dir_path = os.path.dirname(output_path)
+            if dir_path and not os.path.exists(dir_path):
+                os.makedirs(dir_path, exist_ok=True)
+            
+            # Write to the specified file path
+            with open(output_path, 'w', newline='') as output_file:
+                writer = csv.writer(output_file)
                 writer.writerows(output_array)
 
         # returns output_array
