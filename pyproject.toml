@@ -22,6 +22,7 @@ dynamic = ["version", "description"]
 
 dependencies = [
   "musica==0.7.3",
+  "xarray",
   "colorlog",
   "pandas"
 ]
@@ -31,3 +32,4 @@ Home = "https://github.com/NCAR/music-box"
 
 [project.scripts]
 music_box = "acom_music_box.main:main"
+waccmToMusicBox = "acom_music_box.tools.waccmToMusicBox:main"
