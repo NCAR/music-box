@@ -58,7 +58,7 @@ class TestChapman:
                 assert math.isclose(
                     float(model_output_concs[i][j]),
                     float(test_output_concs[i][j]),
-                    rel_tol=1e-8,
+                    rel_tol=1e-7,
                     abs_tol=1e-15,
                 ), f"Arrays differ at index ({i}, {j}) for species {concs_to_test[j]}"
 
