@@ -1,6 +1,6 @@
 import os
 import argparse
-from acom_music_box import MusicBox, Examples, __version__ 
+from acom_music_box import MusicBox, Examples, __version__
 import datetime
 import sys
 import logging
