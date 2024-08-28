@@ -8,9 +8,9 @@ from .reaction_list import ReactionList
 from .evolving_conditions import EvolvingConditions
 import json
 import os
+import pandas as pd
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -199,7 +199,9 @@ class MusicBox:
             elif reaction_rate.reaction.reaction_type == "LOSS":
                 name = "LOSS." + reaction_rate.reaction.name + ".s-1"
             elif reaction_rate.reaction.reaction_type == "EMISSION":
-                name = "EMISSION." + reaction_rate.reaction.name + ".s-1"
+                name = "EMIS." + reaction_rate.reaction.name + ".s-1"
+            elif reaction_rate.reaction.reaction_type == "USER_DEFINED":
+                name = "USER." + reaction_rate.reaction.name + ".s-1"
 
             reaction_names.append(name)
             reaction_rates.append(reaction_rate.rate)
@@ -425,7 +427,7 @@ class MusicBox:
         # Create a solver object using the configuration file
         self.solver = musica.create_solver(
             path_to_config,
-            musica.micmsolver.rosenbrock,
+            solver_type,
             number_of_grid_cells)
 
     def solve(self, output_path=None):
@@ -469,6 +471,7 @@ class MusicBox:
         headers.append("time")
         headers.append("ENV.temperature")
         headers.append("ENV.pressure")
+        headers.append("ENV.number_density_air")
 
         if (self.solver is None):
             raise Exception("Error: MusicBox object {} has no solver."
@@ -500,22 +503,13 @@ class MusicBox:
 
         while (curr_time <= self.box_model_options.simulation_length):
 
-            # outputs to output_array if enough time has elapsed
-            if (next_output_time <= curr_time):
-                row = []
-                row.append(next_output_time)
-                row.append(curr_conditions.temperature)
-                row.append(curr_conditions.pressure)
-                for conc in ordered_concentrations:
-                    row.append(conc)
-                output_array.append(row)
-                next_output_time += self.box_model_options.output_step_time
-
             # iterates evolving  conditions if enough time has elapsed
             while (
                     next_conditions is not None and next_conditions_time <= curr_time):
 
                 curr_conditions.update_conditions(next_conditions)
+                ordered_rate_constants = self.order_reaction_rates(
+                    curr_conditions, rate_constant_ordering)
 
                 # iterates next_conditions if there are remaining evolving
                 # conditions
@@ -523,10 +517,6 @@ class MusicBox:
                     next_conditions_index += 1
                     next_conditions = self.evolving_conditions.conditions[next_conditions_index]
                     next_conditions_time = self.evolving_conditions.times[next_conditions_index]
-
-                    ordered_rate_constants = self.order_reaction_rates(
-                        curr_conditions, rate_constant_ordering)
-
                 else:
                     next_conditions = None
 
@@ -537,12 +527,32 @@ class MusicBox:
             air_density = curr_conditions.pressure / \
                 (GAS_CONSTANT * curr_conditions.temperature)
 
+            # outputs to output_array if enough time has elapsed
+            if (next_output_time <= curr_time):
+                row = []
+                row.append(next_output_time)
+                row.append(curr_conditions.temperature)
+                row.append(curr_conditions.pressure)
+                row.append(air_density)
+                for conc in ordered_concentrations:
+                    row.append(conc)
+                output_array.append(row)
+                next_output_time += self.box_model_options.output_step_time
+
+            # ensure the time step is not greater than the next update to the
+            # evolving conditions or the next output time
+            time_step = self.box_model_options.chem_step_time
+            if (next_conditions is not None and next_conditions_time > curr_time):
+                time_step = min(time_step, next_conditions_time - curr_time)
+            if (next_output_time > curr_time):
+                time_step = min(time_step, next_output_time - curr_time)
+
             # solves and updates concentration values in concentration array
             if (not ordered_concentrations):
                 logger.info("Warning: ordered_concentrations list is empty.")
             musica.micm_solve(
                 self.solver,
-                self.box_model_options.chem_step_time,
+                time_step,
                 curr_conditions.temperature,
                 curr_conditions.pressure,
                 air_density,
@@ -550,18 +560,27 @@ class MusicBox:
                 ordered_rate_constants)
 
             # increments time
-            curr_time += self.box_model_options.chem_step_time
+            curr_time += time_step
 
+        df = pd.DataFrame(output_array[1:], columns=output_array[0])
         # outputs to file if output is present
-        if (output_path is not None):
-            logger.info("path_to_output = {}".format(output_path))
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            with open(output_path, 'w', newline='') as output:
-                writer = csv.writer(output)
-                writer.writerows(output_array)
+        if output_path is not None:
 
-        # returns output_array
-        return output_array
+            # Check if the output_path is a full path or just a file name
+            if os.path.dirname(output_path) == '':
+                # If output_path is just a filename, use the current directory
+                output_path = os.path.join(os.getcwd(), output_path)
+            elif not os.path.basename(output_path):
+                raise ValueError(f"Invalid output path: '{output_path}' does not contain a filename.")
+
+            # Ensure the directory exists
+            dir_path = os.path.dirname(output_path)
+            if dir_path and not os.path.exists(dir_path):
+                os.makedirs(dir_path, exist_ok=True)
+
+            df.to_csv(output_path, index=False)
+
+        return df
 
     def readFromUIJson(self, path_to_json):
         """
@@ -678,16 +697,6 @@ class MusicBox:
         """
         return musica.species_ordering(self.solver)
 
-    def userDefinedReactionRates(self):
-        """
-        Retrieves the user-defined reaction rates from the solver.
-
-        This function calls the `user_defined_reaction_rates` function from the `musica` module,
-        passing the solver instance from the current object.
-
-        Returns:
-            dict: The dictionary of user-defined reaction rates used in the solver.
-        """
     @classmethod
     def order_reaction_rates(self, curr_conditions, rate_constant_ordering):
         """
@@ -712,6 +721,8 @@ class MusicBox:
                 key = "LOSS." + rate.reaction.name
             elif (rate.reaction.reaction_type == "EMISSION"):
                 key = "EMIS." + rate.reaction.name
+            elif (rate.reaction.reaction_type == "USER_DEFINED"):
+                key = "USER." + rate.reaction.name
             rate_constants[key] = rate.rate
 
         ordered_rate_constants = len(rate_constants.keys()) * [0.0]

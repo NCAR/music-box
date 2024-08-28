@@ -23,6 +23,8 @@ dynamic = ["version", "description"]
 dependencies = [
   "musica==0.7.3",
   "xarray",
+  "colorlog",
+  "pandas"
 ]
 
 [project.urls]
