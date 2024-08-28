@@ -282,6 +282,7 @@ def insertIntoTemplate(initValues, templateDir, destDir):
     root_dir=destDir, base_dir=destZip)
 
   # move into the created directory
+  shutil.move(destPath + ".zip", destPath)
 
   return
 
