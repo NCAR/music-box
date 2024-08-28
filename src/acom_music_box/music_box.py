@@ -540,12 +540,22 @@ class MusicBox:
                 output_array.append(row)
                 next_output_time += self.box_model_options.output_step_time
 
+            # ensure the time step is not greater than the next update to the
+            # evolving conditions or the next output time
+            time_step = self.box_model_options.chem_step_time
+            if (next_conditions is not None and next_conditions_time > (curr_time + self.box_model_options.chem_step_time)):
+                time_step = min(time_step,
+                                next_conditions_time - (curr_time + self.box_model_options.chem_step_time))
+            if (next_output_time > (curr_time + self.box_model_options.chem_step_time)):
+                time_step = min(time_step,
+                                next_output_time - (curr_time + self.box_model_options.chem_step_time))
+            
             # solves and updates concentration values in concentration array
             if (not ordered_concentrations):
                 logger.info("Warning: ordered_concentrations list is empty.")
             musica.micm_solve(
                 self.solver,
-                self.box_model_options.chem_step_time,
+                time_step,
                 curr_conditions.temperature,
                 curr_conditions.pressure,
                 air_density,
@@ -553,7 +563,7 @@ class MusicBox:
                 ordered_rate_constants)
 
             # increments time
-            curr_time += self.box_model_options.chem_step_time
+            curr_time += time_step
 
         df = pd.DataFrame(output_array[1:], columns=output_array[0])
         # outputs to file if output is present
