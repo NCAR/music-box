@@ -543,12 +543,10 @@ class MusicBox:
             # ensure the time step is not greater than the next update to the
             # evolving conditions or the next output time
             time_step = self.box_model_options.chem_step_time
-            if (next_conditions is not None and next_conditions_time > (curr_time + self.box_model_options.chem_step_time)):
-                time_step = min(time_step,
-                                next_conditions_time - (curr_time + self.box_model_options.chem_step_time))
-            if (next_output_time > (curr_time + self.box_model_options.chem_step_time)):
-                time_step = min(time_step,
-                                next_output_time - (curr_time + self.box_model_options.chem_step_time))
+            if (next_conditions is not None and next_conditions_time > curr_time):
+                time_step = min(time_step, next_conditions_time - curr_time)
+            if (next_output_time > curr_time):
+                time_step = min(time_step, next_output_time - curr_time)
             
             # solves and updates concentration values in concentration array
             if (not ordered_concentrations):
