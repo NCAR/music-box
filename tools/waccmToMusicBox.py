@@ -228,8 +228,8 @@ def writeInitJSON(initValues, filename):
 def insertIntoTemplate(initValues, templateDir, destDir):
 
   # copy the template directory to working area
-  destPath = os.path.basename(os.path.normpath(templateDir))
-  destPath = os.path.join(destDir, destPath)
+  destZip = os.path.basename(os.path.normpath(templateDir))
+  destPath = os.path.join(destDir, destZip)
   logger.info("Create new configuration in = {}".format(destPath))
 
   # remove directory if it already exists
@@ -274,8 +274,14 @@ def insertIntoTemplate(initValues, templateDir, destDir):
   envConfig["pressure"]["initial value [Pa]"] = pressure
 
   # save over the former json file
-  with open(myConfigFile, "w") as myConfigFile:
-    json.dump(myConfig, myConfigFile, indent=2)
+  with open(myConfigFile, "w") as myConfigFp:
+    json.dump(myConfig, myConfigFp, indent=2)
+
+  # compress the written directory as a zip file
+  shutil.make_archive(destPath, "zip",
+    root_dir=destDir, base_dir=destZip)
+
+  # move into the created directory
 
   return
 
