@@ -503,15 +503,14 @@ class MusicBox:
 
         while (curr_time <= self.box_model_options.simulation_length):
 
-
             # iterates evolving  conditions if enough time has elapsed
             while (
                     next_conditions is not None and next_conditions_time <= curr_time):
 
                 curr_conditions.update_conditions(next_conditions)
                 ordered_rate_constants = self.order_reaction_rates(
-                        curr_conditions, rate_constant_ordering)
-                
+                    curr_conditions, rate_constant_ordering)
+
                 # iterates next_conditions if there are remaining evolving
                 # conditions
                 if (len(self.evolving_conditions) > next_conditions_index + 1):
@@ -547,7 +546,7 @@ class MusicBox:
                 time_step = min(time_step, next_conditions_time - curr_time)
             if (next_output_time > curr_time):
                 time_step = min(time_step, next_output_time - curr_time)
-            
+
             # solves and updates concentration values in concentration array
             if (not ordered_concentrations):
                 logger.info("Warning: ordered_concentrations list is empty.")
