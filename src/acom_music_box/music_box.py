@@ -199,7 +199,9 @@ class MusicBox:
             elif reaction_rate.reaction.reaction_type == "LOSS":
                 name = "LOSS." + reaction_rate.reaction.name + ".s-1"
             elif reaction_rate.reaction.reaction_type == "EMISSION":
-                name = "EMISSION." + reaction_rate.reaction.name + ".s-1"
+                name = "EMIS." + reaction_rate.reaction.name + ".s-1"
+            elif reaction_rate.reaction.reaction_type == "USER_DEFINED":
+                name = "USER." + reaction_rate.reaction.name + ".s-1"
 
             reaction_names.append(name)
             reaction_rates.append(reaction_rate.rate)
@@ -469,6 +471,7 @@ class MusicBox:
         headers.append("time")
         headers.append("ENV.temperature")
         headers.append("ENV.pressure")
+        headers.append("ENV.number_density_air")
 
         if (self.solver is None):
             raise Exception("Error: MusicBox object {} has no solver."
@@ -500,16 +503,6 @@ class MusicBox:
 
         while (curr_time <= self.box_model_options.simulation_length):
 
-            # outputs to output_array if enough time has elapsed
-            if (next_output_time <= curr_time):
-                row = []
-                row.append(next_output_time)
-                row.append(curr_conditions.temperature)
-                row.append(curr_conditions.pressure)
-                for conc in ordered_concentrations:
-                    row.append(conc)
-                output_array.append(row)
-                next_output_time += self.box_model_options.output_step_time
 
             # iterates evolving  conditions if enough time has elapsed
             while (
@@ -534,6 +527,18 @@ class MusicBox:
             GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT
             air_density = curr_conditions.pressure / \
                 (GAS_CONSTANT * curr_conditions.temperature)
+
+            # outputs to output_array if enough time has elapsed
+            if (next_output_time <= curr_time):
+                row = []
+                row.append(next_output_time)
+                row.append(curr_conditions.temperature)
+                row.append(curr_conditions.pressure)
+                row.append(air_density)
+                for conc in ordered_concentrations:
+                    row.append(conc)
+                output_array.append(row)
+                next_output_time += self.box_model_options.output_step_time
 
             # solves and updates concentration values in concentration array
             if (not ordered_concentrations):
