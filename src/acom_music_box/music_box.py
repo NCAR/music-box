@@ -430,7 +430,7 @@ class MusicBox:
             solver_type,
             number_of_grid_cells)
 
-    def solve(self, output_path=None):
+    def solve(self, output_path=None, callback=None):
         """
         Solves the box model simulation and optionally writes the output to a file.
 
@@ -439,8 +439,8 @@ class MusicBox:
         the specified file.
 
         Args:
-            path_to_output (str, optional): The path to the file where the output will
-            be written. If None, no output file is created. Defaults to None.
+            output_path (str, optional): The path to the file where the output will be written. If None, no output file is created. Defaults to None.
+            callback (function, optional): A callback function that is called after each time step. Defaults to None. The callback will take the most recent results, the current time, conditions, and the total simulation time as arguments.
 
         Returns:
             list: A 2D list where each inner list represents the results of the simulation
@@ -561,6 +561,11 @@ class MusicBox:
 
             # increments time
             curr_time += time_step
+
+            # calls callback function if present
+            if callback is not None:
+                df = pd.DataFrame(output_array[:-1], columns=output_array[0])
+                callback(df, curr_time, curr_conditions, self.box_model_options.simulation_length)
 
         df = pd.DataFrame(output_array[1:], columns=output_array[0])
         # outputs to file if output is present

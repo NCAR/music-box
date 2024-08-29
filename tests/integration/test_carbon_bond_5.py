@@ -23,8 +23,11 @@ class TestCarbonBond5:
         df = box_model.solve()
         model_output = [df.columns.values.tolist()] + df.values.tolist()
 
+        current_dir = os.path.dirname(__file__)
+        expected_results_path = os.path.join(current_dir, "expected_results/full_gas_phase_mechanism.csv")
+
         # read wall_loss_test.csv into test_output
-        with open("expected_results/full_gas_phase_mechanism.csv", "r") as file:
+        with open(expected_results_path, "r") as file:
             reader = csv.reader(file)
             test_output = list(reader)
 
