@@ -2,10 +2,7 @@ from acom_music_box import MusicBox, Examples
 import os
 
 def callback(df, current_time, current_conditions, total_simulation_time):
-    print(f"Current time: {current_time}")
-    print(f"Current conditions: {current_conditions}")
-    print(f"Total simulation time: {total_simulation_time}")
-    print(f"Dataframe: {df}")
+  print(f"Current time: {current_time} s, total simulation time: {total_simulation_time} s, percentage complete: {current_time / total_simulation_time * 100:.2f}%")
 
 
 class TestCallbackFunction:
@@ -29,9 +26,6 @@ class TestCallbackFunction:
 
         # Assert that the callback was called at least once
         callback_mock.assert_called()
-
-        # You can also check the number of times it was called
-        # assert callback_mock.call_count == expected_number_of_calls
 
 
 if __name__ == "__main__":
