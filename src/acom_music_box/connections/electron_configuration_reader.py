@@ -6,6 +6,8 @@ from ..evolving_conditions import EvolvingConditions
 import json
 
 class ElectronConfiguraitonReader:
+  """ Reads configuration information from the electron applicant to create a box model simulation.
+  """
     def __init__(self):
       self.box_model_options = None
       self.species_list = None
