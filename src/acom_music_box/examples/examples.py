@@ -41,10 +41,15 @@ class _Examples:
         short_name='Analytical',
         folder_name='analytical',
         description='An example of an analytical solution to a simple chemical system')
+    TS1 = Example.from_config(
+        display_name='Tropical Stratosphere 1',
+        short_name='TS1',
+        folder_name='ts1',
+        description='Many species involved in tropospheric-stratospheric chemistry')
 
     @classmethod
     def get_all(cls):
-        return [cls.CarbonBond5, cls.Chapman, cls.FlowTube, cls.Analytical]
+        return [cls.CarbonBond5, cls.Chapman, cls.FlowTube, cls.Analytical, cls.TS1]
 
     def __iter__(self):
         return iter(self.get_all())
