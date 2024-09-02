@@ -3,8 +3,9 @@ from .reaction import Reaction, Branched, Arrhenius, Tunneling, Troe_Ternary
 import json
 import csv
 
+
 class Configuration:
-    
+
     def __init__(self):
         self.species_list = None
         self.reaction_list = None
