@@ -1,8 +1,9 @@
 from acom_music_box import MusicBox, Examples
 import os
 
+
 def callback(df, current_time, current_conditions, total_simulation_time):
-  print(f"Current time: {current_time} s, total simulation time: {total_simulation_time} s, percentage complete: {current_time / total_simulation_time * 100:.2f}%")
+    print(f"Current time: {current_time} s, total simulation time: {total_simulation_time} s, percentage complete: {current_time / total_simulation_time * 100:.2f}%")
 
 
 class TestCallbackFunction:
