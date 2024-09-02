@@ -2,6 +2,7 @@ FROM fedora:37
 
 RUN dnf -y update \
     && dnf -y install \
+        gnuplot \
         python3 \
         python3-pip \
     && dnf clean all
