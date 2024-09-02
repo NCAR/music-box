@@ -26,12 +26,17 @@ The package is also available on PyPi and can be installed in any Python environ
 pip install acom_music_box
 ```
 
-# Tests
+# Developing
 
-After installing music box for local development `pip install -e .`
+Install music box as an editable installation.
 
 ```
-cd tests
+pip install -e '.[dev]'
+```
+
+After installing music box for local development
+
+```
 pytest
 ```
 
