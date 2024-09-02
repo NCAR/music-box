@@ -34,3 +34,9 @@ Home = "https://github.com/NCAR/music-box"
 [project.scripts]
 music_box = "acom_music_box.main:main"
 waccmToMusicBox = "acom_music_box.tools.waccmToMusicBox:main"
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-mock"
+]
