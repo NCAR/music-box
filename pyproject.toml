@@ -25,7 +25,8 @@ dependencies = [
   "xarray",
   "colorlog",
   "pandas",
-  "tqdm"
+  "tqdm",
+  "netcdf4"
 ]
 
 [project.urls]

@@ -2,9 +2,9 @@
   "name": "MusicBox",
   "dockerFile": "Dockerfile.codespace",
   "extensions": [
-    "ms-vscode.cpptools"
+    "ms-python.python",
   ],
   "settings": {
   },
-  "postCreateCommand": "cd /workspaces/music-box && pip3 install -e .'[dev]'"
+  "postCreateCommand": "cd /workspaces/music-box && pip3 install -e '.[dev]'"
 }
