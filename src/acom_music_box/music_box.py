@@ -8,6 +8,9 @@ import json
 import os
 import pandas as pd
 
+from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -157,71 +160,72 @@ class MusicBox:
         next_output_time = curr_time
         # runs the simulation at each timestep
 
-        while (curr_time <= self.box_model_options.simulation_length):
+        simulation_length = self.box_model_options.simulation_length
+        with tqdm(total=simulation_length, desc="Simulation Progress", unit=f" [model integration steps ({self.box_model_options.chem_step_time} s)]", leave=False) as pbar:
+            while curr_time < simulation_length:
+                # iterates evolving  conditions if enough time has elapsed
+                while (next_conditions is not None and next_conditions_time <= curr_time):
 
-            # iterates evolving  conditions if enough time has elapsed
-            while (
-                    next_conditions is not None and next_conditions_time <= curr_time):
+                    curr_conditions.update_conditions(next_conditions)
+                    ordered_rate_constants = self.order_reaction_rates(
+                        curr_conditions, rate_constant_ordering)
 
-                curr_conditions.update_conditions(next_conditions)
-                ordered_rate_constants = self.order_reaction_rates(
-                    curr_conditions, rate_constant_ordering)
+                    # iterates next_conditions if there are remaining evolving
+                    # conditions
+                    if (len(self.evolving_conditions) > next_conditions_index + 1):
+                        next_conditions_index += 1
+                        next_conditions = self.evolving_conditions.conditions[next_conditions_index]
+                        next_conditions_time = self.evolving_conditions.times[next_conditions_index]
+                    else:
+                        next_conditions = None
 
-                # iterates next_conditions if there are remaining evolving
-                # conditions
-                if (len(self.evolving_conditions) > next_conditions_index + 1):
-                    next_conditions_index += 1
-                    next_conditions = self.evolving_conditions.conditions[next_conditions_index]
-                    next_conditions_time = self.evolving_conditions.times[next_conditions_index]
-                else:
-                    next_conditions = None
+                #  calculate air density from the ideal gas law
+                BOLTZMANN_CONSTANT = 1.380649e-23
+                AVOGADRO_CONSTANT = 6.02214076e23
+                GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT
+                air_density = curr_conditions.pressure / \
+                    (GAS_CONSTANT * curr_conditions.temperature)
 
-            #  calculate air density from the ideal gas law
-            BOLTZMANN_CONSTANT = 1.380649e-23
-            AVOGADRO_CONSTANT = 6.02214076e23
-            GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT
-            air_density = curr_conditions.pressure / \
-                (GAS_CONSTANT * curr_conditions.temperature)
+                # outputs to output_array if enough time has elapsed
+                if (next_output_time <= curr_time):
+                    row = []
+                    row.append(next_output_time)
+                    row.append(curr_conditions.temperature)
+                    row.append(curr_conditions.pressure)
+                    row.append(air_density)
+                    for conc in ordered_concentrations:
+                        row.append(conc)
+                    output_array.append(row)
+                    next_output_time += self.box_model_options.output_step_time
 
-            # outputs to output_array if enough time has elapsed
-            if (next_output_time <= curr_time):
-                row = []
-                row.append(next_output_time)
-                row.append(curr_conditions.temperature)
-                row.append(curr_conditions.pressure)
-                row.append(air_density)
-                for conc in ordered_concentrations:
-                    row.append(conc)
-                output_array.append(row)
-                next_output_time += self.box_model_options.output_step_time
+                    # calls callback function if present
+                    if callback is not None:
+                        df = pd.DataFrame(output_array[:-1], columns=output_array[0])
+                        callback(df, curr_time, curr_conditions, self.box_model_options.simulation_length)
 
-                # calls callback function if present
-                if callback is not None:
-                    df = pd.DataFrame(output_array[:-1], columns=output_array[0])
-                    callback(df, curr_time, curr_conditions, self.box_model_options.simulation_length)
+                # ensure the time step is not greater than the next update to the
+                # evolving conditions or the next output time
+                time_step = self.box_model_options.chem_step_time
+                if (next_conditions is not None and next_conditions_time > curr_time):
+                    time_step = min(time_step, next_conditions_time - curr_time)
+                if (next_output_time > curr_time):
+                    time_step = min(time_step, next_output_time - curr_time)
 
-            # ensure the time step is not greater than the next update to the
-            # evolving conditions or the next output time
-            time_step = self.box_model_options.chem_step_time
-            if (next_conditions is not None and next_conditions_time > curr_time):
-                time_step = min(time_step, next_conditions_time - curr_time)
-            if (next_output_time > curr_time):
-                time_step = min(time_step, next_output_time - curr_time)
+                # solves and updates concentration values in concentration array
+                if (not ordered_concentrations):
+                    logger.info("Warning: ordered_concentrations list is empty.")
+                musica.micm_solve(
+                    self.solver,
+                    time_step,
+                    curr_conditions.temperature,
+                    curr_conditions.pressure,
+                    air_density,
+                    ordered_concentrations,
+                    ordered_rate_constants)
 
-            # solves and updates concentration values in concentration array
-            if (not ordered_concentrations):
-                logger.info("Warning: ordered_concentrations list is empty.")
-            musica.micm_solve(
-                self.solver,
-                time_step,
-                curr_conditions.temperature,
-                curr_conditions.pressure,
-                air_density,
-                ordered_concentrations,
-                ordered_rate_constants)
-
-            # increments time
-            curr_time += time_step
+                # increments time
+                curr_time += time_step
+                pbar.update(time_step)
         df = pd.DataFrame(output_array[1:], columns=output_array[0])
         # outputs to file if output is present
         if output_path is not None:
