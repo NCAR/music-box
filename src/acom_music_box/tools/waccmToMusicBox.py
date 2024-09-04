@@ -71,6 +71,42 @@ def safeFloat(numString):
     return result
 
 
+# Create and return list of WACCM chemical species
+# that will be mapped to MUSICA.
+# when = date and time to extract
+# modelDir = directory containing model output
+# return list of variable names
+def getWaccmSpecies(when, modelDir):
+    # create the filename
+    waccmFilename = ("f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{:4d}-{:02d}-{:02}-00000.nc"
+                     .format(when.year, when.month, when.day))
+    logger.info("WACCM species file = {}".format(waccmFilename))
+
+    # open dataset for reading
+    waccmDataSet = xarray.open_dataset("{}/{}".format(modelDir, waccmFilename))
+
+    # collect the data variables
+    waccmNames = [varName for varName in waccmDataSet.data_vars]
+
+    # To do: remove extraneous non-chemical vars like date and time
+    # Idea: use the dimensions to filter out non-chemicals
+
+    # close the NetCDF file
+    waccmDataSet.close()
+
+    return(waccmNames)
+
+
+# Create list of chemical species in MUSICA,
+# corresponding to the same chemical species in WACCM.
+# templateDir = directory containing configuration files and camp_data
+# return list of variable names
+def getMusicaSpecies(tempateDir):
+    musicaNames = []
+
+    return(musicaNames)
+
+
 # Build and return dictionary of WACCM variable names
 # and their MusicBox equivalents.
 # waccmSpecies = list of variable names in the WACCM model output
@@ -352,11 +388,17 @@ def main():
     if ("template" in myArgs):
         template = myArgs.get("template")
 
-    logger.info("Retrieve WACCM conditions at ({} North, {} East)   when {}."
-                .format(lat, lon, retrieveWhen))
+    # read and glean chemical species from WACCM and MUSICA
+    waccmChems = getWaccmSpecies(retrieveWhen, waccmDir)
+    logger.info("waccmChems are {}".format(waccmChems))
+    musicaChems = getMusicaSpecies(template)
+    logger.info("musicaChems are {}".format(musicaChems))
 
     # Read named variables from WACCM model output.
-    varValues = readWACCM(getMusicaDictionary(),
+    logger.info("Retrieve WACCM conditions at ({} North, {} East)   when {}."
+                .format(lat, lon, retrieveWhen))
+    commonDict = getMusicaDictionary()
+    varValues = readWACCM(commonDict,
                           lat, lon, retrieveWhen, waccmDir)
     logger.info("Original WACCM varValues = {}".format(varValues))
 
