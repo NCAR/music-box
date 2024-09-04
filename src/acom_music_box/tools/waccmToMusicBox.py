@@ -73,18 +73,28 @@ def safeFloat(numString):
 
 # Build and return dictionary of WACCM variable names
 # and their MusicBox equivalents.
-def getMusicaDictionary():
-    varMap = {
-        "T": "temperature",
-        "PS": "pressure",
-        "N2O": "N2O",
-        "H2O2": "H2O2",
-        "O3": "O3",
-        "NH3": "NH3",
-        "CH4": "CH4"
-    }
+# waccmSpecies = list of variable names in the WACCM model output
+# musicaSpecies = list of variable names in species.json
+# return ordered dictionary
+def getMusicaDictionary(waccmSpecies=None, musicaSpecies=None):
+    if ((waccmSpecies is None) or (musicaSpecies is None)):
+        logger.warning("No species map found for WACCM or MUSICA.")
 
-    return (dict(sorted(varMap.items())))
+        # build a simple spiecies map
+        varMap = {
+            "T": "temperature",
+            "PS": "pressure",
+            "N2O": "N2O",
+            "H2O2": "H2O2",
+            "O3": "O3",
+            "NH3": "NH3",
+            "CH4": "CH4"
+        }
+
+        return (dict(sorted(varMap.items())))
+
+    # create new list of species common to both lists
+    return(None)
 
 
 # Read array values at a single lat-lon-time point.
