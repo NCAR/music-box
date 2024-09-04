@@ -144,7 +144,32 @@ def getMusicaDictionary(waccmSpecies=None, musicaSpecies=None):
         return (dict(sorted(varMap.items())))
 
     # create new list of species common to both lists
-    return(None)
+    inCommon = [species for species in waccmSpecies if species in musicaSpecies]
+    inCommon.sort()
+
+    # provide some diagnostic warnings
+    waccmOnly = [species for species in waccmSpecies if not species in musicaSpecies]
+    musicaOnly = [species for species in musicaSpecies if not species in waccmSpecies]
+    if (len(waccmOnly) > 0):
+        logger.warning("The following chemical species are only in WACCM: {}".format(waccmOnly))
+    if (len(musicaOnly) > 0):
+        logger.warning("The following chemical species are only in MUSICA: {}".format(musicaOnly))
+
+    # build the dictionary
+    # To do: As of September 4, 2024 this is not much of a map,
+    # as most of the entries are identical. We may map additional
+    # pairs in the future. This map is still useful in identifying
+    # the common species between WACCM and MUSICA.
+    varMap = {
+        "T": "temperature",
+        "PS": "pressure"
+    }
+
+    logger.info("inCommon = {}".format(inCommon))
+    for varName in inCommon:
+        varMap[varName] = varName
+
+    return(varMap)
 
 
 # Read array values at a single lat-lon-time point.
@@ -163,7 +188,7 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
 
     # open dataset for reading
     waccmDataSet = xarray.open_dataset("{}/{}".format(modelDir, waccmFilename))
-    if (True):
+    if (False):
         # diagnostic to look at dataset structure
         logger.info("WACCM dataset = {}".format(waccmDataSet))
 
@@ -172,14 +197,13 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
     logger.info("whenStr = {}".format(whenStr))
     singlePoint = waccmDataSet.sel(lon=longitude, lat=latitude, lev=1000.0,
                                    time=whenStr, method="nearest")
-    if (True):
+    if (False):
         # diagnostic to look at single point structure
         logger.info("WACCM singlePoint = {}".format(singlePoint))
 
     # loop through vars and build another dictionary
     musicaDict = {}
     for waccmKey, musicaName in waccmMusicaDict.items():
-        logger.info("WACCM Chemical = {}".format(waccmKey))
         if waccmKey not in singlePoint:
             logger.warning("Requested variable {} not found in WACCM model output."
                            .format(waccmKey))
@@ -189,8 +213,7 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
 
         chemSinglePoint = singlePoint[waccmKey]
         if (True):
-            logger.info("{} = object {}".format(waccmKey, chemSinglePoint))
-            logger.info("{} = value {} {}".format(waccmKey, chemSinglePoint.values, chemSinglePoint.units))
+            logger.info("WACCM chemical {} = value {} {}".format(waccmKey, chemSinglePoint.values, chemSinglePoint.units))
         musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)   # from 0-dim array
         musicaDict[musicaName] = musicaTuple
 
@@ -404,14 +427,17 @@ def main():
 
     # read and glean chemical species from WACCM and MUSICA
     waccmChems = getWaccmSpecies(retrieveWhen, waccmDir)
-    logger.info("waccmChems are {}".format(waccmChems))
     musicaChems = getMusicaSpecies(template)
-    logger.info("musicaChems are {}".format(musicaChems))
+
+    # create map of species common to both WACCM and MUSICA
+    commonDict = getMusicaDictionary(waccmChems, musicaChems)
+    logger.info("Species in common are = {}".format(commonDict))
+    if (len(commonDict) == 0):
+        logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
 
     # Read named variables from WACCM model output.
     logger.info("Retrieve WACCM conditions at ({} North, {} East)   when {}."
                 .format(lat, lon, retrieveWhen))
-    commonDict = getMusicaDictionary()
     varValues = readWACCM(commonDict,
                           lat, lon, retrieveWhen, waccmDir)
     logger.info("Original WACCM varValues = {}".format(varValues))
