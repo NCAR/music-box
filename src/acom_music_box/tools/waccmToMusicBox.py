@@ -140,6 +140,19 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
     return (musicaDict)
 
 
+# Calculate air density from the ideal gas law.
+# tempK = temperature in degrees Kelvin
+# pressPa = pressure in Pascals
+# return density of air in moles / cubic meter
+def calcAirDensity(tempK, pressPa):
+    BOLTZMANN_CONSTANT = 1.380649e-23       # joules / Kelvin
+    AVOGADRO_CONSTANT = 6.02214076e23       # / mole
+    GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT   # joules / Kelvin-mole
+    airDensity = pressPa / (GAS_CONSTANT * tempK)           # moles / m3
+
+    return(airDensity)
+
+
 # set up indexes for the tuple
 musicaIndex = 0
 valueIndex = 1
@@ -148,17 +161,20 @@ unitIndex = 2
 # Perform any numeric conversion needed.
 # varDict = originally read from WACCM, tuples are (musicaName, value, units)
 # return varDict with values modified
-
-
 def convertWaccm(varDict):
 
-    moleToM3 = 1000 / 22.4
+    # retrieve temperature and pressure from WACCM
+    temperature = varDict["temperature"][valueIndex]
+    pressure = varDict["pressure"][valueIndex]
+    logger.info("temperature = {} K   pressure = {} Pa".format(temperature, pressure))
+    air_density = calcAirDensity(temperature, pressure)
+    logger.info("air density = {} mol m-3".format(air_density))
 
     for key, vTuple in varDict.items():
         # convert moles / mole to moles / cubic meter
         units = vTuple[unitIndex]
         if (units == "mol/mol"):
-            varDict[key] = (vTuple[0], vTuple[valueIndex] * moleToM3, "mol m-3")
+            varDict[key] = (vTuple[0], vTuple[valueIndex] * air_density, "mol m-3")
 
     return (varDict)
 
