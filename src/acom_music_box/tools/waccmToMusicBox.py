@@ -101,8 +101,22 @@ def getWaccmSpecies(when, modelDir):
 # corresponding to the same chemical species in WACCM.
 # templateDir = directory containing configuration files and camp_data
 # return list of variable names
-def getMusicaSpecies(tempateDir):
+def getMusicaSpecies(templateDir):
+    # find the standard configuration file and parse it
+    myConfigFile = os.path.join(templateDir, "camp_data", "species.json")
+    with open(myConfigFile) as jsonFile:
+        myConfig = json.load(jsonFile)
+
+    # locate the section for chemical species
+    chemSpeciesTag = "camp-data"
+    chemSpecies = myConfig[chemSpeciesTag]
+
+    # retrieve just the names
     musicaNames = []
+    for spec in chemSpecies:
+        specName = spec.get("name")
+        if (specName):
+            musicaNames.append(spec.get("name"))
 
     return(musicaNames)
 
@@ -116,7 +130,7 @@ def getMusicaDictionary(waccmSpecies=None, musicaSpecies=None):
     if ((waccmSpecies is None) or (musicaSpecies is None)):
         logger.warning("No species map found for WACCM or MUSICA.")
 
-        # build a simple spiecies map
+        # build a simple species map
         varMap = {
             "T": "temperature",
             "PS": "pressure",
