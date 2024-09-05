@@ -94,7 +94,7 @@ def getWaccmSpecies(when, modelDir):
     # close the NetCDF file
     waccmDataSet.close()
 
-    return(waccmNames)
+    return (waccmNames)
 
 
 # Create list of chemical species in MUSICA,
@@ -118,7 +118,7 @@ def getMusicaSpecies(templateDir):
         if (specName):
             musicaNames.append(spec.get("name"))
 
-    return(musicaNames)
+    return (musicaNames)
 
 
 # Build and return dictionary of WACCM variable names
@@ -144,12 +144,11 @@ def getMusicaDictionary(waccmSpecies=None, musicaSpecies=None):
         return (dict(sorted(varMap.items())))
 
     # create new list of species common to both lists
-    inCommon = [species for species in waccmSpecies if species in musicaSpecies]
-    inCommon.sort()
+    inCommon = sorted([species for species in waccmSpecies if species in musicaSpecies])
 
     # provide some diagnostic warnings
-    waccmOnly = [species for species in waccmSpecies if not species in musicaSpecies]
-    musicaOnly = [species for species in musicaSpecies if not species in waccmSpecies]
+    waccmOnly = [species for species in waccmSpecies if species not in musicaSpecies]
+    musicaOnly = [species for species in musicaSpecies if species not in waccmSpecies]
     if (len(waccmOnly) > 0):
         logger.warning("The following chemical species are only in WACCM: {}".format(waccmOnly))
     if (len(musicaOnly) > 0):
@@ -169,7 +168,7 @@ def getMusicaDictionary(waccmSpecies=None, musicaSpecies=None):
     for varName in inCommon:
         varMap[varName] = varName
 
-    return(varMap)
+    return (varMap)
 
 
 # Read array values at a single lat-lon-time point.
@@ -213,7 +212,11 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
 
         chemSinglePoint = singlePoint[waccmKey]
         if (True):
-            logger.info("WACCM chemical {} = value {} {}".format(waccmKey, chemSinglePoint.values, chemSinglePoint.units))
+            logger.info(
+                "WACCM chemical {} = value {} {}".format(
+                    waccmKey,
+                    chemSinglePoint.values,
+                    chemSinglePoint.units))
         musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)   # from 0-dim array
         musicaDict[musicaName] = musicaTuple
 
