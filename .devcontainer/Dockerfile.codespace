@@ -13,6 +13,8 @@ RUN dnf -y update \
         tree \
     && dnf clean all
 
-# COPY . /workspaces/music-box
-# WORKDIR /workspaces/music-box
-# RUN pip3 install -e '.[dev]'
+COPY . /workspaces/music-box
+
+WORKDIR /workspaces/music-box
+
+RUN pip3 install -e '.[dev]'

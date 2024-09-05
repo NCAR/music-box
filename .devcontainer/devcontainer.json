@@ -1,10 +1,10 @@
 {
   "name": "MusicBox",
-  "dockerFile": "Dockerfile.codespace",
+  "image": "ghcr.io/NCAR/music-box:latest",
   "extensions": [
     "ms-python.python",
   ],
   "settings": {
   },
-  "postCreateCommand": "cd /workspaces/music-box && pip3 install -e '.[dev]' && code sample_waccm_data/README.md"
+  "postCreateCommand": "code sample_waccm_data/README.md"
 }
