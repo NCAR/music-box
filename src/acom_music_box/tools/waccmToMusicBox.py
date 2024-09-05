@@ -71,20 +71,105 @@ def safeFloat(numString):
     return result
 
 
+# Create and return list of WACCM chemical species
+# that will be mapped to MUSICA.
+# when = date and time to extract
+# modelDir = directory containing model output
+# return list of variable names
+def getWaccmSpecies(when, modelDir):
+    # create the filename
+    waccmFilename = ("f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{:4d}-{:02d}-{:02}-00000.nc"
+                     .format(when.year, when.month, when.day))
+    logger.info("WACCM species file = {}".format(waccmFilename))
+
+    # open dataset for reading
+    waccmDataSet = xarray.open_dataset("{}/{}".format(modelDir, waccmFilename))
+
+    # collect the data variables
+    waccmNames = [varName for varName in waccmDataSet.data_vars]
+
+    # To do: remove extraneous non-chemical vars like date and time
+    # Idea: use the dimensions to filter out non-chemicals
+
+    # close the NetCDF file
+    waccmDataSet.close()
+
+    return(waccmNames)
+
+
+# Create list of chemical species in MUSICA,
+# corresponding to the same chemical species in WACCM.
+# templateDir = directory containing configuration files and camp_data
+# return list of variable names
+def getMusicaSpecies(templateDir):
+    # find the standard configuration file and parse it
+    myConfigFile = os.path.join(templateDir, "camp_data", "species.json")
+    with open(myConfigFile) as jsonFile:
+        myConfig = json.load(jsonFile)
+
+    # locate the section for chemical species
+    chemSpeciesTag = "camp-data"
+    chemSpecies = myConfig[chemSpeciesTag]
+
+    # retrieve just the names
+    musicaNames = []
+    for spec in chemSpecies:
+        specName = spec.get("name")
+        if (specName):
+            musicaNames.append(spec.get("name"))
+
+    return(musicaNames)
+
+
 # Build and return dictionary of WACCM variable names
 # and their MusicBox equivalents.
-def getMusicaDictionary():
+# waccmSpecies = list of variable names in the WACCM model output
+# musicaSpecies = list of variable names in species.json
+# return ordered dictionary
+def getMusicaDictionary(waccmSpecies=None, musicaSpecies=None):
+    if ((waccmSpecies is None) or (musicaSpecies is None)):
+        logger.warning("No species map found for WACCM or MUSICA.")
+
+        # build a simple species map
+        varMap = {
+            "T": "temperature",
+            "PS": "pressure",
+            "N2O": "N2O",
+            "H2O2": "H2O2",
+            "O3": "O3",
+            "NH3": "NH3",
+            "CH4": "CH4"
+        }
+
+        return (dict(sorted(varMap.items())))
+
+    # create new list of species common to both lists
+    inCommon = [species for species in waccmSpecies if species in musicaSpecies]
+    inCommon.sort()
+
+    # provide some diagnostic warnings
+    waccmOnly = [species for species in waccmSpecies if not species in musicaSpecies]
+    musicaOnly = [species for species in musicaSpecies if not species in waccmSpecies]
+    if (len(waccmOnly) > 0):
+        logger.warning("The following chemical species are only in WACCM: {}".format(waccmOnly))
+    if (len(musicaOnly) > 0):
+        logger.warning("The following chemical species are only in MUSICA: {}".format(musicaOnly))
+
+    # build the dictionary
+    # To do: As of September 4, 2024 this is not much of a map,
+    # as most of the entries are identical. We may map additional
+    # pairs in the future. This map is still useful in identifying
+    # the common species between WACCM and MUSICA.
     varMap = {
         "T": "temperature",
-        "PS": "pressure",
-        "N2O": "N2O",
-        "H2O2": "H2O2",
-        "O3": "O3",
-        "NH3": "NH3",
-        "CH4": "CH4"
+        "PS": "pressure"
     }
 
-    return (dict(sorted(varMap.items())))
+    logger.info("inCommon = {}".format(inCommon))
+    for varName in inCommon:
+        varMap[varName] = varName
+
+    return(varMap)
 
 
 # Read array values at a single lat-lon-time point.
@@ -103,7 +188,7 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
 
     # open dataset for reading
     waccmDataSet = xarray.open_dataset("{}/{}".format(modelDir, waccmFilename))
-    if (True):
+    if (False):
         # diagnostic to look at dataset structure
         logger.info("WACCM dataset = {}".format(waccmDataSet))
 
@@ -112,14 +197,13 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
     logger.info("whenStr = {}".format(whenStr))
     singlePoint = waccmDataSet.sel(lon=longitude, lat=latitude, lev=1000.0,
                                    time=whenStr, method="nearest")
-    if (True):
+    if (False):
         # diagnostic to look at single point structure
         logger.info("WACCM singlePoint = {}".format(singlePoint))
 
     # loop through vars and build another dictionary
     musicaDict = {}
     for waccmKey, musicaName in waccmMusicaDict.items():
-        logger.info("WACCM Chemical = {}".format(waccmKey))
         if waccmKey not in singlePoint:
             logger.warning("Requested variable {} not found in WACCM model output."
                            .format(waccmKey))
@@ -129,8 +213,7 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
 
         chemSinglePoint = singlePoint[waccmKey]
         if (True):
-            logger.info("{} = object {}".format(waccmKey, chemSinglePoint))
-            logger.info("{} = value {} {}".format(waccmKey, chemSinglePoint.values, chemSinglePoint.units))
+            logger.info("WACCM chemical {} = value {} {}".format(waccmKey, chemSinglePoint.values, chemSinglePoint.units))
         musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)   # from 0-dim array
         musicaDict[musicaName] = musicaTuple
 
@@ -342,11 +425,20 @@ def main():
     if ("template" in myArgs):
         template = myArgs.get("template")
 
-    logger.info("Retrieve WACCM conditions at ({} North, {} East)   when {}."
-                .format(lat, lon, retrieveWhen))
+    # read and glean chemical species from WACCM and MUSICA
+    waccmChems = getWaccmSpecies(retrieveWhen, waccmDir)
+    musicaChems = getMusicaSpecies(template)
+
+    # create map of species common to both WACCM and MUSICA
+    commonDict = getMusicaDictionary(waccmChems, musicaChems)
+    logger.info("Species in common are = {}".format(commonDict))
+    if (len(commonDict) == 0):
+        logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
 
     # Read named variables from WACCM model output.
-    varValues = readWACCM(getMusicaDictionary(),
+    logger.info("Retrieve WACCM conditions at ({} North, {} East)   when {}."
+                .format(lat, lon, retrieveWhen))
+    varValues = readWACCM(commonDict,
                           lat, lon, retrieveWhen, waccmDir)
     logger.info("Original WACCM varValues = {}".format(varValues))
 
