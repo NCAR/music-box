@@ -261,8 +261,7 @@ def convertWaccm(varDict):
         if (units == "mol/mol"):
             varDict[key] = (vTuple[0], vTuple[valueIndex] * air_density, "mol m-3")
         if (units == "kg/kg"):
-            # convert from kg/kb to mol / m3 by multiplying by air_density and dividing by molecular weight
-            # this only applies to soa species
+            # soa species only
             varDict[key] = (vTuple[0], vTuple[valueIndex] * soa_density / soa_molecular_weight, "mol m-3")
 
     return (varDict)
