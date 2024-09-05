@@ -566,6 +566,7 @@
   },
   "evolving conditions": {},
   "initial conditions": {
+    "initial_conditions.csv": {}
   },
   "model components": [
     {
