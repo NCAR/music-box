@@ -66,13 +66,19 @@ def setup_logging(verbosity, color_output):
     console_handler = logging.StreamHandler()
 
     if color_output:
-        color_formatter = colorlog.ColoredFormatter( f'%(log_color)s{format_string}', datefmt=datefmt,
-            log_colors={'DEBUG': 'green', 'INFO': 'cyan', 'WARNING': 'yellow', 'ERROR': 'red', 'CRITICAL': 'bold_red'}
-        )
+        color_formatter = colorlog.ColoredFormatter(
+            f'%(log_color)s{format_string}',
+            datefmt=datefmt,
+            log_colors={
+                'DEBUG': 'green',
+                'INFO': 'cyan',
+                'WARNING': 'yellow',
+                'ERROR': 'red',
+                'CRITICAL': 'bold_red'})
         console_handler.setFormatter(color_formatter)
     else:
         console_handler.setFormatter(formatter)
-    
+
     console_handler.setLevel(log_level)
     logging.basicConfig(level=log_level, handlers=[console_handler])
 
