@@ -229,7 +229,7 @@ def calcAirDensity(tempK, pressPa):
     GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT   # joules / Kelvin-mole
     airDensity = pressPa / (GAS_CONSTANT * tempK)           # moles / m3
 
-    return (airDensity)
+    return airDensity
 
 
 # set up indexes for the tuple
@@ -243,6 +243,10 @@ unitIndex = 2
 
 
 def convertWaccm(varDict):
+    # from the supporting documents
+    # https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2019MS001882&file=jame21103-sup-0001-2019MS001882+Text_SI-S01.pdf
+    soa_molecular_weight = 0.115 # kg mol-1
+    soa_density = 1770 # kg m-3
 
     # retrieve temperature and pressure from WACCM
     temperature = varDict["temperature"][valueIndex]
@@ -256,6 +260,10 @@ def convertWaccm(varDict):
         units = vTuple[unitIndex]
         if (units == "mol/mol"):
             varDict[key] = (vTuple[0], vTuple[valueIndex] * air_density, "mol m-3")
+        if (units == "kg/kg"):
+            # convert from kg/kb to mol / m3 by multiplying by air_density and dividing by molecular weight
+            # this only applies to soa species
+            varDict[key] = (vTuple[0], vTuple[valueIndex] * soa_density / soa_molecular_weight, "mol m-3")
 
     return (varDict)
 
