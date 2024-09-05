@@ -233,7 +233,7 @@ def calcAirDensity(tempK, pressPa):
     GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT   # joules / Kelvin-mole
     airDensity = pressPa / (GAS_CONSTANT * tempK)           # moles / m3
 
-    return(airDensity)
+    return (airDensity)
 
 
 # set up indexes for the tuple
@@ -244,6 +244,8 @@ unitIndex = 2
 # Perform any numeric conversion needed.
 # varDict = originally read from WACCM, tuples are (musicaName, value, units)
 # return varDict with values modified
+
+
 def convertWaccm(varDict):
 
     # retrieve temperature and pressure from WACCM
