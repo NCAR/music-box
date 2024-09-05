@@ -1,0 +1,18 @@
+FROM fedora:37
+
+RUN dnf -y update \
+    && dnf -y install \
+        git \
+        gcc \
+        gcc-c++ \
+        gnuplot \
+        netcdf-devel \
+        python3 \
+        python3-pip \
+        python-devel \
+        tree \
+    && dnf clean all
+
+# COPY . /workspaces/music-box
+# WORKDIR /workspaces/music-box
+# RUN pip3 install -e '.[dev]'
