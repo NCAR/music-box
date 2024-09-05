@@ -245,8 +245,8 @@ unitIndex = 2
 def convertWaccm(varDict):
     # from the supporting documents
     # https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2019MS001882&file=jame21103-sup-0001-2019MS001882+Text_SI-S01.pdf
-    soa_molecular_weight = 0.115 # kg mol-1
-    soa_density = 1770 # kg m-3
+    soa_molecular_weight = 0.115  # kg mol-1
+    soa_density = 1770  # kg m-3
 
     # retrieve temperature and pressure from WACCM
     temperature = varDict["temperature"][valueIndex]
