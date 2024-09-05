@@ -6,5 +6,5 @@
   ],
   "settings": {
   },
-  "postCreateCommand": "cd /workspaces/music-box && pip3 install -e '.[dev]'"
+  "postCreateCommand": "cd /workspaces/music-box && pip3 install -e '.[dev]' && code sample_waccm_data/README.md"
 }
