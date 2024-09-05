@@ -25,5 +25,5 @@ for root, _, files in os.walk('data'):
 You can extract a coniguraiton file with 
 
 ```
-waccmToMusicBox waccmDir="./sample_waccm_data" musicaDir="src/acom_music_box/examples/configs/ts1" date="20240904" time="07:00" latitude=3.1 longitude=101.7 template=src/acom_music_box/examples/configs/ts1/
+waccmToMusicBox waccmDir="./sample_waccm_data" date="20240904" time="07:00" latitude=3.1 longitude=101.7
 ```
