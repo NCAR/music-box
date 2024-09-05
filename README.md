@@ -11,64 +11,53 @@ MusicBox: A MUSICA model for boxes and columns.
 Copyright (C) 2020 National Center for Atmospheric Research
 
 # Installation
-
-The project is configured to be installed using `pip` by the `pyproject.toml` file. 
-
-To install the `music-box` package into a Python environment, run the following command from the root directory:
-
-```
-pip install .
-```
-
-The package is also available on PyPi and can be installed in any Python environment through:
-
 ```
 pip install acom_music_box
-```
-
-# Developing
-
-Install music box as an editable installation.
-
-```
-pip install -e '.[dev]'
-```
-
-After installing music box for local development
-
-```
-pytest
 ```
 
 # Command line tool
 MusicBox provides a command line tool that can run configurations as well as some pre-configured examples. Basic plotting can be done if gnuplot is installed.
 
+Checkout the command line options
+
 ```
 music_box -h                                        
-usage: music_box [-h] [-c CONFIG] [-e {CB5,Chapman,FlowTube,Analytical}] [-o OUTPUT] [-v] [--color-output] [--plot PLOT]
-
-MusicBox simulation runner.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -c CONFIG, --config CONFIG
-                        Path to the configuration file. If --example is provided, this argument is ignored.
-  -e {CB5,Chapman,FlowTube,Analytical}, --example {CB5,Chapman,FlowTube,Analytical}
-                        Name of the example to use. Overrides --config.
-                        Available examples:
-                        CB5: Carbon bond 5
-                        Chapman: The Chapman cycle with conditions over Boulder, Colorado
-                        FlowTube: A fictitious flow tube experiment
-                        Analytical: An example of an analytical solution to a simple chemical system
-  -o OUTPUT, --output OUTPUT
-                        Path to save the output file, including the file name. If not provided, result will be printed to the console.
-  -v, --verbose         Increase logging verbosity. Use -v for info, -vv for debug.
-  --color-output        Enable color output for logs.
-  --plot PLOT           Plot a comma-separated list of species if gnuplot is available (e.g., CONC.A,CONC.B).
 ```
 
-To run one of the examples and plot something you would run
+Run an example. Notice that the output, in csv format, is printed to the terminal.
 
 ```
-music_box -e Chapman -o output.csv -vv --color-output --plot CONC.O1D
+music_box -e Chapman
+```
+
+You can also run your own configuration
+
+```
+music_box -c my_config.json
+```
+
+Output can be saved to a file
+
+```
+music_box -e Chapman -o output.csv
+```
+
+And, if you have gnuplot installed, some basic plots can be made to show some resulting concentrations
+
+```
+music_box -e Chapman -o output.csv --color-output --plot CONC.O1D
+```
+
+# Development and Contributing
+
+For local development, install `music-box` as an editable installation:
+
+```
+pip install -e '.[dev]'
+```
+
+## Tests
+
+```
+pytest
 ```
