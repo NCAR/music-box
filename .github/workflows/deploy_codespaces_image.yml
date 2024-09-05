@@ -2,6 +2,10 @@ name: Build and Deploy Docker Image
 
 on:
   push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*'
   workflow_dispatch:
 
 jobs:
@@ -22,10 +26,28 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and push Docker image
+    - name: Build Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: .devcontainer/Dockerfile.codespace
+        push: false
+        tags: ghcr.io/ncar/music-box:build-temp
+
+    - name: Build and push Docker image (latest)
+      if: github.ref == 'refs/heads/main'
       uses: docker/build-push-action@v4
       with:
         context: .
         file: .devcontainer/Dockerfile.codespace
         push: true
         tags: ghcr.io/ncar/music-box:latest
+
+    - name: Build and push Docker image (tagged)
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: .devcontainer/Dockerfile.codespace
+        push: true
+        tags: ghcr.io/ncar/music-box:${{ github.ref_name }}
