@@ -1,12 +1,12 @@
-import os
 import argparse
-from acom_music_box import MusicBox, Examples, __version__
-import datetime
-import sys
-import logging
 import colorlog
+import datetime
+import logging
+import os
 import subprocess
+import sys
 import tempfile
+from acom_music_box import MusicBox, Examples, __version__
 
 
 def format_examples_help(examples):
@@ -59,35 +59,28 @@ def parse_arguments():
 
 
 def setup_logging(verbosity, color_output):
-    if verbosity >= 2:
-        log_level = logging.DEBUG
-    elif verbosity == 1:
-        log_level = logging.INFO
-    else:
-        log_level = logging.CRITICAL
+    log_level = logging.DEBUG if verbosity >= 2 else logging.INFO if verbosity == 1 else logging.CRITICAL
+    datefmt = '%Y-%m-%d %H:%M:%S'
+    format_string = '%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s'
+    formatter = logging.Formatter(format_string, datefmt=datefmt)
+    console_handler = logging.StreamHandler()
 
-    formatter = logging.Formatter(
-        '%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S')
     if color_output:
         color_formatter = colorlog.ColoredFormatter(
-            '%(log_color)s%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S',
+            f'%(log_color)s{format_string}',
+            datefmt=datefmt,
             log_colors={
                 'DEBUG': 'green',
                 'INFO': 'cyan',
                 'WARNING': 'yellow',
                 'ERROR': 'red',
                 'CRITICAL': 'bold_red'})
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(log_level)
         console_handler.setFormatter(color_formatter)
-        logging.basicConfig(level=log_level, handlers=[console_handler])
     else:
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(log_level)
         console_handler.setFormatter(formatter)
-        logging.basicConfig(level=log_level, handlers=[console_handler])
+
+    console_handler.setLevel(log_level)
+    logging.basicConfig(level=log_level, handlers=[console_handler])
 
 
 def plot_with_gnuplot(data, species_list):
@@ -148,6 +141,12 @@ def main():
 
     musicBoxOutputPath = args.output
     plot_species_list = args.plot.split(',') if args.plot else None
+
+    if not musicBoxConfigFile:
+        error = "Configuration file is required."
+        print(error)
+        logger.error(error)
+        sys.exit(1)
 
     # Create and load a MusicBox object
     myBox = MusicBox()

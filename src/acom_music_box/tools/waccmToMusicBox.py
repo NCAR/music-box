@@ -14,6 +14,9 @@ import json
 import sys
 import os
 import shutil
+import tempfile
+import zipfile
+from acom_music_box import Examples
 
 import logging
 logger = logging.getLogger(__name__)
@@ -71,20 +74,102 @@ def safeFloat(numString):
     return result
 
 
+# Create and return list of WACCM chemical species
+# that will be mapped to MUSICA.
+# modelDir = directory containing model output
+# waccmFilename = name of WACCM model output file
+# return list of variable names
+def getWaccmSpecies(modelDir, waccmFilename):
+    # create the filename
+    logger.info(f"WACCM species file = {waccmFilename}")
+
+    # open dataset for reading
+    waccmDataSet = xarray.open_dataset(os.path.join(modelDir, waccmFilename))
+
+    # collect the data variables
+    waccmNames = [varName for varName in waccmDataSet.data_vars]
+
+    # To do: remove extraneous non-chemical vars like date and time
+    # Idea: use the dimensions to filter out non-chemicals
+
+    # close the NetCDF file
+    waccmDataSet.close()
+
+    return (waccmNames)
+
+
+# Create list of chemical species in MUSICA,
+# corresponding to the same chemical species in WACCM.
+# templateDir = directory containing configuration files and camp_data
+# return list of variable names
+def getMusicaSpecies(templateDir):
+    # find the standard configuration file and parse it
+    myConfigFile = os.path.join(templateDir, "camp_data", "species.json")
+    with open(myConfigFile) as jsonFile:
+        myConfig = json.load(jsonFile)
+
+    # locate the section for chemical species
+    chemSpeciesTag = "camp-data"
+    chemSpecies = myConfig[chemSpeciesTag]
+
+    # retrieve just the names
+    musicaNames = []
+    for spec in chemSpecies:
+        specName = spec.get("name")
+        if (specName):
+            musicaNames.append(spec.get("name"))
+
+    return (musicaNames)
+
+
 # Build and return dictionary of WACCM variable names
 # and their MusicBox equivalents.
-def getMusicaDictionary():
+# waccmSpecies = list of variable names in the WACCM model output
+# musicaSpecies = list of variable names in species.json
+# return ordered dictionary
+def getMusicaDictionary(waccmSpecies=None, musicaSpecies=None):
+    if ((waccmSpecies is None) or (musicaSpecies is None)):
+        logger.warning("No species map found for WACCM or MUSICA.")
+
+        # build a simple species map
+        varMap = {
+            "T": "temperature",
+            "PS": "pressure",
+            "N2O": "N2O",
+            "H2O2": "H2O2",
+            "O3": "O3",
+            "NH3": "NH3",
+            "CH4": "CH4"
+        }
+
+        return (dict(sorted(varMap.items())))
+
+    # create new list of species common to both lists
+    inCommon = sorted([species for species in waccmSpecies if species in musicaSpecies])
+
+    # provide some diagnostic warnings
+    waccmOnly = [species for species in waccmSpecies if species not in musicaSpecies]
+    musicaOnly = [species for species in musicaSpecies if species not in waccmSpecies]
+    if (len(waccmOnly) > 0):
+        logger.warning(f"The following chemical species are only in WACCM: {waccmOnly}")
+    if (len(musicaOnly) > 0):
+        logger.warning(f"The following chemical species are only in MUSICA: {musicaOnly}")
+
+    # build the dictionary
+    # To do: As of September 4, 2024 this is not much of a map,
+    # as most of the entries are identical. We may map additional
+    # pairs in the future. This map is still useful in identifying
+    # the common species between WACCM and MUSICA.
     varMap = {
         "T": "temperature",
-        "PS": "pressure",
-        "N2O": "N2O",
-        "H2O2": "H2O2",
-        "O3": "O3",
-        "NH3": "NH3",
-        "CH4": "CH4"
+        "PS": "pressure"
     }
 
-    return (dict(sorted(varMap.items())))
+    logger.info(f"inCommon = {inCommon}")
+    for varName in inCommon:
+        varMap[varName] = varName
+
+    return (varMap)
 
 
 # Read array values at a single lat-lon-time point.
@@ -94,43 +179,37 @@ def getMusicaDictionary():
 # modelDir = directory containing model output
 # return dictionary of MUSICA variable names, values, and units
 def readWACCM(waccmMusicaDict, latitude, longitude,
-              when, modelDir):
+              when, modelDir, waccmFilename):
 
-    # create the filename
-    waccmFilename = ("f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{:4d}-{:02d}-{:02}-00000.nc"
-                     .format(when.year, when.month, when.day))
-    logger.info("WACCM file = {}".format(waccmFilename))
+    logger.info(f"WACCM file = {waccmFilename}")
 
     # open dataset for reading
-    waccmDataSet = xarray.open_dataset("{}/{}".format(modelDir, waccmFilename))
-    if (True):
+    waccmDataSet = xarray.open_dataset(os.path.join(modelDir, waccmFilename))
+    if (False):
         # diagnostic to look at dataset structure
-        logger.info("WACCM dataset = {}".format(waccmDataSet))
+        logger.info(f"WACCM dataset = {waccmDataSet}")
 
     # retrieve all vars at a single point
     whenStr = when.strftime("%Y-%m-%d %H:%M:%S")
-    logger.info("whenStr = {}".format(whenStr))
+    logger.info(f"whenStr = {whenStr}")
     singlePoint = waccmDataSet.sel(lon=longitude, lat=latitude, lev=1000.0,
                                    time=whenStr, method="nearest")
-    if (True):
+    if (False):
         # diagnostic to look at single point structure
-        logger.info("WACCM singlePoint = {}".format(singlePoint))
+        logger.info(f"WACCM singlePoint = {singlePoint}")
 
     # loop through vars and build another dictionary
     musicaDict = {}
     for waccmKey, musicaName in waccmMusicaDict.items():
-        logger.info("WACCM Chemical = {}".format(waccmKey))
         if waccmKey not in singlePoint:
-            logger.warning("Requested variable {} not found in WACCM model output."
-                           .format(waccmKey))
+            logger.warning(f"Requested variable {waccmKey} not found in WACCM model output.")
             musicaTuple = (waccmKey, None, None)
             musicaDict[musicaName] = musicaTuple
             continue
 
         chemSinglePoint = singlePoint[waccmKey]
         if (True):
-            logger.info("{} = object {}".format(waccmKey, chemSinglePoint))
-            logger.info("{} = value {} {}".format(waccmKey, chemSinglePoint.values, chemSinglePoint.units))
+            logger.info(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
         musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)   # from 0-dim array
         musicaDict[musicaName] = musicaTuple
 
@@ -138,6 +217,19 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
     waccmDataSet.close()
 
     return (musicaDict)
+
+
+# Calculate air density from the ideal gas law.
+# tempK = temperature in degrees Kelvin
+# pressPa = pressure in Pascals
+# return density of air in moles / cubic meter
+def calcAirDensity(tempK, pressPa):
+    BOLTZMANN_CONSTANT = 1.380649e-23       # joules / Kelvin
+    AVOGADRO_CONSTANT = 6.02214076e23       # / mole
+    GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT   # joules / Kelvin-mole
+    airDensity = pressPa / (GAS_CONSTANT * tempK)           # moles / m3
+
+    return airDensity
 
 
 # set up indexes for the tuple
@@ -151,14 +243,26 @@ unitIndex = 2
 
 
 def convertWaccm(varDict):
+    # from the supporting documents
+    # https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2019MS001882&file=jame21103-sup-0001-2019MS001882+Text_SI-S01.pdf
+    soa_molecular_weight = 0.115  # kg mol-1
+    soa_density = 1770  # kg m-3
 
-    moleToM3 = 1000 / 22.4
+    # retrieve temperature and pressure from WACCM
+    temperature = varDict["temperature"][valueIndex]
+    pressure = varDict["pressure"][valueIndex]
+    logger.info(f"temperature = {temperature} K   pressure = {pressure} Pa")
+    air_density = calcAirDensity(temperature, pressure)
+    logger.info(f"air density = {air_density} mol m-3")
 
     for key, vTuple in varDict.items():
         # convert moles / mole to moles / cubic meter
         units = vTuple[unitIndex]
         if (units == "mol/mol"):
-            varDict[key] = (vTuple[0], vTuple[valueIndex] * moleToM3, "mol m-3")
+            varDict[key] = (vTuple[0], vTuple[valueIndex] * air_density, "mol m-3")
+        if (units == "kg/kg"):
+            # soa species only
+            varDict[key] = (vTuple[0], vTuple[valueIndex] * soa_density / soa_molecular_weight, "mol m-3")
 
     return (varDict)
 
@@ -187,7 +291,7 @@ def writeInitCSV(initValues, filename):
         else:
             fp.write(",")
 
-        fp.write("{}".format(value[valueIndex]))
+        fp.write(f"{value[valueIndex]}")
     fp.write("\n")
 
     fp.close()
@@ -203,8 +307,7 @@ def writeInitJSON(initValues, filename):
     initConfig = {dictName: {}}
 
     for key, value in initValues.items():
-        initConfig[dictName][key] = {
-            "initial value [{}]".format(value[unitIndex]): value[valueIndex]}
+        initConfig[dictName][key] = {f"initial value [{value[unitIndex]}]": value[valueIndex]}
 
     # write JSON content to the file
     fpJson = open(filename, "w")
@@ -216,90 +319,84 @@ def writeInitJSON(initValues, filename):
     return
 
 
-# Reproduce the MusicBox configuration with new initial values.
+# Reproduce the MusicBox configuration with new initial values and write to config.zip in the current directory
 # initValues = dictionary of Musica varnames and (WACCM name, value, units)
 # templateDir = directory containing configuration files and camp_data
-# destDir = the template will be created in this directory
-def insertIntoTemplate(initValues, templateDir, destDir):
+def insertIntoTemplate(initValues, templateDir):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # copy the template directory to a new 'configuration' folder
+        destPath = os.path.join(temp_dir, 'configuration')
+        logger.info(f"Create new configuration in = {destPath}")
 
-    # copy the template directory to working area
-    destZip = os.path.basename(os.path.normpath(templateDir))
-    destPath = os.path.join(destDir, destZip)
-    logger.info("Create new configuration in = {}".format(destPath))
+        # copy the template directory
+        shutil.copytree(templateDir, destPath)
 
-    # remove directory if it already exists
-    if os.path.exists(destPath):
-        shutil.rmtree(destPath)
+        # find the standard configuration file and parse it
+        myConfigFile = os.path.join(destPath, "my_config.json")
+        with open(myConfigFile) as jsonFile:
+            myConfig = json.load(jsonFile)
 
-    # copy the template directory
-    shutil.copytree(templateDir, destPath)
+        # locate the section for chemical concentrations
+        chemSpeciesTag = "chemical species"
+        chemSpecies = myConfig[chemSpeciesTag]
+        logger.info(f"Replace chemSpecies = {chemSpecies}")
+        del myConfig[chemSpeciesTag]  # delete the existing section
 
-    # find the standard configuration file and parse it
-    myConfigFile = os.path.join(destPath, "my_config.json")
-    with open(myConfigFile) as jsonFile:
-        myConfig = json.load(jsonFile)
+        # set up dictionary of chemicals and initial values
+        chemValueDict = {}
+        temperature = 0.0
+        pressure = 0.0
+        for key, value in initValues.items():
+            if key == "temperature":
+                temperature = safeFloat(value[valueIndex])
+                continue
+            if key == "pressure":
+                pressure = safeFloat(value[valueIndex])
+                continue
 
-    # locate the section for chemical concentrations
-    chemSpeciesTag = "chemical species"
-    chemSpecies = myConfig[chemSpeciesTag]
-    logger.info("Replace chemSpecies = {}".format(chemSpecies))
-    del myConfig[chemSpeciesTag]     # delete the existing section
+            chemValueDict[key] = {f"initial value [{value[unitIndex]}]": value[valueIndex]}
 
-    # set up dictionary of chemicals and initial values
-    chemValueDict = {}
-    temperature = 0.0
-    pressure = 0.0
-    for key, value in initValues.items():
-        if (key == "temperature"):
-            temperature = safeFloat(value[valueIndex])
-            continue
-        if (key == "pressure"):
-            pressure = safeFloat(value[valueIndex])
-            continue
+        myConfig[chemSpeciesTag] = chemValueDict
 
-        chemValueDict[key] = {
-            "initial value [{}]".format(value[unitIndex]): value[valueIndex]}
+        # replace the values of temperature and pressure
+        envConditionsTag = "environmental conditions"
+        envConfig = myConfig[envConditionsTag]
+        envConfig["temperature"]["initial value [K]"] = temperature
+        envConfig["pressure"]["initial value [Pa]"] = pressure
 
-    myConfig[chemSpeciesTag] = chemValueDict
+        # save over the former json file
+        with open(myConfigFile, "w") as myConfigFp:
+            json.dump(myConfig, myConfigFp, indent=2)
 
-    # replace the values of temperature and pressure
-    envConditionsTag = "environmental conditions"
-    envConfig = myConfig[envConditionsTag]
-    envConfig["temperature"]["initial value [K]"] = temperature
-    envConfig["pressure"]["initial value [Pa]"] = pressure
+        # Create a zip file that contains the 'configuration' folder
+        zip_path = os.path.join(os.getcwd(), 'config.zip')
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            for root, dirs, files in os.walk(temp_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    # Ensure the files are zipped under 'configuration' directory
+                    zipf.write(file_path, os.path.relpath(file_path, temp_dir))
 
-    # save over the former json file
-    with open(myConfigFile, "w") as myConfigFp:
-        json.dump(myConfig, myConfigFp, indent=2)
-
-    # compress the written directory as a zip file
-    shutil.make_archive(destPath, "zip",
-                        root_dir=destDir, base_dir=destZip)
-
-    # move into the created directory
-    shutil.move(destPath + ".zip", destPath)
-
-    return
+        logger.info(f"Configuration zipped to {zip_path}")
 
 
 # Main routine begins here.
 def main():
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-    logger.info("{}".format(__file__))
-    logger.info("Start time: {}".format(datetime.datetime.now()))
+    logger.info(f"{__file__}")
+    logger.info(f"Start time: {datetime.datetime.now()}")
 
     # retrieve and parse the command-line arguments
     myArgs = getArgsDictionary(sys.argv[1:])
-    logger.info("Command line = {}".format(myArgs))
+    logger.info(f"Command line = {myArgs}")
 
     # set up the directories
     waccmDir = None
     if ("waccmDir" in myArgs):
         waccmDir = myArgs.get("waccmDir")
 
-    musicaDir = None
-    if ("musicaDir" in myArgs):
-        musicaDir = myArgs.get("musicaDir")
+    musicaDir = os.path.dirname(Examples.TS1.path)
+    template = os.path.dirname(Examples.TS1.path)
 
     # get the date-time to retrieve
     dateStr = None
@@ -319,47 +416,52 @@ def main():
     if ("longitude" in myArgs):
         lon = safeFloat(myArgs.get("longitude"))
 
-    retrieveWhen = datetime.datetime.strptime(
-        "{} {}".format(dateStr, timeStr), "%Y%m%d %H:%M")
+    when = datetime.datetime.strptime(
+        f"{dateStr} {timeStr}", "%Y%m%d %H:%M")
 
-    template = None
-    if ("template" in myArgs):
-        template = myArgs.get("template")
+    waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02}-00000.nc"
 
-    logger.info("Retrieve WACCM conditions at ({} North, {} East)   when {}."
-                .format(lat, lon, retrieveWhen))
+    # read and glean chemical species from WACCM and MUSICA
+    waccmChems = getWaccmSpecies(waccmDir, waccmFilename)
+    musicaChems = getMusicaSpecies(template)
+
+    # create map of species common to both WACCM and MUSICA
+    commonDict = getMusicaDictionary(waccmChems, musicaChems)
+    logger.info(f"Species in common are = {commonDict}")
+    if (len(commonDict) == 0):
+        logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
 
     # Read named variables from WACCM model output.
-    varValues = readWACCM(getMusicaDictionary(),
-                          lat, lon, retrieveWhen, waccmDir)
-    logger.info("Original WACCM varValues = {}".format(varValues))
+    logger.info(f"Retrieve WACCM conditions at ({lat} North, {lon} East)   when {when}.")
+    varValues = readWACCM(commonDict,
+                          lat, lon, when, waccmDir, waccmFilename)
+    logger.info(f"Original WACCM varValues = {varValues}")
 
     # Perform any conversions needed, or derive variables.
     varValues = convertWaccm(varValues)
-    logger.info("Converted WACCM varValues = {}".format(varValues))
+    logger.info(f"Converted WACCM varValues = {varValues}")
 
-    if (True):
+    if (False):
         # Write CSV file for MusicBox initial conditions.
-        csvName = "{}/{}".format(musicaDir, "initial_conditions.csv")
+        csvName = os.path.join(musicaDir, "initial_conditions.csv")
         writeInitCSV(varValues, csvName)
 
-    if (True):
+    if (False):
         # Write JSON file for MusicBox initial conditions.
-        jsonName = "{}/{}".format(musicaDir, "initial_config.json")
+        jsonName = os.path.join(musicaDir, "initial_config.json")
         writeInitJSON(varValues, jsonName)
 
-    if (True and template is not None):
-        logger.info("Insert values into template {}".format(template))
-        insertIntoTemplate(varValues, template, musicaDir)
+    logger.info(f"Insert values into template {template}")
+    insertIntoTemplate(varValues, template)
 
-    logger.info("End time: {}".format(datetime.datetime.now()))
+    logger.info(f"End time: {datetime.datetime.now()}")
     sys.exit(0)     # no error
 
 
 if (__name__ == "__main__"):
     main()
 
-    logger.info("End time: {}".format(datetime.datetime.now()))
+    logger.info(f"End time: {datetime.datetime.now()}")
     sys.exit(0)     # no error
 
 
