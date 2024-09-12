@@ -299,7 +299,6 @@ class MusicBox:
             ValueError: If the JSON string cannot be parsed.
         """
 
-        #self.config_file = path_to_json    # bogus
         with open(path_to_json, 'r') as json_file:
             data = json.load(json_file)
             # Set box model options
@@ -347,8 +346,6 @@ class MusicBox:
         Returns:
             list: An ordered list of rate constants.
         """
-        # look through the rates for duplicate reaction names
-
         rate_constants = {}
         for rate in curr_conditions.reaction_rates:
 
@@ -363,10 +360,7 @@ class MusicBox:
             rate_constants[key] = rate.rate
 
         ordered_rate_constants = len(rate_constants.keys()) * [0.0]
-        #ordered_rate_constants = (len(rate_constants.keys()) + 10) * [0.0]
-        logger.info("len orc = {}".format(len(ordered_rate_constants)))
         for key, value in rate_constants.items():
-            logger.info("key = {}   index = {}".format(key, rate_constant_ordering[key]))
             ordered_rate_constants[rate_constant_ordering[key]] = float(value)
         return ordered_rate_constants
 
