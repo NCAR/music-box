@@ -89,6 +89,45 @@ class MusicBox:
             solver_type,
             number_of_grid_cells)
 
+    def check_config(self, boxConfigPath):
+        """
+        Verifies correct configuration of the solver object.
+
+        Args:
+            boxConfigPath = filename and path of MusicBox configuration file
+
+        Returns:
+            True if all checks passed
+            Throws error for the first check failed.
+        """
+        if (not self.solver):
+            return(False)
+
+        # look for duplicate reaction names
+        if (self.initial_conditions):
+            if (self.initial_conditions.reaction_rates):
+                reactionNames = []
+                for rate in self.initial_conditions.reaction_rates:
+                    # watch out for Nones in here
+                    if not rate.reaction:
+                        continue
+                    if not rate.reaction.name:
+                        continue
+                    reactionNames.append(rate.reaction.name)
+
+                # look for name already seen
+                seen = set()
+                dupNames = [name for name in reactionNames if name in seen or seen.add(name)]
+
+                if (len(dupNames) > 0):
+                    # inform user of the error and its remedy
+                    errString = ("Error: Duplicate reaction names specified within {}: {}."
+                            .format(boxConfigPath, dupNames))
+                    errString += " Please remove or rename the duplicates."
+                    raise Exception(errString)
+
+        return(True)
+
     def solve(self, output_path=None, callback=None):
         """
         Solves the box model simulation and optionally writes the output to a file.
@@ -260,6 +299,7 @@ class MusicBox:
             ValueError: If the JSON string cannot be parsed.
         """
 
+        #self.config_file = path_to_json    # bogus
         with open(path_to_json, 'r') as json_file:
             data = json.load(json_file)
             # Set box model options
@@ -307,6 +347,8 @@ class MusicBox:
         Returns:
             list: An ordered list of rate constants.
         """
+        # look through the rates for duplicate reaction names
+
         rate_constants = {}
         for rate in curr_conditions.reaction_rates:
 
@@ -321,7 +363,10 @@ class MusicBox:
             rate_constants[key] = rate.rate
 
         ordered_rate_constants = len(rate_constants.keys()) * [0.0]
+        #ordered_rate_constants = (len(rate_constants.keys()) + 10) * [0.0]
+        logger.info("len orc = {}".format(len(ordered_rate_constants)))
         for key, value in rate_constants.items():
+            logger.info("key = {}   index = {}".format(key, rate_constant_ordering[key]))
             ordered_rate_constants[rate_constant_ordering[key]] = float(value)
         return ordered_rate_constants
 

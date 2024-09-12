@@ -158,6 +158,7 @@ def main():
         os.path.dirname(musicBoxConfigFile),
         myBox.config_file)
     myBox.create_solver(config_path)
+    myBox.check_config(config_path)
     result = myBox.solve(musicBoxOutputPath)
 
     if musicBoxOutputPath is None:
