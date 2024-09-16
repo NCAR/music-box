@@ -22,7 +22,7 @@ class Example:
 
 class _Examples:
     CarbonBond5 = Example.from_config(
-        display_name='Carbon Bond IV',
+        display_name='Carbon Bond V',
         short_name='CB5',
         folder_name='carbon_bond_5',
         description='Carbon bond 5')
@@ -42,7 +42,7 @@ class _Examples:
         folder_name='analytical',
         description='An example of an analytical solution to a simple chemical system')
     TS1 = Example.from_config(
-        display_name='Tropical Stratosphere 1',
+        display_name='Troposphere-Stratosphere 1',
         short_name='TS1',
         folder_name='ts1',
         description='Many species involved in tropospheric-stratospheric chemistry')
