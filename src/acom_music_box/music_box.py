@@ -91,7 +91,9 @@ class MusicBox:
 
     def check_config(self, boxConfigPath):
         """
-        Verifies correct configuration of the solver object.
+        Verifies correct configuration of the MusicBox object.
+        There is intentionally no check for the presence of a solver;
+        this test function is for the loaded configuration only.
 
         Args:
             boxConfigPath = filename and path of MusicBox configuration file
@@ -102,8 +104,6 @@ class MusicBox:
             True if all checks passed
             Throws error for the first check failed.
         """
-        if (not self.solver):
-            return(False)
 
         # look for duplicate reaction names
         if (self.initial_conditions):
