@@ -95,6 +95,8 @@ class MusicBox:
 
         Args:
             boxConfigPath = filename and path of MusicBox configuration file
+                This filename is supplied only for the error message;
+                the configuration should already be loaded.
 
         Returns:
             True if all checks passed
