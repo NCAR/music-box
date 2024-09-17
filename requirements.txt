@@ -1,5 +1,0 @@
-musica==0.6.1.dev0
-pandas
-pipx
-pytest
-twine
