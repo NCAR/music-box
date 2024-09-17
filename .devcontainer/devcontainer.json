@@ -1,0 +1,10 @@
+{
+  "name": "MusicBox",
+  "image": "ghcr.io/ncar/music-box:latest",
+  "extensions": [
+    "ms-python.python",
+  ],
+  "settings": {
+  },
+  "postCreateCommand": ""
+}
