@@ -48,8 +48,8 @@ class _Examples:
         description='Many species involved in tropospheric-stratospheric chemistry')
 
     @classmethod
-    def get_all(cls):
-        return [cls.CarbonBond5, cls.Chapman, cls.FlowTube, cls.Analytical, cls.TS1]
+    def get_all(self):
+        return [self.CarbonBond5, self.Chapman, self.FlowTube, self.Analytical, self.TS1]
 
     def __iter__(self):
         return iter(self.get_all())
@@ -58,6 +58,15 @@ class _Examples:
         if hasattr(self, item):
             return getattr(self, item)
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
+    
+    def __getitem__(self, item):
+        return self.get_all()[item]
+    
+    def __repr__(self):
+        return f'Eamples: {self.get_all()}'
+
+    def __str__(self):
+        return f'Eamples: {self.get_all()}'
 
 
 Examples = _Examples()
