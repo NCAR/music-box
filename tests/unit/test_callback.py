@@ -11,13 +11,8 @@ class TestCallbackFunction:
         box_model = MusicBox()
 
         conditions_path = Examples.Analytical.path
-        box_model.readConditionsFromJson(conditions_path)
-
-        camp_path = os.path.join(
-            os.path.dirname(conditions_path),
-            box_model.config_file)
-
-        box_model.create_solver(camp_path)
+        
+        box_model.loadJson(conditions_path, box_model)
 
         # Mock the callback function
         callback_mock = mocker.Mock(side_effect=callback)
