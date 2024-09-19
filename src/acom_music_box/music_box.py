@@ -265,7 +265,7 @@ class MusicBox:
         os.path.dirname(path_to_json),
         box_model.config_file)
 
-        # Create a solver object using the configuration file
+        # Creates a micm solver object using the CAMP configuration files.
         self.solver = musica.create_solver(
         camp_path,
         musica.micmsolver.rosenbrock,
