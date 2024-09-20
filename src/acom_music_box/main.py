@@ -152,7 +152,6 @@ def main():
     myBox = MusicBox()
     logger.debug(f"Configuration file = {musicBoxConfigFile}")
     myBox.readConditionsFromJson(musicBoxConfigFile)
-    myBox.check_config(os.path.join(os.getcwd(), musicBoxConfigFile))
 
     # Create solver and solve
     config_path = os.path.join(

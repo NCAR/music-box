@@ -321,6 +321,9 @@ class MusicBox:
             self.evolving_conditions = EvolvingConditions.from_config_JSON(
                 path_to_json, data, self.species_list, self.reaction_list)
 
+        self.check_config(os.path.join(os.getcwd(), path_to_json))
+
+
     def speciesOrdering(self):
         """
         Retrieves the ordering of species used in the solver.
