@@ -226,14 +226,13 @@ class MusicBox:
 
         return df
 
-    def loadJson(self, path_to_json, box_model):
+    def loadJson(self, path_to_json):
         """
         Reads and parses a JSON file and create a solver
 
         Args:
             path_to_json (str): The JSON path to the JSON file.
-            box_model: Instance of the MusicBox class 
-
+            
         Returns:
             None
 
@@ -263,7 +262,7 @@ class MusicBox:
             
         camp_path = os.path.join(
         os.path.dirname(path_to_json),
-        box_model.config_file)
+        self.config_file)
 
         # Creates a micm solver object using the CAMP configuration files.
         self.solver = musica.create_solver(

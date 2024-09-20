@@ -11,7 +11,7 @@ class TestChapman:
 
         conditions_path = Examples.Chapman.path
         
-        box_model.loadJson(conditions_path, box_model)
+        box_model.loadJson(conditions_path)
 
         # solves and saves output
         df = box_model.solve()

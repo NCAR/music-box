@@ -12,7 +12,7 @@ class TestCallbackFunction:
 
         conditions_path = Examples.Analytical.path
         
-        box_model.loadJson(conditions_path, box_model)
+        box_model.loadJson(conditions_path)
 
         # Mock the callback function
         callback_mock = mocker.Mock(side_effect=callback)

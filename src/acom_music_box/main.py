@@ -151,8 +151,8 @@ def main():
     # Create and load a MusicBox object
     myBox = MusicBox()
     logger.debug(f"Configuration file = {musicBoxConfigFile}")
-    myBox.loadJson(musicBoxConfigFile, myBox)
-    
+    myBox.loadJson(musicBoxConfigFile)
+
     result = myBox.solve(musicBoxOutputPath)
 
     if musicBoxOutputPath is None:

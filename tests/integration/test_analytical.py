@@ -10,7 +10,7 @@ class TestAnalytical:
 
         conditions_path = Examples.Analytical.path
 
-        box_model.loadJson(conditions_path, box_model)
+        box_model.loadJson(conditions_path)
 
         # solves and saves output
         df = box_model.solve()
