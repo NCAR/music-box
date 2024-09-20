@@ -15,10 +15,7 @@ class TestDuplicateReactions:
         pass_reactions = [abc123, def456]
         pass_conditions = Conditions(reaction_rates=pass_reactions)
         box_model = MusicBox(initial_conditions=pass_conditions)
-        box_model.check_config("Loaded from string.")
-
-        # Pass test should throw an error above if it fails
-        assert True, f"All is good."        # example of assertion
+        assert box_model.check_config("Loaded from string.")
 
         # Fail: duplicate reaction names
         fail_reactions = reactions=[abc123, abc789]
