@@ -2,9 +2,6 @@ from acom_music_box import MusicBox, Reaction, ReactionRate, Conditions
 from acom_music_box.reaction_list import ReactionList
 
 import pytest
-import os
-import csv
-import math
 
 
 class TestDuplicateReactions:
