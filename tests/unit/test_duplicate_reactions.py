@@ -1,6 +1,7 @@
 from acom_music_box import MusicBox, Reaction, ReactionRate, Conditions
 from acom_music_box.reaction_list import ReactionList
 
+import pytest
 import os
 import csv
 import math
@@ -27,13 +28,9 @@ class TestDuplicateReactions:
         fail_conditions = Conditions(reaction_rates=fail_reactions)
         box_model = MusicBox(initial_conditions=fail_conditions)    # new instance
 
-        # catching the exception is a Pass for the duplicate case
-        caughtExcept = False
-        try:
+        # verify that the fail exception was properly raised
+        with pytest.raises(Exception):
             box_model.check_config("Loaded from string.")
-        except Exception as myExcept:
-            caughtExcept = True
-        assert caughtExcept, f"Failed to detect duplicate reaction names."
 
 
 if __name__ == "__main__":
