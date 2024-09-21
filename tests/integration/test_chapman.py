@@ -10,7 +10,7 @@ class TestChapman:
         box_model = MusicBox()
 
         conditions_path = Examples.Chapman.path
-        
+
         box_model.loadJson(conditions_path)
 
         # solves and saves output
