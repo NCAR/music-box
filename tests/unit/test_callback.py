@@ -11,7 +11,7 @@ class TestCallbackFunction:
         box_model = MusicBox()
 
         conditions_path = Examples.Analytical.path
-        
+
         box_model.loadJson(conditions_path)
 
         # Mock the callback function

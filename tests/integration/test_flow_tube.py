@@ -12,7 +12,7 @@ class TestWallLoss:
         conditions_path = Examples.FlowTube.path
 
         box_model.loadJson(conditions_path)
-        
+
         # solves and saves output
         df = box_model.solve()
         model_output = [df.columns.values.tolist()] + df.values.tolist()

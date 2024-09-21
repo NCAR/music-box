@@ -8,7 +8,7 @@ import math
 class TestCarbonBond5:
     def test_run(self):
         box_model = MusicBox()
-        
+
         conditions_path = Examples.CarbonBond5.path
 
         box_model.loadJson(conditions_path)

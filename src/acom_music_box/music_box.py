@@ -232,7 +232,7 @@ class MusicBox:
 
         Args:
             path_to_json (str): The JSON path to the JSON file.
-            
+
         Returns:
             None
 
@@ -259,17 +259,16 @@ class MusicBox:
             # Set initial conditions
             self.evolving_conditions = EvolvingConditions.from_config_JSON(
                 path_to_json, data, self.species_list, self.reaction_list)
-            
+
         camp_path = os.path.join(
-        os.path.dirname(path_to_json),
-        self.config_file)
+            os.path.dirname(path_to_json),
+            self.config_file)
 
         # Creates a micm solver object using the CAMP configuration files.
         self.solver = musica.create_solver(
-        camp_path,
-        musica.micmsolver.rosenbrock,
-        1)
-
+            camp_path,
+            musica.micmsolver.rosenbrock,
+            1)
 
     def speciesOrdering(self):
         """
