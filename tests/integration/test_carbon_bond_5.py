@@ -8,16 +8,10 @@ import math
 class TestCarbonBond5:
     def test_run(self):
         box_model = MusicBox()
-
-        # configures box model
+        
         conditions_path = Examples.CarbonBond5.path
-        box_model.readConditionsFromJson(conditions_path)
 
-        camp_path = os.path.join(
-            os.path.dirname(conditions_path),
-            box_model.config_file)
-
-        box_model.create_solver(camp_path)
+        box_model.loadJson(conditions_path)
 
         # solves and saves output
         df = box_model.solve()
