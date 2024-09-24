@@ -69,7 +69,7 @@ class MusicBox:
             time=[time_point], conditions=[conditions])
         self.evolvingConditions.append(evolving_condition)
 
-    def create_solver(
+        def create_solver(
             self,
             path_to_config,
             solver_type=musica.micmsolver.rosenbrock,
@@ -287,9 +287,9 @@ class MusicBox:
 
         return df
 
-    def readConditionsFromJson(self, path_to_json):
+    def loadJson(self, path_to_json):
         """
-        Reads and parses a JSON file from the CAMP JSON file to set up the box model simulation.
+        Reads and parses a JSON file and create a solver
 
         Args:
             path_to_json (str): The JSON path to the JSON file.
@@ -323,6 +323,15 @@ class MusicBox:
 
         self.check_config(os.path.join(os.getcwd(), path_to_json))
 
+        camp_path = os.path.join(
+            os.path.dirname(path_to_json),
+            self.config_file)
+
+        # Creates a micm solver object using the CAMP configuration files.
+        self.solver = musica.create_solver(
+            camp_path,
+            musica.micmsolver.rosenbrock,
+            1)
 
     def speciesOrdering(self):
         """

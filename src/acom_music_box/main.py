@@ -151,13 +151,8 @@ def main():
     # Create and load a MusicBox object
     myBox = MusicBox()
     logger.debug(f"Configuration file = {musicBoxConfigFile}")
-    myBox.readConditionsFromJson(musicBoxConfigFile)
+    myBox.loadJson(musicBoxConfigFile)
 
-    # Create solver and solve
-    config_path = os.path.join(
-        os.path.dirname(musicBoxConfigFile),
-        myBox.config_file)
-    myBox.create_solver(config_path)
     result = myBox.solve(musicBoxOutputPath)
 
     if musicBoxOutputPath is None:
