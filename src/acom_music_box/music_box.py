@@ -70,10 +70,10 @@ class MusicBox:
         self.evolvingConditions.append(evolving_condition)
 
     def create_solver(
-        self,
-        path_to_config,
-        solver_type=musica.micmsolver.rosenbrock,
-        number_of_grid_cells=1):
+            self,
+            path_to_config,
+            solver_type=musica.micmsolver.rosenbrock,
+            number_of_grid_cells=1):
         """
         Creates a micm solver object using the CAMP configuration files.
 
@@ -124,11 +124,11 @@ class MusicBox:
                 if (len(dupNames) > 0):
                     # inform user of the error and its remedy
                     errString = ("Error: Duplicate reaction names specified within {}: {}."
-                            .format(boxConfigPath, dupNames))
+                                 .format(boxConfigPath, dupNames))
                     errString += " Please remove or rename the duplicates."
                     raise Exception(errString)
 
-        return(True)
+        return (True)
 
     def solve(self, output_path=None, callback=None):
         """

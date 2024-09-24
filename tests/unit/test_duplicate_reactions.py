@@ -18,7 +18,7 @@ class TestDuplicateReactions:
         assert box_model.check_config("Loaded from string.")
 
         # Fail: duplicate reaction names
-        fail_reactions = reactions=[abc123, abc789]
+        fail_reactions = reactions = [abc123, abc789]
         fail_conditions = Conditions(reaction_rates=fail_reactions)
         box_model = MusicBox(initial_conditions=fail_conditions)    # new instance
 
@@ -30,4 +30,3 @@ class TestDuplicateReactions:
 if __name__ == "__main__":
     test = TestDuplicateReactions()
     test.test_run()
-
