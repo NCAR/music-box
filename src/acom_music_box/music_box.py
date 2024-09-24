@@ -69,11 +69,11 @@ class MusicBox:
             time=[time_point], conditions=[conditions])
         self.evolvingConditions.append(evolving_condition)
 
-        def create_solver(
-            self,
-            path_to_config,
-            solver_type=musica.micmsolver.rosenbrock,
-            number_of_grid_cells=1):
+    def create_solver(
+        self,
+        path_to_config,
+        solver_type=musica.micmsolver.rosenbrock,
+        number_of_grid_cells=1):
         """
         Creates a micm solver object using the CAMP configuration files.
 
