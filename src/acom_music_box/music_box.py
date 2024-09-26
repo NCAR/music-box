@@ -89,6 +89,47 @@ class MusicBox:
             solver_type,
             number_of_grid_cells)
 
+    def check_config(self, boxConfigPath):
+        """
+        Verifies correct configuration of the MusicBox object.
+        There is intentionally no check for the presence of a solver;
+        this test function is for the loaded configuration only.
+
+        Args:
+            boxConfigPath = filename and path of MusicBox configuration file
+                This filename is supplied only for the error message;
+                the configuration should already be loaded.
+
+        Returns:
+            True if all checks passed
+            Throws error for the first check failed.
+        """
+
+        # look for duplicate reaction names
+        if (self.initial_conditions):
+            if (self.initial_conditions.reaction_rates):
+                reactionNames = []
+                for rate in self.initial_conditions.reaction_rates:
+                    # watch out for Nones in here
+                    if not rate.reaction:
+                        continue
+                    if not rate.reaction.name:
+                        continue
+                    reactionNames.append(rate.reaction.name)
+
+                # look for name already seen
+                seen = set()
+                dupNames = [name for name in reactionNames if name in seen or seen.add(name)]
+
+                if (len(dupNames) > 0):
+                    # inform user of the error and its remedy
+                    errString = ("Error: Duplicate reaction names specified within {}: {}."
+                                 .format(boxConfigPath, dupNames))
+                    errString += " Please remove or rename the duplicates."
+                    raise Exception(errString)
+
+        return (True)
+
     def solve(self, output_path=None, callback=None):
         """
         Solves the box model simulation and optionally writes the output to a file.
@@ -246,9 +287,9 @@ class MusicBox:
 
         return df
 
-    def readConditionsFromJson(self, path_to_json):
+    def loadJson(self, path_to_json):
         """
-        Reads and parses a JSON file from the CAMP JSON file to set up the box model simulation.
+        Reads and parses a JSON file and create a solver
 
         Args:
             path_to_json (str): The JSON path to the JSON file.
@@ -279,6 +320,18 @@ class MusicBox:
             # Set initial conditions
             self.evolving_conditions = EvolvingConditions.from_config_JSON(
                 path_to_json, data, self.species_list, self.reaction_list)
+
+        self.check_config(os.path.join(os.getcwd(), path_to_json))
+
+        camp_path = os.path.join(
+            os.path.dirname(path_to_json),
+            self.config_file)
+
+        # Creates a micm solver object using the CAMP configuration files.
+        self.solver = musica.create_solver(
+            camp_path,
+            musica.micmsolver.rosenbrock,
+            1)
 
     def speciesOrdering(self):
         """

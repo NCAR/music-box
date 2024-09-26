@@ -1,40 +1,29 @@
 {
-    "camp-data": [
-        {
-            "type": "RELATIVE_TOLERANCE",
-            "value": 0.0001
-        },
-        {
-            "name": "M",
-            "type": "CHEM_SPEC"
-        },
-        {
-            "name": "a-pinene",
-            "type": "CHEM_SPEC"
-        },
-        {
-            "name": "O3",
-            "type": "CHEM_SPEC"
-        },
-        {
-            "name": "SOA1",
-            "type": "CHEM_SPEC"
-        },
-        {
-            "name": "SOA2",
-            "type": "CHEM_SPEC"
-        },
-        {
-            "name": "irr__3fddcf85-062e-4a73-be2c-8f3bbe3af3da",
-            "type": "CHEM_SPEC"
-        },
-        {
-            "name": "irr__49b12001-dc96-4a05-9715-e3cd05cb37d5",
-            "type": "CHEM_SPEC"
-        },
-        {
-            "name": "irr__d726e081-c0f1-4649-8947-4919aefd6ac8",
-            "type": "CHEM_SPEC"
-        }
-    ]
+  "camp-data": [
+    {
+      "name": "M",
+      "type": "CHEM_SPEC",
+      "tracer type": "THIRD_BODY",
+      "__description": "Third-body molecule. This is any molecule present in the system."
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "a-pinene"
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "O3",
+      "__description": "ozone"
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "SOA1",
+      "__description": "moderate volatility SOA precursor from a-pinene oxidation"
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "SOA2",
+      "__description": "low volatility SOA precursor from a-pinene oxidation"
+    }
+  ]
 }

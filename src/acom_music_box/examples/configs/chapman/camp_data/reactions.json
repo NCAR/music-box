@@ -1,169 +1,94 @@
 {
-    "camp-data": [
+  "camp-data" : [
+    {
+      "name" : "Chapman",
+      "type" : "MECHANISM",
+      "reactions" : [
         {
-            "type": "MECHANISM",
-            "name": "music box interactive configuration",
-            "reactions": [
-                {
-                    "type": "ARRHENIUS",
-                    "A": 8e-12,
-                    "Ea": 2.8428e-20,
-                    "B": 0,
-                    "D": 300,
-                    "E": 0,
-                    "reactants": {
-                        "O": {
-                            "qty": 1
-                        },
-                        "O3": {
-                            "qty": 1
-                        }
-                    },
-                    "products": {
-                        "O2": {
-                            "yield": 2
-                        },
-                        "irr__071b97cd-d37e-41e1-9ff1-308e3179f910": {
-                            "yield": 1
-                        }
-                    }
-                },
-                {
-                    "type": "PHOTOLYSIS",
-                    "MUSICA name": "O2_1",
-                    "reactants": {
-                        "O2": {}
-                    },
-                    "products": {
-                        "O": {
-                            "yield": 2
-                        },
-                        "irr__17773fe3-c1f6-4015-87e2-f20278517a59": {
-                            "yield": 1
-                        }
-                    }
-                },
-                {
-                    "type": "ARRHENIUS",
-                    "A": 6e-34,
-                    "Ea": 0,
-                    "B": -2.4,
-                    "D": 300,
-                    "E": 0,
-                    "reactants": {
-                        "O": {
-                            "qty": 1
-                        },
-                        "O2": {
-                            "qty": 1
-                        },
-                        "M": {
-                            "qty": 1
-                        }
-                    },
-                    "products": {
-                        "O3": {
-                            "yield": 1
-                        },
-                        "M": {
-                            "yield": 1
-                        },
-                        "irr__1fce6ca9-960d-4ef9-9435-b5e4ef3f1534": {
-                            "yield": 1
-                        }
-                    }
-                },
-                {
-                    "type": "PHOTOLYSIS",
-                    "MUSICA name": "O3_1",
-                    "reactants": {
-                        "O3": {}
-                    },
-                    "products": {
-                        "O1D": {
-                            "yield": 1
-                        },
-                        "O2": {
-                            "yield": 1
-                        },
-                        "irr__427192a6-365c-4d22-9174-8ad91126afab": {
-                            "yield": 1
-                        }
-                    }
-                },
-                {
-                    "type": "ARRHENIUS",
-                    "A": 3.3e-11,
-                    "Ea": -7.59e-22,
-                    "B": 0,
-                    "D": 300,
-                    "E": 0,
-                    "reactants": {
-                        "O1D": {
-                            "qty": 1
-                        },
-                        "O2": {
-                            "qty": 1
-                        }
-                    },
-                    "products": {
-                        "O": {
-                            "yield": 1
-                        },
-                        "O2": {
-                            "yield": 1
-                        },
-                        "irr__93f71f99-b360-451d-b698-cc7f7cfe061b": {
-                            "yield": 1
-                        }
-                    }
-                },
-                {
-                    "type": "ARRHENIUS",
-                    "A": 2.15e-11,
-                    "Ea": -1.518e-21,
-                    "B": 0,
-                    "D": 300,
-                    "E": 0,
-                    "reactants": {
-                        "O1D": {
-                            "qty": 1
-                        },
-                        "M": {
-                            "qty": 1
-                        }
-                    },
-                    "products": {
-                        "O": {
-                            "yield": 1
-                        },
-                        "M": {
-                            "yield": 1
-                        },
-                        "irr__d41171b4-5f9b-4c24-9f0c-4a5bc0041ebc": {
-                            "yield": 1
-                        }
-                    }
-                },
-                {
-                    "type": "PHOTOLYSIS",
-                    "MUSICA name": "O3_2",
-                    "reactants": {
-                        "O3": {}
-                    },
-                    "products": {
-                        "O": {
-                            "yield": 1
-                        },
-                        "O2": {
-                            "yield": 1
-                        },
-                        "irr__f6bf24e9-1b52-497b-b50c-74eaccc28120": {
-                            "yield": 1
-                        }
-                    }
-                }
-            ]
+          "type" : "PHOTOLYSIS",
+          "reactants" : {
+            "O2" : { }
+          },
+          "products" : {
+            "O" : { "yield" : 2.0 }
+          },
+          "MUSICA name" : "O2_1"
+        },
+        {
+          "type" : "PHOTOLYSIS",
+          "reactants" : {
+            "O3" : { }
+          },
+          "products" : {
+            "O1D" : { },
+            "O2" : { }
+          },
+          "MUSICA name" : "O3_1"
+        },
+        {
+          "type" : "PHOTOLYSIS",
+          "reactants" : {
+            "O3" : { }
+          },
+          "products" : {
+            "O" : { },
+            "O2" : { }
+          },
+          "MUSICA name" : "O3_2"
+        },
+        {
+          "type" : "ARRHENIUS",
+          "reactants" : {
+            "O1D" : { },
+            "N2" : { }
+          },
+          "products" : {
+            "O" : { },
+            "N2" : { }
+          },
+          "A" : 2.15e-11,
+          "Ea" : -1.518e-21
+        },
+        {
+          "type" : "ARRHENIUS",
+          "reactants" : {
+            "O1D" : { },
+            "O2" : { }
+          },
+          "products" : {
+            "O" : { },
+            "O2" : { }
+          },
+          "A" : 3.3e-11,
+          "Ea" : -7.59e-22
+        },
+        {
+          "type" : "ARRHENIUS",
+          "reactants" : {
+            "O" : { },
+            "O3" : { }
+          },
+          "products" : {
+            "O2" : { "yield" : 2.0 }
+          },
+          "A" : 8.0e-12,
+          "Ea" : 2.8428e-20
+        },
+        {
+          "type" : "ARRHENIUS",
+          "reactants" : {
+            "O" : { },
+            "O2" : { },
+            "M" : { }
+          },
+          "products" : {
+            "O3" : { },
+            "M" : { }
+          },
+          "A" : 6.0e-34,
+          "B" : -2.4
         }
-    ]
+      ]
+    }
+  ]
 }
