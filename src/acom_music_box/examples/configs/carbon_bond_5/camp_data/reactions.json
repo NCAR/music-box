@@ -3566,7 +3566,7 @@
         {
           "type": "EMISSION",
           "species": "NO2",
-          "MUSICA name": "NO2"
+          "MUSICA name": "NO2_emis"
         },
         {
           "type": "EMISSION",
@@ -3591,7 +3591,7 @@
         {
           "type": "EMISSION",
           "species": "ALD2",
-          "MUSICA name": "ALD2"
+          "MUSICA name": "ALD2_emis"
         },
         {
           "type": "EMISSION",
