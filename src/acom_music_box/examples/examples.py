@@ -58,10 +58,10 @@ class _Examples:
         if hasattr(self, item):
             return getattr(self, item)
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
-    
+
     def __getitem__(self, item):
         return self.get_all()[item]
-    
+
     def __repr__(self):
         return f'Eamples: {self.get_all()}'
 
