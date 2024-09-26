@@ -22,7 +22,7 @@ class Example:
 
 class _Examples:
     CarbonBond5 = Example.from_config(
-        display_name='Carbon Bond IV',
+        display_name='Carbon Bond V',
         short_name='CB5',
         folder_name='carbon_bond_5',
         description='Carbon bond 5')
@@ -42,14 +42,14 @@ class _Examples:
         folder_name='analytical',
         description='An example of an analytical solution to a simple chemical system')
     TS1 = Example.from_config(
-        display_name='Tropical Stratosphere 1',
+        display_name='Troposphere-Stratosphere 1',
         short_name='TS1',
         folder_name='ts1',
         description='Many species involved in tropospheric-stratospheric chemistry')
 
     @classmethod
-    def get_all(cls):
-        return [cls.CarbonBond5, cls.Chapman, cls.FlowTube, cls.Analytical, cls.TS1]
+    def get_all(self):
+        return [self.CarbonBond5, self.Chapman, self.FlowTube, self.Analytical, self.TS1]
 
     def __iter__(self):
         return iter(self.get_all())
@@ -58,6 +58,15 @@ class _Examples:
         if hasattr(self, item):
             return getattr(self, item)
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
+
+    def __getitem__(self, item):
+        return self.get_all()[item]
+
+    def __repr__(self):
+        return f'Eamples: {self.get_all()}'
+
+    def __str__(self):
+        return f'Eamples: {self.get_all()}'
 
 
 Examples = _Examples()
