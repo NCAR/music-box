@@ -4,6 +4,7 @@ from .model_options import BoxModelOptions
 from .species_list import SpeciesList
 from .reaction_list import ReactionList
 from .evolving_conditions import EvolvingConditions
+from .constants import GAS_CONSTANT
 import json
 import os
 import pandas as pd
@@ -221,9 +222,6 @@ class MusicBox:
                         next_conditions = None
 
                 #  calculate air density from the ideal gas law
-                BOLTZMANN_CONSTANT = 1.380649e-23
-                AVOGADRO_CONSTANT = 6.02214076e23
-                GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT
                 air_density = curr_conditions.pressure / \
                     (GAS_CONSTANT * curr_conditions.temperature)
 
@@ -332,18 +330,6 @@ class MusicBox:
             camp_path,
             musica.micmsolver.rosenbrock,
             1)
-
-    def speciesOrdering(self):
-        """
-        Retrieves the ordering of species used in the solver.
-
-        This function calls the `species_ordering` function from the `musica` module,
-        passing the solver instance from the current object.
-
-        Returns:
-            dict: The ordered dictionary of species used in the solver.
-        """
-        return musica.species_ordering(self.solver)
 
     @classmethod
     def order_reaction_rates(self, curr_conditions, rate_constant_ordering):
