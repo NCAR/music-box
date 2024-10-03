@@ -6,7 +6,6 @@ from acom_music_box.utils import (
     convert_concentration, 
     calculate_air_density
 )
-from acom_music_box.constants import GAS_CONSTANT
 import math
 
 @pytest.mark.parametrize("data, key, expected", [
