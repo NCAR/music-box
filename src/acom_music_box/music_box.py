@@ -106,7 +106,17 @@ class MusicBox:
             Throws error for the first check failed.
         """
 
-        # look for duplicate reaction names
+        # Check for duplicate reactions in the reaction list
+        if self.reaction_list:
+            reaction_names = [reaction.name for reaction in self.reaction_list.reactions]
+            reaction_names = [name for name in reaction_names if name is not None]
+            dup_names = [name for name in reaction_names if reaction_names.count(name) > 1]
+
+            if dup_names:
+                raise Exception(f"Error: Duplicate reaction names specified within {boxConfigPath}: {dup_names}. "
+                        "Please remove or rename the duplicates.")
+
+        # look for duplicate reaction names in the initial conditions
         if (self.initial_conditions):
             if (self.initial_conditions.reaction_rates):
                 reactionNames = []
