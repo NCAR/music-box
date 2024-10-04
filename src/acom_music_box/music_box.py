@@ -55,7 +55,6 @@ class MusicBox:
         self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([
         ], [])
         self.config_file = config_file if config_file is not None else "camp_data/config.json"
-
         self.solver = None
 
     def add_evolving_condition(self, time_point, conditions):
@@ -69,26 +68,6 @@ class MusicBox:
         evolving_condition = EvolvingConditions(
             time=[time_point], conditions=[conditions])
         self.evolvingConditions.append(evolving_condition)
-
-    def create_solver(
-            self,
-            path_to_config,
-            solver_type=musica.micmsolver.rosenbrock,
-            number_of_grid_cells=1):
-        """
-        Creates a micm solver object using the CAMP configuration files.
-
-        Args:
-            path_to_config (str): The path to CAMP configuration directory.
-
-        Returns:
-            None
-        """
-        # Create a solver object using the configuration file
-        self.solver = musica.create_solver(
-            path_to_config,
-            solver_type,
-            number_of_grid_cells)
 
     def check_config(self, boxConfigPath):
         """
@@ -311,6 +290,7 @@ class MusicBox:
 
         with open(path_to_json, 'r') as json_file:
             data = json.load(json_file)
+            self.config_file = data['model components'][0]['configuration file']
             # Set box model options
             self.box_model_options = BoxModelOptions.from_config_JSON(data)
 
