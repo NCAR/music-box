@@ -4,7 +4,7 @@ import os
 import math
 
 
-class TestAnalytical:
+class TestAnalyticalWithMixingRatios:
     def run_example(self, example):
         box_model = MusicBox()
         box_model.loadJson(example)
