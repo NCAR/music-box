@@ -116,5 +116,11 @@ def convert_concentration(data, key, temperature, pressure):
 def calculate_air_density(temperature, pressure):
     """
     Calculate the air density in moles/m^3.
+
+    Args:
+        temperature (float): The temperature in Kelvin.
+        pressure (float): The pressure in Pascals.
+    Returns:
+        float: The air density in moles/m^3.
     """
     return pressure / (GAS_CONSTANT * temperature)
