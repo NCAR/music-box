@@ -8,7 +8,7 @@
   },
   "chemical species": {
     "A": {
-      "initial value [mol m-3]": 1
+      "initial value [ppt]": 22376466381.310608
     },
     "B": {
       "initial value [mol m-3]": 0
