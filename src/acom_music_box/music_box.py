@@ -10,7 +10,6 @@ import os
 import pandas as pd
 
 from tqdm import tqdm
-from tqdm.contrib.logging import logging_redirect_tqdm
 
 import logging
 logger = logging.getLogger(__name__)
