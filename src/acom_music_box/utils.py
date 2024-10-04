@@ -13,6 +13,12 @@ def extract_unit(data, key):
 def convert_time(data, key):
     """
     Convert the time from the input data to seconds.
+
+    Args:
+        data (dict): The input data.
+        key (str): The key for the time in the input data.
+    Returns:
+        float: The time in seconds.
     """
     time_value, unit = extract_unit(data, key)
     
@@ -30,6 +36,12 @@ def convert_time(data, key):
 def convert_pressure(data, key):
     """
     Convert the pressure from the input data to Pascals.
+
+    Args:
+        data (dict): The input data.
+        key (str): The key for the pressure in the input data.
+    Returns:
+        float: The pressure in Pascals.
     """
     pressure_value, unit = extract_unit(data, key)
     
@@ -49,6 +61,12 @@ def convert_pressure(data, key):
 def convert_temperature(data, key):
     """
     Convert the temperature from the input data to Kelvin.
+
+    Args:
+        data (dict): The input data.
+        key (str): The key for the temperature in the input data.
+    Returns:
+        float: The temperature in Kelvin.
     """
     temperature_value, unit = extract_unit(data, key)
     
@@ -64,6 +82,14 @@ def convert_temperature(data, key):
 def convert_concentration(data, key, temperature, pressure):
     """
     Convert the concentration from the input data to molecules per cubic meter.
+
+    Args:
+        data (dict): The input data.
+        key (str): The key for the concentration in the input data.
+        temperature (float): The temperature in Kelvin.
+        pressure (float): The pressure in Pascals.
+    Returns:
+        float: The concentration in molecules per cubic meter.
     """
     concentration_value, unit = extract_unit(data, key)
     air_density = calculate_air_density(temperature, pressure)
