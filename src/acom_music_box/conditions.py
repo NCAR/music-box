@@ -1,18 +1,9 @@
 from .utils import convert_pressure, convert_temperature, convert_concentration
-from .species_concentration import SpeciesConcentration
-from .species import Species
-from .reaction_rate import ReactionRate
-from typing import List
-import csv
+import pandas as pd
 import os
-from typing import List
-from .reaction_rate import ReactionRate
-from .species import Species
-from .species_concentration import SpeciesConcentration
 
 import logging
 logger = logging.getLogger(__name__)
-
 
 class Conditions:
     """
@@ -43,8 +34,8 @@ class Conditions:
         """
         self.pressure = pressure
         self.temperature = temperature
-        self.species_concentrations = species_concentrations if species_concentrations is not None else []
-        self.reaction_rates = reaction_rates if reaction_rates is not None else []
+        self.species_concentrations = species_concentrations if species_concentrations is not None else {}
+        self.reaction_rates = reaction_rates if reaction_rates is not None else {}
 
     def __repr__(self):
         return f"Conditions(pressure={self.pressure}, temperature={self.temperature}, species_concentrations={self.species_concentrations}, reaction_rates={self.reaction_rates})"
@@ -117,7 +108,7 @@ class Conditions:
     def from_config_JSON(
             self,
             path_to_json,
-            config_JSON,
+            object,
             species_list,
             reaction_list):
         """
@@ -136,63 +127,41 @@ class Conditions:
             object: An instance of the Conditions class with the settings from the configuration JSON object.
         """
         pressure = convert_pressure(
-            config_JSON['environmental conditions']['pressure'],
+            object['environmental conditions']['pressure'],
             'initial value')
 
         temperature = convert_temperature(
-            config_JSON['environmental conditions']['temperature'],
+            object['environmental conditions']['temperature'],
             'initial value')
 
         # Set initial species concentrations
-        species_concentrations = []
-        reaction_rates = []
+        initial_concentrations = {}
+        reaction_rates = {}
 
         # reads initial conditions from csv if it is given
-        if 'initial conditions' in config_JSON and len(
-                list(config_JSON['initial conditions'].keys())) > 0:
+        if 'initial conditions' in object and len(
+                list(object['initial conditions'].keys())) > 0:
 
             initial_conditions_path = os.path.join(
                 os.path.dirname(path_to_json),
-                list(config_JSON['initial conditions'].keys())[0])
+                list(object['initial conditions'].keys())[0])
 
             reaction_rates = Conditions.read_initial_rates_from_file(
                 initial_conditions_path, reaction_list)
 
         # reads from config file directly if present
-        if 'chemical species' in config_JSON:
-            for chem_spec in config_JSON['chemical species']:
-                species = Species(name=chem_spec)
-                concentration = convert_concentration(
-                    config_JSON['chemical species'][chem_spec], 'initial value', temperature, pressure)
-
-                species_concentrations.append(
-                    SpeciesConcentration(
-                        species, concentration))
-
-        for species in species_list.species:
-            if species.tracer_type == 'THIRD_BODY':
-                continue
-            if not any(conc.species.name ==
-                       species.name for conc in species_concentrations):
-                species_concentrations.append(SpeciesConcentration(species, 0))
-
-        # Set initial reaction rates
-        for reaction in reaction_list.reactions:
-            if (reaction.name is None):
-                continue
-            reaction_exists = False
-            for rate in reaction_rates:
-                if rate.reaction.name == reaction.name:
-                    reaction_exists = True
-                    break
-
-            if not reaction_exists:
-                reaction_rates.append(ReactionRate(reaction, 0))
+        if 'chemical species' in object:
+            initial_concentrations = {
+                species: convert_concentration(
+                    object['chemical species'][species], 'initial value', temperature, pressure
+                )
+                for species in object['chemical species']
+            }
 
         return self(
             pressure,
             temperature,
-            species_concentrations,
+            initial_concentrations,
             reaction_rates)
 
     @classmethod
@@ -211,24 +180,16 @@ class Conditions:
             list: A list where each element represents the initial rate of a reaction.
         """
 
-        reaction_rates = []
+        reaction_rates = {}
 
-        with open(file_path, 'r') as csv_file:
-            initial_conditions = list(csv.reader(csv_file))
-
-            if (len(initial_conditions) > 1):
-                # The first row of the CSV contains headers
-                headers = initial_conditions[0]
-
-                # The second row of the CSV contains rates
-                rates = initial_conditions[1]
-
-                for reaction_rate, rate in zip(headers, rates):
-                    type, name, *rest = reaction_rate.split('.')
-                    for reaction in reaction_list.reactions:
-                        if reaction.name == name and reaction.short_type() == type:
-                            reaction_rates.append(ReactionRate(reaction, rate))
-
+        df = pd.read_csv(file_path)
+        rows, _ = df.shape
+        if rows > 1:
+            raise ValueError(f'Initial conditions file ({file_path}) may only have one row of data. There are {rows} rows present.')
+        for key in df.columns:
+            reaction_type, label, units = key.split('.')
+            reaction_rates[f'{reaction_type}.{label}'] = df.iloc[0][key]
+        
         return reaction_rates
 
     def add_species_concentration(self, species_concentration):

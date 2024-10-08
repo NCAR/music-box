@@ -4,7 +4,7 @@
     "grid": "box",
     "chemistry time step [sec]": 60.0,
     "output time step [sec]": 60.0,
-    "simulation length [hour]": 1.0
+    "simulation length [day]": 100.0
   },
   "chemical species": {
     "ALKNIT": {

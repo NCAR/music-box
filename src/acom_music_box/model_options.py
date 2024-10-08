@@ -31,6 +31,13 @@ class BoxModelOptions:
         self.output_step_time = output_step_time
         self.simulation_length = simulation_length
         self.grid = grid
+    
+    def __repr__(self):
+        return f"BoxModelOptions(chem_step_time={self.chem_step_time}, output_step_time={self.output_step_time}, simulation_length={self.simulation_length}, grid={self.grid})"
+
+    def __str__(self):
+        return f"BoxModelOptions Time step: {self.chem_step_time}, Output time step: {self.output_step_time}, Simulation length: {self.simulation_length}, Grid: {self.grid}"
+
 
     @classmethod
     def from_UI_JSON(cls, UI_JSON):

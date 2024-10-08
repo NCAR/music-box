@@ -1,13 +1,12 @@
 import musica
 from .conditions import Conditions
 from .model_options import BoxModelOptions
-from .species_list import SpeciesList
-from .reaction_list import ReactionList
 from .evolving_conditions import EvolvingConditions
 from .constants import GAS_CONSTANT
 import json
 import os
 import pandas as pd
+import numpy as np
 
 from tqdm import tqdm
 
@@ -48,11 +47,10 @@ class MusicBox:
             config_file (String): File path for the configuration file to be located. Default is "camp_data/config.json".
         """
         self.box_model_options = box_model_options if box_model_options is not None else BoxModelOptions()
-        self.species_list = species_list if species_list is not None else SpeciesList()
-        self.reaction_list = reaction_list if reaction_list is not None else ReactionList()
+        self.species = species_list if species_list is not None else []
+        self.reaction_list = reaction_list if reaction_list is not None else []
         self.initial_conditions = initial_conditions if initial_conditions is not None else Conditions()
-        self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([
-        ], [])
+        self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([], [])
         self.config_file = config_file if config_file is not None else "camp_data/config.json"
         self.solver = None
 
@@ -180,9 +178,10 @@ class MusicBox:
             headers.append("CONC." + spec)
 
         ordered_concentrations = self.order_species_concentrations(
-            curr_conditions, species_constant_ordering)
+            curr_conditions, species_constant_ordering).tolist()
+
         ordered_rate_constants = self.order_reaction_rates(
-            curr_conditions, rate_constant_ordering)
+            curr_conditions, rate_constant_ordering).tolist()
 
         output_array.append(headers)
 
@@ -239,7 +238,7 @@ class MusicBox:
                     time_step = min(time_step, next_output_time - curr_time)
 
                 # solves and updates concentration values in concentration array
-                if (not ordered_concentrations):
+                if (not ordered_concentrations or len(ordered_concentrations) == 0):
                     logger.info("Warning: ordered_concentrations list is empty.")
                 musica.micm_solve(
                     self.solver,
@@ -290,38 +289,33 @@ class MusicBox:
         with open(path_to_json, 'r') as json_file:
             data = json.load(json_file)
             self.config_file = data['model components'][0]['configuration file']
+
             # Set box model options
             self.box_model_options = BoxModelOptions.from_config_JSON(data)
 
-            # Set species list
-            self.species_list = SpeciesList.from_config_JSON(
-                path_to_json, data)
-
-            self.reaction_list = ReactionList.from_config_JSON(
-                path_to_json, data, self.species_list)
-
             # Set initial conditions
             self.initial_conditions = Conditions.from_config_JSON(
-                path_to_json, data, self.species_list, self.reaction_list)
+                path_to_json, data, self.species, self.reaction_list)
 
             # Set initial conditions
             self.evolving_conditions = EvolvingConditions.from_config_JSON(
-                path_to_json, data, self.species_list, self.reaction_list)
+                path_to_json, data, self.species, self.reaction_list)
 
-        self.check_config(os.path.join(os.getcwd(), path_to_json))
+        # self.check_config(os.path.join(os.getcwd(), path_to_json))
 
         camp_path = os.path.join(
             os.path.dirname(path_to_json),
             self.config_file)
 
-        # Creates a micm solver object using the CAMP configuration files.
+        # Initalize the musica solver
         self.solver = musica.create_solver(
             camp_path,
             musica.micmsolver.rosenbrock,
-            1)
+            1
+        )
 
-    @classmethod
-    def order_reaction_rates(self, curr_conditions, rate_constant_ordering):
+    @staticmethod
+    def order_reaction_rates(curr_conditions, rate_constant_ordering):
         """
         Orders the reaction rates based on the provided ordering.
 
@@ -335,36 +329,31 @@ class MusicBox:
         Returns:
             list: An ordered list of rate constants.
         """
-        rate_constants = {}
-        for rate in curr_conditions.reaction_rates:
+        ordered_rate_constants = np.zeros(len(rate_constant_ordering), dtype=np.float64)
 
-            if (rate.reaction.reaction_type == "PHOTOLYSIS"):
-                key = "PHOTO." + rate.reaction.name
-            elif (rate.reaction.reaction_type == "FIRST_ORDER_LOSS"):
-                key = "LOSS." + rate.reaction.name
-            elif (rate.reaction.reaction_type == "EMISSION"):
-                key = "EMIS." + rate.reaction.name
-            elif (rate.reaction.reaction_type == "USER_DEFINED"):
-                key = "USER." + rate.reaction.name
-            rate_constants[key] = rate.rate
-
-        ordered_rate_constants = len(rate_constants.keys()) * [0.0]
-        for key, value in rate_constants.items():
-            ordered_rate_constants[rate_constant_ordering[key]] = float(value)
+        for rate_label, value in curr_conditions.reaction_rates.items():
+            ordered_rate_constants[rate_constant_ordering[rate_label]] = value
+        
         return ordered_rate_constants
 
-    @classmethod
-    def order_species_concentrations(
-            self,
-            curr_conditions,
-            species_constant_ordering):
-        concentrations = {}
+    @staticmethod
+    def order_species_concentrations(curr_conditions, species_constant_ordering):
+        """
+        Orders the species concentrations based on the provided ordering.
 
-        for concentraton in curr_conditions.species_concentrations:
-            concentrations[concentraton.species.name] = concentraton.concentration
+        This function takes the current conditions and a specified ordering for the species,
+        and reorders the species concentrations accordingly.
 
-        ordered_concentrations = len(concentrations.keys()) * [0.0]
+        Args:
+            curr_conditions (Conditions): The current conditions.
+            species_constant_ordering (dict): A dictionary that maps species keys to indices for ordering.
 
-        for key, value in concentrations.items():
-            ordered_concentrations[species_constant_ordering[key]] = value
-        return ordered_concentrations
+        Returns:
+            list: An ordered list of species concentrations.
+        """
+        concentrations = np.zeros(len(species_constant_ordering), dtype=np.float64)
+
+        for species, value in curr_conditions.species_concentrations.items():
+            concentrations[species_constant_ordering[species]] = value
+
+        return concentrations
