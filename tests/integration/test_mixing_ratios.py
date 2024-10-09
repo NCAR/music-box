@@ -84,12 +84,11 @@ class TestAnalyticalWithMixingRatios:
                 rel_tol=1e-8,
             ), f"Arrays differ at index ({i}, 2)"
 
-
     def test_mol_mol_1(self):
         current_dir = os.path.dirname(__file__)
         example = os.path.join(current_dir, "configs", "mixing_ratio", "mol mol-1", "my_config.json")
         self.run_example(example)
-    
+
     def test_ppth(self):
         current_dir = os.path.dirname(__file__)
         example = os.path.join(current_dir, "configs", "mixing_ratio", "ppth", "my_config.json")
@@ -99,7 +98,7 @@ class TestAnalyticalWithMixingRatios:
         current_dir = os.path.dirname(__file__)
         example = os.path.join(current_dir, "configs", "mixing_ratio", "ppm", "my_config.json")
         self.run_example(example)
-    
+
     def test_ppb(self):
         current_dir = os.path.dirname(__file__)
         example = os.path.join(current_dir, "configs", "mixing_ratio", "ppb", "my_config.json")

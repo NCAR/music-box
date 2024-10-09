@@ -80,7 +80,7 @@ class SpeciesList:
 
             # assumes species file is first in the list
             if (len(config['camp-files']) > 0):
-                species_file_path = os.path.join( os.path.dirname(config_file_path), config['camp-files'][0])
+                species_file_path = os.path.join(os.path.dirname(config_file_path), config['camp-files'][0])
                 with open(species_file_path, 'r') as species_file:
                     species_data = json.load(species_file)
                     # loads species by names from camp files
