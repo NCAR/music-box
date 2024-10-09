@@ -1,5 +1,5 @@
 import re
-from .constants import GAS_CONSTANT
+from .constants import GAS_CONSTANT, AVOGADRO_CONSTANT
 
 def extract_unit(data, key):
     """Extract the value and unit from the key in data."""
@@ -97,10 +97,10 @@ def convert_concentration(data, key, temperature, pressure):
     unit_conversions = {
         'mol m-3': 1,
         'mol cm-3': 1e3,
-        'molec m-3': 1 / 6.02214076e23,
-        'molecule m-3': 1 / 6.02214076e23,
-        'molec cm-3': 1e3 / 6.02214076e23,
-        'molecule cm-3': 1e3 / 6.02214076e23,
+        'molec m-3': 1 / AVOGADRO_CONSTANT,
+        'molecule m-3': 1 / AVOGADRO_CONSTANT,
+        'molec cm-3': 1e3 / AVOGADRO_CONSTANT,
+        'molecule cm-3': 1e3 / AVOGADRO_CONSTANT,
         'ppth': 1e-3 * air_density,
         'ppm': 1e-6 * air_density,
         'ppb': 1e-9 * air_density,

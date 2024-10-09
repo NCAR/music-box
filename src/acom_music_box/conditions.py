@@ -106,7 +106,7 @@ class Conditions:
 
     @classmethod
     def from_config_JSON(
-            cls,
+            self,
             path_to_json,
             object):
         """
@@ -156,7 +156,7 @@ class Conditions:
                 for species in object['chemical species']
             }
 
-        return cls(
+        return self(
             pressure,
             temperature,
             initial_concentrations,
