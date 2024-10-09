@@ -106,11 +106,9 @@ class Conditions:
 
     @classmethod
     def from_config_JSON(
-            self,
+            cls,
             path_to_json,
-            object,
-            species_list,
-            reaction_list):
+            object):
         """
         Creates an instance of the class from a configuration JSON object.
 
@@ -147,7 +145,7 @@ class Conditions:
                 list(object['initial conditions'].keys())[0])
 
             reaction_rates = Conditions.read_initial_rates_from_file(
-                initial_conditions_path, reaction_list)
+                initial_conditions_path)
 
         # reads from config file directly if present
         if 'chemical species' in object:
@@ -158,14 +156,14 @@ class Conditions:
                 for species in object['chemical species']
             }
 
-        return self(
+        return cls(
             pressure,
             temperature,
             initial_concentrations,
             reaction_rates)
 
     @classmethod
-    def read_initial_rates_from_file(self, file_path, reaction_list):
+    def read_initial_rates_from_file(cls, file_path):
         """
         Reads initial reaction rates from a file.
 
@@ -195,7 +193,10 @@ class Conditions:
                 reaction_type, label = parts
             else:
                 logger.error(f"Unexpected format in key: {key}")
-            reaction_rates[f'{reaction_type}.{label}'] = df.iloc[0][key]
+            rate_name = f'{reaction_type}.{label}'
+            if rate_name in reaction_rates:
+                raise ValueError(f"Duplicate reaction rate found: {rate_name}")
+            reaction_rates[rate_name] = df.iloc[0][key]
         
         return reaction_rates
 

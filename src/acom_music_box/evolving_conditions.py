@@ -101,9 +101,7 @@ class EvolvingConditions:
     def from_config_JSON(
             self,
             path_to_json,
-            config_JSON,
-            species_list,
-            reaction_list):
+            config_JSON):
         """
         Creates an instance of the EvolvingConditions class from a configuration JSON object.
 
@@ -132,7 +130,7 @@ class EvolvingConditions:
                     list(config_JSON['evolving conditions'].keys())[0])
 
                 evolving_conditions = EvolvingConditions.read_conditions_from_file(
-                    evolving_conditions_path, species_list, reaction_list)
+                    evolving_conditions_path)
 
         return evolving_conditions
 
@@ -148,7 +146,7 @@ class EvolvingConditions:
         self.conditions.append(conditions)
 
     @classmethod
-    def read_conditions_from_file(self, file_path, species_list, reaction_list):
+    def read_conditions_from_file(self, file_path):
         """
         Read conditions from a file and update the evolving conditions.
 

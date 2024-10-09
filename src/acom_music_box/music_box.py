@@ -20,18 +20,15 @@ class MusicBox:
     initial conditions, and evolving conditions.
 
     Attributes:
-        boxModelOptions (BoxModelOptions): Options for the box model simulation.
-        speciesList (SpeciesList): A list of species.
-        reactionList (ReactionList): A list of reactions.
-        initialConditions (Conditions): Initial conditions for the simulation.
-        evolvingConditions (List[EvolvingConditions]): List of evolving conditions over time.
+        box_model_options (BoxModelOptions): Options for the box model simulation.
+        initial_conditions (Conditions): Initial conditions for the simulation.
+        evolving_conditions (List[EvolvingConditions]): List of evolving conditions over time.
+        config_file (String): File path for the configuration file to be located. Default is "camp_data/config.json".
     """
 
     def __init__(
             self,
             box_model_options=None,
-            species_list=None,
-            reaction_list=None,
             initial_conditions=None,
             evolving_conditions=None,
             config_file=None):
@@ -40,15 +37,11 @@ class MusicBox:
 
         Args:
             box_model_options (BoxModelOptions): Options for the box model simulation.
-            species_list (SpeciesList): A list of species.
-            reaction_list (ReactionList): A list of reactions.
             initial_conditions (Conditions): Initial conditions for the simulation.
             evolving_conditions (List[EvolvingConditions]): List of evolving conditions over time.
             config_file (String): File path for the configuration file to be located. Default is "camp_data/config.json".
         """
         self.box_model_options = box_model_options if box_model_options is not None else BoxModelOptions()
-        self.species = species_list if species_list is not None else []
-        self.reaction_list = reaction_list if reaction_list is not None else []
         self.initial_conditions = initial_conditions if initial_conditions is not None else Conditions()
         self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([], [])
         self.config_file = config_file if config_file is not None else "camp_data/config.json"
@@ -65,57 +58,6 @@ class MusicBox:
         evolving_condition = EvolvingConditions(
             time=[time_point], conditions=[conditions])
         self.evolvingConditions.append(evolving_condition)
-
-    def check_config(self, boxConfigPath):
-        """
-        Verifies correct configuration of the MusicBox object.
-        There is intentionally no check for the presence of a solver;
-        this test function is for the loaded configuration only.
-
-        Args:
-            boxConfigPath = filename and path of MusicBox configuration file
-                This filename is supplied only for the error message;
-                the configuration should already be loaded.
-
-        Returns:
-            True if all checks passed
-            Throws error for the first check failed.
-        """
-
-        # Check for duplicate reactions in the reaction list
-        if self.reaction_list:
-            reaction_names = [reaction.name for reaction in self.reaction_list.reactions]
-            reaction_names = [name for name in reaction_names if name is not None]
-            dup_names = [name for name in reaction_names if reaction_names.count(name) > 1]
-
-            if dup_names:
-                raise Exception(f"Error: Duplicate reaction names specified within {boxConfigPath}: {dup_names}. "
-                        "Please remove or rename the duplicates.")
-
-        # look for duplicate reaction names in the initial conditions
-        if (self.initial_conditions):
-            if (self.initial_conditions.reaction_rates):
-                reactionNames = []
-                for rate in self.initial_conditions.reaction_rates:
-                    # watch out for Nones in here
-                    if not rate.reaction:
-                        continue
-                    if not rate.reaction.name:
-                        continue
-                    reactionNames.append(rate.reaction.name)
-
-                # look for name already seen
-                seen = set()
-                dupNames = [name for name in reactionNames if name in seen or seen.add(name)]
-
-                if (len(dupNames) > 0):
-                    # inform user of the error and its remedy
-                    errString = ("Error: Duplicate reaction names specified within {}: {}."
-                                 .format(boxConfigPath, dupNames))
-                    errString += " Please remove or rename the duplicates."
-                    raise Exception(errString)
-
-        return (True)
 
     def solve(self, output_path=None, callback=None):
         """
@@ -295,13 +237,11 @@ class MusicBox:
 
             # Set initial conditions
             self.initial_conditions = Conditions.from_config_JSON(
-                path_to_json, data, self.species, self.reaction_list)
+                path_to_json, data)
 
             # Set initial conditions
             self.evolving_conditions = EvolvingConditions.from_config_JSON(
-                path_to_json, data, self.species, self.reaction_list)
-
-        # self.check_config(os.path.join(os.getcwd(), path_to_json))
+                path_to_json, data)
 
         camp_path = os.path.join(
             os.path.dirname(path_to_json),
