@@ -1,6 +1,7 @@
 import re
 from .constants import GAS_CONSTANT, AVOGADRO_CONSTANT
 
+
 def extract_unit(data, key):
     """Extract the value and unit from the key in data."""
     pattern = re.compile(rf'{key} \[(.+)\]')
@@ -9,6 +10,7 @@ def extract_unit(data, key):
         if match:
             return float(v), match.group(1)
     return None, None
+
 
 def convert_time(data, key):
     """
@@ -21,7 +23,7 @@ def convert_time(data, key):
         float: The time in seconds.
     """
     time_value, unit = extract_unit(data, key)
-    
+
     if unit == 'sec':
         return time_value
     elif unit == 'min':
@@ -32,6 +34,7 @@ def convert_time(data, key):
         return time_value * 86400
     else:
         raise ValueError(f"Unsupported time unit: {unit}")
+
 
 def convert_pressure(data, key):
     """
@@ -44,7 +47,7 @@ def convert_pressure(data, key):
         float: The pressure in Pascals.
     """
     pressure_value, unit = extract_unit(data, key)
-    
+
     if unit == 'Pa':
         return pressure_value
     elif unit == 'atm':
@@ -58,6 +61,7 @@ def convert_pressure(data, key):
     else:
         raise ValueError(f"Unsupported pressure unit: {unit}")
 
+
 def convert_temperature(data, key):
     """
     Convert the temperature from the input data to Kelvin.
@@ -69,7 +73,7 @@ def convert_temperature(data, key):
         float: The temperature in Kelvin.
     """
     temperature_value, unit = extract_unit(data, key)
-    
+
     if unit == 'K':
         return temperature_value
     elif unit == 'C':
@@ -78,6 +82,7 @@ def convert_temperature(data, key):
         return (temperature_value - 32) * 5 / 9 + 273.15
     else:
         raise ValueError(f"Unsupported temperature unit: {unit}")
+
 
 def convert_concentration(data, key, temperature, pressure):
     """
@@ -112,6 +117,7 @@ def convert_concentration(data, key, temperature, pressure):
         return concentration_value * unit_conversions[unit]
     else:
         raise ValueError(f"Unsupported concentration unit: {unit}")
+
 
 def calculate_air_density(temperature, pressure):
     """
