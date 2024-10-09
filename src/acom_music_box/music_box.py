@@ -236,23 +236,15 @@ class MusicBox:
             self.box_model_options = BoxModelOptions.from_config_JSON(data)
 
             # Set initial conditions
-            self.initial_conditions = Conditions.from_config_JSON(
-                path_to_json, data)
+            self.initial_conditions = Conditions.from_config_JSON(path_to_json, data)
 
             # Set initial conditions
-            self.evolving_conditions = EvolvingConditions.from_config_JSON(
-                path_to_json, data)
+            self.evolving_conditions = EvolvingConditions.from_config_JSON(path_to_json, data)
 
-        camp_path = os.path.join(
-            os.path.dirname(path_to_json),
-            self.config_file)
+        camp_path = os.path.join(os.path.dirname(path_to_json), self.config_file)
 
         # Initalize the musica solver
-        self.solver = musica.create_solver(
-            camp_path,
-            musica.micmsolver.rosenbrock,
-            1
-        )
+        self.solver = musica.create_solver(camp_path, musica.micmsolver.rosenbrock, 1)
 
     @staticmethod
     def order_reaction_rates(curr_conditions, rate_constant_ordering):
