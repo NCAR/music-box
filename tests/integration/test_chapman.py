@@ -24,15 +24,13 @@ class TestChapman:
 
         concs_to_test = [column for column in expected.columns if 'CONC' in column]
 
-        print(model)
-
         for (_model_index, _model), (_expected_index, _expected) in zip(model.iterrows(), expected.iterrows()):
             for column in concs_to_test:
                 assert math.isclose(
                     _model[column],
                     _expected[column],
-                    rel_tol=1e-7,
-                    abs_tol=1e-15,
+                    rel_tol=1e-19,
+                    abs_tol=1e-16,
                 ), f"Model results differ from expected for row index {_model_index} for species {column}"
 
 
