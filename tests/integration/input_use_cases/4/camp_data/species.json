@@ -1,0 +1,54 @@
+{
+  "camp-data" : [
+    {
+      "type" : "RELATIVE_TOLERANCE",
+      "value" : 1.0e-4
+    },
+    {
+      "name" : "M",
+      "type" : "CHEM_SPEC",
+      "tracer type" : "CONSTANT"
+    },
+    {
+      "name" : "Ar",
+      "type" : "CHEM_SPEC",
+      "absolute tolerance" : 1.0e-12
+    },
+    {
+      "name" : "CO2",
+      "type" : "CHEM_SPEC",
+      "absolute tolerance" : 1.0e-12
+    },
+    {
+      "name" : "H2O",
+      "type" : "CHEM_SPEC",
+      "absolute tolerance" : 1.0e-12
+    },
+    {
+      "name" : "N2",
+      "type" : "CHEM_SPEC",
+      "absolute tolerance" : 1.0e-12
+    },
+    {
+      "name" : "O1D",
+      "type" : "CHEM_SPEC",
+      "absolute tolerance" : 1.0e-12
+    },
+    {
+      "name" : "O",
+      "type" : "CHEM_SPEC",
+      "absolute tolerance" : 1.0e-12
+    },
+    {
+      "name" : "O2",
+      "type" : "CHEM_SPEC",
+      "absolute tolerance" : 1.0e-12
+    },
+    {
+      "name" : "O3",
+      "type" : "CHEM_SPEC",
+      "absolute tolerance" : 1.0e-12
+    }
+  ]
+}
+
