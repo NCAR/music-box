@@ -10,7 +10,6 @@ import os
 import pandas as pd
 
 from tqdm import tqdm
-from tqdm.contrib.logging import logging_redirect_tqdm
 
 import logging
 logger = logging.getLogger(__name__)
@@ -55,7 +54,6 @@ class MusicBox:
         self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([
         ], [])
         self.config_file = config_file if config_file is not None else "camp_data/config.json"
-
         self.solver = None
 
     def add_evolving_condition(self, time_point, conditions):
@@ -69,26 +67,6 @@ class MusicBox:
         evolving_condition = EvolvingConditions(
             time=[time_point], conditions=[conditions])
         self.evolvingConditions.append(evolving_condition)
-
-    def create_solver(
-            self,
-            path_to_config,
-            solver_type=musica.micmsolver.rosenbrock,
-            number_of_grid_cells=1):
-        """
-        Creates a micm solver object using the CAMP configuration files.
-
-        Args:
-            path_to_config (str): The path to CAMP configuration directory.
-
-        Returns:
-            None
-        """
-        # Create a solver object using the configuration file
-        self.solver = musica.create_solver(
-            path_to_config,
-            solver_type,
-            number_of_grid_cells)
 
     def check_config(self, boxConfigPath):
         """
@@ -106,7 +84,17 @@ class MusicBox:
             Throws error for the first check failed.
         """
 
-        # look for duplicate reaction names
+        # Check for duplicate reactions in the reaction list
+        if self.reaction_list:
+            reaction_names = [reaction.name for reaction in self.reaction_list.reactions]
+            reaction_names = [name for name in reaction_names if name is not None]
+            dup_names = [name for name in reaction_names if reaction_names.count(name) > 1]
+
+            if dup_names:
+                raise Exception(f"Error: Duplicate reaction names specified within {boxConfigPath}: {dup_names}. "
+                                "Please remove or rename the duplicates.")
+
+        # look for duplicate reaction names in the initial conditions
         if (self.initial_conditions):
             if (self.initial_conditions.reaction_rates):
                 reactionNames = []
@@ -301,6 +289,7 @@ class MusicBox:
 
         with open(path_to_json, 'r') as json_file:
             data = json.load(json_file)
+            self.config_file = data['model components'][0]['configuration file']
             # Set box model options
             self.box_model_options = BoxModelOptions.from_config_JSON(data)
 
