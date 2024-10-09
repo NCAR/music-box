@@ -92,7 +92,7 @@ class MusicBox:
 
             if dup_names:
                 raise Exception(f"Error: Duplicate reaction names specified within {boxConfigPath}: {dup_names}. "
-                        "Please remove or rename the duplicates.")
+                                "Please remove or rename the duplicates.")
 
         # look for duplicate reaction names in the initial conditions
         if (self.initial_conditions):
