@@ -187,7 +187,14 @@ class Conditions:
         if rows > 1:
             raise ValueError(f'Initial conditions file ({file_path}) may only have one row of data. There are {rows} rows present.')
         for key in df.columns:
-            reaction_type, label, units = key.split('.')
+            parts = key.split('.')
+            reaction_type, label = None, None
+            if len(parts) == 3:
+                reaction_type, label, units = parts
+            elif len(parts) == 2:
+                reaction_type, label = parts
+            else:
+                logger.error(f"Unexpected format in key: {key}")
             reaction_rates[f'{reaction_type}.{label}'] = df.iloc[0][key]
         
         return reaction_rates

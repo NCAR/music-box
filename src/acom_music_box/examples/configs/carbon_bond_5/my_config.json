@@ -101,7 +101,7 @@
     },
     "evolving conditions": {},
     "initial conditions": {
-        "initial_conditions.csv": {}
+        "initial_reaction_rates.csv": {}
     },
     "model components": [
         {
