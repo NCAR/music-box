@@ -81,8 +81,7 @@ class ReactionList:
 
             # assumes reactions file is second in the list
             if (len(config['camp-files']) > 1):
-                reaction_file_path = os.path.dirname(
-                    config_file_path) + "/" + config['camp-files'][1]
+                reaction_file_path = os.path.join(os.path.dirname(config_file_path), config['camp-files'][1])
                 with open(reaction_file_path, 'r') as reaction_file:
                     reaction_data = json.load(reaction_file)
 
