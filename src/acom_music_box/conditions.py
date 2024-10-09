@@ -255,18 +255,6 @@ class Conditions:
             self.pressure = new_conditions.pressure
         if new_conditions.temperature is not None:
             self.temperature = new_conditions.temperature
-        for conc in new_conditions.species_concentrations:
-            match = filter(
-                lambda x: x.species.name == conc.species.name,
-                self.species_concentrations)
-            for item in list(match):
-                item.concentration = conc.concentration
+        self.species_concentrations.update(new_conditions.species_concentrations)
 
-        for rate in new_conditions.reaction_rates:
-
-            match = filter(
-                lambda x: x.reaction.name == rate.reaction.name,
-                self.reaction_rates)
-
-            for item in list(match):
-                item.rate = rate.rate
+        self.reaction_rates.update(new_conditions.reaction_rates)
