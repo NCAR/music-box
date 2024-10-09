@@ -19,9 +19,6 @@
                     "products": {
                         "C": {
                             "yield": 1
-                        },
-                        "irr__089f1f45-4cd8-4278-83d5-d638e98e4315": {
-                            "yield": 1
                         }
                     }
                 },
@@ -36,9 +33,6 @@
                     },
                     "products": {
                         "B": {
-                            "yield": 1
-                        },
-                        "irr__2a109b21-bb24-41ae-8f06-7485fd36f1a7": {
                             "yield": 1
                         }
                     }
