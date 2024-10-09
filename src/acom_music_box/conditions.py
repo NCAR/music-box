@@ -1,4 +1,4 @@
-from .utils import convert_time, convert_pressure, convert_temperature, convert_concentration
+from .utils import convert_pressure, convert_temperature, convert_concentration
 from .species_concentration import SpeciesConcentration
 from .species import Species
 from .reaction_rate import ReactionRate
@@ -9,7 +9,6 @@ from typing import List
 from .reaction_rate import ReactionRate
 from .species import Species
 from .species_concentration import SpeciesConcentration
-from .utils import convert_time, convert_pressure, convert_temperature, convert_concentration
 
 import logging
 logger = logging.getLogger(__name__)
@@ -54,7 +53,7 @@ class Conditions:
         return f"Pressure: {self.pressure}, Temperature: {self.temperature}, Species Concentrations: {self.species_concentrations}, Reaction Rates: {self.reaction_rates}"
 
     @classmethod
-    def from_UI_JSON(cls, UI_JSON, species_list, reaction_list):
+    def from_UI_JSON(self, UI_JSON, species_list, reaction_list):
         """
         Creates an instance of the class from a UI JSON object.
 
@@ -108,7 +107,7 @@ class Conditions:
 
             reaction_rates.append(ReactionRate(reaction_from_list, rate))
 
-        return cls(
+        return self(
             pressure,
             temperature,
             species_concentrations,
@@ -116,7 +115,7 @@ class Conditions:
 
     @classmethod
     def from_config_JSON(
-            cls,
+            self,
             path_to_json,
             config_JSON,
             species_list,
@@ -164,7 +163,7 @@ class Conditions:
             for chem_spec in config_JSON['chemical species']:
                 species = Species(name=chem_spec)
                 concentration = convert_concentration(
-                    config_JSON['chemical species'][chem_spec], 'initial value')
+                    config_JSON['chemical species'][chem_spec], 'initial value', temperature, pressure)
 
                 species_concentrations.append(
                     SpeciesConcentration(
@@ -190,14 +189,14 @@ class Conditions:
             if not reaction_exists:
                 reaction_rates.append(ReactionRate(reaction, 0))
 
-        return cls(
+        return self(
             pressure,
             temperature,
             species_concentrations,
             reaction_rates)
 
     @classmethod
-    def read_initial_rates_from_file(cls, file_path, reaction_list):
+    def read_initial_rates_from_file(self, file_path, reaction_list):
         """
         Reads initial reaction rates from a file.
 

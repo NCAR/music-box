@@ -4,7 +4,7 @@ An atmospheric chemistry box model. Powered by MUSICA.
 This package contains modules for handling various aspects of a music box,
 including species, products, reactants, reactions, and more.
 """
-__version__ = "2.5.1"
+__version__ = "2.5.2"
 
 from .utils import convert_time, convert_pressure, convert_temperature, convert_concentration
 from .species import Species
