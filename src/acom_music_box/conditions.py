@@ -29,8 +29,8 @@ class Conditions:
         Args:
             pressure (float): The pressure of the conditions in atmospheres.
             temperature (float): The temperature of the conditions in Kelvin.
-            species_concentrations (List[SpeciesConcentration]): A list of species concentrations. Default is an empty list.
-            reaction_rates (List[ReactionRate]): A list of reaction rates. Default is an empty list.
+            species_concentrations (Dict[Species, float]): A dictionary of species concentrations.
+            reaction_rates (Dict[Reaction, float]): A dictionary of reaction rates.
         """
         self.pressure = pressure
         self.temperature = temperature
@@ -117,9 +117,7 @@ class Conditions:
 
         Args:
             path_to_json (str): The path to the JSON file containing the initial conditions and settings.
-            config_JSON (dict): The configuration JSON object containing the initial conditions and settings.
-            species_list (SpeciesList): A SpeciesList containing the species involved in the simulation.
-            reaction_list (ReactionList): A ReactionList containing the reactions involved in the simulation.
+            object (dict): The configuration JSON object containing the initial conditions and settings.
 
         Returns:
             object: An instance of the Conditions class with the settings from the configuration JSON object.
@@ -172,10 +170,9 @@ class Conditions:
 
         Args:
             file_path (str): The path to the file containing the initial reaction rates.
-            reaction_list (ReactionList): A ReactionList containing the reactions involved in the simulation.
 
         Returns:
-            list: A list where each element represents the initial rate of a reaction.
+            dict: A dictionary of initial reaction rates.
         """
 
         reaction_rates = {}
@@ -192,7 +189,9 @@ class Conditions:
             elif len(parts) == 2:
                 reaction_type, label = parts
             else:
-                logger.error(f"Unexpected format in key: {key}")
+                error = f"Unexpected format in key: {key}"
+                logger.error(error)
+                raise ValueError(error)
             rate_name = f'{reaction_type}.{label}'
             if rate_name in reaction_rates:
                 raise ValueError(f"Duplicate reaction rate found: {rate_name}")

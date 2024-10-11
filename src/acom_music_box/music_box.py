@@ -238,7 +238,7 @@ class MusicBox:
             # Set initial conditions
             self.initial_conditions = Conditions.from_config_JSON(path_to_json, data)
 
-            # Set initial conditions
+            # Set evolving conditions
             self.evolving_conditions = EvolvingConditions.from_config_JSON(path_to_json, data)
 
         camp_path = os.path.join(os.path.dirname(path_to_json), self.config_file)
@@ -255,8 +255,8 @@ class MusicBox:
         and reorders the reaction rates accordingly.
 
         Args:
-            rate_constants (dict): A dictionary of rate constants.
-            rate_constant_ordering (dict): A dictionary that maps rate constant keys to indices for ordering.
+            curr_conditions: A Condition with the current state information
+            rate_constant_ordering: A dictionary which maps reaction names to their index in the reaction rates array
 
         Returns:
             list: An ordered list of rate constants.
