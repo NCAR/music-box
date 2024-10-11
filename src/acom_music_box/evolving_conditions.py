@@ -26,7 +26,7 @@ class EvolvingConditions:
         self.conditions = conditions if conditions is not None else []
 
     @classmethod
-    def from_UI_JSON(self, UI_JSON, species_list, reaction_list):
+    def from_UI_JSON(cls, UI_JSON, species_list, reaction_list):
         """
         Create a new instance of the EvolvingConditions class from a JSON object.
 
@@ -95,11 +95,10 @@ class EvolvingConditions:
                     concentrations,
                     rates))
 
-        return self(headers, times, conditions)
+        return cls(headers, times, conditions)
 
-    @classmethod
+    @staticmethod
     def from_config_JSON(
-            self,
             path_to_json,
             config_JSON):
         """
