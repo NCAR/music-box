@@ -145,7 +145,7 @@ class EvolvingConditions:
         self.conditions.append(conditions)
 
     @classmethod
-    def read_conditions_from_file(self, file_path):
+    def read_conditions_from_file(cls, file_path):
         """
         Read conditions from a file and update the evolving conditions.
 
@@ -191,7 +191,7 @@ class EvolvingConditions:
                     reaction_rates))
 
 
-        return self(times=times, conditions=conditions)
+        return cls(times=times, conditions=conditions)
 
     # allows len overload for this class
 
