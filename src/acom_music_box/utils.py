@@ -100,17 +100,17 @@ def convert_concentration(data, key, temperature, pressure):
     air_density = calculate_air_density(temperature, pressure)
 
     unit_conversions = {
-        'mol m-3': 1, # mol m-3 is the base unit
-        'mol cm-3': 1e6, # cm3 m-3
-        'molec m-3': 1 / AVOGADRO_CONSTANT, # mol
-        'molecule m-3': 1 / AVOGADRO_CONSTANT, # mol
-        'molec cm-3': 1e6 / AVOGADRO_CONSTANT, #mol cm3 m-3
-        'molecule cm-3': 1e6 / AVOGADRO_CONSTANT, #mol cm3 m-3
-        'ppth': 1e-3 * air_density, # moles / m^3
-        'ppm': 1e-6 * air_density, # moles / m^3
-        'ppb': 1e-9 * air_density, # moles / m^3
-        'ppt': 1e-12 * air_density, # moles / m^3
-        'mol mol-1': 1 * air_density # moles / m^3
+        'mol m-3': 1,  # mol m-3 is the base unit
+        'mol cm-3': 1e6,  # cm3 m-3
+        'molec m-3': 1 / AVOGADRO_CONSTANT,  # mol
+        'molecule m-3': 1 / AVOGADRO_CONSTANT,  # mol
+        'molec cm-3': 1e6 / AVOGADRO_CONSTANT,  # mol cm3 m-3
+        'molecule cm-3': 1e6 / AVOGADRO_CONSTANT,  # mol cm3 m-3
+        'ppth': 1e-3 * air_density,  # moles / m^3
+        'ppm': 1e-6 * air_density,  # moles / m^3
+        'ppb': 1e-9 * air_density,  # moles / m^3
+        'ppt': 1e-12 * air_density,  # moles / m^3
+        'mol mol-1': 1 * air_density  # moles / m^3
     }
 
     if unit in unit_conversions:

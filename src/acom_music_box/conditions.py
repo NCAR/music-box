@@ -5,6 +5,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
+
 class Conditions:
     """
     Represents conditions for a simulation with attributes such as pressure, temperature, species concentrations,
@@ -196,7 +197,7 @@ class Conditions:
             if rate_name in reaction_rates:
                 raise ValueError(f"Duplicate reaction rate found: {rate_name}")
             reaction_rates[rate_name] = df.iloc[0][key]
-        
+
         return reaction_rates
 
     def add_species_concentration(self, species_concentration):
