@@ -1,13 +1,12 @@
 import musica
 from .conditions import Conditions
 from .model_options import BoxModelOptions
-from .species_list import SpeciesList
-from .reaction_list import ReactionList
 from .evolving_conditions import EvolvingConditions
 from .constants import GAS_CONSTANT
 import json
 import os
 import pandas as pd
+import numpy as np
 
 from tqdm import tqdm
 
@@ -21,18 +20,15 @@ class MusicBox:
     initial conditions, and evolving conditions.
 
     Attributes:
-        boxModelOptions (BoxModelOptions): Options for the box model simulation.
-        speciesList (SpeciesList): A list of species.
-        reactionList (ReactionList): A list of reactions.
-        initialConditions (Conditions): Initial conditions for the simulation.
-        evolvingConditions (List[EvolvingConditions]): List of evolving conditions over time.
+        box_model_options (BoxModelOptions): Options for the box model simulation.
+        initial_conditions (Conditions): Initial conditions for the simulation.
+        evolving_conditions (List[EvolvingConditions]): List of evolving conditions over time.
+        config_file (String): File path for the configuration file to be located. Default is "camp_data/config.json".
     """
 
     def __init__(
             self,
             box_model_options=None,
-            species_list=None,
-            reaction_list=None,
             initial_conditions=None,
             evolving_conditions=None,
             config_file=None):
@@ -41,18 +37,13 @@ class MusicBox:
 
         Args:
             box_model_options (BoxModelOptions): Options for the box model simulation.
-            species_list (SpeciesList): A list of species.
-            reaction_list (ReactionList): A list of reactions.
             initial_conditions (Conditions): Initial conditions for the simulation.
             evolving_conditions (List[EvolvingConditions]): List of evolving conditions over time.
             config_file (String): File path for the configuration file to be located. Default is "camp_data/config.json".
         """
         self.box_model_options = box_model_options if box_model_options is not None else BoxModelOptions()
-        self.species_list = species_list if species_list is not None else SpeciesList()
-        self.reaction_list = reaction_list if reaction_list is not None else ReactionList()
         self.initial_conditions = initial_conditions if initial_conditions is not None else Conditions()
-        self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([
-        ], [])
+        self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([], [])
         self.config_file = config_file if config_file is not None else "camp_data/config.json"
         self.solver = None
 
@@ -67,57 +58,6 @@ class MusicBox:
         evolving_condition = EvolvingConditions(
             time=[time_point], conditions=[conditions])
         self.evolvingConditions.append(evolving_condition)
-
-    def check_config(self, boxConfigPath):
-        """
-        Verifies correct configuration of the MusicBox object.
-        There is intentionally no check for the presence of a solver;
-        this test function is for the loaded configuration only.
-
-        Args:
-            boxConfigPath = filename and path of MusicBox configuration file
-                This filename is supplied only for the error message;
-                the configuration should already be loaded.
-
-        Returns:
-            True if all checks passed
-            Throws error for the first check failed.
-        """
-
-        # Check for duplicate reactions in the reaction list
-        if self.reaction_list:
-            reaction_names = [reaction.name for reaction in self.reaction_list.reactions]
-            reaction_names = [name for name in reaction_names if name is not None]
-            dup_names = [name for name in reaction_names if reaction_names.count(name) > 1]
-
-            if dup_names:
-                raise Exception(f"Error: Duplicate reaction names specified within {boxConfigPath}: {dup_names}. "
-                                "Please remove or rename the duplicates.")
-
-        # look for duplicate reaction names in the initial conditions
-        if (self.initial_conditions):
-            if (self.initial_conditions.reaction_rates):
-                reactionNames = []
-                for rate in self.initial_conditions.reaction_rates:
-                    # watch out for Nones in here
-                    if not rate.reaction:
-                        continue
-                    if not rate.reaction.name:
-                        continue
-                    reactionNames.append(rate.reaction.name)
-
-                # look for name already seen
-                seen = set()
-                dupNames = [name for name in reactionNames if name in seen or seen.add(name)]
-
-                if (len(dupNames) > 0):
-                    # inform user of the error and its remedy
-                    errString = ("Error: Duplicate reaction names specified within {}: {}."
-                                 .format(boxConfigPath, dupNames))
-                    errString += " Please remove or rename the duplicates."
-                    raise Exception(errString)
-
-        return (True)
 
     def solve(self, output_path=None, callback=None):
         """
@@ -180,9 +120,10 @@ class MusicBox:
             headers.append("CONC." + spec)
 
         ordered_concentrations = self.order_species_concentrations(
-            curr_conditions, species_constant_ordering)
+            curr_conditions, species_constant_ordering).tolist()
+
         ordered_rate_constants = self.order_reaction_rates(
-            curr_conditions, rate_constant_ordering)
+            curr_conditions, rate_constant_ordering).tolist()
 
         output_array.append(headers)
 
@@ -239,7 +180,7 @@ class MusicBox:
                     time_step = min(time_step, next_output_time - curr_time)
 
                 # solves and updates concentration values in concentration array
-                if (not ordered_concentrations):
+                if (not ordered_concentrations or len(ordered_concentrations) == 0):
                     logger.info("Warning: ordered_concentrations list is empty.")
                 musica.micm_solve(
                     self.solver,
@@ -290,38 +231,23 @@ class MusicBox:
         with open(path_to_json, 'r') as json_file:
             data = json.load(json_file)
             self.config_file = data['model components'][0]['configuration file']
+
             # Set box model options
             self.box_model_options = BoxModelOptions.from_config_JSON(data)
 
-            # Set species list
-            self.species_list = SpeciesList.from_config_JSON(
-                path_to_json, data)
-
-            self.reaction_list = ReactionList.from_config_JSON(
-                path_to_json, data, self.species_list)
-
             # Set initial conditions
-            self.initial_conditions = Conditions.from_config_JSON(
-                path_to_json, data, self.species_list, self.reaction_list)
+            self.initial_conditions = Conditions.from_config_JSON(path_to_json, data)
 
-            # Set initial conditions
-            self.evolving_conditions = EvolvingConditions.from_config_JSON(
-                path_to_json, data, self.species_list, self.reaction_list)
+            # Set evolving conditions
+            self.evolving_conditions = EvolvingConditions.from_config_JSON(path_to_json, data)
 
-        self.check_config(os.path.join(os.getcwd(), path_to_json))
+        camp_path = os.path.join(os.path.dirname(path_to_json), self.config_file)
 
-        camp_path = os.path.join(
-            os.path.dirname(path_to_json),
-            self.config_file)
+        # Initalize the musica solver
+        self.solver = musica.create_solver(camp_path, musica.micmsolver.rosenbrock, 1)
 
-        # Creates a micm solver object using the CAMP configuration files.
-        self.solver = musica.create_solver(
-            camp_path,
-            musica.micmsolver.rosenbrock,
-            1)
-
-    @classmethod
-    def order_reaction_rates(self, curr_conditions, rate_constant_ordering):
+    @staticmethod
+    def order_reaction_rates(curr_conditions, rate_constant_ordering):
         """
         Orders the reaction rates based on the provided ordering.
 
@@ -329,42 +255,37 @@ class MusicBox:
         and reorders the reaction rates accordingly.
 
         Args:
-            rate_constants (dict): A dictionary of rate constants.
-            rate_constant_ordering (dict): A dictionary that maps rate constant keys to indices for ordering.
+            curr_conditions: A Condition with the current state information
+            rate_constant_ordering: A dictionary which maps reaction names to their index in the reaction rates array
 
         Returns:
             list: An ordered list of rate constants.
         """
-        rate_constants = {}
-        for rate in curr_conditions.reaction_rates:
+        ordered_rate_constants = np.zeros(len(rate_constant_ordering), dtype=np.float64)
 
-            if (rate.reaction.reaction_type == "PHOTOLYSIS"):
-                key = "PHOTO." + rate.reaction.name
-            elif (rate.reaction.reaction_type == "FIRST_ORDER_LOSS"):
-                key = "LOSS." + rate.reaction.name
-            elif (rate.reaction.reaction_type == "EMISSION"):
-                key = "EMIS." + rate.reaction.name
-            elif (rate.reaction.reaction_type == "USER_DEFINED"):
-                key = "USER." + rate.reaction.name
-            rate_constants[key] = rate.rate
-
-        ordered_rate_constants = len(rate_constants.keys()) * [0.0]
-        for key, value in rate_constants.items():
-            ordered_rate_constants[rate_constant_ordering[key]] = float(value)
+        for rate_label, value in curr_conditions.reaction_rates.items():
+            ordered_rate_constants[rate_constant_ordering[rate_label]] = value
+        
         return ordered_rate_constants
 
-    @classmethod
-    def order_species_concentrations(
-            self,
-            curr_conditions,
-            species_constant_ordering):
-        concentrations = {}
+    @staticmethod
+    def order_species_concentrations(curr_conditions, species_constant_ordering):
+        """
+        Orders the species concentrations based on the provided ordering.
 
-        for concentraton in curr_conditions.species_concentrations:
-            concentrations[concentraton.species.name] = concentraton.concentration
+        This function takes the current conditions and a specified ordering for the species,
+        and reorders the species concentrations accordingly.
 
-        ordered_concentrations = len(concentrations.keys()) * [0.0]
+        Args:
+            curr_conditions (Conditions): The current conditions.
+            species_constant_ordering (dict): A dictionary that maps species keys to indices for ordering.
 
-        for key, value in concentrations.items():
-            ordered_concentrations[species_constant_ordering[key]] = value
-        return ordered_concentrations
+        Returns:
+            list: An ordered list of species concentrations.
+        """
+        concentrations = np.zeros(len(species_constant_ordering), dtype=np.float64)
+
+        for species, value in curr_conditions.species_concentrations.items():
+            concentrations[species_constant_ordering[species]] = value
+
+        return concentrations
