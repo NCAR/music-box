@@ -3,6 +3,7 @@ import os
 import re
 from .conditions import Conditions
 
+
 class EvolvingConditions:
     """
     Represents evolving conditions with attributes such as time and associated conditions.
@@ -189,7 +190,6 @@ class EvolvingConditions:
                     temperature,
                     species_concentrations,
                     reaction_rates))
-
 
         return cls(times=times, conditions=conditions)
 
