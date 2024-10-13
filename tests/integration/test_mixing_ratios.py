@@ -4,13 +4,10 @@ import os
 import math
 
 
-class TestAnalytical:
-    def test_run(self):
+class TestAnalyticalWithMixingRatios:
+    def run_example(self, example):
         box_model = MusicBox()
-
-        conditions_path = Examples.Analytical.path
-
-        box_model.loadJson(conditions_path)
+        box_model.loadJson(example)
 
         # solves and saves output
         df = box_model.solve()
@@ -86,6 +83,31 @@ class TestAnalytical:
                 analytical_concentrations[i][idx_C],
                 rel_tol=1e-8,
             ), f"Arrays differ at index ({i}, 2)"
+
+    def test_mol_mol_1(self):
+        current_dir = os.path.dirname(__file__)
+        example = os.path.join(current_dir, "configs", "mixing_ratio", "mol mol-1", "my_config.json")
+        self.run_example(example)
+
+    def test_ppth(self):
+        current_dir = os.path.dirname(__file__)
+        example = os.path.join(current_dir, "configs", "mixing_ratio", "ppth", "my_config.json")
+        self.run_example(example)
+
+    def test_ppm(self):
+        current_dir = os.path.dirname(__file__)
+        example = os.path.join(current_dir, "configs", "mixing_ratio", "ppm", "my_config.json")
+        self.run_example(example)
+
+    def test_ppb(self):
+        current_dir = os.path.dirname(__file__)
+        example = os.path.join(current_dir, "configs", "mixing_ratio", "ppb", "my_config.json")
+        self.run_example(example)
+
+    def test_ppt(self):
+        current_dir = os.path.dirname(__file__)
+        example = os.path.join(current_dir, "configs", "mixing_ratio", "ppt", "my_config.json")
+        self.run_example(example)
 
 
 if __name__ == "__main__":

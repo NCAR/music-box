@@ -17,6 +17,7 @@ import shutil
 import tempfile
 import zipfile
 from acom_music_box import Examples
+from acom_music_box.utils import calculate_air_density
 
 import logging
 logger = logging.getLogger(__name__)
@@ -219,19 +220,6 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
     return (musicaDict)
 
 
-# Calculate air density from the ideal gas law.
-# tempK = temperature in degrees Kelvin
-# pressPa = pressure in Pascals
-# return density of air in moles / cubic meter
-def calcAirDensity(tempK, pressPa):
-    BOLTZMANN_CONSTANT = 1.380649e-23       # joules / Kelvin
-    AVOGADRO_CONSTANT = 6.02214076e23       # / mole
-    GAS_CONSTANT = BOLTZMANN_CONSTANT * AVOGADRO_CONSTANT   # joules / Kelvin-mole
-    airDensity = pressPa / (GAS_CONSTANT * tempK)           # moles / m3
-
-    return airDensity
-
-
 # set up indexes for the tuple
 musicaIndex = 0
 valueIndex = 1
@@ -252,7 +240,7 @@ def convertWaccm(varDict):
     temperature = varDict["temperature"][valueIndex]
     pressure = varDict["pressure"][valueIndex]
     logger.info(f"temperature = {temperature} K   pressure = {pressure} Pa")
-    air_density = calcAirDensity(temperature, pressure)
+    air_density = calculate_air_density(temperature, pressure)
     logger.info(f"air density = {air_density} mol m-3")
 
     for key, vTuple in varDict.items():

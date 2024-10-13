@@ -1,567 +1,424 @@
 {
+  "__source file": "camchem_ic_20110101_biogenic_3s_295e.nc",
   "box model options": {
     "grid": "box",
     "chemistry time step [sec]": 60.0,
-    "output time step [sec]": 600.0,
+    "output time step [sec]": 60.0,
     "simulation length [hour]": 1.0
   },
   "chemical species": {
-    "TEPOMUC": {
-      "initial value [mol m-3]": 2.21e-10
-    },
-    "NC4CHO": {
-      "initial value [mol m-3]": 3.67e-11
-    },
-    "NOA": {
-      "initial value [mol m-3]": 5.46e-09
-    },
-    "POOH": {
-      "initial value [mol m-3]": 9.24e-10
-    },
-    "TERP2OOH": {
-      "initial value [mol m-3]": 5.96e-10
-    },
-    "NH3": {
-      "initial value [mol m-3]": 7.59e-08
-    },
-    "C3H7OOH": {
-      "initial value [mol m-3]": 7.87e-11
-    },
-    "HO2NO2": {
-      "initial value [mol m-3]": 7.99e-10
-    },
-    "ALKO2": {
-      "initial value [mol m-3]": 1.39e-11
-    },
-    "BENZOOH": {
-      "initial value [mol m-3]": 5.78e-12
-    },
-    "DICARBO2": {
-      "initial value [mol m-3]": 1.55e-13
-    },
-    "ALKOOH": {
-      "initial value [mol m-3]": 3.79e-10
-    },
-    "BIGALD1": {
-      "initial value [mol m-3]": 6.47e-11
-    },
-    "CH3CHO": {
-      "initial value [mol m-3]": 2.51e-08
-    },
-    "CH3COOH": {
-      "initial value [mol m-3]": 8.2e-09
-    },
-    "CO": {
-      "initial value [mol m-3]": 3.25e-06
-    },
-    "XYLOLOOH": {
-      "initial value [mol m-3]": 1.31e-11
-    },
-    "XYLENOOH": {
-      "initial value [mol m-3]": 1.5e-10
-    },
-    "TOLOOH": {
-      "initial value [mol m-3]": 9.69e-11
-    },
-    "TERPOOH": {
-      "initial value [mol m-3]": 2.46e-10
-    },
-    "O3": {
-      "initial value [mol m-3]": 2.49e-06
-    },
-    "ROOH": {
-      "initial value [mol m-3]": 4.4e-10
-    },
-    "XYLOL": {
-      "initial value [mol m-3]": 9.92e-11
-    },
-    "PHENOL": {
-      "initial value [mol m-3]": 9.49e-11
-    },
-    "PHENOOH": {
-      "initial value [mol m-3]": 9.15e-12
-    },
-    "OH": {
-      "initial value [mol m-3]": 2.52e-11
-    },
-    "NO3": {
-      "initial value [mol m-3]": 9.32e-12
-    },
-    "N2O": {
-      "initial value [mol m-3]": 1.27e-05
-    },
-    "H2SO4": {
-      "initial value [mol m-3]": 2.27e-11
-    },
-    "ONITR": {
-      "initial value [mol m-3]": 2.67e-09
-    },
-    "IEPOX": {
-      "initial value [mol m-3]": 5.84e-09
-    },
-    "ISOPNOOH": {
-      "initial value [mol m-3]": 9.16e-11
-    },
-    "ISOPNITA": {
-      "initial value [mol m-3]": 1.62e-09
-    },
-    "HONITR": {
-      "initial value [mol m-3]": 6.79e-09
-    },
-    "MACR": {
-      "initial value [mol m-3]": 1.06e-08
-    },
-    "MEKOOH": {
-      "initial value [mol m-3]": 6.15e-11
-    },
-    "TERPROD2": {
-      "initial value [mol m-3]": 3.81e-09
-    },
-    "XOOH": {
-      "initial value [mol m-3]": 7.93e-09
-    },
-    "XO2": {
-      "initial value [mol m-3]": 1.12e-10
-    },
-    "TOLUENE": {
-      "initial value [mol m-3]": 4.88e-09
-    },
-    "PO2": {
-      "initial value [mol m-3]": 1.46e-11
-    },
-    "XYLENES": {
-      "initial value [mol m-3]": 2.82e-09
-    },
-    "PBZNIT": {
-      "initial value [mol m-3]": 1.78e-10
-    },
-    "XYLOLO2": {
-      "initial value [mol m-3]": 4.62e-13
-    },
-    "TERPO2": {
-      "initial value [mol m-3]": 1.29e-11
-    },
-    "XYLENO2": {
-      "initial value [mol m-3]": 4.98e-12
-    },
-    "TERP2O2": {
-      "initial value [mol m-3]": 2.15e-11
-    },
-    "TOLO2": {
-      "initial value [mol m-3]": 3.23e-12
-    },
-    "NTERPO2": {
-      "initial value [mol m-3]": 9.18e-13
-    },
-    "ISOP": {
-      "initial value [mol m-3]": 1.23e-08
-    },
-    "HYDRALD": {
-      "initial value [mol m-3]": 1.49e-08
-    },
-    "H2": {
-      "initial value [mol m-3]": 1.93e-05
-    },
-    "HOCH2OO": {
-      "initial value [mol m-3]": 1.07e-13
-    },
-    "HO2": {
-      "initial value [mol m-3]": 1.69e-09
-    },
-    "GLYALD": {
-      "initial value [mol m-3]": 4.58e-08
-    },
-    "ISOPOOH": {
-      "initial value [mol m-3]": 4.68e-09
-    },
-    "NC4CH2OH": {
-      "initial value [mol m-3]": 7.3e-13
-    },
-    "MPAN": {
-      "initial value [mol m-3]": 3.11e-09
-    },
-    "GLYOXAL": {
-      "initial value [mol m-3]": 1.25e-08
-    },
-    "EO": {
-      "initial value [mol m-3]": 9.93e-18
-    },
-    "EO2": {
-      "initial value [mol m-3]": 4.04e-11
-    },
-    "MEKO2": {
-      "initial value [mol m-3]": 2.81e-12
-    },
-    "MDIALO2": {
-      "initial value [mol m-3]": 1.61e-13
-    },
-    "MCO3": {
-      "initial value [mol m-3]": 9.23e-12
-    },
-    "ISOPBO2": {
-      "initial value [mol m-3]": 9.08e-11
-    },
-    "MALO2": {
-      "initial value [mol m-3]": 1.07e-13
-    },
-    "ISOPAO2": {
-      "initial value [mol m-3]": 1.39e-10
-    },
-    "MACRO2": {
-      "initial value [mol m-3]": 1.09e-10
-    },
-    "ENEO2": {
-      "initial value [mol m-3]": 7.98e-12
-    },
-    "CRESOL": {
-      "initial value [mol m-3]": 1.06e-10
-    },
-    "CH3OOH": {
-      "initial value [mol m-3]": 1.69e-08
-    },
-    "CH3OH": {
-      "initial value [mol m-3]": 2.74e-07
-    },
-    "C2H2": {
-      "initial value [mol m-3]": 2.13e-08
-    },
-    "CH3CN": {
-      "initial value [mol m-3]": 4.66e-09
-    },
-    "CH2O": {
-      "initial value [mol m-3]": 2.44e-07
-    },
-    "C3H6": {
-      "initial value [mol m-3]": 2.42e-09
-    },
-    "C3H8": {
-      "initial value [mol m-3]": 9.7e-09
-    },
-    "C2H6": {
-      "initial value [mol m-3]": 2.93e-08
-    },
-    "C2H5OOH": {
-      "initial value [mol m-3]": 7.99e-11
-    },
-    "H2O2": {
-      "initial value [mol m-3]": 7.36e-08
-    },
-    "BIGALK": {
-      "initial value [mol m-3]": 1.9e-08
-    },
-    "BIGALD4": {
-      "initial value [mol m-3]": 7.34e-10
-    },
-    "BIGALD3": {
-      "initial value [mol m-3]": 6.83e-11
-    },
-    "BIGALD2": {
-      "initial value [mol m-3]": 6.58e-11
-    },
-    "BIGALD": {
-      "initial value [mol m-3]": 1.33e-11
-    },
-    "BCARY": {
-      "initial value [mol m-3]": 5.04e-12
-    },
-    "CH3O2": {
-      "initial value [mol m-3]": 3.34e-10
-    },
-    "C3H7O2": {
-      "initial value [mol m-3]": 2.31e-12
-    },
-    "BENZENE": {
-      "initial value [mol m-3]": 2.67e-09
-    },
-    "BZALD": {
-      "initial value [mol m-3]": 4.7e-10
-    },
-    "CO2": {
-      "initial value [mol m-3]": 0.0156
-    },
-    "H2402": {
-      "initial value [mol m-3]": 1.52e-11
-    },
-    "CHBR3": {
-      "initial value [mol m-3]": 3.87e-11
-    },
-    "BEPOMUC": {
-      "initial value [mol m-3]": 5.4e-12
-    },
-    "HCL": {
-      "initial value [mol m-3]": 8.17e-10
-    },
-    "C2H5OH": {
-      "initial value [mol m-3]": 2.75e-08
-    },
-    "DMS": {
-      "initial value [mol m-3]": 1.74e-10
-    },
-    "HCFC22": {
-      "initial value [mol m-3]": 9.07e-09
-    },
-    "HCFC142B": {
-      "initial value [mol m-3]": 8.24e-10
-    },
-    "HCFC141B": {
-      "initial value [mol m-3]": 9.29e-10
-    },
-    "PHENO": {
-      "initial value [mol m-3]": 1e-12
-    },
-    "O1D": {
-      "initial value [mol m-3]": 1.53e-19
-    },
-    "OCLO": {
-      "initial value [mol m-3]": 7.68e-19
-    },
-    "O": {
-      "initial value [mol m-3]": 2.85e-14
-    },
-    "CH3COCH3": {
-      "initial value [mol m-3]": 7.37e-08
-    },
-    "CH3COCHO": {
-      "initial value [mol m-3]": 1.95e-08
-    },
-    "C2H5O2": {
-      "initial value [mol m-3]": 1.55e-12
-    },
-    "C2H4": {
-      "initial value [mol m-3]": 2.51e-08
-    },
-    "BIGENE": {
-      "initial value [mol m-3]": 6.59e-10
-    },
-    "HOCL": {
-      "initial value [mol m-3]": 2.11e-12
-    },
-    "HOBR": {
-      "initial value [mol m-3]": 1.65e-12
-    },
-    "HBR": {
-      "initial value [mol m-3]": 4.48e-11
-    },
-    "HCOOH": {
-      "initial value [mol m-3]": 8.79e-09
-    },
-    "CLONO2": {
-      "initial value [mol m-3]": 4.09e-11
-    },
-    "CLO": {
-      "initial value [mol m-3]": 8.06e-14
-    },
-    "CL2O2": {
-      "initial value [mol m-3]": 1.8899999999999997e-23
-    },
-    "CL2": {
-      "initial value [mol m-3]": 1.01e-16
-    },
-    "CL": {
-      "initial value [mol m-3]": 1.07e-15
-    },
-    "BRONO2": {
-      "initial value [mol m-3]": 1.22e-11
-    },
-    "BRO": {
-      "initial value [mol m-3]": 1.95e-13
-    },
-    "BRCL": {
-      "initial value [mol m-3]": 9.18e-19
-    },
-    "BR": {
-      "initial value [mol m-3]": 3.67e-14
-    },
-    "NO": {
-      "initial value [mol m-3]": 1.47e-08
-    },
-    "CH3CCL3": {
-      "initial value [mol m-3]": 5.55e-11
-    },
-    "CH3BR": {
-      "initial value [mol m-3]": 2.37e-10
-    },
-    "CH2BR2": {
-      "initial value [mol m-3]": 4.32e-11
-    },
-    "CFC12": {
-      "initial value [mol m-3]": 1.92e-08
-    },
-    "CFC115": {
-      "initial value [mol m-3]": 3.29e-10
-    },
-    "CFC114": {
-      "initial value [mol m-3]": 6.19e-10
-    },
-    "CFC113": {
-      "initial value [mol m-3]": 2.66e-09
-    },
-    "CFC11": {
-      "initial value [mol m-3]": 8.5e-09
-    },
-    "CF3BR": {
-      "initial value [mol m-3]": 1.26e-10
-    },
-    "CF2CLBR": {
-      "initial value [mol m-3]": 1.24e-10
-    },
-    "CCL4": {
-      "initial value [mol m-3]": 2.96e-09
-    },
-    "NTERPOOH": {
-      "initial value [mol m-3]": 9.37e-11
-    },
-    "EOOH": {
-      "initial value [mol m-3]": 3.56e-09
-    },
-    "NO2": {
-      "initial value [mol m-3]": 6.37e-08
-    },
-    "HPALD": {
-      "initial value [mol m-3]": 3.56e-10
-    },
-    "HYAC": {
-      "initial value [mol m-3]": 4.88e-08
-    },
-    "TERPROD1": {
-      "initial value [mol m-3]": 1.68e-09
-    },
-    "C6H5O2": {
-      "initial value [mol m-3]": 6.23e-12
-    },
-    "CH3CO3": {
-      "initial value [mol m-3]": 8.32e-11
-    },
-    "CH3CL": {
-      "initial value [mol m-3]": 2.07e-08
-    },
-    "CH4": {
-      "initial value [mol m-3]": 7.03e-05
-    },
-    "SO2": {
-      "initial value [mol m-3]": 6.15e-08
-    },
-    "CH3COOOH": {
-      "initial value [mol m-3]": 7.19e-09
-    },
-    "ACBZO2": {
-      "initial value [mol m-3]": 3.54e-13
-    },
-    "HNO3": {
-      "initial value [mol m-3]": 1.04e-07
-    },
-    "TERPNIT": {
-      "initial value [mol m-3]": 8.28e-10
-    },
-    "IVOC": {
-      "initial value [mol m-3]": 2.06e-09
-    },
-    "PHENO2": {
-      "initial value [mol m-3]": 2.54e-13
-    },
-    "RO2": {
-      "initial value [mol m-3]": 7.13e-12
-    },
-    "ISOPNO3": {
-      "initial value [mol m-3]": 5.35e-13
-    },
-    "SVOC": {
-      "initial value [mol m-3]": 1.98e-10
-    },
-    "HCN": {
-      "initial value [mol m-3]": 1.9e-08
-    },
-    "N2O5": {
-      "initial value [mol m-3]": 1e-11
-    },
-    "MTERP": {
-      "initial value [mol m-3]": 1.09e-09
-    },
-    "MEK": {
-      "initial value [mol m-3]": 1.04e-08
-    },
-    "H": {
-      "initial value [mol m-3]": 9.67e-18
-    },
-    "S": {
-      "initial value [mol m-3]": 1.1e-26
-    },
-    "SO": {
-      "initial value [mol m-3]": 1.22e-20
-    },
-    "OCS": {
-      "initial value [mol m-3]": 1.96e-08
-    },
-    "SO3": {
-      "initial value [mol m-3]": 1.75e-17
-    },
-    "ISOPNITB": {
-      "initial value [mol m-3]": 1.05e-09
-    },
-    "SOAG4": {
-      "initial value [mol m-3]": 2.25e-08
-    },
-    "SOAG3": {
-      "initial value [mol m-3]": 4.27e-09
-    },
-    "SOAG2": {
-      "initial value [mol m-3]": 1.4e-09
-    },
-    "SOAG1": {
-      "initial value [mol m-3]": 2.14e-10
-    },
-    "SOAG0": {
-      "initial value [mol m-3]": 3.33e-11
-    },
-    "MACROOH": {
-      "initial value [mol m-3]": 1.21e-09
-    },
-    "MVK": {
-      "initial value [mol m-3]": 2.61e-08
-    },
-    "PAN": {
-      "initial value [mol m-3]": 4.25e-08
-    },
-    "BZOO": {
-      "initial value [mol m-3]": 8.81e-13
-    },
-    "BENZO2": {
-      "initial value [mol m-3]": 2.09e-13
-    },
-    "F": {
-      "initial value [mol m-3]": 3.89e-28
-    },
-    "HF": {
-      "initial value [mol m-3]": 1.81e-11
-    },
-    "COFCL": {
-      "initial value [mol m-3]": 7.92e-12
-    },
-    "COF2": {
-      "initial value [mol m-3]": 5.24e-11
-    },
-    "C6H5OOH": {
-      "initial value [mol m-3]": 4.2e-10
+    "ALKNIT": {
+      "initial value [mol m-3]": 1.11393E-10
     },
     "BZOOH": {
-      "initial value [mol m-3]": 2.68e-11
+      "initial value [mol m-3]": 1.01132E-10
     },
-    "ALKNIT": {
-      "initial value [mol m-3]": 8.72e-10
+    "C6H5OOH": {
+      "initial value [mol m-3]": 5.09502E-10
     },
-    "N2": {
-      "initial value [mol m-3]": 33.1007671
+    "PAN": {
+      "initial value [mol m-3]": 6.90311E-09
     },
-    "O2": {
-      "initial value [mol m-3]": 8.90261411
+    "MVK": {
+      "initial value [mol m-3]": 1.66746E-07
+    },
+    "MACROOH": {
+      "initial value [mol m-3]": 1.21175E-08
+    },
+    "ISOPNITB": {
+      "initial value [mol m-3]": 1.30519E-09
+    },
+    "H": {
+      "initial value [mol m-3]": 2.67645E-22
+    },
+    "MEK": {
+      "initial value [mol m-3]": 3.68199E-09
+    },
+    "MTERP": {
+      "initial value [mol m-3]": 9.85798E-07
+    },
+    "N2O5": {
+      "initial value [mol m-3]": 5.91575E-15
+    },
+    "HCN": {
+      "initial value [mol m-3]": 1.94215E-08
+    },
+    "SVOC": {
+      "initial value [mol m-3]": 1.71660E-09
+    },
+    "ISOPNO3": {
+      "initial value [mol m-3]": 2.87650E-11
+    },
+    "IVOC": {
+      "initial value [mol m-3]": 9.69036E-10
+    },
+    "TERPNIT": {
+      "initial value [mol m-3]": 6.31044E-10
+    },
+    "HNO3": {
+      "initial value [mol m-3]": 4.82947E-09
+    },
+    "CH3COOOH": {
+      "initial value [mol m-3]": 1.74342E-08
+    },
+    "SO2": {
+      "initial value [mol m-3]": 4.84773E-09
+    },
+    "CH4": {
+      "initial value [mol m-3]": 3.96471E-05
+    },
+    "CH3CL": {
+      "initial value [mol m-3]": 3.70621E-08
+    },
+    "TERPROD1": {
+      "initial value [mol m-3]": 1.65540E-07
+    },
+    "HYAC": {
+      "initial value [mol m-3]": 1.35875E-08
+    },
+    "HPALD": {
+      "initial value [mol m-3]": 3.43484E-08
+    },
+    "NO2": {
+      "initial value [mol m-3]": 8.27870E-09
+    },
+    "EOOH": {
+      "initial value [mol m-3]": 4.89917E-09
+    },
+    "NTERPOOH": {
+      "initial value [mol m-3]": 2.14443E-10
+    },
+    "CCL4": {
+      "initial value [mol m-3]": 1.82821E-08
+    },
+    "CF2CLBR": {
+      "initial value [mol m-3]": 9.26516E-10
+    },
+    "CF3BR": {
+      "initial value [mol m-3]": 6.56337E-10
+    },
+    "CFC11": {
+      "initial value [mol m-3]": 4.52534E-08
+    },
+    "CFC113": {
+      "initial value [mol m-3]": 1.93319E-08
+    },
+    "CFC114": {
+      "initial value [mol m-3]": 3.85357E-09
+    },
+    "CFC115": {
+      "initial value [mol m-3]": 1.78054E-09
+    },
+    "CFC12": {
+      "initial value [mol m-3]": 8.81601E-08
+    },
+    "CH2BR2": {
+      "initial value [mol m-3]": 2.86882E-10
+    },
+    "CH3BR": {
+      "initial value [mol m-3]": 9.11455E-10
+    },
+    "CH3CCL3": {
+      "initial value [mol m-3]": 1.28043E-09
+    },
+    "NO": {
+      "initial value [mol m-3]": 1.53002E-09
+    },
+    "BR": {
+      "initial value [mol m-3]": 4.02811E-17
+    },
+    "BRCL": {
+      "initial value [mol m-3]": 7.82983E-19
+    },
+    "BRO": {
+      "initial value [mol m-3]": 6.90029E-16
+    },
+    "BRONO2": {
+      "initial value [mol m-3]": 2.39949E-13
+    },
+    "CL": {
+      "initial value [mol m-3]": 1.32266E-18
+    },
+    "CL2": {
+      "initial value [mol m-3]": 1.53817E-19
+    },
+    "CL2O2": {
+      "initial value [mol m-3]": 6.73298E-28
+    },
+    "CLO": {
+      "initial value [mol m-3]": 4.31014E-16
+    },
+    "CLONO2": {
+      "initial value [mol m-3]": 1.64195E-12
+    },
+    "HCOOH": {
+      "initial value [mol m-3]": 4.45733E-08
+    },
+    "HBR": {
+      "initial value [mol m-3]": 4.88224E-11
+    },
+    "HOBR": {
+      "initial value [mol m-3]": 2.46797E-13
+    },
+    "HOCL": {
+      "initial value [mol m-3]": 6.29615E-13
+    },
+    "N": {
+      "initial value [mol m-3]": 3.98361E-35
+    },
+    "BIGENE": {
+      "initial value [mol m-3]": 1.03046E-07
+    },
+    "C2H4": {
+      "initial value [mol m-3]": 2.05847E-07
+    },
+    "CH3COCHO": {
+      "initial value [mol m-3]": 6.69744E-09
+    },
+    "CH3COCH3": {
+      "initial value [mol m-3]": 4.87330E-07
+    },
+    "O": {
+      "initial value [mol m-3]": 6.44989E-27
+    },
+    "OCLO": {
+      "initial value [mol m-3]": 8.81367E-19
+    },
+    "PHENO": {
+      "initial value [mol m-3]": 5.85237E-16
+    },
+    "HCFC141B": {
+      "initial value [mol m-3]": 3.35026E-09
+    },
+    "HCFC142B": {
+      "initial value [mol m-3]": 2.86306E-09
+    },
+    "HCFC22": {
+      "initial value [mol m-3]": 2.51475E-08
+    },
+    "DMS": {
+      "initial value [mol m-3]": 3.64837E-10
+    },
+    "C2H5OH": {
+      "initial value [mol m-3]": 1.57016E-07
+    },
+    "HCL": {
+      "initial value [mol m-3]": 1.42595E-10
+    },
+    "BEPOMUC": {
+      "initial value [mol m-3]": 3.49415E-14
+    },
+    "CHBR3": {
+      "initial value [mol m-3]": 4.17087E-10
+    },
+    "H2402": {
+      "initial value [mol m-3]": 1.61629E-10
+    },
+    "CO2": {
+      "initial value [mol m-3]": 2.35781E-02
+    },
+    "BZALD": {
+      "initial value [mol m-3]": 2.13377E-10
+    },
+    "BENZENE": {
+      "initial value [mol m-3]": 8.26640E-10
+    },
+    "BCARY": {
+      "initial value [mol m-3]": 1.23866E-08
+    },
+    "BIGALD": {
+      "initial value [mol m-3]": 9.38299E-09
+    },
+    "BIGALD2": {
+      "initial value [mol m-3]": 1.65974E-12
+    },
+    "BIGALD3": {
+      "initial value [mol m-3]": 5.74505E-10
+    },
+    "BIGALD4": {
+      "initial value [mol m-3]": 1.26525E-11
+    },
+    "BIGALK": {
+      "initial value [mol m-3]": 5.22112E-08
+    },
+    "H2O2": {
+      "initial value [mol m-3]": 8.12977E-08
+    },
+    "C2H5OOH": {
+      "initial value [mol m-3]": 4.86502E-10
+    },
+    "C2H6": {
+      "initial value [mol m-3]": 1.88169E-08
+    },
+    "C3H8": {
+      "initial value [mol m-3]": 1.81856E-09
+    },
+    "C3H6": {
+      "initial value [mol m-3]": 1.47714E-07
+    },
+    "CH2O": {
+      "initial value [mol m-3]": 1.66280E-07
+    },
+    "CH3CN": {
+      "initial value [mol m-3]": 4.59884E-09
+    },
+    "C2H2": {
+      "initial value [mol m-3]": 1.40622E-09
+    },
+    "CH3OH": {
+      "initial value [mol m-3]": 4.57051E-07
+    },
+    "CH3OOH": {
+      "initial value [mol m-3]": 7.26150E-08
+    },
+    "CRESOL": {
+      "initial value [mol m-3]": 5.72820E-11
+    },
+    "GLYOXAL": {
+      "initial value [mol m-3]": 1.23900E-09
+    },
+    "MPAN": {
+      "initial value [mol m-3]": 6.36152E-10
+    },
+    "NC4CH2OH": {
+      "initial value [mol m-3]": 6.12621E-12
+    },
+    "ISOPOOH": {
+      "initial value [mol m-3]": 3.18944E-07
+    },
+    "GLYALD": {
+      "initial value [mol m-3]": 6.36232E-09
+    },
+    "H2": {
+      "initial value [mol m-3]": 1.38545E-06
+    },
+    "HYDRALD": {
+      "initial value [mol m-3]": 5.44923E-08
+    },
+    "ISOP": {
+      "initial value [mol m-3]": 4.66421E-06
+    },
+    "PBZNIT": {
+      "initial value [mol m-3]": 2.16618E-12
+    },
+    "XYLENES": {
+      "initial value [mol m-3]": 2.19146E-08
+    },
+    "TOLUENE": {
+      "initial value [mol m-3]": 1.94177E-08
+    },
+    "XOOH": {
+      "initial value [mol m-3]": 2.79323E-08
+    },
+    "TERPROD2": {
+      "initial value [mol m-3]": 1.39280E-07
+    },
+    "MEKOOH": {
+      "initial value [mol m-3]": 9.55992E-11
+    },
+    "MACR": {
+      "initial value [mol m-3]": 1.74852E-07
+    },
+    "HONITR": {
+      "initial value [mol m-3]": 5.23959E-10
+    },
+    "ISOPNITA": {
+      "initial value [mol m-3]": 2.76704E-09
+    },
+    "ISOPNOOH": {
+      "initial value [mol m-3]": 5.97792E-10
+    },
+    "IEPOX": {
+      "initial value [mol m-3]": 2.37178E-08
+    },
+    "ONITR": {
+      "initial value [mol m-3]": 8.40003E-11
+    },
+    "H2SO4": {
+      "initial value [mol m-3]": 1.85433E-17
+    },
+    "N2O": {
+      "initial value [mol m-3]": 1.96035E-05
+    },
+    "NO3": {
+      "initial value [mol m-3]": 3.71016E-14
+    },
+    "PHENOOH": {
+      "initial value [mol m-3]": 5.58592E-12
+    },
+    "PHENOL": {
+      "initial value [mol m-3]": 1.16092E-11
+    },
+    "XYLOL": {
+      "initial value [mol m-3]": 1.17105E-10
+    },
+    "ROOH": {
+      "initial value [mol m-3]": 1.70912E-08
+    },
+    "O3": {
+      "initial value [mol m-3]": 4.18994E-07
+    },
+    "TERPOOH": {
+      "initial value [mol m-3]": 2.04189E-08
+    },
+    "TOLOOH": {
+      "initial value [mol m-3]": 2.34333E-10
+    },
+    "XYLENOOH": {
+      "initial value [mol m-3]": 9.98592E-10
+    },
+    "XYLOLOOH": {
+      "initial value [mol m-3]": 1.60548E-11
+    },
+    "CO": {
+      "initial value [mol m-3]": 4.31244E-06
+    },
+    "CH3COOH": {
+      "initial value [mol m-3]": 4.13627E-08
+    },
+    "CH3CHO": {
+      "initial value [mol m-3]": 1.62908E-07
+    },
+    "BIGALD1": {
+      "initial value [mol m-3]": 8.84711E-13
+    },
+    "ALKOOH": {
+      "initial value [mol m-3]": 1.20674E-09
+    },
+    "BENZOOH": {
+      "initial value [mol m-3]": 5.33073E-11
+    },
+    "HO2NO2": {
+      "initial value [mol m-3]": 4.13369E-11
+    },
+    "C3H7OOH": {
+      "initial value [mol m-3]": 2.21604E-10
+    },
+    "NH3": {
+      "initial value [mol m-3]": 3.60991E-09
+    },
+    "TERP2OOH": {
+      "initial value [mol m-3]": 3.01647E-08
+    },
+    "POOH": {
+      "initial value [mol m-3]": 8.23568E-09
+    },
+    "NOA": {
+      "initial value [mol m-3]": 3.43041E-10
+    },
+    "NC4CHO": {
+      "initial value [mol m-3]": 5.59321E-11
+    },
+    "TEPOMUC": {
+      "initial value [mol m-3]": 1.86716E-11
     }
   },
   "environmental conditions": {
     "temperature": {
-      "initial value [K]": 287.45
+      "initial value [K]": 299.55169
     },
     "pressure": {
-      "initial value [Pa]": 1013.199
+      "initial value [Pa]": 99255.610
     }
   },
   "evolving conditions": {},

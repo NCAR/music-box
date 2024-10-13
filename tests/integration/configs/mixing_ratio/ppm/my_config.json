@@ -8,7 +8,7 @@
   },
   "chemical species": {
     "A": {
-      "initial value [mol m-3]": 1
+      "initial value [ppm]": 22376.46638131061
     },
     "B": {
       "initial value [mol m-3]": 0
@@ -31,7 +31,7 @@
   "model components": [
     {
       "type": "CAMP",
-      "configuration file": "camp_data/config.json",
+      "configuration file": "../mol mol-1/camp_data/config.json",
       "override species": {
         "M": {
           "mixing ratio mol mol-1": 1
