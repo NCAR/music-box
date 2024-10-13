@@ -41,11 +41,11 @@ def test_convert_temperature(data, key, expected):
 
 @pytest.mark.parametrize("data, key, temperature, pressure, expected", [
     ({'concentration [mol m-3]': 1}, 'concentration', 298.15, 101325, 1),
-    ({'concentration [mol cm-3]': 1e-3}, 'concentration', 298.15, 101325, 1),
+    ({'concentration [mol cm-3]': 1e-6}, 'concentration', 298.15, 101325, 1),
     ({'concentration [molec m-3]': 6.02214076e+23}, 'concentration', 298.15, 101325, 1),
-    ({'concentration [molec cm-3]': 6.02214076e+20}, 'concentration', 298.15, 101325, 1),
+    ({'concentration [molec cm-3]': 6.02214076e+17}, 'concentration', 298.15, 101325, 1),
     ({'concentration [molecule m-3]': 6.02214076e+23}, 'concentration', 298.15, 101325, 1),
-    ({'concentration [molecule cm-3]': 6.02214076e+20}, 'concentration', 298.15, 101325, 1),
+    ({'concentration [molecule cm-3]': 6.02214076e+17}, 'concentration', 298.15, 101325, 1),
     ({'concentration [ppth]': 1e-3}, 'concentration', 298.15, 101325, 1e-6 * calculate_air_density(298.15, 101325)),
     ({'concentration [ppm]': 1}, 'concentration', 298.15, 101325, 1e-6 * calculate_air_density(298.15, 101325)),
     ({'concentration [ppb]': 1}, 'concentration', 298.15, 101325, 1e-9 * calculate_air_density(298.15, 101325)),

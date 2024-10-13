@@ -86,7 +86,7 @@ def convert_temperature(data, key):
 
 def convert_concentration(data, key, temperature, pressure):
     """
-    Convert the concentration from the input data to molecules per cubic meter.
+    Convert the concentration from the input data to moles per cubic meter.
 
     Args:
         data (dict): The input data.
@@ -94,23 +94,23 @@ def convert_concentration(data, key, temperature, pressure):
         temperature (float): The temperature in Kelvin.
         pressure (float): The pressure in Pascals.
     Returns:
-        float: The concentration in molecules per cubic meter.
+        float: The concentration in moles per cubic meter.
     """
     concentration_value, unit = extract_unit(data, key)
     air_density = calculate_air_density(temperature, pressure)
 
     unit_conversions = {
-        'mol m-3': 1,
-        'mol cm-3': 1e3,
-        'molec m-3': 1 / AVOGADRO_CONSTANT,
-        'molecule m-3': 1 / AVOGADRO_CONSTANT,
-        'molec cm-3': 1e3 / AVOGADRO_CONSTANT,
-        'molecule cm-3': 1e3 / AVOGADRO_CONSTANT,
-        'ppth': 1e-3 * air_density,
-        'ppm': 1e-6 * air_density,
-        'ppb': 1e-9 * air_density,
-        'ppt': 1e-12 * air_density,
-        'mol mol-1': 1 * air_density
+        'mol m-3': 1, # mol m-3 is the base unit
+        'mol cm-3': 1e6, # cm3 m-3
+        'molec m-3': 1 / AVOGADRO_CONSTANT, # mol
+        'molecule m-3': 1 / AVOGADRO_CONSTANT, # mol
+        'molec cm-3': 1e6 / AVOGADRO_CONSTANT, #mol cm3 m-3
+        'molecule cm-3': 1e6 / AVOGADRO_CONSTANT, #mol cm3 m-3
+        'ppth': 1e-3 * air_density, # moles / m^3
+        'ppm': 1e-6 * air_density, # moles / m^3
+        'ppb': 1e-9 * air_density, # moles / m^3
+        'ppt': 1e-12 * air_density, # moles / m^3
+        'mol mol-1': 1 * air_density # moles / m^3
     }
 
     if unit in unit_conversions:

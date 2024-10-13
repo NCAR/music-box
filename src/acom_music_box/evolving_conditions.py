@@ -1,10 +1,7 @@
-import csv
+import pandas as pd
 import os
-from typing import List
+import re
 from .conditions import Conditions
-from .species_concentration import SpeciesConcentration
-from .reaction_rate import ReactionRate
-
 
 class EvolvingConditions:
     """
@@ -100,13 +97,10 @@ class EvolvingConditions:
 
         return cls(headers, times, conditions)
 
-    @classmethod
+    @staticmethod
     def from_config_JSON(
-            cls,
             path_to_json,
-            config_JSON,
-            species_list,
-            reaction_list):
+            config_JSON):
         """
         Creates an instance of the EvolvingConditions class from a configuration JSON object.
 
@@ -135,7 +129,7 @@ class EvolvingConditions:
                     list(config_JSON['evolving conditions'].keys())[0])
 
                 evolving_conditions = EvolvingConditions.read_conditions_from_file(
-                    evolving_conditions_path, species_list, reaction_list)
+                    evolving_conditions_path)
 
         return evolving_conditions
 
@@ -151,9 +145,9 @@ class EvolvingConditions:
         self.conditions.append(conditions)
 
     @classmethod
-    def read_conditions_from_file(cls, file_path, species_list, reaction_list):
+    def read_conditions_from_file(cls, file_path):
         """
-        TODO: Read conditions from a file and update the evolving conditions.
+        Read conditions from a file and update the evolving conditions.
 
         Args:
             file_path (str): The path to the file containing conditions UI_JSON.
@@ -162,84 +156,40 @@ class EvolvingConditions:
         times = []
         conditions = []
 
-        # Open the evolving conditions file and read it as a CSV
-        with open(file_path, 'r') as csv_file:
-            evolving_conditions = list(csv.reader(csv_file))
+        df = pd.read_csv(file_path)
 
-            if (len(evolving_conditions) > 1):
-                # The first row of the CSV contains headers
-                headers = evolving_conditions[0]
+        # if present these columns must use these names
+        pressure_key = 'ENV.pressure.Pa'
+        temperature_key = 'ENV.temperature.K'
+        time_key = 'time.s'
 
-                # Iterate over the remaining rows of the CSV
-                for i in range(1, len(evolving_conditions)):
-                    # The first column of each row is a time value
-                    times.append(float(evolving_conditions[i][0]))
+        time_and_environment_keys = [pressure_key, temperature_key, time_key]
+        # other keys will depend on the species names and reaction labels configured in the mechanism
+        other_keys = [key for key in df.columns if key not in time_and_environment_keys]
 
-                    # Initialize pressure and temperature as None
-                    pressure = None
-                    temperature = None
+        for _, row in df.iterrows():
+            pressure = row[pressure_key] if pressure_key in row else None
+            temperature = row[temperature_key] if temperature_key in row else None
+            time = row[time_key]
 
-                    # If pressure and temperature headers are present in the
-                    # CSV, extract their values
-                    if 'ENV.pressure.Pa' in headers:
-                        pressure = float(
-                            evolving_conditions[i][headers.index('ENV.pressure.Pa')])
-                    if 'ENV.temperature.K' in headers:
-                        temperature = float(
-                            evolving_conditions[i][headers.index('ENV.temperature.K')])
+            reaction_rates = {}
+            species_concentrations = {}
 
-                    # Initialize concentrations list and extract concentration
-                    # headers
-                    concentrations = []
-                    concentration_headers = list(
-                        filter(lambda x: 'CONC' in x, headers))
+            for key in other_keys:
+                condition_type, label, unit = key.split('.')
+                if condition_type == 'CONC':
+                    species_concentrations[label] = row[key]
+                else:
+                    reaction_rates[f'{condition_type}.{label}'] = row[key]
 
-                    # For each concentration header, find the matching species
-                    # and append its concentration to the list
-                    for j in range(len(concentration_headers)):
-                        match = filter(
-                            lambda x: x.name == concentration_headers[j].split('.')[1],
-                            species_list.species)
-                        species = next(match, None)
-                        concentration = float(
-                            evolving_conditions[i][headers.index(concentration_headers[j])])
+            times.append(time)
+            conditions.append(
+                Conditions(
+                    pressure,
+                    temperature,
+                    species_concentrations,
+                    reaction_rates))
 
-                        concentrations.append(
-                            SpeciesConcentration(
-                                species, concentration))
-
-                    # Initialize rates list and extract rate headers
-                    rates = []
-                    rate_headers = list(filter(lambda x: 's-1' in x, headers))
-
-                    # For each rate header, find the matching reaction and
-                    # append its rate to the list
-                    for k in range(len(rate_headers)):
-                        name_to_match = rate_headers[k].split('.')
-
-                        if name_to_match[0] == 'LOSS' or name_to_match[0] == 'EMIS':
-                            name_to_match = name_to_match[0] + \
-                                '_' + name_to_match[1]
-                        else:
-                            name_to_match = name_to_match[1]
-                        match = filter(
-                            lambda x: x.name == name_to_match,
-                            reaction_list.reactions)
-                        reaction = next(match, None)
-                        rate = float(
-                            evolving_conditions[i][headers.index(rate_headers[k])])
-                        rates.append(ReactionRate(reaction, rate))
-
-                    # Append the conditions for this time point to the
-                    # conditions list
-                    conditions.append(
-                        Conditions(
-                            pressure,
-                            temperature,
-                            concentrations,
-                            rates))
-
-        # Return a new instance of the class with the times and conditions
 
         return cls(times=times, conditions=conditions)
 
