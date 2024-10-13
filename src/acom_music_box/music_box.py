@@ -265,7 +265,7 @@ class MusicBox:
 
         for rate_label, value in curr_conditions.reaction_rates.items():
             ordered_rate_constants[rate_constant_ordering[rate_label]] = value
-        
+
         return ordered_rate_constants
 
     @staticmethod
