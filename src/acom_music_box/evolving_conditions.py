@@ -3,6 +3,8 @@ import os
 import re
 from .conditions import Conditions
 
+import logging
+logger = logging.getLogger(__name__)
 
 class EvolvingConditions:
     """
@@ -177,7 +179,17 @@ class EvolvingConditions:
             species_concentrations = {}
 
             for key in other_keys:
-                condition_type, label, unit = key.split('.')
+                parts = key.split('.')
+                condition_type, label, unit = None, None, None
+                if len(parts) == 3:
+                    condition_type, label, unit = parts
+                elif len(parts) == 2:
+                    condition_type, label = parts
+                else:
+                    error = f"Unexpected format in key: {key}"
+                    logger.error(error)
+                    raise ValueError(error)
+
                 if condition_type == 'CONC':
                     species_concentrations[label] = row[key]
                 else:

@@ -263,8 +263,12 @@ class MusicBox:
         """
         ordered_rate_constants = np.zeros(len(rate_constant_ordering), dtype=np.float64)
 
-        for rate_label, value in curr_conditions.reaction_rates.items():
-            ordered_rate_constants[rate_constant_ordering[rate_label]] = value
+        for rate_label, _ in rate_constant_ordering.items():
+            if rate_label not in curr_conditions.reaction_rates:
+                logger.warning(f"Reaction rate '{rate_label}' not found in current conditions.")
+                continue
+            else:
+                ordered_rate_constants[rate_constant_ordering[rate_label]] = curr_conditions.reaction_rates[rate_label]
 
         return ordered_rate_constants
 
@@ -285,7 +289,11 @@ class MusicBox:
         """
         concentrations = np.zeros(len(species_constant_ordering), dtype=np.float64)
 
-        for species, value in curr_conditions.species_concentrations.items():
-            concentrations[species_constant_ordering[species]] = value
+        for species, _ in species_constant_ordering.items():
+            if species not in curr_conditions.species_concentrations:
+                logger.warning(f"Species '{species}' not found in current conditions.")
+                continue
+            else:
+                concentrations[species_constant_ordering[species]] = curr_conditions.species_concentrations[species]
 
         return concentrations
