@@ -228,8 +228,6 @@ unitIndex = 2
 # Perform any numeric conversion needed.
 # varDict = originally read from WACCM, tuples are (musicaName, value, units)
 # return varDict with values modified
-
-
 def convertWaccm(varDict):
     # from the supporting documents
     # https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2019MS001882&file=jame21103-sup-0001-2019MS001882+Text_SI-S01.pdf
@@ -268,7 +266,7 @@ def writeInitCSV(initValues, filename):
         else:
             fp.write(",")
 
-        fp.write(key)
+        fp.write("{} [{}]".format(key, value[unitIndex]))
     fp.write("\n")
 
     # write the variable values
@@ -404,9 +402,19 @@ def main():
     if ("longitude" in myArgs):
         lon = safeFloat(myArgs.get("longitude"))
 
+    # get the requested (diagnostic) output
+    outputCSV = False
+    outputJSON = False
+    if ("output" in myArgs):
+        # parameter is like: output=CSV,JSON
+        outputFormats = myArgs.get("output").split(",")
+        outputFormats = [lowFormat.lower() for lowFormat in outputFormats]
+        outputCSV = "csv" in outputFormats
+        outputJSON = "json" in outputFormats
+
+    # locate the WACCM output file
     when = datetime.datetime.strptime(
         f"{dateStr} {timeStr}", "%Y%m%d %H:%M")
-
     waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02}-00000.nc"
 
     # read and glean chemical species from WACCM and MUSICA
@@ -429,12 +437,12 @@ def main():
     varValues = convertWaccm(varValues)
     logger.info(f"Converted WACCM varValues = {varValues}")
 
-    if (False):
+    if (outputCSV):
         # Write CSV file for MusicBox initial conditions.
         csvName = os.path.join(musicaDir, "initial_conditions.csv")
         writeInitCSV(varValues, csvName)
 
-    if (False):
+    if (outputJSON):
         # Write JSON file for MusicBox initial conditions.
         jsonName = os.path.join(musicaDir, "initial_config.json")
         writeInitJSON(varValues, jsonName)
