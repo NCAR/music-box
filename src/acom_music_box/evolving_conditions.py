@@ -6,6 +6,7 @@ from .conditions import Conditions
 import logging
 logger = logging.getLogger(__name__)
 
+
 class EvolvingConditions:
     """
     Represents evolving conditions with attributes such as time and associated conditions.
