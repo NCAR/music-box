@@ -220,6 +220,17 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
     return (musicaDict)
 
 
+# Add molecular Nitrogen, Oxygen, and Argon to dictionary.
+# varValues = already read from WACCM, contains (name, concentration, units)
+# return varValues with N2, O2, and Ar added
+def addStandardGases(varValues):
+    varValues["N2"] = ("N2", 0.78084, "mol/mol")    # standard fraction by volume
+    varValues["O2"] = ("O2", 0.20946, "mol/mol")
+    varValues["Ar"] = ("Ar", 0.00934, "mol/mol")
+
+    return(varValues)
+
+
 # set up indexes for the tuple
 musicaIndex = 0
 valueIndex = 1
@@ -432,6 +443,9 @@ def main():
     varValues = readWACCM(commonDict,
                           lat, lon, when, waccmDir, waccmFilename)
     logger.info(f"Original WACCM varValues = {varValues}")
+
+    # add molecular Nitrogen, Oxygen, and Argon
+    varValues = addStandardGases(varValues)
 
     # Perform any conversions needed, or derive variables.
     varValues = convertWaccm(varValues)
