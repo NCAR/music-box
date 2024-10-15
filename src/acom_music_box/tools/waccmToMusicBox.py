@@ -228,6 +228,8 @@ unitIndex = 2
 # Perform any numeric conversion needed.
 # varDict = originally read from WACCM, tuples are (musicaName, value, units)
 # return varDict with values modified
+
+
 def convertWaccm(varDict):
     # from the supporting documents
     # https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2019MS001882&file=jame21103-sup-0001-2019MS001882+Text_SI-S01.pdf
