@@ -150,7 +150,7 @@ def plot_with_matplotlib(data, species_list):
     # Customize the annotation format
     @cursor.connect("add")
     def on_add(sel):
-        sel.annotation.set_text(f'Time: {sel.target[0]:.2f}\nConcentration: {sel.target[1]:.2f}')
+        sel.annotation.set_text(f'Time: {sel.target[0]:.2f}\nConcentration: {sel.target[1]:1.2e}')
 
     plt.show()
 
