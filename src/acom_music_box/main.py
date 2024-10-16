@@ -61,8 +61,8 @@ def parse_arguments():
         '--plot-tool',
         type=str,
         choices=['gnuplot', 'matplotlib'],
-        default='gnuplot',
-        help='Choose plotting tool: gnuplot or matplotlib (default: gnuplot).'
+        default='matplotlib',
+        help='Choose plotting tool: gnuplot or matplotlib (default: matplotlib).'
     )
     return parser.parse_args()
 

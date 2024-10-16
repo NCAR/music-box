@@ -69,7 +69,6 @@ class TestAnalytical:
             analytical_concentrations.append([A_conc, B_conc, C_conc])
             curr_time += time_step
 
-        print(analytical_concentrations)
         # asserts concentrations
         for i in range(len(model_concentrations)):
             assert math.isclose(
