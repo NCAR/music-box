@@ -6,6 +6,8 @@ import os
 import subprocess
 import sys
 import tempfile
+import matplotlib.pyplot as plt
+import mplcursors
 from acom_music_box import MusicBox, Examples, __version__
 
 
@@ -54,6 +56,13 @@ def parse_arguments():
         '--plot',
         type=str,
         help='Plot a comma-separated list of species if gnuplot is available (e.g., CONC.A,CONC.B).'
+    )
+    parser.add_argument(
+        '--plot-tool',
+        type=str,
+        choices=['gnuplot', 'matplotlib'],
+        default='gnuplot',
+        help='Choose plotting tool: gnuplot or matplotlib (default: gnuplot).'
     )
     return parser.parse_args()
 
@@ -119,6 +128,32 @@ def plot_with_gnuplot(data, species_list):
             os.remove(data_file_path)
 
 
+def plot_with_matplotlib(data, species_list):
+    # Prepare columns and data for plotting
+    indexed = data.set_index('time')
+
+    fig, ax = plt.subplots()
+    indexed[species_list].plot(ax=ax)
+
+    ax.set(xlabel='Time [s]', ylabel='Concentration [mol m-3]', title='Time vs Species')
+
+    ax.spines[:].set_visible(False)
+    ax.spines['left'].set_visible(True)
+    ax.spines['bottom'].set_visible(True)
+
+    ax.grid(alpha=0.5)
+    ax.legend()
+
+    # Enable interactive data cursors with hover functionality
+    cursor = mplcursors.cursor(hover=True)
+
+    # Customize the annotation format
+    @cursor.connect("add")
+    def on_add(sel):
+        sel.annotation.set_text(f'Time: {sel.target[0]:.2f}\nConcentration: {sel.target[1]:.2f}')
+
+    plt.show()
+
 def main():
     start = datetime.datetime.now()
 
@@ -159,8 +194,10 @@ def main():
         print(result.to_csv(index=False))
 
     if plot_species_list:
-        # Prepare data for plotting
-        plot_with_gnuplot(result, plot_species_list)
+        if args.plot_tool == 'gnuplot':
+            plot_with_gnuplot(result, plot_species_list)
+        elif args.plot_tool == 'matplotlib':
+            plot_with_matplotlib(result, plot_species_list)
 
     end = datetime.datetime.now()
     logger.info(f"End time: {end}")
