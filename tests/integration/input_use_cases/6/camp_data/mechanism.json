@@ -1,0 +1,51 @@
+{
+  "camp-data" : [
+    {
+      "name" : "Chapman",
+      "type" : "MECHANISM",
+      "reactions" : [
+        {
+          "type" : "EMISSION",
+          "species" : "O1D",
+          "MUSICA name" : "O1D"
+        },
+        {
+          "type" : "EMISSION",
+          "species" : "O",
+          "MUSICA name" : "O"
+        },
+        {
+          "type" : "EMISSION",
+          "species" : "O3",
+          "MUSICA name" : "O3"
+        },
+        {
+          "type" : "FIRST_ORDER_LOSS",
+          "species" : "N2",
+          "MUSICA name" : "N2"
+        },
+        {
+          "type" : "FIRST_ORDER_LOSS",
+          "species" : "O2",
+          "MUSICA name" : "O2"
+        },
+        {
+          "type" : "FIRST_ORDER_LOSS",
+          "species" : "CO2",
+          "MUSICA name" : "CO2"
+        },
+        {
+          "type" : "FIRST_ORDER_LOSS",
+          "species" : "Ar",
+          "MUSICA name" : "Ar"
+        },
+        {
+          "type" : "FIRST_ORDER_LOSS",
+          "species" : "H2O",
+          "MUSICA name" : "H2O"
+        }
+      ]
+    }
+  ]
+}
+
