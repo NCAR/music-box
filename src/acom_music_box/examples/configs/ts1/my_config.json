@@ -411,6 +411,15 @@
     },
     "TEPOMUC": {
       "initial value [mol m-3]": 1.86716E-11
+    },
+    "O2": {
+      "initial value [mol m-3]": 8.368900382
+    },
+    "N2": {
+      "initial value [mol m-3]": 31.08448713
+    },
+    "H2O": {
+      "initial value [mol m-3]": 1.195557197
     }
   },
   "environmental conditions": {
