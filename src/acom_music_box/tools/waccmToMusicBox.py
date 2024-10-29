@@ -220,6 +220,17 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
     return (musicaDict)
 
 
+# Add molecular Nitrogen, Oxygen, and Argon to dictionary.
+# varValues = already read from WACCM, contains (name, concentration, units)
+# return varValues with N2, O2, and Ar added
+def addStandardGases(varValues):
+    varValues["N2"] = ("N2", 0.78084, "mol/mol")    # standard fraction by volume
+    varValues["O2"] = ("O2", 0.20946, "mol/mol")
+    varValues["Ar"] = ("Ar", 0.00934, "mol/mol")
+
+    return (varValues)
+
+
 # set up indexes for the tuple
 musicaIndex = 0
 valueIndex = 1
@@ -268,7 +279,7 @@ def writeInitCSV(initValues, filename):
         else:
             fp.write(",")
 
-        fp.write(key)
+        fp.write("{} [{}]".format(key, value[unitIndex]))
     fp.write("\n")
 
     # write the variable values
@@ -404,9 +415,19 @@ def main():
     if ("longitude" in myArgs):
         lon = safeFloat(myArgs.get("longitude"))
 
+    # get the requested (diagnostic) output
+    outputCSV = False
+    outputJSON = False
+    if ("output" in myArgs):
+        # parameter is like: output=CSV,JSON
+        outputFormats = myArgs.get("output").split(",")
+        outputFormats = [lowFormat.lower() for lowFormat in outputFormats]
+        outputCSV = "csv" in outputFormats
+        outputJSON = "json" in outputFormats
+
+    # locate the WACCM output file
     when = datetime.datetime.strptime(
         f"{dateStr} {timeStr}", "%Y%m%d %H:%M")
-
     waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02}-00000.nc"
 
     # read and glean chemical species from WACCM and MUSICA
@@ -425,16 +446,19 @@ def main():
                           lat, lon, when, waccmDir, waccmFilename)
     logger.info(f"Original WACCM varValues = {varValues}")
 
+    # add molecular Nitrogen, Oxygen, and Argon
+    varValues = addStandardGases(varValues)
+
     # Perform any conversions needed, or derive variables.
     varValues = convertWaccm(varValues)
     logger.info(f"Converted WACCM varValues = {varValues}")
 
-    if (False):
+    if (outputCSV):
         # Write CSV file for MusicBox initial conditions.
         csvName = os.path.join(musicaDir, "initial_conditions.csv")
         writeInitCSV(varValues, csvName)
 
-    if (False):
+    if (outputJSON):
         # Write JSON file for MusicBox initial conditions.
         jsonName = os.path.join(musicaDir, "initial_config.json")
         writeInitJSON(varValues, jsonName)
