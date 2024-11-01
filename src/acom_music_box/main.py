@@ -37,6 +37,12 @@ def parse_arguments():
         help='Path to save the output file, including the file name. If not provided, result will be printed to the console.'
     )
     parser.add_argument(
+        '--output-format',
+        choices=['csv', 'netcdf'],
+        default='csv',
+        help="Specify output format: 'csv' (default) or 'netcdf'."
+    )
+    parser.add_argument(
         '-v', '--verbose',
         action='count',
         default=0,
@@ -176,6 +182,7 @@ def main():
         musicBoxConfigFile = args.config
 
     musicBoxOutputPath = args.output
+
     plot_species_list = args.plot.split(',') if args.plot else None
 
     if not musicBoxConfigFile:
@@ -189,7 +196,26 @@ def main():
     logger.debug(f"Configuration file = {musicBoxConfigFile}")
     myBox.loadJson(musicBoxConfigFile)
 
-    result = myBox.solve(musicBoxOutputPath)
+    result = myBox.solve(musicBoxOutputPath, callback=None, outputformat=args.output_format)
+
+    if args.output_format == 'netcdf':
+        if not musicBoxOutputPath:
+            musicBoxOutputPath = os.path.join(os.getcwd(), 'output.nc')
+        # Convert DataFrame to xarray Dataset
+        ds = result.set_index(['time']).to_xarray()
+        
+        # Set metadata attributes for all variables starting with 'CONC.'
+        for var in ds.data_vars:
+            if var.startswith('CONC.'):
+                ds[var].attrs = {'units': 'mol m-3'}
+        ds['ENV.temperature'].attrs = {'units': 'K'}
+        ds['ENV.pressure'].attrs = {'units': 'Pa'}
+        ds['ENV.number_density_air'].attrs = {'units': 'kg-m3'}
+        ds['time'].attrs = {'units': 's'}
+        
+        # Save to NetCDF file
+        ds.to_netcdf(musicBoxOutputPath)
+        logger.info(f"NetCDF output saved to {musicBoxOutputPath}")
 
     if musicBoxOutputPath is None:
         print(result.to_csv(index=False))
