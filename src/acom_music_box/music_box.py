@@ -213,13 +213,13 @@ class MusicBox:
                 #Append csv headers
                 unit_mapping = {
                     'ENV.temperature': 'K',
-                    'ENV.pressure': 'kPa',
-                    'ENV.number_density_air': 'kg-m3',
+                    'ENV.pressure': 'Pa',
+                    'ENV.number_density_air': 'kg -m3',
                     'time': 's'
                 }
                 df.columns = [
-                    f"{col} ({unit_mapping[col]})" if col in unit_mapping else 
-                    f"{col} (mol m-3)" if col.startswith('CONC.') else col
+                    f"{col}.{unit_mapping[col]}" if col in unit_mapping else 
+                    f"{col}.mol m-3" if col.startswith('CONC.') else col
                     for col in df.columns
                 ]
                 df.to_csv(output_path, index=False)

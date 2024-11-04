@@ -218,6 +218,18 @@ def main():
         logger.info(f"NetCDF output saved to {musicBoxOutputPath}")
 
     if musicBoxOutputPath is None:
+        #Append csv headers
+        unit_mapping = {
+            'ENV.temperature': 'K',
+            'ENV.pressure': 'Pa',
+            'ENV.number_density_air': 'kg -m3',
+            'time': 's'
+        }
+        result.columns = [
+            f"{col}.{unit_mapping[col]}" if col in unit_mapping else 
+            f"{col}.mol m-3" if col.startswith('CONC.') else col
+            for col in result.columns
+        ]
         print(result.to_csv(index=False))
 
     if plot_species_list:
