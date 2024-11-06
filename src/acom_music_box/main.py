@@ -8,7 +8,7 @@ import sys
 import tempfile
 import matplotlib.pyplot as plt
 import mplcursors
-from acom_music_box import MusicBox, Examples, __version__
+from acom_music_box import MusicBox, Examples, __version__, DataOutput
 
 
 def format_examples_help(examples):
@@ -160,7 +160,6 @@ def plot_with_matplotlib(data, species_list):
 
     plt.show()
 
-
 def main():
     start = datetime.datetime.now()
 
@@ -196,41 +195,11 @@ def main():
     logger.debug(f"Configuration file = {musicBoxConfigFile}")
     myBox.loadJson(musicBoxConfigFile)
 
-    result = myBox.solve(musicBoxOutputPath, callback=None, outputformat=args.output_format)
+    result = myBox.solve(callback=None)
 
-    if args.output_format == 'netcdf':
-        if not musicBoxOutputPath:
-            musicBoxOutputPath = os.path.join(os.getcwd(), 'output.nc')
-        # Convert DataFrame to xarray Dataset
-        ds = result.set_index(['time']).to_xarray()
-        
-        # Set metadata attributes for all variables starting with 'CONC.'
-        for var in ds.data_vars:
-            if var.startswith('CONC.'):
-                ds[var].attrs = {'units': 'mol m-3'}
-        ds['ENV.temperature'].attrs = {'units': 'K'}
-        ds['ENV.pressure'].attrs = {'units': 'Pa'}
-        ds['ENV.number_density_air'].attrs = {'units': 'kg-m3'}
-        ds['time'].attrs = {'units': 's'}
-        
-        # Save to NetCDF file
-        ds.to_netcdf(musicBoxOutputPath)
-        logger.info(f"NetCDF output saved to {musicBoxOutputPath}")
-
-    if musicBoxOutputPath is None:
-        #Append csv headers
-        unit_mapping = {
-            'ENV.temperature': 'K',
-            'ENV.pressure': 'Pa',
-            'ENV.number_density_air': 'kg -m3',
-            'time': 's'
-        }
-        result.columns = [
-            f"{col}.{unit_mapping[col]}" if col in unit_mapping else 
-            f"{col}.mol m-3" if col.startswith('CONC.') else col
-            for col in result.columns
-        ]
-        print(result.to_csv(index=False))
+    # Create an instance of DataOutput
+    dataOutput = DataOutput(result, args)
+    dataOutput.output()
 
     if plot_species_list:
         if args.plot_tool == 'gnuplot':
