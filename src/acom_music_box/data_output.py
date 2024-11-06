@@ -25,7 +25,21 @@ class DataOutput:
     args : argparse.Namespace
         Command-line arguments or configurations specifying output options.
     unit_mapping : dict
-        A dictionary mapping specific columns to their respective units.    
+        A dictionary mapping specific columns to their respective units.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from argparse import Namespace
+    >>> df = pd.DataFrame({
+    ...     'ENV.temperature': [290, 295, 300],
+    ...     'ENV.pressure': [101325, 100000, 98500],
+    ...     'ENV.number_density_air': [102, 5096, 850960],
+    ...     'time': [0, 1, 2]
+    ... })
+    >>> args = Namespace(output='output.nc', output_format='netcdf')
+    >>> data_output = DataOutput(df, args)
+    >>> data_output.output()    
     """
 
     def __init__(self, df, args):
