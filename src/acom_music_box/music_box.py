@@ -193,9 +193,7 @@ class MusicBox:
                 # increments time
                 curr_time += time_step
                 pbar.update(time_step)
-        df = pd.DataFrame(output_array[1:], columns=output_array[0])
-        
-        return df
+        return pd.DataFrame(output_array[1:], columns=output_array[0])
 
     def loadJson(self, path_to_json):
         """
