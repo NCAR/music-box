@@ -30,13 +30,13 @@ Run an example. Notice that the output, in csv format, is printed to the termina
 music_box -e Chapman
 ```
 
-Output can be saved to a file in CSV file when no --output-format is passed
+Output can be saved to a file in csv file when no --output-format is passed
 
 ```
 music_box -e Chapman -o output.csv
 ```
 
-Output can be saved to a file as CSV file when --output-format csv is passed
+Output can be saved to a file as csv file when --output-format csv is passed
 
 ```
 music_box --output-format csv -e Chapman -o output.csv
