@@ -38,8 +38,9 @@ def parse_arguments():
     )
     parser.add_argument(
         '--output-format',
-        choices=['csv', 'netcdf'],
-        help="Specify output format: 'csv' (default) or 'netcdf'."
+        choices=['csv', 'netcdf', 'terminal'],
+        default='terminal',
+        help="Specify output format: 'terminal' (default), 'csv', or 'netcdf'."
     )
     parser.add_argument(
         '-v', '--verbose',

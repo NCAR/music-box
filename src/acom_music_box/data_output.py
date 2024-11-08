@@ -1,6 +1,8 @@
 import os
-import pandas as pd
-import xarray as xr
+import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DataOutput:
     """
@@ -70,21 +72,30 @@ class DataOutput:
             'time': 's'
         }
 
+    def _get_default_filename(self):
+        """Generate a default filename based on the current datetime and output format."""
+        now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        extension = 'csv' if self.args.output_format == 'csv' else 'nc' 
+        return f"music_box_{now}.{extension}"
+
     def _ensure_output_path(self):
         """Ensure the output path is valid and create directories if needed."""
-        if os.path.dirname(self.args.output) == '':
-            self.args.output = os.path.join(os.getcwd(), self.args.output)
-        elif not os.path.basename(self.args.output):
-            raise ValueError(f"Invalid output path: '{self.args.output}' does not contain a filename.")
-        
+        if not self.args.output:
+            self.args.output = self._get_default_filename()
+
+        if os.path.isdir(self.args.output):
+            self.args.output = os.path.join(
+                self.args.output, self._get_default_filename())
+
         dir_path = os.path.dirname(self.args.output)
         if dir_path and not os.path.exists(dir_path):
             os.makedirs(dir_path, exist_ok=True)
+            logger.info(f"Created directory: {dir_path}")
 
     def _append_units_to_columns(self):
         """Append units to DataFrame column names based on unit mapping."""
         self.df.columns = [
-            f"{col}.{self.unit_mapping[col]}" if col in self.unit_mapping else 
+            f"{col}.{self.unit_mapping[col]}" if col in self.unit_mapping else
             f"{col}.mol m-3" if col.startswith('CONC.') else col
             for col in self.df.columns
         ]
@@ -95,20 +106,21 @@ class DataOutput:
         for var in ds.data_vars:
             if var.startswith('CONC.'):
                 ds[var].attrs = {'units': 'mol m-3'}
-        
+
         ds['ENV.temperature'].attrs = {'units': 'K'}
         ds['ENV.pressure'].attrs = {'units': 'Pa'}
         ds['ENV.number_density_air'].attrs = {'units': 'kg -m3'}
         ds['time'].attrs = {'units': 's'}
 
         ds.to_netcdf(self.args.output)
-    
+
     def _output_csv(self):
         """Handles CSV output."""
         self._append_units_to_columns()
         if self.args.output:
             self._ensure_output_path()
             self.df.to_csv(self.args.output, index=False)
+            logger.info(f"CSV output written to: {self.args.output}")
         else:
             print(self.df.to_csv(index=False))
 
@@ -117,6 +129,7 @@ class DataOutput:
         if self.args.output:
             self._ensure_output_path()
         self._convert_to_netcdf()
+        logger.info(f"NetCDF output written to: {self.args.output}")
 
     def _output_terminal(self):
         """Handles output to terminal."""
@@ -127,16 +140,17 @@ class DataOutput:
         """Main method to handle output based on the provided arguments."""
         # Default output paths based on format
         if self.args.output is None:
-            if self.args.output_format == 'csv':
-                self.args.output = os.path.join(os.getcwd(), 'output.csv')
-            elif self.args.output_format == 'netcdf':
-                self.args.output = os.path.join(os.getcwd(), 'output.nc')
-        
+            self.args.output = self._get_default_filename()
+
         # Determine output type and call the respective method
-        if self.args.output_format is None or self.args.output_format == 'csv':
+        if self.args.output_format is None or self.args.output_format == 'terminal':
+            self._output_terminal()
+        elif self.args.output_format is None or self.args.output_format == 'csv':
             self._output_csv()
         elif self.args.output_format == 'netcdf':
             self._output_netcdf()
         else:
-            print("test")
-            self._output_terminal()
+            error = f"Unsupported output format: {self.args.output_format}"
+            logger.error(error)
+            raise ValueError(error)
+
