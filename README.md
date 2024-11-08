@@ -45,7 +45,19 @@ music_box --output-format csv -e Chapman -o output.csv
 Output can be saved to a file as netcdf file when --output-format netcdf is passed
 
 ```
-music_box --output-format csv -e Chapman -o output.nc
+music_box --output-format netcdf -e Chapman -o output.nc
+```
+
+Output can be saved to a file in csv file to output.csv when no output path is given but --output-format is csv
+
+```
+music_box --output-format csv -e Chapman
+```
+
+Output can be saved to a file in netcdf file to output.nc when no output path is given but --output-format is netcdf
+
+```
+music_box --output-format netcdf -e Chapman
 ```
 
 You can also run your own configuration

@@ -102,21 +102,41 @@ class DataOutput:
         ds['time'].attrs = {'units': 's'}
 
         ds.to_netcdf(self.args.output)
+    
+    def _output_csv(self):
+        """Handles CSV output."""
+        self._append_units_to_columns()
+        if self.args.output:
+            self._ensure_output_path()
+            self.df.to_csv(self.args.output, index=False)
+        else:
+            print(self.df.to_csv(index=False))
+
+    def _output_netcdf(self):
+        """Handles NetCDF output."""
+        if self.args.output:
+            self._ensure_output_path()
+        self._convert_to_netcdf()
+
+    def _output_terminal(self):
+        """Handles output to terminal."""
+        self._append_units_to_columns()
+        print(self.df.to_csv(index=False))
 
     def output(self):
         """Main method to handle output based on the provided arguments."""
+        # Default output paths based on format
         if self.args.output is None:
-            # Output to terminal
-            self._append_units_to_columns()
-            print(self.df.to_csv(index=False))
-        else:
-            # Ensure the output path is valid
-            self._ensure_output_path()
-            
-            if self.args.output_format is None or self.args.output_format == 'csv':
-                # CSV output
-                self._append_units_to_columns()
-                self.df.to_csv(self.args.output, index=False)
+            if self.args.output_format == 'csv':
+                self.args.output = os.path.join(os.getcwd(), 'output.csv')
             elif self.args.output_format == 'netcdf':
-                # NetCDF output
-                self._convert_to_netcdf()
+                self.args.output = os.path.join(os.getcwd(), 'output.nc')
+        
+        # Determine output type and call the respective method
+        if self.args.output_format is None or self.args.output_format == 'csv':
+            self._output_csv()
+        elif self.args.output_format == 'netcdf':
+            self._output_netcdf()
+        else:
+            print("test")
+            self._output_terminal()

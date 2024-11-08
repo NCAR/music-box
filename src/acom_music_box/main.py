@@ -39,7 +39,6 @@ def parse_arguments():
     parser.add_argument(
         '--output-format',
         choices=['csv', 'netcdf'],
-        default='csv',
         help="Specify output format: 'csv' (default) or 'netcdf'."
     )
     parser.add_argument(
