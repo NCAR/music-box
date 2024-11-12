@@ -59,7 +59,7 @@ class MusicBox:
             time=[time_point], conditions=[conditions])
         self.evolvingConditions.append(evolving_condition)
 
-    def solve(self, output_path=None, callback=None):
+    def solve(self, callback=None):
         """
         Solves the box model simulation and optionally writes the output to a file.
 
@@ -68,8 +68,8 @@ class MusicBox:
         the specified file.
 
         Args:
-            output_path (str, optional): The path to the file where the output will be written. If None, no output file is created. Defaults to None.
-            callback (function, optional): A callback function that is called after each time step. Defaults to None. The callback will take the most recent results, the current time, conditions, and the total simulation time as arguments.
+            callback (function, optional): A callback function that is called after each time step. Defaults to None. 
+            The callback will take the most recent results, the current time, conditions, and the total simulation time as arguments.
 
         Returns:
             list: A 2D list where each inner list represents the results of the simulation
@@ -194,25 +194,7 @@ class MusicBox:
                 # increments time
                 curr_time += time_step
                 pbar.update(time_step)
-        df = pd.DataFrame(output_array[1:], columns=output_array[0])
-        # outputs to file if output is present
-        if output_path is not None:
-
-            # Check if the output_path is a full path or just a file name
-            if os.path.dirname(output_path) == '':
-                # If output_path is just a filename, use the current directory
-                output_path = os.path.join(os.getcwd(), output_path)
-            elif not os.path.basename(output_path):
-                raise ValueError(f"Invalid output path: '{output_path}' does not contain a filename.")
-
-            # Ensure the directory exists
-            dir_path = os.path.dirname(output_path)
-            if dir_path and not os.path.exists(dir_path):
-                os.makedirs(dir_path, exist_ok=True)
-
-            df.to_csv(output_path, index=False)
-
-        return df
+        return pd.DataFrame(output_array[1:], columns=output_array[0])
 
     def loadJson(self, path_to_json):
         """

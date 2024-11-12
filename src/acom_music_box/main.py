@@ -8,7 +8,7 @@ import sys
 import tempfile
 import matplotlib.pyplot as plt
 import mplcursors
-from acom_music_box import MusicBox, Examples, __version__
+from acom_music_box import MusicBox, Examples, __version__, DataOutput
 
 
 def format_examples_help(examples):
@@ -35,6 +35,12 @@ def parse_arguments():
         '-o', '--output',
         type=str,
         help='Path to save the output file, including the file name. If not provided, result will be printed to the console.'
+    )
+    parser.add_argument(
+        '--output-format',
+        choices=['csv', 'netcdf', 'terminal'],
+        default='terminal',
+        help="Specify output format: 'terminal' (default), 'csv', or 'netcdf'."
     )
     parser.add_argument(
         '-v', '--verbose',
@@ -154,7 +160,6 @@ def plot_with_matplotlib(data, species_list):
 
     plt.show()
 
-
 def main():
     start = datetime.datetime.now()
 
@@ -176,6 +181,7 @@ def main():
         musicBoxConfigFile = args.config
 
     musicBoxOutputPath = args.output
+
     plot_species_list = args.plot.split(',') if args.plot else None
 
     if not musicBoxConfigFile:
@@ -189,10 +195,11 @@ def main():
     logger.debug(f"Configuration file = {musicBoxConfigFile}")
     myBox.loadJson(musicBoxConfigFile)
 
-    result = myBox.solve(musicBoxOutputPath)
+    result = myBox.solve(callback=None)
 
-    if musicBoxOutputPath is None:
-        print(result.to_csv(index=False))
+    # Create an instance of DataOutput
+    dataOutput = DataOutput(result, args)
+    dataOutput.output()
 
     if plot_species_list:
         if args.plot_tool == 'gnuplot':
