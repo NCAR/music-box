@@ -4,6 +4,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class DataOutput:
     """
     A class to handle data output operations for a DataFrame, including converting to CSV
@@ -41,7 +42,7 @@ class DataOutput:
     ... })
     >>> args = Namespace(output='output.nc', output_format='netcdf')
     >>> data_output = DataOutput(df, args)
-    >>> data_output.output()    
+    >>> data_output.output()
     """
 
     def __init__(self, df, args):
@@ -75,7 +76,7 @@ class DataOutput:
     def _get_default_filename(self):
         """Generate a default filename based on the current datetime and output format."""
         now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        extension = 'csv' if self.args.output_format == 'csv' else 'nc' 
+        extension = 'csv' if self.args.output_format == 'csv' else 'nc'
         return f"music_box_{now}.{extension}"
 
     def _ensure_output_path(self):
@@ -153,4 +154,3 @@ class DataOutput:
             error = f"Unsupported output format: {self.args.output_format}"
             logger.error(error)
             raise ValueError(error)
-
