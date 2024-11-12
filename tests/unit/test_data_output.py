@@ -6,6 +6,7 @@ import tempfile
 from argparse import Namespace
 from acom_music_box import DataOutput
 
+
 class TestDataOutput(unittest.TestCase):
 
     def setUp(self):
@@ -19,7 +20,7 @@ class TestDataOutput(unittest.TestCase):
         self.temp_dir = tempfile.TemporaryDirectory()
         self.csv_path = os.path.join(self.temp_dir.name, 'output.csv')
         self.netcdf_path = os.path.join(self.temp_dir.name, 'output.nc')
-        
+
     def tearDown(self):
         # Clean up temporary directory
         self.temp_dir.cleanup()
@@ -42,7 +43,7 @@ class TestDataOutput(unittest.TestCase):
         data_output = DataOutput(self.df, args)
         data_output._convert_to_netcdf()
         self.assertTrue(os.path.exists(self.netcdf_path))
-        
+
         # Load the NetCDF file to check the attributes
         ds = xr.open_dataset(self.netcdf_path)
         self.assertEqual(ds['ENV.temperature'].attrs['units'], 'K')
@@ -56,7 +57,7 @@ class TestDataOutput(unittest.TestCase):
         data_output = DataOutput(self.df, args)
         data_output.output()
         self.assertTrue(os.path.exists(self.csv_path))
-        
+
         # Check the contents of the CSV file
         output_df = pd.read_csv(self.csv_path)
         expected_columns = ['ENV.temperature.K', 'ENV.pressure.Pa', 'ENV.number_density_air.kg -m3', 'time.s']
@@ -67,7 +68,7 @@ class TestDataOutput(unittest.TestCase):
         data_output = DataOutput(self.df, args)
         data_output.output()
         self.assertTrue(os.path.exists(self.netcdf_path))
-        
+
         # Check the contents of the NetCDF file
         ds = xr.open_dataset(self.netcdf_path)
         self.assertEqual(ds['ENV.temperature'].attrs['units'], 'K')
@@ -75,6 +76,7 @@ class TestDataOutput(unittest.TestCase):
         self.assertEqual(ds['ENV.number_density_air'].attrs['units'], 'kg -m3')
         self.assertEqual(ds['time'].attrs['units'], 's')
         ds.close()
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -68,7 +68,7 @@ class MusicBox:
         the specified file.
 
         Args:
-            callback (function, optional): A callback function that is called after each time step. Defaults to None. 
+            callback (function, optional): A callback function that is called after each time step. Defaults to None.
             The callback will take the most recent results, the current time, conditions, and the total simulation time as arguments.
 
         Returns:
