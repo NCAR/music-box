@@ -3,13 +3,8 @@ import colorlog
 import datetime
 import logging
 import os
-import subprocess
 import sys
-import tempfile
-import matplotlib.pyplot as plt
-import mplcursors
-from acom_music_box import MusicBox, Examples, __version__, DataOutput
-
+from acom_music_box import MusicBox, Examples, __version__, DataOutput, PlotOutput
 
 def format_examples_help(examples):
     return '\n'.join(f"{e.short_name}: {e.description}" for e in examples)
@@ -98,69 +93,6 @@ def setup_logging(verbosity, color_output):
     logging.basicConfig(level=log_level, handlers=[console_handler])
 
 
-def plot_with_gnuplot(data, species_list):
-    # Prepare columns and data for plotting
-    columns = ['time'] + species_list
-    data_to_plot = data[columns]
-
-    data_csv = data_to_plot.to_csv(index=False)
-
-    try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as data_file:
-            data_file.write(data_csv.encode())
-            data_file_path = data_file.name
-
-        plot_commands = ',\n\t'.join(
-            f"'{data_file_path}' using 1:{i+2} with lines title '{species}'" for i,
-            species in enumerate(species_list))
-
-        gnuplot_command = f"""
-        set datafile separator ",";
-        set terminal dumb size 120,25;
-        set xlabel 'Time';
-        set ylabel 'Value';
-        set title 'Time vs Species';
-        plot {plot_commands}
-        """
-
-        subprocess.run(['gnuplot', '-e', gnuplot_command], check=True)
-    except FileNotFoundError:
-        logging.critical("gnuplot is not installed. Skipping plotting.")
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error occurred while plotting: {e}")
-    finally:
-        # Clean up the temporary file
-        if data_file_path:
-            os.remove(data_file_path)
-
-
-def plot_with_matplotlib(data, species_list):
-    # Prepare columns and data for plotting
-    indexed = data.set_index('time')
-
-    fig, ax = plt.subplots()
-    indexed[species_list].plot(ax=ax)
-
-    ax.set(xlabel='Time [s]', ylabel='Concentration [mol m-3]', title='Time vs Species')
-
-    ax.spines[:].set_visible(False)
-    ax.spines['left'].set_visible(True)
-    ax.spines['bottom'].set_visible(True)
-
-    ax.grid(alpha=0.5)
-    ax.legend()
-
-    # Enable interactive data cursors with hover functionality
-    cursor = mplcursors.cursor(hover=True)
-
-    # Customize the annotation format
-    @cursor.connect("add")
-    def on_add(sel):
-        sel.annotation.set_text(f'Time: {sel.target[0]:.2f}\nConcentration: {sel.target[1]:1.2e}')
-
-    plt.show()
-
-
 def main():
     start = datetime.datetime.now()
 
@@ -181,8 +113,6 @@ def main():
     else:
         musicBoxConfigFile = args.config
 
-    musicBoxOutputPath = args.output
-
     plot_species_list = args.plot.split(',') if args.plot else None
 
     if not musicBoxConfigFile:
@@ -202,18 +132,15 @@ def main():
     dataOutput = DataOutput(result, args)
     dataOutput.output()
 
-    if plot_species_list:
-        if args.plot_tool == 'gnuplot':
-            plot_with_gnuplot(result, plot_species_list)
-        elif args.plot_tool == 'matplotlib':
-            plot_with_matplotlib(result, plot_species_list)
+    # Create an instance of PlotOutput
+    plotOutput = PlotOutput(result, args)
+    plotOutput.plot()
 
     end = datetime.datetime.now()
     logger.info(f"End time: {end}")
     logger.info(f"Elapsed time: {end - start} seconds")
 
     sys.exit(0)
-
 
 if __name__ == "__main__":
     main()

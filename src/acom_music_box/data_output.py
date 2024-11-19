@@ -14,13 +14,6 @@ class DataOutput:
     This class manages file paths, unit mappings, and data output formats based on
     the provided arguments, ensuring valid paths and creating necessary directories.
 
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        The DataFrame containing the data to output.
-    args : argparse.Namespace
-        Arguments specifying output path, format, and additional options.
-
     Attributes
     ----------
     df : pandas.DataFrame

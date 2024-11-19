@@ -32,6 +32,18 @@ jobs:
     - name: Run pytest
       run: pytest
     
+    - name: Install gnuplot
+      if: runner.os == 'ubuntu-latest'
+      run: sudo apt-get install gnuplot
+
+    - name: Install gnuplot
+      if: runner.os == 'macos-latest'
+      run: brew install gnuplot
+
+    - name: Install gnuplot
+      if: runner.os == 'windows-latest'
+      run: choco install gnuplot
+    
     - name: Run the smoke tests
       run: |
         music_box -c src/acom_music_box/examples/configs/analytical/my_config.json -o output.csv
