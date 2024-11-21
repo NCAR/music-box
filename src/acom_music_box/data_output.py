@@ -57,12 +57,12 @@ class DataOutput:
             - output_format : str, optional
                 Format of the output file, either 'csv' or 'netcdf'. Defaults to 'csv'.
         """
-        self.df = df
+        self.df = df.copy(deep=True)
         self.args = args
         self.unit_mapping = {
             'ENV.temperature': 'K',
             'ENV.pressure': 'Pa',
-            'ENV.number_density_air': 'kg -m3',
+            'ENV.number_density_air': 'kg m-3',
             'time': 's'
         }
 
@@ -103,7 +103,7 @@ class DataOutput:
 
         ds['ENV.temperature'].attrs = {'units': 'K'}
         ds['ENV.pressure'].attrs = {'units': 'Pa'}
-        ds['ENV.number_density_air'].attrs = {'units': 'kg -m3'}
+        ds['ENV.number_density_air'].attrs = {'units': 'kg m-3'}
         ds['time'].attrs = {'units': 's'}
 
         ds.to_netcdf(self.args.output)
@@ -139,11 +139,10 @@ class DataOutput:
         # Determine output type and call the respective method
         if self.args.output_format is None or self.args.output_format == 'terminal':
             self._output_terminal()
-        elif self.args.output_format is None or self.args.output_format == 'csv':
+
+        # Even if we are printing to the terminal, we still allow output to be written to csv if an output path is provided
+        if (self.args.output_format == 'csv') or (self.args.output is not None and self.args.output_format == 'terminal'):
             self._output_csv()
-        elif self.args.output_format == 'netcdf':
+        
+        if self.args.output_format == 'netcdf':
             self._output_netcdf()
-        else:
-            error = f"Unsupported output format: {self.args.output_format}"
-            logger.error(error)
-            raise ValueError(error)

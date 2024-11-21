@@ -35,7 +35,7 @@ class TestDataOutput(unittest.TestCase):
         args = Namespace(output=None)
         data_output = DataOutput(self.df, args)
         data_output._append_units_to_columns()
-        expected_columns = ['ENV.temperature.K', 'ENV.pressure.Pa', 'ENV.number_density_air.kg -m3', 'time.s']
+        expected_columns = ['ENV.temperature.K', 'ENV.pressure.Pa', 'ENV.number_density_air.kg m-3', 'time.s']
         self.assertEqual(list(data_output.df.columns), expected_columns)
 
     def test_convert_to_netcdf(self):
@@ -48,7 +48,7 @@ class TestDataOutput(unittest.TestCase):
         ds = xr.open_dataset(self.netcdf_path)
         self.assertEqual(ds['ENV.temperature'].attrs['units'], 'K')
         self.assertEqual(ds['ENV.pressure'].attrs['units'], 'Pa')
-        self.assertEqual(ds['ENV.number_density_air'].attrs['units'], 'kg -m3')
+        self.assertEqual(ds['ENV.number_density_air'].attrs['units'], 'kg m-3')
         self.assertEqual(ds['time'].attrs['units'], 's')
         ds.close()
 
@@ -60,7 +60,7 @@ class TestDataOutput(unittest.TestCase):
 
         # Check the contents of the CSV file
         output_df = pd.read_csv(self.csv_path)
-        expected_columns = ['ENV.temperature.K', 'ENV.pressure.Pa', 'ENV.number_density_air.kg -m3', 'time.s']
+        expected_columns = ['ENV.temperature.K', 'ENV.pressure.Pa', 'ENV.number_density_air.kg m-3', 'time.s']
         self.assertEqual(list(output_df.columns), expected_columns)
 
     def test_output_netcdf(self):
@@ -73,7 +73,7 @@ class TestDataOutput(unittest.TestCase):
         ds = xr.open_dataset(self.netcdf_path)
         self.assertEqual(ds['ENV.temperature'].attrs['units'], 'K')
         self.assertEqual(ds['ENV.pressure'].attrs['units'], 'Pa')
-        self.assertEqual(ds['ENV.number_density_air'].attrs['units'], 'kg -m3')
+        self.assertEqual(ds['ENV.number_density_air'].attrs['units'], 'kg m-3')
         self.assertEqual(ds['time'].attrs['units'], 's')
         ds.close()
 

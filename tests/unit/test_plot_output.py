@@ -14,27 +14,19 @@ class TestPlotOutput(unittest.TestCase):
     def setUp(self):
         # Set up a sample DataFrame and arguments for testing
         self.df = pd.DataFrame({
-            'time.s': [0, 1, 2],
-            'CONC.A.mol m-3': [1, 2, 3],
-            'CONC.B.mol m-3': [4, 5, 6],
-            'CONC.C.mol m-3': [7, 8, 9]
+            'time': [0, 1, 2],
+            'CONC.A': [1, 2, 3],
+            'CONC.B': [4, 5, 6],
+            'CONC.C': [7, 8, 9]
         })
 
     def test_format_species_list(self):
         args = Namespace(plot='A,B', plot_tool='matplotlib')
         plot_output = PlotOutput(self.df, args)
-        expected_list = ['CONC.A.mol m-3', 'CONC.B.mol m-3']
+        expected_list = ['CONC.A', 'CONC.B']
         self.assertEqual(plot_output.species_list, expected_list)
 
         args = Namespace(plot='CONC.A,CONC.B', plot_tool='matplotlib')
-        plot_output = PlotOutput(self.df, args)
-        self.assertEqual(plot_output.species_list, expected_list)
-
-        args = Namespace(plot='CONC.A.mol m-3,CONC.B.mol m-3', plot_tool='matplotlib')
-        plot_output = PlotOutput(self.df, args)
-        self.assertEqual(plot_output.species_list, expected_list)
-
-        args = Namespace(plot='A.mol m-3,B.mol m-3', plot_tool='matplotlib')
         plot_output = PlotOutput(self.df, args)
         self.assertEqual(plot_output.species_list, expected_list)
 

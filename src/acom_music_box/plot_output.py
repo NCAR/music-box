@@ -29,7 +29,7 @@ class PlotOutput:
   >>> import pandas as pd
   >>> from argparse import Namespace
   >>> df = pd.DataFrame({
-  ...     'time.s': [0, 1, 2],
+  ...     'time': [0, 1, 2],
   ...     'CONC.A.mol m-3': [1, 2, 3],
   ...     'CONC.B.mol m-3': [4, 5, 6],
   ...     'CONC.C.mol m-3': [7, 8, 9]
@@ -51,7 +51,7 @@ class PlotOutput:
         Arguments specifying the plot configuration, such as plot tool and species list.
     """
 
-    self.df = df
+    self.df = df.copy(deep=True)
     self.args = args
     self.species_list = self._format_species_list(self.args.plot.split(',') if self.args.plot else None)
   
@@ -61,7 +61,7 @@ class PlotOutput:
     Format the species list for plotting.
 
     This method formats the species list for plotting by adding the 'CONC.' prefix
-    and '.mol m-3' suffix to each species name if not already present.
+    to each species name if it is not already present.
 
     Parameters
     ----------
@@ -81,8 +81,6 @@ class PlotOutput:
           species = species.strip()
           if 'CONC.' not in species:
               species = f'CONC.{species}'
-          if 'mol m-3' not in species:
-              species = f'{species}.mol m-3'
           plot_list.append(species)
       
     return plot_list
@@ -92,7 +90,7 @@ class PlotOutput:
       Plot the specified species using gnuplot.
       """
       # Prepare columns and data for plotting
-      columns = ['time.s'] + self.species_list
+      columns = ['time'] + self.species_list
       data_to_plot = self.df[columns]
 
       data_csv = data_to_plot.to_csv(index=False)
@@ -129,7 +127,7 @@ class PlotOutput:
       Plot the specified species using matplotlib.
       """
 
-      indexed = self.df.set_index('time.s')
+      indexed = self.df.set_index('time')
 
       fig, ax = plt.subplots()
       indexed[self.species_list].plot(ax=ax)
