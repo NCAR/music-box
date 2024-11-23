@@ -33,7 +33,7 @@ jobs:
       run: pytest --cov src/
     
     - name: Install gnuplot
-      if: runner.os == 'Ubuntu'
+      if: runner.os == 'Linux'
       run: sudo apt-get install gnuplot
 
     - name: Install gnuplot
