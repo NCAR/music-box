@@ -33,15 +33,15 @@ jobs:
       run: pytest --cov src/
     
     - name: Install gnuplot
-      if: runner.os == 'ubuntu-latest'
+      if: runner.os == 'Ubuntu'
       run: sudo apt-get install gnuplot
 
     - name: Install gnuplot
-      if: runner.os == 'macos-latest'
+      if: runner.os == 'macOS'
       run: brew install gnuplot
 
     - name: Install gnuplot
-      if: runner.os == 'windows-latest'
+      if: runner.os == 'Windows'
       run: choco install gnuplot
     
     - name: Upload coverage reports to codecov
