@@ -1,31 +1,40 @@
+import subprocess
 import os
 import glob
 import pytest
 import tempfile
+import sys
 from acom_music_box.main import main
-from unittest.mock import patch, MagicMock
 
 
 @pytest.fixture
 def temp_dir():
-    with tempfile.TemporaryDirectory(delete=False) as tmpdirname:
+    with tempfile.TemporaryDirectory() as tmpdirname:
         yield tmpdirname
 
 
-def run_main_with_args(args, temp_dir):
-    # Change the working directory temporarily
-    with patch('sys.argv', ['music_box'] + args), patch('os.getcwd', return_value=temp_dir):
-        original_cwd = os.getcwd()
-        try:
-            os.chdir(temp_dir)
-            main()
-        finally:
-            os.chdir(original_cwd)
+def run_main_with_args(args, cwd):
+    original_argv = sys.argv
+    original_cwd = os.getcwd()
+    sys.argv = ['music_box'] + args
+    original_stdout = sys.stdout
+    sys.stdout = tempfile.TemporaryFile(mode='w+')
+    try:
+        os.chdir(cwd)
+        main()
+        sys.stdout.seek(0)
+        output = sys.stdout.read()
+    finally:
+        os.chdir(original_cwd)
+        sys.stdout.close()
+        sys.stdout = original_stdout
+        sys.argv = original_argv
+    return output
 
 
 def test_print_results_to_terminal(temp_dir):
-    run_main_with_args(['-e', 'Analytical'], temp_dir)
-    # Add assertions to check the output
+    output = run_main_with_args(['-e', 'Analytical'], temp_dir)
+    assert len(output) > 0
 
 
 def test_create_netcdf_with_timestamp(temp_dir):
