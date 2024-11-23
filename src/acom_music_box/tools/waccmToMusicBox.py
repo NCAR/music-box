@@ -467,15 +467,9 @@ def main():
     insertIntoTemplate(varValues, template)
 
     logger.info(f"End time: {datetime.datetime.now()}")
-    sys.exit(0)     # no error
 
 
 if (__name__ == "__main__"):
     main()
-
     logger.info(f"End time: {datetime.datetime.now()}")
-    sys.exit(0)     # no error
-
-
-if (__name__ == "__main__"):
-    main()
+    # sys.exit(0)  # no error
