@@ -6,6 +6,7 @@ import os
 import sys
 from acom_music_box import MusicBox, Examples, __version__, DataOutput, PlotOutput
 
+
 def format_examples_help(examples):
     return '\n'.join(f"{e.short_name}: {e.description}" for e in examples)
 
@@ -117,9 +118,8 @@ def main():
 
     if not musicBoxConfigFile:
         error = "Configuration file is required."
-        print(error)
         logger.error(error)
-        sys.exit(1)
+        raise RuntimeError(error)
 
     # Create and load a MusicBox object
     myBox = MusicBox()
@@ -140,7 +140,6 @@ def main():
     logger.info(f"End time: {end}")
     logger.info(f"Elapsed time: {end - start} seconds")
 
-    sys.exit(0)
 
 if __name__ == "__main__":
     main()

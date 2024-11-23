@@ -41,5 +41,6 @@ waccmToMusicBox = "acom_music_box.tools.waccmToMusicBox:main"
 [project.optional-dependencies]
 dev = [
   "pytest",
-  "pytest-mock"
+  "pytest-mock",
+  "pytest-cov"
 ]
