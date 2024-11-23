@@ -7,7 +7,7 @@ from acom_music_box import Examples
 
 @pytest.fixture
 def temp_dir():
-    with tempfile.TemporaryDirectory(delete=False) as tmpdirname:
+    with tempfile.TemporaryDirectory() as tmpdirname:
         yield tmpdirname
 
 def get_repo_root():
