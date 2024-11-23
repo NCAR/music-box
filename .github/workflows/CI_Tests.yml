@@ -33,11 +33,11 @@ jobs:
       run: pytest --cov tests/
     
     - name: Upload coverage reports to codecov
+      if: runner.os == 'Linux'
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: coverage.info
-        fail_ci_if_error: false
         
     - name: Run the smoke tests
       run: |
