@@ -29,9 +29,6 @@ jobs:
     - name: Install this package
       run: pip install -e '.[dev]'
     
-    - name: Run pytest
-      run: pytest
-    
     - name: Run the smoke tests
       run: |
         music_box -c src/acom_music_box/examples/configs/analytical/my_config.json -o output.csv
@@ -40,7 +37,7 @@ jobs:
         waccmToMusicBox waccmDir="./sample_waccm_data" date="20240904" time="07:00" latitude=3.1 longitude=101.7
     
     - name: Run tests and generate coverage reports
-      run: pytest --cov .
+      run: pytest --cov tests/
     
     - name: Upload coverage reports to codecov
       uses: codecov/codecov-action@v5
