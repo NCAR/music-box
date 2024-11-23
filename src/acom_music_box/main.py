@@ -4,7 +4,6 @@ import datetime
 import logging
 import os
 import subprocess
-import sys
 import tempfile
 import matplotlib.pyplot as plt
 import mplcursors
@@ -187,9 +186,8 @@ def main():
 
     if not musicBoxConfigFile:
         error = "Configuration file is required."
-        print(error)
         logger.error(error)
-        sys.exit(1)
+        raise RuntimeError(error)
 
     # Create and load a MusicBox object
     myBox = MusicBox()
@@ -211,8 +209,6 @@ def main():
     end = datetime.datetime.now()
     logger.info(f"End time: {end}")
     logger.info(f"Elapsed time: {end - start} seconds")
-
-    sys.exit(0)
 
 
 if __name__ == "__main__":
