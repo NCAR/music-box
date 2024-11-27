@@ -14,8 +14,8 @@ sys.path.insert(0, os.path.abspath('..'))
 
 version = acom_music_box.__version__
 project = f'Music Box ({version})'
-copyright = f'2024-{datetime.datetime.now().year}, NCAR/UCAR'
-author = 'NCAR/UCAR'
+copyright = f'2024-{datetime.datetime.now().year}, NSF-NCAR/UCAR'
+author = 'NSF-NCAR/UCAR'
 
 suffix = os.getenv("SWITCHER_SUFFIX", "")
 release = f'{version}{suffix}'

@@ -4,7 +4,7 @@
 # and convert to initial conditions for MusicBox (case TS1).
 #
 # Author: Carl Drews
-# Copyright 2024 by Atomospheric Chemistry Observations & Modeling (UCAR/ACOM)
+# Copyright 2024 by Atmospheric Chemistry Observations & Modeling (UCAR/ACOM)
 
 # import os
 import argparse
