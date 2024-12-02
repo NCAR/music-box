@@ -1,3 +1,4 @@
+from acom_music_box.plot_output import PlotOutput
 import unittest
 import pandas as pd
 import shutil
@@ -7,7 +8,6 @@ import subprocess
 
 matplotlib.use('Agg')  # Use a non-interactive backend
 
-from acom_music_box.plot_output import PlotOutput
 
 class TestPlotOutput(unittest.TestCase):
 
@@ -43,6 +43,7 @@ class TestPlotOutput(unittest.TestCase):
         args = Namespace(plot='A,B', plot_tool='matplotlib')
         plot_output = PlotOutput(self.df, args)
         plot_output.plot()
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -143,6 +143,6 @@ class DataOutput:
         # Even if we are printing to the terminal, we still allow output to be written to csv if an output path is provided
         if (self.args.output_format == 'csv') or (self.args.output is not None and self.args.output_format == 'terminal'):
             self._output_csv()
-        
+
         if self.args.output_format == 'netcdf':
             self._output_netcdf()
