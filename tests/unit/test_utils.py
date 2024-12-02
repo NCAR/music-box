@@ -16,7 +16,7 @@ import math
     ({'time [day]': 1}, 'time', 86400),
 ])
 def test_convert_time(data, key, expected):
-    assert convert_time(data, key) == expected
+  assert convert_time(data, key) == expected
 
 
 @pytest.mark.parametrize("data, key, expected", [
@@ -27,7 +27,7 @@ def test_convert_time(data, key, expected):
     ({'pressure [hPa]': 1013.25}, 'pressure', 101325),
 ])
 def test_convert_pressure(data, key, expected):
-    assert convert_pressure(data, key) == expected
+  assert convert_pressure(data, key) == expected
 
 
 @pytest.mark.parametrize("data, key, expected", [
@@ -36,7 +36,7 @@ def test_convert_pressure(data, key, expected):
     ({'temp [F]': 32}, 'temp', 273.15),
 ])
 def test_convert_temperature(data, key, expected):
-    assert convert_temperature(data, key) == expected
+  assert convert_temperature(data, key) == expected
 
 
 @pytest.mark.parametrize("data, key, temperature, pressure, expected", [
@@ -53,10 +53,10 @@ def test_convert_temperature(data, key, expected):
     ({'concentration [mol mol-1]': 1}, 'concentration', 298.15, 101325, 1 * calculate_air_density(298.15, 101325)),
 ])
 def test_convert_concentration(data, key, temperature, pressure, expected):
-    assert math.isclose(convert_concentration(data, key, temperature, pressure), expected)
+  assert math.isclose(convert_concentration(data, key, temperature, pressure), expected)
 
 
 def test_invalid_concentration():
-    data = {'invalid_concentration': 100}
-    with pytest.raises(ValueError):
-        convert_concentration(data, 'invalid_concentration', 298.15, 101325)
+  data = {'invalid_concentration': 100}
+  with pytest.raises(ValueError):
+    convert_concentration(data, 'invalid_concentration', 298.15, 101325)
