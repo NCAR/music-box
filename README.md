@@ -33,13 +33,13 @@ Run an example. Notice that the output, in csv format, is printed to the termina
 music_box -e Chapman
 ```
 
-Output can be saved to a file in csv file when no `--output-format` is passed
+Output can be saved to a csv file and printed to the terminal.
 
 ```
 music_box -e Chapman -o output.csv
 ```
 
-Output can be saved to a file as csv file when `--output-format` csv is passed
+Output can be saved to a csv file and the terminal output can be suppressed by specifying the `--output-format`
 
 ```
 music_box --output-format csv -e Chapman -o output.csv
@@ -51,13 +51,13 @@ Output can be saved to a file as netcdf file when `--output-format` netcdf is pa
 music_box --output-format netcdf -e Chapman -o output.nc
 ```
 
-Output can be saved to a file in csv file to output.csv when no output path is given but `--output-format` is csv
+Output can be saved to a file in csv format when a filename is not specified. In this case a timestamped csv file is made
 
 ```
 music_box --output-format csv -e Chapman
 ```
 
-Output can be saved to a file in netcdf file to output.nc when no output path is given but `--output-format` is netcdf
+Output can be saved to a file in netcdf format when a filename is not specified. In this case a timestamped netcdf file is made
 
 ```
 music_box --output-format netcdf -e Chapman
@@ -69,10 +69,21 @@ You can also run your own configuration
 music_box -c my_config.json
 ```
 
-And, if you have gnuplot installed, some basic plots can be made to show some resulting concentrations
+## Plotting
+Some basic plots can be made to show concentrations throughout the simulation
+
+### matplotlib
 
 ```
-music_box -e Chapman -o output.csv --color-output --plot CONC.O1D
+music_box -e Chapman -o output.csv --plot O1D
+```
+
+### gnuplot
+If you want ascii plots (maybe you're running over ssh and can't view a graphical window), you can set
+the plot tool to gnuplo (`--plot-tool gnuplot`) to view some output
+
+```
+music_box -e Chapman -o output.csv --plot O1D --plot-tool gnuplot
 ```
 
 # Development and Contributing

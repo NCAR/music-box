@@ -6,6 +6,8 @@ import tempfile
 import sys
 from acom_music_box.main import main
 
+from acom_music_box import Examples
+
 
 @pytest.fixture
 def temp_dir():
@@ -79,3 +81,8 @@ def test_create_directory_and_timestamped_netcdf(temp_dir):
     os.makedirs(os.path.join(temp_dir, "results"), exist_ok=True)
     run_main_with_args(['-e', 'Analytical', '--output-format', 'netcdf', '-o', 'results/'], temp_dir)
     assert glob.glob(os.path.join(temp_dir, "results/music_box_*.nc"))
+
+
+def test_run_configuration_file(temp_dir):
+    result = subprocess.run(['music_box', '-c', Examples.Analytical.path], capture_output=True, text=True, cwd=temp_dir)
+    assert result.returncode == 0
