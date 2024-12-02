@@ -17,7 +17,7 @@ class TestChapman:
         model = box_model.solve()
 
         model.columns = [
-            column + ".mol m-3" if column.startswith("CONC") else column 
+            column + ".mol m-3" if column.startswith("CONC") else column
             for column in model.columns
         ]
 

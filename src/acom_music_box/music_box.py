@@ -84,7 +84,7 @@ class MusicBox:
         next_conditions_time = 0
         next_conditions_index = 0
         if (len(self.evolving_conditions) != 0):
-            if(self.evolving_conditions.times[0] == 0):
+            if (self.evolving_conditions.times[0] == 0):
                 initial_concentration = curr_conditions.species_concentrations
                 evolving_concentrations = self.evolving_conditions.conditions[0].species_concentrations
                 initial_concentration.update({k: float(v) for k, v in evolving_concentrations.items() if k in initial_concentration})
