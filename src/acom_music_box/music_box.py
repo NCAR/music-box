@@ -84,7 +84,11 @@ class MusicBox:
         next_conditions_time = 0
         next_conditions_index = 0
         if (len(self.evolving_conditions) != 0):
-            if (self.evolving_conditions.times[0] != 0):
+            if(self.evolving_conditions.times[0] == 0):
+                initial_concentration = curr_conditions.species_concentrations
+                evolving_concentrations = self.evolving_conditions.conditions[0].species_concentrations
+                initial_concentration.update({k: float(v) for k, v in evolving_concentrations.items() if k in initial_concentration})
+            elif (self.evolving_conditions.times[0] != 0):
                 next_conditions_index = 0
                 next_conditions = self.evolving_conditions.conditions[0]
                 next_conditions_time = self.evolving_conditions.times[0]
@@ -130,7 +134,6 @@ class MusicBox:
         curr_time = 0
         next_output_time = curr_time
         # runs the simulation at each timestep
-
         simulation_length = self.box_model_options.simulation_length
         with tqdm(total=simulation_length, desc="Simulation Progress", unit=f" [model integration steps ({self.box_model_options.chem_step_time} s)]", leave=False) as pbar:
             while curr_time < simulation_length:
