@@ -11,7 +11,7 @@ MusicBox: A MUSICA model for boxes and columns.
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14008358.svg)](https://doi.org/10.5281/zenodo.14008358)
 
 
-Copyright (C) 2020 National Center for Atmospheric Research
+Copyright (C) 2020 National Science Foundation - National Center for Atmospheric Research
 
 # Installation
 ```
