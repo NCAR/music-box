@@ -123,6 +123,7 @@ class Conditions:
         Returns:
             object: An instance of the Conditions class with the settings from the configuration JSON object.
         """
+        logger.debug(f"path_to_json: {path_to_json}")
         pressure = convert_pressure(
             object['environmental conditions']['pressure'],
             'initial value')
@@ -139,12 +140,17 @@ class Conditions:
         if 'initial conditions' in object and len(
                 list(object['initial conditions'].keys())) > 0:
 
-            initial_conditions_path = os.path.join(
-                os.path.dirname(path_to_json),
-                list(object['initial conditions'].keys())[0])
+            initCond = object['initial conditions']
+            logger.debug(f"initCond: {initCond}")
+            if 'filepath' in initCond:
 
-            reaction_rates = Conditions.read_initial_rates_from_file(
-                initial_conditions_path)
+                initial_conditions_path = os.path.join(
+                    os.path.dirname(path_to_json), initCond['filepath'])
+
+                logger.debug(f"initial_conditions_path: {initial_conditions_path}")
+                reaction_rates = Conditions.read_initial_rates_from_file(
+                    initial_conditions_path)
+                logger.debug(f"reaction_rates {reaction_rates}")
 
         # reads from config file directly if present
         if 'chemical species' in object:
