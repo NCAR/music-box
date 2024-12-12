@@ -432,7 +432,7 @@
   },
   "evolving conditions": {},
   "initial conditions": {
-    "initial_conditions.csv": {}
+    "filepath": "initial_conditions.csv"
   },
   "model components": [
     {
@@ -449,3 +449,4 @@
     }
   ]
 }
+
