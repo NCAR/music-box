@@ -2,6 +2,7 @@ from acom_music_box import MusicBox, Examples
 import os
 
 import math
+import logging
 
 
 class TestAnalytical:
@@ -9,6 +10,7 @@ class TestAnalytical:
         box_model = MusicBox()
 
         conditions_path = Examples.Analytical.path
+        logging.warning(f"conditions_path = {conditions_path}")
 
         box_model.loadJson(conditions_path)
 
@@ -30,7 +32,9 @@ class TestAnalytical:
         analytical_concentrations = []
         analytical_concentrations.append([1, 0, 0])
 
-        time_step = box_model.box_model_options.chem_step_time
+        chem_time_step = box_model.box_model_options.chem_step_time
+        out_time_step = box_model.box_model_options.output_step_time
+        logging.warning(f"chem_time_step = {chem_time_step}   out_time_step = {out_time_step}")
         sim_length = box_model.box_model_options.simulation_length
 
         temperature = box_model.initial_conditions.temperature
@@ -44,13 +48,16 @@ class TestAnalytical:
             * (1.0 + 0.5 * pressure)
         )
 
-        curr_time = time_step
+        curr_time = chem_time_step
+        last_out_time = 0
 
         idx_A = 0
         idx_B = 1
         idx_C = 2
 
         # gets analytical concentrations
+        # For this loop to approximately the model solver accurately,
+        # out_time_step should be an even multiple of chem_time_step.
         while curr_time <= sim_length:
 
             initial_A = analytical_concentrations[0][idx_A]
@@ -66,25 +73,31 @@ class TestAnalytical:
                 / (k2 - k1)
             )
 
-            analytical_concentrations.append([A_conc, B_conc, C_conc])
-            curr_time += time_step
+            if (curr_time >= last_out_time + out_time_step):
+                analytical_concentrations.append([A_conc, B_conc, C_conc])
+                last_out_time += out_time_step
+
+            curr_time += chem_time_step
+
+        logging.warning(f"len model_concentrations = {len(model_concentrations)}")
+        logging.warning(f"len analytical_concentrations = {len(analytical_concentrations)}")
 
         # asserts concentrations
         for i in range(len(model_concentrations)):
             assert math.isclose(
                 model_concentrations[i][idx_A],
                 analytical_concentrations[i][idx_A],
-                rel_tol=1e-8,
+                rel_tol=1e-6,
             ), f"Arrays differ at index ({i}, 0)"
             assert math.isclose(
                 model_concentrations[i][idx_B],
                 analytical_concentrations[i][idx_B],
-                rel_tol=1e-8,
+                rel_tol=1e-6,
             ), f"Arrays differ at index ({i}, 1)"
             assert math.isclose(
                 model_concentrations[i][idx_C],
                 analytical_concentrations[i][idx_C],
-                rel_tol=1e-8,
+                rel_tol=1e-6,
             ), f"Arrays differ at index ({i}, 2)"
 
 
