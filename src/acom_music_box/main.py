@@ -57,6 +57,7 @@ def parse_arguments():
     parser.add_argument(
         '--plot',
         type=str,
+        action='append',
         help='Plot a comma-separated list of species if gnuplot is available (e.g., CONC.A,CONC.B).'
     )
     parser.add_argument(
@@ -114,7 +115,7 @@ def main():
     else:
         musicBoxConfigFile = args.config
 
-    plot_species_list = args.plot.split(',') if args.plot else None
+    plot_species_list = args.plot if args.plot else []
 
     if not musicBoxConfigFile:
         error = "Configuration file is required."
