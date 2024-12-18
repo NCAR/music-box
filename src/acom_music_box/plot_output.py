@@ -54,7 +54,10 @@ class PlotOutput:
 
         self.df = df.copy(deep=True)
         self.args = args
-        self.species_list = [self._format_species_list(group.split(',')) for group in self.args.plot]
+        if self.args.plot:
+            self.species_list = [self._format_species_list(group.split(',')) for group in self.args.plot]
+        else:
+            self.species_list = None
 
     def _format_species_list(self, species_list):
         """
@@ -90,6 +93,8 @@ class PlotOutput:
         Plot the specified species using gnuplot.
         """
         # Prepare columns and data for plotting
+        if not self.species_list:
+            return;
         for species_group in self.species_list:
             columns = ['time'] + species_group
             data_to_plot = self.df[columns]
@@ -127,6 +132,8 @@ class PlotOutput:
         """
         Plot the specified species using matplotlib.
         """
+        if not self.species_list:
+            return;
         for species_group in self.species_list:
             indexed = self.df.set_index('time')
             fig, ax = plt.subplots()

@@ -115,8 +115,6 @@ def main():
     else:
         musicBoxConfigFile = args.config
 
-    plot_species_list = args.plot if args.plot else []
-
     if not musicBoxConfigFile:
         error = "Configuration file is required."
         logger.error(error)
