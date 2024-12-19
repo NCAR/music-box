@@ -266,6 +266,15 @@ def convertWaccm(varDict):
     return (varDict)
 
 
+# Determines if chemical "name" is an environmental variable or not.
+# return True for temperature, pressure, ...
+def isEnvironment(varName):
+    if (varName.lower() in {"temperature", "pressure"}):
+        return(True)
+
+    return(False)
+
+
 # Write CSV file suitable for initial_conditions.csv in MusicBox.
 # initValues = dictionary of Musica varnames and (WACCM name, value, units)
 def writeInitCSV(initValues, filename):
@@ -279,7 +288,11 @@ def writeInitCSV(initValues, filename):
         else:
             fp.write(",")
 
-        fp.write("{} [{}]".format(key, value[unitIndex]))
+        reaction_type = "CONC"
+        if isEnvironment(key):
+            reaction_type = "ENV"
+            
+        fp.write("{}.{} [{}]".format(reaction_type, key, value[unitIndex]))
     fp.write("\n")
 
     # write the variable values
