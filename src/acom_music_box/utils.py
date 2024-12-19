@@ -1,6 +1,23 @@
 import re
 from .constants import GAS_CONSTANT, AVOGADRO_CONSTANT
+import numpy as np
 
+# The possible units we can convert to and from
+# functions that do conversions update this dictionary for their units in 
+# the appropriate way
+unit_conversions = {
+    'mol m-3': 0,
+    'mol cm-3': 0,
+    'molec m-3': 0,
+    'molecule m-3': 0,
+    'molec cm-3': 0,
+    'molecule cm-3': 0,
+    'ppth': 0,
+    'ppm': 0,
+    'ppb': 0,
+    'ppt': 0,
+    'mol mol-1': 0
+}
 
 def extract_unit(data, key):
     """Extract the value and unit from the key in data."""
@@ -87,6 +104,7 @@ def convert_temperature(data, key):
 def convert_concentration(data, key, temperature, pressure):
     """
     Convert the concentration from the input data to moles per cubic meter.
+    This function assums you are passing data from a music box configuration.
 
     Args:
         data (dict): The input data.
@@ -97,36 +115,112 @@ def convert_concentration(data, key, temperature, pressure):
         float: The concentration in moles per cubic meter.
     """
     concentration_value, unit = extract_unit(data, key)
+    return convert_to_number_density(concentration_value, unit, temperature, pressure)
+
+
+def convert_to_number_density(data, input_unit, temperature, pressure):
+    """
+    Convert from some other units to mol m-3
+
+    Args:
+        data (float): The data to convert in the input unit.
+        input_unit (str): The input units
+        temperature (float): The temperature in Kelvin.
+        pressure (float): The pressure in Pascals.
+    Returns:
+        float: The data in the output unit.
+    """
+
     air_density = calculate_air_density(temperature, pressure)
 
-    unit_conversions = {
+    conversions = {a: b for a, b in unit_conversions.items()}
+    conversions.update({
         'mol m-3': 1,  # mol m-3 is the base unit
         'mol cm-3': 1e6,  # cm3 m-3
         'molec m-3': 1 / AVOGADRO_CONSTANT,  # mol
         'molecule m-3': 1 / AVOGADRO_CONSTANT,  # mol
         'molec cm-3': 1e6 / AVOGADRO_CONSTANT,  # mol cm3 m-3
         'molecule cm-3': 1e6 / AVOGADRO_CONSTANT,  # mol cm3 m-3
-        'ppth': 1e-3 * air_density,  # moles / m^3
-        'ppm': 1e-6 * air_density,  # moles / m^3
-        'ppb': 1e-9 * air_density,  # moles / m^3
-        'ppt': 1e-12 * air_density,  # moles / m^3
-        'mol mol-1': 1 * air_density  # moles / m^3
-    }
+        'ppth': 1e-3 * air_density,  # m3 mol-1
+        'ppm': 1e-6 * air_density,  # m3 mol-1
+        'ppb': 1e-9 * air_density,  # m3 mol-1
+        'ppt': 1e-12 * air_density,  # m3 mol-1
+        'mol mol-1': 1 * air_density  # m3 mol-1
+    })
 
-    if unit in unit_conversions:
-        return concentration_value * unit_conversions[unit]
+    if input_unit not in conversions:
+        raise ValueError(f"Unable to convert from {input_unit} to mol m-3")
+
+    conversion_factor = conversions.get(input_unit)
+
+    if isinstance(data, np.ndarray):
+        return data * conversion_factor
+    elif isinstance(data, list):
+        return [x * conversion_factor for x in data]
     else:
-        raise ValueError(f"Unsupported concentration unit: {unit}")
+        return data * conversion_factor
 
+
+def convert_from_number_density(data, output_unit, temperature, pressure):
+    """
+    Convert from mol m-3 to some other units
+
+    Args:
+        data (float): The data to convert in mol m-3.
+        output_unit (str): The output units
+        temperature (float): The temperature in Kelvin.
+        pressure (float): The pressure in Pascals.
+    Returns:
+        float: The data in the output unit.
+    """
+
+    air_density = calculate_air_density(temperature, pressure)
+
+    conversions = {a: b for a, b in unit_conversions.items()}
+    conversions.update({
+        'mol m-3': 1,  # mol m-3 is the base unit
+        'mol cm-3': 1e-6,  # m3 cm-3
+        'molec m-3': 1 * AVOGADRO_CONSTANT,  # mol-1
+        'molecule m-3': 1 * AVOGADRO_CONSTANT,  # mol-1
+        'molec cm-3': 1e-6 * AVOGADRO_CONSTANT,  # m3 cm-3 mol-1
+        'molecule cm-3': 1e-6 * AVOGADRO_CONSTANT,  # m3 cm-3 mol-1
+        'ppth': 1e3 / air_density,  # unitless
+        'ppm': 1e6 / air_density,  # unitless
+        'ppb': 1e9 / air_density,  # unitless
+        'ppt': 1e12 / air_density,  # unitless
+        'mol mol-1': 1 / air_density  # unitless
+    })
+
+    if output_unit not in conversions:
+        raise ValueError(f"Unable to convert from mol m-3 to {output_unit}")
+
+    conversion_factor = conversions.get(output_unit)
+
+    if isinstance(data, np.ndarray):
+        return data * conversion_factor
+    elif isinstance(data, list):
+        return [x * conversion_factor for x in data]
+    else:
+        return data * conversion_factor
 
 def calculate_air_density(temperature, pressure):
     """
-    Calculate the air density in moles/m^3.
+    Calculate the air density in moles m-3
 
     Args:
         temperature (float): The temperature in Kelvin.
         pressure (float): The pressure in Pascals.
     Returns:
-        float: The air density in moles/m^3.
+        float: The air density in moles m-3
     """
     return pressure / (GAS_CONSTANT * temperature)
+
+
+def get_available_units():
+    """
+    Get the list of available units for conversion.
+
+    Returns:
+        list: The list of available units.
+    """
+    return list(unit_conversions.keys())
