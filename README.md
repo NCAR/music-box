@@ -78,6 +78,14 @@ Some basic plots can be made to show concentrations throughout the simulation
 music_box -e Chapman -o output.csv --plot O1D
 ```
 
+You can also make multiple plots by specifying groupings of species
+
+```
+music_box -e TS1 --plot O3 --plot PAN,HF 
+```
+
+Note that the windows may overlap each other
+
 ### gnuplot
 If you want ascii plots (maybe you're running over ssh and can't view a graphical window), you can set
 the plot tool to gnuplo (`--plot-tool gnuplot`) to view some output
