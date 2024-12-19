@@ -22,8 +22,8 @@ class PlotOutput:
         The DataFrame to be plotted.
     args : argparse.Namespace
         Command-line arguments or configurations specifying plot options.
-    species_list : list
-        A list of species to plot.
+    species_list : list of lists
+        A list of lists, where each sublist contains species to be plotted in a separate window.
 
     Examples
     --------
@@ -35,7 +35,7 @@ class PlotOutput:
     ...     'CONC.B.mol m-3': [4, 5, 6],
     ...     'CONC.C.mol m-3': [7, 8, 9]
     ... })
-    >>> args = Namespace(plot='CONC.A,CONC.B', plot_tool='matplotlib')
+    >>> args = Namespace(plot=['CONC.A,CONC.B'], plot_tool='matplotlib')
     >>> plot_output = PlotOutput(df, args)
     >>> plot_output.plot()
     """
@@ -54,7 +54,10 @@ class PlotOutput:
 
         self.df = df.copy(deep=True)
         self.args = args
-        self.species_list = self._format_species_list(self.args.plot.split(',') if self.args.plot else None)
+        if self.args.plot:
+            self.species_list = [self._format_species_list(group.split(',')) for group in self.args.plot]
+        else:
+            self.species_list = None
 
     def _format_species_list(self, species_list):
         """
@@ -90,64 +93,68 @@ class PlotOutput:
         Plot the specified species using gnuplot.
         """
         # Prepare columns and data for plotting
-        columns = ['time'] + self.species_list
-        data_to_plot = self.df[columns]
+        if not self.species_list:
+            return;
+        for species_group in self.species_list:
+            columns = ['time'] + species_group
+            data_to_plot = self.df[columns]
 
-        data_csv = data_to_plot.to_csv(index=False)
+            data_csv = data_to_plot.to_csv(index=False)
 
-        try:
-            with tempfile.NamedTemporaryFile(suffix='.csv', mode='w+', delete=True) as data_file:
-                data_file.write(data_csv)
-                data_file.flush()
-                data_file_path = data_file.name
+            try:
+                with tempfile.NamedTemporaryFile(suffix='.csv', mode='w+', delete=True) as data_file:
+                    data_file.write(data_csv)
+                    data_file.flush()
+                    data_file_path = data_file.name
 
-                plot_commands = ',\n\t'.join(
-                    f"'{data_file_path}' using 1:{i+2} with lines title '{species}'" for i,
-                    species in enumerate(self.species_list))
+                    plot_commands = ',\n\t'.join(
+                        f"'{data_file_path}' using 1:{i+2} with lines title '{species}'" for i,
+                        species in enumerate(species_group))
 
-                gnuplot_command = f"""
-              set datafile separator ",";
-              set terminal dumb size 120,25;
-              set xlabel 'Time';
-              set ylabel 'Value';
-              set title 'Time vs Species';
-              plot {plot_commands}
-              """
+                    gnuplot_command = f"""
+                set datafile separator ",";
+                set terminal dumb size 120,25;
+                set xlabel 'Time';
+                set ylabel 'Value';
+                set title 'Time vs Species';
+                plot {plot_commands}
+                """
 
-                subprocess.run(['gnuplot', '-e', gnuplot_command], check=True)
-        except FileNotFoundError as e:
-            logging.critical("gnuplot is not installed. Skipping plotting.")
-            raise e
-        except subprocess.CalledProcessError as e:
-            logging.error(f"Error occurred while plotting: {e}")
-            raise e
+                    subprocess.run(['gnuplot', '-e', gnuplot_command], check=True)
+            except FileNotFoundError as e:
+                logging.critical("gnuplot is not installed. Skipping plotting.")
+                raise e
+            except subprocess.CalledProcessError as e:
+                logging.error(f"Error occurred while plotting: {e}")
+                raise e
 
     def _plot_with_matplotlib(self):
         """
         Plot the specified species using matplotlib.
         """
+        if not self.species_list:
+            return;
+        for species_group in self.species_list:
+            indexed = self.df.set_index('time')
+            fig, ax = plt.subplots()
+            indexed[species_group].plot(ax=ax)
 
-        indexed = self.df.set_index('time')
+            ax.set(xlabel='Time [s]', ylabel='Concentration [mol m-3]', title='Time vs Species')
 
-        fig, ax = plt.subplots()
-        indexed[self.species_list].plot(ax=ax)
+            ax.spines[:].set_visible(False)
+            ax.spines['left'].set_visible(True)
+            ax.spines['bottom'].set_visible(True)
 
-        ax.set(xlabel='Time [s]', ylabel='Concentration [mol m-3]', title='Time vs Species')
+            ax.grid(alpha=0.5)
+            ax.legend()
 
-        ax.spines[:].set_visible(False)
-        ax.spines['left'].set_visible(True)
-        ax.spines['bottom'].set_visible(True)
+            # Enable interactive data cursors with hover functionality
+            cursor = mplcursors.cursor(hover=True)
 
-        ax.grid(alpha=0.5)
-        ax.legend()
-
-        # Enable interactive data cursors with hover functionality
-        cursor = mplcursors.cursor(hover=True)
-
-        # Customize the annotation format
-        @cursor.connect("add")
-        def on_add(sel):
-            sel.annotation.set_text(f'Time: {sel.target[0]:.2f}\nConcentration: {sel.target[1]:1.2e}')
+            # Customize the annotation format
+            @cursor.connect("add")
+            def on_add(sel):
+                sel.annotation.set_text(f'Time: {sel.target[0]:.2f}\nConcentration: {sel.target[1]:1.2e}')
 
         plt.show()
 
