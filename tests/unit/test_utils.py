@@ -70,10 +70,10 @@ def test_invalid_concentration():
     (1, 'molec cm-3', 298.15, 101325, 1e-6 * 6.02214076e+23),
     (1, 'molecule m-3', 298.15, 101325, 1 * 6.02214076e+23),
     (1, 'molecule cm-3', 298.15, 101325, 1e-6 * 6.02214076e+23),
-    (1, 'ppth', 298.15, 101325, 1e-3 / calculate_air_density(298.15, 101325)),
-    (1, 'ppm', 298.15, 101325, 1e-6 / calculate_air_density(298.15, 101325)),
-    (1, 'ppb', 298.15, 101325, 1e-9 / calculate_air_density(298.15, 101325)),
-    (1, 'ppt', 298.15, 101325, 1e-12 / calculate_air_density(298.15, 101325)),
+    (1, 'ppth', 298.15, 101325, 1e3 / calculate_air_density(298.15, 101325)),
+    (1, 'ppm', 298.15, 101325, 1e6 / calculate_air_density(298.15, 101325)),
+    (1, 'ppb', 298.15, 101325, 1e9 / calculate_air_density(298.15, 101325)),
+    (1, 'ppt', 298.15, 101325, 1e12 / calculate_air_density(298.15, 101325)),
     (1, 'mol mol-1', 298.15, 101325, 1 / calculate_air_density(298.15, 101325)),
 ])
 def test_convert_from_number_density(data, output_unit, temperature, pressure, expected):
