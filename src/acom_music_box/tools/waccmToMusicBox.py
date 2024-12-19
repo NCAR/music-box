@@ -394,7 +394,7 @@ def main():
     if ("waccmDir" in myArgs):
         waccmDir = myArgs.get("waccmDir")
 
-    musicaDir = os.path.dirname(Examples.TS1.path)
+    musicaDir = os.path.dirname(Examples.WACCM.path)
     if ("musicaDir" in myArgs):
         musicaDir = myArgs.get("musicaDir")
 
