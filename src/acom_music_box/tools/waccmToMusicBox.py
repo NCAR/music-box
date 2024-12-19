@@ -395,7 +395,12 @@ def main():
         waccmDir = myArgs.get("waccmDir")
 
     musicaDir = os.path.dirname(Examples.TS1.path)
+    if ("musicaDir" in myArgs):
+        musicaDir = myArgs.get("musicaDir")
+
     template = os.path.dirname(Examples.TS1.path)
+    if ("template" in myArgs):
+        template = myArgs.get("template")
 
     # get the date-time to retrieve
     dateStr = None
