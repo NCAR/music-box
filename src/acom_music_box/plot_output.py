@@ -94,7 +94,7 @@ class PlotOutput:
         """
         # Prepare columns and data for plotting
         if not self.species_list:
-            return;
+            return
         for species_group in self.species_list:
             columns = ['time'] + species_group
             data_to_plot = self.df[columns]
@@ -133,7 +133,7 @@ class PlotOutput:
         Plot the specified species using matplotlib.
         """
         if not self.species_list:
-            return;
+            return
         for species_group in self.species_list:
             indexed = self.df.set_index('time')
             fig, ax = plt.subplots()
