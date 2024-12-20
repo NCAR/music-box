@@ -37,6 +37,7 @@ Home = "https://github.com/NCAR/music-box"
 [project.scripts]
 music_box = "acom_music_box.main:main"
 waccmToMusicBox = "acom_music_box.tools.waccmToMusicBox:main"
+geckoAToMusicBox = "acom_music_box.tools.geckoAToMusicBox:main"
 
 [project.optional-dependencies]
 dev = [
