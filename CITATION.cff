@@ -19,5 +19,7 @@ authors:
     given-names: Brendan
   - family-names: Drews
     given-names: Carl
+  - family-names: Kiran
+    given-names: Aditya
 license: Apache-2.0
 url: "https://github.com/NCAR/music-box"
