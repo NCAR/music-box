@@ -4,6 +4,7 @@ import mplcursors
 import subprocess
 import os
 import tempfile
+from acom_music_box.utils import convert_from_number_density  # Assuming a utility function for unit conversion
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,7 @@ class PlotOutput:
 
         self.df = df.copy(deep=True)
         self.args = args
+        self.output_unit = args.plot_output_unit if args.plot_output_unit else 'mol m-3'
         if self.args.plot:
             self.species_list = [self._format_species_list(group.split(',')) for group in self.args.plot]
         else:
@@ -88,6 +90,30 @@ class PlotOutput:
 
         return plot_list
 
+    def _convert_units(self, data):
+        """
+        Convert the data to the specified output unit.
+
+        Parameters
+        ----------
+        data : pandas.DataFrame
+            The DataFrame containing the data to be converted.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The DataFrame with data converted to the specified unit.
+        """
+        converted_data = data.copy()
+        temperature = data['ENV.temperature']
+        pressure = data['ENV.pressure']
+        for column in data.columns:
+            if ('time' in column) or ('ENV' in column):
+                continue
+            converted_data[column] = convert_from_number_density(data[column], self.output_unit, temperature=temperature, pressure=pressure)  # Assuming standard conditions
+            converted_data.rename(columns={column: column.replace('mol m-3', self.output_unit)}, inplace=True)
+        return converted_data
+
     def _plot_with_gnuplot(self):
         """
         Plot the specified species using gnuplot.
@@ -114,8 +140,8 @@ class PlotOutput:
                     gnuplot_command = f"""
                 set datafile separator ",";
                 set terminal dumb size 120,25;
-                set xlabel 'Time';
-                set ylabel 'Value';
+                set xlabel 'Time [s]';
+                set ylabel 'Concentration [{self.output_unit}]';
                 set title 'Time vs Species';
                 plot {plot_commands}
                 """
@@ -139,7 +165,7 @@ class PlotOutput:
             fig, ax = plt.subplots()
             indexed[species_group].plot(ax=ax)
 
-            ax.set(xlabel='Time [s]', ylabel='Concentration [mol m-3]', title='Time vs Species')
+            ax.set(xlabel='Time [s]', ylabel=f'Concentration [{self.output_unit}]', title='Time vs Species')
 
             ax.spines[:].set_visible(False)
             ax.spines['left'].set_visible(True)
@@ -167,6 +193,7 @@ class PlotOutput:
             logger.debug("No species provided for plotting.")
             return
 
+        self.df = self._convert_units(self.df)
         if self.args.plot_tool == 'gnuplot':
             self._plot_with_gnuplot()
         else:

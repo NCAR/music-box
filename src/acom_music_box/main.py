@@ -3,8 +3,8 @@ import colorlog
 import datetime
 import logging
 import os
-import sys
 from acom_music_box import MusicBox, Examples, __version__, DataOutput, PlotOutput
+from acom_music_box.utils import get_available_units
 
 
 def format_examples_help(examples):
@@ -66,6 +66,13 @@ def parse_arguments():
         choices=['gnuplot', 'matplotlib'],
         default='matplotlib',
         help='Choose plotting tool: gnuplot or matplotlib (default: matplotlib).'
+    )
+    parser.add_argument(
+        '--plot-output-unit',
+        type=str,
+        choices=get_available_units(),
+        default='mol m-3',
+        help='Specify the output unit for plotting concentrations.'
     )
     return parser.parse_args()
 
