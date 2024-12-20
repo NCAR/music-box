@@ -3,7 +3,7 @@ from .constants import GAS_CONSTANT, AVOGADRO_CONSTANT
 import numpy as np
 
 # The possible units we can convert to and from
-# functions that do conversions update this dictionary for their units in 
+# functions that do conversions update this dictionary for their units in
 # the appropriate way
 unit_conversions = {
     'mol m-3': 0,
@@ -18,6 +18,7 @@ unit_conversions = {
     'ppt': 0,
     'mol mol-1': 0
 }
+
 
 def extract_unit(data, key):
     """Extract the value and unit from the key in data."""
@@ -202,6 +203,7 @@ def convert_from_number_density(data, output_unit, temperature, pressure):
         return [x * conversion_factor for x in data]
     else:
         return data * conversion_factor
+
 
 def calculate_air_density(temperature, pressure):
     """
