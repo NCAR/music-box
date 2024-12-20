@@ -104,7 +104,7 @@ def convert_temperature(data, key):
 def convert_concentration(data, key, temperature, pressure):
     """
     Convert the concentration from the input data to moles per cubic meter.
-    This function assums you are passing data from a music box configuration.
+    This function assumes you are passing data from a music box configuration.
 
     Args:
         data (dict): The input data.
