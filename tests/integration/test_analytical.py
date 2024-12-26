@@ -10,7 +10,7 @@ class TestAnalytical:
         box_model = MusicBox()
 
         conditions_path = Examples.Analytical.path
-        logging.warning(f"conditions_path = {conditions_path}")
+        logging.info(f"conditions_path = {conditions_path}")
 
         box_model.loadJson(conditions_path)
 
@@ -34,7 +34,7 @@ class TestAnalytical:
 
         chem_time_step = box_model.box_model_options.chem_step_time
         out_time_step = box_model.box_model_options.output_step_time
-        logging.warning(f"chem_time_step = {chem_time_step}   out_time_step = {out_time_step}")
+        logging.debug(f"chem_time_step = {chem_time_step}   out_time_step = {out_time_step}")
         sim_length = box_model.box_model_options.simulation_length
 
         temperature = box_model.initial_conditions.temperature
@@ -79,8 +79,8 @@ class TestAnalytical:
 
             curr_time += chem_time_step
 
-        logging.warning(f"len model_concentrations = {len(model_concentrations)}")
-        logging.warning(f"len analytical_concentrations = {len(analytical_concentrations)}")
+        logging.debug(f"len model_concentrations = {len(model_concentrations)}")
+        logging.debug(f"len analytical_concentrations = {len(analytical_concentrations)}")
 
         # asserts concentrations
         for i in range(len(model_concentrations)):
