@@ -6,17 +6,6 @@
     "output time step [sec]": 6,
     "simulation length [sec]": 600
   },
-  "chemical species": {
-    "A": {
-      "initial value [mol m-3]": 1
-    },
-    "B": {
-      "initial value [mol m-3]": 0
-    },
-    "C": {
-      "initial value [mol m-3]": 0
-    }
-  },
   "environmental conditions": {
     "pressure": {
       "initial value [Pa]": 101253.3
@@ -31,7 +20,7 @@
     "filepath": "initial_conditions.csv",
     "data": [
       ["ENV.temperature [K]", "ENV.pressure [Pa]", "CONC.A [mol m-3]", "CONC.B [mol m-3]"],
-      [200, 70000, 0.67, 2.3e-9]
+      [200, 70000, 0.8, 0.2]
     ]
   },
   "model components": [
