@@ -5,7 +5,7 @@
     "output time step [min]": 1.0,
     "simulation length [day]": 3.0
   },
-  "chemical species": {
+  "chemical species deprecated": {
     "Ar": {
       "initial value [mol m-3]": 7.71e-3
     },
@@ -30,6 +30,9 @@
     "N2": {
       "initial value [mol m-3]": 6.01e-1
     }
+  },
+  "initial conditions": {
+    "filepaths": ["initial_concentrations.csv"]
   },
   "environmental conditions": {
     "temperature": {
