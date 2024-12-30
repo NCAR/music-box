@@ -213,7 +213,7 @@ class Conditions:
         species_concentrations = Conditions.retrieve_initial_conditions_from_JSON(
             path_to_json, json_object, {"ENV", "CONC"})
         reaction_rates = Conditions.retrieve_initial_conditions_from_JSON(
-            path_to_json, json_object, {"EMIS", "PHOTO"})
+            path_to_json, json_object, {"EMIS", "PHOTO", "LOSS"})
 
         # override presure and temperature
         if ("pressure" in species_concentrations):
