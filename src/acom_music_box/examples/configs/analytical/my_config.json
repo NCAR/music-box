@@ -17,7 +17,7 @@
   "evolving conditions": {
   },
   "initial conditions": {
-    "filepath": "initial_conditions.csv",
+    "filepaths": ["initial_conditions.csv"],
     "data": [
       ["ENV.temperature [K]", "ENV.pressure [Pa]", "CONC.A [mol m-3]", "CONC.B [mol m-3]"],
       [200, 70000, 0.8, 0.2]

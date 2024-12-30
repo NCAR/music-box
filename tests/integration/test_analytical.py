@@ -3,6 +3,7 @@ import os
 
 import math
 import logging
+logger = logging.getLogger(__name__)
 
 
 class TestAnalytical:
@@ -10,7 +11,7 @@ class TestAnalytical:
         box_model = MusicBox()
 
         conditions_path = Examples.Analytical.path
-        logging.info(f"conditions_path = {conditions_path}")
+        logger.info(f"conditions_path = {conditions_path}")
 
         box_model.loadJson(conditions_path)
 
@@ -28,13 +29,19 @@ class TestAnalytical:
             for row in output[1:]
         ]
 
-        # initalizes concentrations
+        # initalizes the species concentrations
         analytical_concentrations = []
-        analytical_concentrations.append([1, 0, 0])
+        box_spec_conc = box_model.initial_conditions.species_concentrations
+        analytical_concentrations.append([
+            box_spec_conc["A"],
+            box_spec_conc["B"],
+            box_spec_conc["C"]
+        ])
+        logger.info(f"analytical_concentrations = {analytical_concentrations}")
 
         chem_time_step = box_model.box_model_options.chem_step_time
         out_time_step = box_model.box_model_options.output_step_time
-        logging.debug(f"chem_time_step = {chem_time_step}   out_time_step = {out_time_step}")
+        logger.debug(f"chem_time_step = {chem_time_step}   out_time_step = {out_time_step}")
         sim_length = box_model.box_model_options.simulation_length
 
         temperature = box_model.initial_conditions.temperature
@@ -61,17 +68,19 @@ class TestAnalytical:
         while curr_time <= sim_length:
 
             initial_A = analytical_concentrations[0][idx_A]
+            initial_B = analytical_concentrations[0][idx_B]
+            C_conc = analytical_concentrations[0][idx_C]
             A_conc = initial_A * math.exp(-(k1) * curr_time)
             B_conc = (
                 initial_A
                 * (k1 / (k2 - k1))
                 * (math.exp(-k1 * curr_time) - math.exp(-k2 * curr_time))
             )
-            C_conc = initial_A * (
+            C_conc += initial_A * (
                 1.0
                 + (k1 * math.exp(-k2 * curr_time) - k2 * math.exp(-k1 * curr_time))
                 / (k2 - k1)
-            )
+            ) + initial_B
 
             if (curr_time >= last_out_time + out_time_step):
                 analytical_concentrations.append([A_conc, B_conc, C_conc])
@@ -79,8 +88,8 @@ class TestAnalytical:
 
             curr_time += chem_time_step
 
-        logging.debug(f"len model_concentrations = {len(model_concentrations)}")
-        logging.debug(f"len analytical_concentrations = {len(analytical_concentrations)}")
+        logger.debug(f"len model_concentrations = {len(model_concentrations)}")
+        logger.debug(f"len analytical_concentrations = {len(analytical_concentrations)}")
 
         # asserts concentrations
         for i in range(len(model_concentrations)):
@@ -102,5 +111,7 @@ class TestAnalytical:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     test = TestAnalytical()
     test.test_run()
+
