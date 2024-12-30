@@ -274,7 +274,11 @@ class Conditions:
                     continue
 
             # create key-value pair of chemical-concentration
-            chem_name_alone = label.split(' ')[0]           # strip off  [units]
+            # initial concentration looks like this:        CONC.a-pinene [mol m-3]
+            # reaction rate looks like this:                LOSS.SOA2 wall loss.s-1
+            chem_name_alone = f"{reaction_type}.{label}"    # reaction
+            if len(parts) == 2:
+                chem_name_alone = label.split(' ')[0]       # strip off [units] to get chemical
             reaction_rates[chem_name_alone] = df.at[0, key] # retrieve (row, column)
 
         return reaction_rates

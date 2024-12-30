@@ -3,9 +3,10 @@
         "grid": "box",
         "chemistry time step [sec]": 1.0,
         "output time step [sec]": 1.0,
-        "simulation length [hr]": 1.0
+        "simulation length [sec]": 100.0,
+        "real simulation length [hr]": 1.0
     },
-    "chemical species": {
+    "chemical species deprecated": {
         "a-pinene": {
             "initial value [mol m-3]": 8e-08
         },
@@ -23,7 +24,10 @@
     },
     "evolving conditions": {},
     "initial conditions": {
-        "filepath": "initial_reaction_rates.csv"
+        "filepaths": [
+            "initial_concentrations.csv",
+            "initial_reaction_rates.csv"
+        ]
     },
     "model components": [
         {
