@@ -5,7 +5,7 @@
         "output time step [min]": 1.0,
         "simulation length [hr]": 3.0
     },
-    "chemical species": {
+    "chemical species deprecated": {
         "NO": {
             "initial value [mol m-3]": 4.1e-09
         },
@@ -101,7 +101,10 @@
     },
     "evolving conditions": {},
     "initial conditions": {
-        "filepath": "initial_reaction_rates.csv"
+        "filepaths": [
+            "initial_reaction_rates.csv",
+            "initial_concentrations.csv"
+        ]
     },
     "model components": [
         {
