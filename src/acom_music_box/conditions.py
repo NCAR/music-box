@@ -249,7 +249,7 @@ class Conditions:
 
         reaction_rates = {}
 
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(file_path, skipinitialspace=True)
         rows, _ = df.shape
         if rows > 1:
             raise ValueError(f'Initial conditions file ({file_path}) may only have one row of data. There are {rows} rows present.')
