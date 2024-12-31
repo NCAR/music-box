@@ -6,7 +6,7 @@
     "output time step [sec]": 1,
     "simulation length [sec]": 100
   },
-  "chemical species": {
+  "chemical species deprecated": {
     "A": {
       "initial value [ppb]": 22376466.38131061
     },
@@ -26,7 +26,9 @@
     }
   },
   "evolving conditions": {},
-  "initial conditions": {},
+  "initial conditions": {
+    "filepaths": ["initial_concentrations.csv"]
+  },
   "model components": [
     {
       "type": "CAMP",
