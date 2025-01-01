@@ -155,6 +155,13 @@ class Conditions:
 
                 # tranfer conditions from this file to the aggregated dictionary
                 for one_csv in file_initial_csv:
+                    # give warning if one file CSV overrides a prior CSV
+                    if one_csv in initial_csv:
+                        logger.warning(
+                            "Value {}:{} in file {} will override prior value {}"
+                            .format(one_csv, file_initial_csv[one_csv],
+                            initial_conditions_path, initial_csv[one_csv]))
+
                     initial_csv[one_csv] = file_initial_csv[one_csv]
 
         logger.debug(f"initial_csv = {initial_csv}")
