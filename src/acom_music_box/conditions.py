@@ -149,7 +149,6 @@ class Conditions:
                 initial_conditions_path = os.path.join(
                     os.path.dirname(path_to_json), file_path)
 
-                logger.debug(f"initial_conditions_path: {initial_conditions_path}")
                 file_initial_csv = Conditions.read_initial_conditions_from_file(
                     initial_conditions_path, reaction_types)
                 logger.debug(f"file_initial_csv = {file_initial_csv}")
@@ -200,7 +199,6 @@ class Conditions:
         Returns:
             object: An instance of the Conditions class with the settings from the configuration JSON object.
         """
-        logger.debug(f"path_to_json: {path_to_json}")
         pressure = convert_pressure(
             json_object['environmental conditions']['pressure'],
             'initial value')
