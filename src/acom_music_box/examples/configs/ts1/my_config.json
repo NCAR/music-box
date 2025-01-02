@@ -6,7 +6,7 @@
     "output time step [sec]": 60.0,
     "simulation length [hour]": 1.0
   },
-  "chemical species": {
+  "chemical species deprecated": {
     "ALKNIT": {
       "initial value [mol m-3]": 1.11393E-10
     },

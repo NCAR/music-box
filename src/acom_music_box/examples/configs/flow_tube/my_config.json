@@ -6,14 +6,6 @@
         "simulation length [sec]": 100.0,
         "real simulation length [hr]": 1.0
     },
-    "chemical species deprecated": {
-        "a-pinene": {
-            "initial value [mol m-3]": 8e-08
-        },
-        "O3": {
-            "initial value [mol m-3]": 2e-05
-        }
-    },
     "environmental conditions": {
         "temperature": {
             "initial value [K]": 298.15
