@@ -140,7 +140,7 @@ class EvolvingConditions:
                 evolving_conditions_path = os.path.join(
                     os.path.dirname(path_to_json), file_path)
 
-                evolving_conditions = EvolvingConditions.read_conditions_from_file(
+                evolving_conditions.read_conditions_from_file(
                     evolving_conditions_path)
                 logger.debug(f"evolving_conditions.times = {evolving_conditions.times}")
                 logger.debug(f"evolving_conditions.conditions = {evolving_conditions.conditions}")
@@ -150,25 +150,29 @@ class EvolvingConditions:
     def add_condition(self, time_point, conditions):
         """
         Add an evolving condition at a specific time point.
+        Keep the two lists sorted in order by time.
+        New arrivals will probably come at the end of the list.
 
         Args:
             time_point (float): The time point for the evolving condition.
             conditions (Conditions): The associated conditions at the given time point.
         """
-        self.time.append(time_point)
-        self.conditions.append(conditions)
+        # Work backward from end of list, looking for first time <= this new time.
+        timeIndex = len(self.times)
+        while (timeIndex > 0
+            and self.times[timeIndex - 1] > time_point):
+            timeIndex -= 1
 
-    @classmethod
-    def read_conditions_from_file(cls, file_path):
+        self.times.insert(timeIndex, time_point)
+        self.conditions.insert(timeIndex, conditions)
+
+    def read_conditions_from_file(self, file_path):
         """
         Read conditions from a file and update the evolving conditions.
 
         Args:
             file_path (str): The path to the file containing conditions UI_JSON.
         """
-
-        times = []
-        conditions = []
 
         df = pd.read_csv(file_path)
 
@@ -206,15 +210,16 @@ class EvolvingConditions:
                 else:
                     reaction_rates[f'{condition_type}.{label}'] = row[key]
 
-            times.append(time)
-            conditions.append(
+            self.add_condition(time,
                 Conditions(
                     pressure,
                     temperature,
                     species_concentrations,
-                    reaction_rates))
+                    reaction_rates
+                )
+            )
 
-        return cls(times=times, conditions=conditions)
+        return
 
     # allows len overload for this class
 
