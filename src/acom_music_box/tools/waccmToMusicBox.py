@@ -348,27 +348,15 @@ def insertIntoTemplate(initValues, templateDir):
         with open(myConfigFile) as jsonFile:
             myConfig = json.load(jsonFile)
 
-        # locate the section for chemical concentrations
-        chemSpeciesTag = "chemical species"
-        chemSpecies = myConfig[chemSpeciesTag]
-        logger.info(f"Replace chemSpecies = {chemSpecies}")
-        del myConfig[chemSpeciesTag]  # delete the existing section
-
-        # set up dictionary of chemicals and initial values
-        chemValueDict = {}
+        # retrieve temperature and pressure
         temperature = 0.0
         pressure = 0.0
-        for key, value in initValues.items():
-            if key == "temperature":
-                temperature = safeFloat(value[valueIndex])
-                continue
-            if key == "pressure":
-                pressure = safeFloat(value[valueIndex])
-                continue
-
-            chemValueDict[key] = {f"initial value [{value[unitIndex]}]": value[valueIndex]}
-
-        myConfig[chemSpeciesTag] = chemValueDict
+        key = "temperature"
+        if key in initValues:
+            temperature = safeFloat(initValues[key][valueIndex])
+        key = "pressure"
+        if key in initValues:
+            pressure = safeFloat(initValues[key][valueIndex])
 
         # replace the values of temperature and pressure
         envConditionsTag = "environmental conditions"
