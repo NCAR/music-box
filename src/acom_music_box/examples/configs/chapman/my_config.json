@@ -17,9 +17,9 @@
     }
   },
   "evolving conditions": {
-    "conditions_Boulder.csv": {
-      "linear combinations": {}
-    }
+    "filepaths": [
+      "conditions_Boulder.csv"
+    ]
   },
   "model components": [
     {

@@ -14,8 +14,7 @@
       "initial value [K]": 272.5
     }
   },
-  "evolving conditions": {
-  },
+  "evolving conditions": {},
   "initial conditions": {
     "filepaths": ["initial_conditions.csv"],
     "data": [
