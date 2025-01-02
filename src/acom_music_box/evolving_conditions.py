@@ -135,15 +135,23 @@ class EvolvingConditions:
             file_paths = evolveCond['filepaths']
 
             # loop through the CSV files
+            allReactions = set()        # provide warning for duplicates that will override
             for file_path in file_paths:
                 # read initial conditions from CSV file
                 evolving_conditions_path = os.path.join(
                     os.path.dirname(path_to_json), file_path)
 
-                evolving_conditions.read_conditions_from_file(
+                fileReactions = evolving_conditions.read_conditions_from_file(
                     evolving_conditions_path)
                 logger.debug(f"evolving_conditions.times = {evolving_conditions.times}")
                 logger.debug(f"evolving_conditions.conditions = {evolving_conditions.conditions}")
+
+                # any duplicate conditions?
+                overrideSet = allReactions.intersection(fileReactions)
+                if (len(overrideSet) > 0):
+                    logger.warning("File {} will override earlier conditions {}"
+                        .format(file_path, sorted(overrideSet)))
+                allReactions = allReactions.union(fileReactions)
 
         return evolving_conditions
 
@@ -172,14 +180,21 @@ class EvolvingConditions:
 
         Args:
             file_path (str): The path to the file containing conditions UI_JSON.
+
+        Returns:
+            set: the headers read from the CSV file;
+                used for warning about condition overrides
         """
 
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(file_path, skipinitialspace=True)
+        header_set = set(df.columns)
 
         # if present these columns must use these names
         pressure_key = 'ENV.pressure.Pa'
         temperature_key = 'ENV.temperature.K'
         time_key = 'time.s'
+
+        header_set.remove(time_key)
 
         time_and_environment_keys = [pressure_key, temperature_key, time_key]
         # other keys will depend on the species names and reaction labels configured in the mechanism
@@ -219,7 +234,7 @@ class EvolvingConditions:
                 )
             )
 
-        return
+        return(header_set)
 
     # allows len overload for this class
 
