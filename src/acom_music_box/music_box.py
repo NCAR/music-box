@@ -55,9 +55,7 @@ class MusicBox:
             time_point (float): The time point for the evolving condition.
             conditions (Conditions): The associated conditions at the given time point.
         """
-        evolving_condition = EvolvingConditions(
-            time=[time_point], conditions=[conditions])
-        self.evolvingConditions.append(evolving_condition)
+        self.evolving_conditions.add_condition(time_point, conditions)
 
     def solve(self, callback=None):
         """
