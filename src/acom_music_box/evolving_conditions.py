@@ -124,16 +124,26 @@ class EvolvingConditions:
         evolving_conditions = EvolvingConditions()
 
         # Check if 'evolving conditions' is a key in the JSON config
-        if 'evolving conditions' in config_JSON:
-            if len(config_JSON['evolving conditions'].keys()) > 0:
-                # Construct the path to the evolving conditions file
+        if (not 'evolving conditions' in config_JSON):
+            return(evolving_conditions)
+        if (len(list(config_JSON['evolving conditions'].keys())) == 0):
+            return(evolving_conditions)
 
+        evolveCond = config_JSON['evolving conditions']
+        logger.debug(f"evolveCond: {evolveCond}")
+        if 'filepaths' in evolveCond:
+            file_paths = evolveCond['filepaths']
+
+            # loop through the CSV files
+            for file_path in file_paths:
+                # read initial conditions from CSV file
                 evolving_conditions_path = os.path.join(
-                    os.path.dirname(path_to_json),
-                    list(config_JSON['evolving conditions'].keys())[0])
+                    os.path.dirname(path_to_json), file_path)
 
                 evolving_conditions = EvolvingConditions.read_conditions_from_file(
                     evolving_conditions_path)
+                logger.debug(f"evolving_conditions.times = {evolving_conditions.times}")
+                logger.debug(f"evolving_conditions.conditions = {evolving_conditions.conditions}")
 
         return evolving_conditions
 
