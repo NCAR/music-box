@@ -15,7 +15,7 @@ jobs:
       - name: autopep8
         uses: peter-evans/autopep8@v2
         with:
-          args: --recursive --in-place --aggressive --aggressive --max-line-length 180 .
+          args: --recursive --in-place --aggressive --max-line-length 180 --indent-size=4 .
 
       - name: Check for changes
         id: check-changes
@@ -28,7 +28,7 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git commit -am "Auto-format code using Clang-Format" || echo "No changes to commit"
+          git commit -am "Auto-format code using pep8" || echo "No changes to commit"
 
       - name: Push changes to main-autopep8 branch
         if: steps.check-changes.outcome != 'success'

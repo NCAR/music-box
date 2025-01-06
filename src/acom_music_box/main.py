@@ -3,12 +3,8 @@ import colorlog
 import datetime
 import logging
 import os
-import subprocess
-import sys
-import tempfile
-import matplotlib.pyplot as plt
-import mplcursors
-from acom_music_box import MusicBox, Examples, __version__
+from acom_music_box import MusicBox, Examples, __version__, DataOutput, PlotOutput
+from acom_music_box.utils import get_available_units
 
 
 def format_examples_help(examples):
@@ -37,6 +33,12 @@ def parse_arguments():
         help='Path to save the output file, including the file name. If not provided, result will be printed to the console.'
     )
     parser.add_argument(
+        '--output-format',
+        choices=['csv', 'netcdf', 'terminal'],
+        default='terminal',
+        help="Specify output format: 'terminal' (default), 'csv', or 'netcdf'."
+    )
+    parser.add_argument(
         '-v', '--verbose',
         action='count',
         default=0,
@@ -55,6 +57,7 @@ def parse_arguments():
     parser.add_argument(
         '--plot',
         type=str,
+        action='append',
         help='Plot a comma-separated list of species if gnuplot is available (e.g., CONC.A,CONC.B).'
     )
     parser.add_argument(
@@ -63,6 +66,13 @@ def parse_arguments():
         choices=['gnuplot', 'matplotlib'],
         default='matplotlib',
         help='Choose plotting tool: gnuplot or matplotlib (default: matplotlib).'
+    )
+    parser.add_argument(
+        '--plot-output-unit',
+        type=str,
+        choices=get_available_units(),
+        default='mol m-3',
+        help='Specify the output unit for plotting concentrations.'
     )
     return parser.parse_args()
 
@@ -92,69 +102,6 @@ def setup_logging(verbosity, color_output):
     logging.basicConfig(level=log_level, handlers=[console_handler])
 
 
-def plot_with_gnuplot(data, species_list):
-    # Prepare columns and data for plotting
-    columns = ['time'] + species_list
-    data_to_plot = data[columns]
-
-    data_csv = data_to_plot.to_csv(index=False)
-
-    try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as data_file:
-            data_file.write(data_csv.encode())
-            data_file_path = data_file.name
-
-        plot_commands = ',\n\t'.join(
-            f"'{data_file_path}' using 1:{i+2} with lines title '{species}'" for i,
-            species in enumerate(species_list))
-
-        gnuplot_command = f"""
-        set datafile separator ",";
-        set terminal dumb size 120,25;
-        set xlabel 'Time';
-        set ylabel 'Value';
-        set title 'Time vs Species';
-        plot {plot_commands}
-        """
-
-        subprocess.run(['gnuplot', '-e', gnuplot_command], check=True)
-    except FileNotFoundError:
-        logging.critical("gnuplot is not installed. Skipping plotting.")
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error occurred while plotting: {e}")
-    finally:
-        # Clean up the temporary file
-        if data_file_path:
-            os.remove(data_file_path)
-
-
-def plot_with_matplotlib(data, species_list):
-    # Prepare columns and data for plotting
-    indexed = data.set_index('time')
-
-    fig, ax = plt.subplots()
-    indexed[species_list].plot(ax=ax)
-
-    ax.set(xlabel='Time [s]', ylabel='Concentration [mol m-3]', title='Time vs Species')
-
-    ax.spines[:].set_visible(False)
-    ax.spines['left'].set_visible(True)
-    ax.spines['bottom'].set_visible(True)
-
-    ax.grid(alpha=0.5)
-    ax.legend()
-
-    # Enable interactive data cursors with hover functionality
-    cursor = mplcursors.cursor(hover=True)
-
-    # Customize the annotation format
-    @cursor.connect("add")
-    def on_add(sel):
-        sel.annotation.set_text(f'Time: {sel.target[0]:.2f}\nConcentration: {sel.target[1]:1.2e}')
-
-    plt.show()
-
-
 def main():
     start = datetime.datetime.now()
 
@@ -175,36 +122,29 @@ def main():
     else:
         musicBoxConfigFile = args.config
 
-    musicBoxOutputPath = args.output
-    plot_species_list = args.plot.split(',') if args.plot else None
-
     if not musicBoxConfigFile:
         error = "Configuration file is required."
-        print(error)
         logger.error(error)
-        sys.exit(1)
+        raise RuntimeError(error)
 
     # Create and load a MusicBox object
     myBox = MusicBox()
     logger.debug(f"Configuration file = {musicBoxConfigFile}")
     myBox.loadJson(musicBoxConfigFile)
 
-    result = myBox.solve(musicBoxOutputPath)
+    result = myBox.solve(callback=None)
 
-    if musicBoxOutputPath is None:
-        print(result.to_csv(index=False))
+    # Create an instance of DataOutput
+    dataOutput = DataOutput(result, args)
+    dataOutput.output()
 
-    if plot_species_list:
-        if args.plot_tool == 'gnuplot':
-            plot_with_gnuplot(result, plot_species_list)
-        elif args.plot_tool == 'matplotlib':
-            plot_with_matplotlib(result, plot_species_list)
+    # Create an instance of PlotOutput
+    plotOutput = PlotOutput(result, args)
+    plotOutput.plot()
 
     end = datetime.datetime.now()
     logger.info(f"End time: {end}")
     logger.info(f"Elapsed time: {end - start} seconds")
-
-    sys.exit(0)
 
 
 if __name__ == "__main__":

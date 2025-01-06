@@ -4,7 +4,7 @@
 # and convert to initial conditions for MusicBox (case TS1).
 #
 # Author: Carl Drews
-# Copyright 2024 by Atomospheric Chemistry Observations & Modeling (UCAR/ACOM)
+# Copyright 2024 by Atmospheric Chemistry Observations & Modeling (UCAR/ACOM)
 
 # import os
 import argparse
@@ -467,15 +467,9 @@ def main():
     insertIntoTemplate(varValues, template)
 
     logger.info(f"End time: {datetime.datetime.now()}")
-    sys.exit(0)     # no error
 
 
 if (__name__ == "__main__"):
     main()
-
     logger.info(f"End time: {datetime.datetime.now()}")
-    sys.exit(0)     # no error
-
-
-if (__name__ == "__main__"):
-    main()
+    # sys.exit(0)  # no error

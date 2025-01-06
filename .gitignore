@@ -10,3 +10,5 @@ __pycache__/
 dist
 
 .vscode/
+.coverage
+src/acom_music_box/examples/configs/ts1/initial_config.json
