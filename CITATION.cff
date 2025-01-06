@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: If you use this software, please cite it as below.
 title: MusicBox
-version: v2.5.5
+version: v2.6.0
 authors:
   - family-names: Dawson
     given-names: Matthew
@@ -19,5 +19,7 @@ authors:
     given-names: Brendan
   - family-names: Drews
     given-names: Carl
+  - family-names: Kiran
+    given-names: Aditya
 license: Apache-2.0
 url: "https://github.com/NCAR/music-box"

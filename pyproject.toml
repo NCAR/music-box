@@ -21,7 +21,7 @@ classifiers = ["License :: OSI Approved :: Apache Software License"]
 dynamic = ["version", "description"]
 
 dependencies = [
-  "musica==0.8.1",
+  "musica==0.9.0",
   "xarray",
   "colorlog",
   "pandas",
@@ -41,5 +41,6 @@ waccmToMusicBox = "acom_music_box.tools.waccmToMusicBox:main"
 [project.optional-dependencies]
 dev = [
   "pytest",
-  "pytest-mock"
+  "pytest-mock",
+  "pytest-cov"
 ]
