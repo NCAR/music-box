@@ -154,8 +154,7 @@ class MusicBox:
                         next_conditions = None
 
                 #  calculate air density from the ideal gas law
-                air_density = curr_conditions.pressure / \
-                    (GAS_CONSTANT * curr_conditions.temperature)
+                air_density = curr_conditions.pressure / (GAS_CONSTANT * curr_conditions.temperature)
 
                 # outputs to output_array if enough time has elapsed
                 if (next_output_time <= curr_time):
@@ -229,7 +228,7 @@ class MusicBox:
         camp_path = os.path.join(os.path.dirname(path_to_json), self.config_file)
 
         # Initalize the musica solver
-        self.solver = musica.create_solver(camp_path, musica.micmsolver.rosenbrock, 1)
+        self.solver = musica.create_solver(camp_path, musica.micmsolver.rosenbrock_standard_order, 1)
 
     @staticmethod
     def order_reaction_rates(curr_conditions, rate_constant_ordering):
