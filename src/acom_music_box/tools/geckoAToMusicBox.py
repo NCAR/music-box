@@ -3,6 +3,7 @@ import logging
 import colorlog
 import os
 import pandas as pd
+import re
 
 def parse_arguements():
     parser = argparse.ArgumentParser(description='GECKO-A to MusicBox Conversion tool.')
@@ -69,11 +70,59 @@ def parse_species(input_path):
     return df
 
 def parse_reactions(input_path):
-  reactions = {}
+  reactions = []
   path = os.path.join(input_path, 'reactions.dum')
   with open(path, 'r') as file:
-    for line in file:
-      print(line)
+    lines = iter(file.readlines())
+    
+  current_reaction = None
+  
+  for line in lines:
+    line = line.strip()
+    
+    if not line or line.startswith("!"):
+      continue  # Skip empty lines and comments
+    
+    # Check if the line contains a reaction
+    match = re.match(r"^(.*?)(?:=>)(.*?)([+\-]?\d\.\d{3}E[+\-]?\d{2}\s+[+\-]?\d+\.\d\s+[+\-]?\d+)", line)
+    if match:
+      # Save the previous reaction before starting a new one
+      if current_reaction:
+        reactions.append(current_reaction)
+      
+      reactants = match.group(1).strip()
+      products = match.group(2).strip()
+      reaction_values = match.group(3).strip()
+      
+      # Parse A, n, E/R
+      A, n, ER = map(float, reaction_values.split())
+      
+      current_reaction = {
+        "reactants": reactants,
+        "products": products,
+        "A": A,
+        "n": n,
+        "E/R": ER,
+        "type": "regular",
+        "extra_values": None,
+      }
+    
+    elif line.startswith("/"):
+      # Handle special reactions
+      if current_reaction:
+        extra_values = line.strip("/").split()
+        current_reaction["extra_values"] = [float(val) for val in extra_values]
+    
+    else:
+      # Handle multi-line products
+      if current_reaction and current_reaction["products"][-1] == "+":
+        current_reaction["products"] += " " + line.strip()
+  
+  # Add the last reaction
+  if current_reaction:
+    reactions.append(current_reaction)
+  
+  print(reactions)
   return reactions
 
 
