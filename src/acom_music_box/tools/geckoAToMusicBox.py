@@ -78,6 +78,9 @@ def parse_reactions(input_path, logger):
     multi_line_products = None
     
     def parse_species_list(species_str):
+        """
+        Parse a string of species and coefficients into a list of dictionaries.
+        """
         species_list = []
         for part in species_str.split('+'):
             part = part.strip()
@@ -85,6 +88,7 @@ def parse_reactions(input_path, logger):
                 coefficient, name = part.split(' ', 1)
                 species_list.append({'name': name.strip(), 'coefficient': float(coefficient)})
             else:
+                # sometimes part can be an emptry string, ignore it
                 if part:
                     species_list.append({'name': part, 'coefficient': 1.0})
         return species_list
@@ -95,6 +99,7 @@ def parse_reactions(input_path, logger):
         if not line or line.startswith("!"):
             continue  # Skip empty lines and comments
         
+        # match a reaction that is all on one line, with arrhenius values
         match = re.match(r"^(.*?)(?:=>)(.*?)([+\-]?\d\.\d{3}E[+\-]?\d{2}\s+[+\-]?\d+\.\d\s+[+\-]?\d+)", line)
         if match:
             if current_reaction:
@@ -117,6 +122,7 @@ def parse_reactions(input_path, logger):
             }
             multi_line_products = None
         
+        # special reactions with extra values will be a line with 2 slashes
         elif line.count("/") == 2:
             if current_reaction:
                 first_slash = line.find("/")
@@ -126,6 +132,7 @@ def parse_reactions(input_path, logger):
                 current_reaction["type"] = line[:first_slash].strip()
                 current_reaction["extra_values"] = [float(val) for val in extra_values]
         
+        # some reactions span multiple lines, this is the start of that
         elif re.match(r"^(.*?)=>\s*(.*?\+)\s*$", line):
             match = re.match(r"^(.*?)=>\s*(.*?\+)\s*$", line)
             reactants = match.group(1).strip()
@@ -144,6 +151,7 @@ def parse_reactions(input_path, logger):
             multi_line_products = True
             current_reaction["products"].extend(parse_species_list(products))
 
+        # this is the continuation of a multi-line reaction
         elif multi_line_products:
             # Regex to detect products and reaction values on the same line
             match = re.match(r"^(.*?)([+\-]?\d\.\d{3}E[+\-]?\d{2}\s+[+\-]?\d+\.\d\s+[+\-]?\d+)", line)
@@ -173,6 +181,7 @@ def parse_reactions(input_path, logger):
                 if not additional_products.endswith("+"):
                     multi_line_products = None  # End multi-line tracking
 
+        # some lines are comments or other sections and we can skip them
         else:
             logger.debug(f"Skipping line: {line}")
             continue
@@ -184,27 +193,35 @@ def parse_reactions(input_path, logger):
   
 def parse_initial_conditions(input_path, logger):
     path = os.path.join(input_path, 'gasspe.dum')
+    paths = [
+      (os.path.join(input_path, 'gasspe.dum'), 2),
+      (os.path.join(input_path, 'partspe.dum'), 1)
+    ]
 
-    # read a csv separated by /, skip the first 2 lines
-    df = pd.read_csv(
-        path,
-        sep='/',
-        skiprows=2,
-        header=None,
-        names=['Species', 'Initial Concentration', 'Empty'],
-        engine='python'
-    )
+    concentrations = {}
 
-    # we don't need the empty column
-    df = df.drop(columns=['Empty'])
+    for path, skip in paths:
+      # read a csv separated by /, skip the first 2 lines
+      df = pd.read_csv(
+          path,
+          sep='/',
+          skiprows=skip,
+          header=None,
+          names=['Species', 'Initial Concentration', 'Empty'],
+          engine='python'
+      )
 
-    # drop the last row
-    df = df.drop(df.tail(1).index)
+      # we don't need the empty column
+      df = df.drop(columns=['Empty'])
 
-    df['Species'] = df['Species'].str.strip()
+      # drop the last row
+      df = df.drop(df.tail(1).index)
 
-    return df.set_index('Species')['Initial Concentration'].to_dict()
+      df['Species'] = df['Species'].str.strip()
 
+      concentrations.update(df.set_index('Species')['Initial Concentration'].to_dict())
+
+    return concentrations
 
 def main():
     args = parse_arguements()
