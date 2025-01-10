@@ -180,9 +180,31 @@ def parse_reactions(input_path, logger):
     if current_reaction:
         reactions.append(current_reaction)
     
-    for r in reactions:
-      print(r)
     return reactions
+  
+def parse_initial_conditions(input_path, logger):
+    path = os.path.join(input_path, 'gasspe.dum')
+
+    # read a csv separated by /, skip the first 2 lines
+    df = pd.read_csv(
+        path,
+        sep='/',
+        skiprows=2,
+        header=None,
+        names=['Species', 'Initial Concentration', 'Empty'],
+        engine='python'
+    )
+
+    # we don't need the empty column
+    df = df.drop(columns=['Empty'])
+
+    # drop the last row
+    df = df.drop(df.tail(1).index)
+
+    df['Species'] = df['Species'].str.strip()
+
+    return df.set_index('Species')['Initial Concentration'].to_dict()
+
 
 def main():
     args = parse_arguements()
@@ -208,3 +230,8 @@ def main():
 
     species = parse_species(input, logger)
     rections = parse_reactions(input, logger)
+    initial_conditions = parse_initial_conditions(input, logger)
+    
+    logger.debug(f"parsed {len(species)} species")
+    logger.debug(f"parsed {len(rections)} reactions")
+    logger.debug(f"parsed {len(initial_conditions)} initial conditions")
