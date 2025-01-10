@@ -39,7 +39,6 @@ def setup_logging(verbosity, color_output):
     logging.basicConfig(level=log_level, handlers=[console_handler])
 
 def parse_species(input_path):
-    species = {}
     path = os.path.join(input_path, 'dictionary.out')
     
     df = pd.read_fwf(
@@ -70,61 +69,90 @@ def parse_species(input_path):
     return df
 
 def parse_reactions(input_path):
-  reactions = []
-  path = os.path.join(input_path, 'reactions.dum')
-  with open(path, 'r') as file:
-    lines = iter(file.readlines())
+    reactions = []
+    path = os.path.join(input_path, 'reactions.dum')
+    with open(path, 'r') as file:
+        lines = iter(file.readlines())
     
-  current_reaction = None
-  
-  for line in lines:
-    line = line.strip()
+    current_reaction = None
     
-    if not line or line.startswith("!"):
-      continue  # Skip empty lines and comments
+    def parse_species_list(species_str):
+        species_list = []
+        for part in species_str.split('+'):
+            part = part.strip()
+            if ' ' in part:
+                coefficient, name = part.split(' ', 1)
+                species_list.append({'name': name.strip(), 'coefficient': float(coefficient)})
+            else:
+                species_list.append({'name': part, 'coefficient': 1.0})
+        return species_list
     
-    # Check if the line contains a reaction
-    match = re.match(r"^(.*?)(?:=>)(.*?)([+\-]?\d\.\d{3}E[+\-]?\d{2}\s+[+\-]?\d+\.\d\s+[+\-]?\d+)", line)
-    if match:
-      # Save the previous reaction before starting a new one
-      if current_reaction:
-        reactions.append(current_reaction)
-      
-      reactants = match.group(1).strip()
-      products = match.group(2).strip()
-      reaction_values = match.group(3).strip()
-      
-      # Parse A, n, E/R
-      A, n, ER = map(float, reaction_values.split())
-      
-      current_reaction = {
-        "reactants": reactants,
-        "products": products,
-        "A": A,
-        "n": n,
-        "E/R": ER,
-        "type": "regular",
-        "extra_values": None,
-      }
-    
-    elif line.startswith("/"):
-      # Handle special reactions
-      if current_reaction:
-        extra_values = line.strip("/").split()
-        current_reaction["extra_values"] = [float(val) for val in extra_values]
-    
-    else:
-      # Handle multi-line products
-      if current_reaction and current_reaction["products"][-1] == "+":
-        current_reaction["products"] += " " + line.strip()
-  
-  # Add the last reaction
-  if current_reaction:
-    reactions.append(current_reaction)
-  
-  print(reactions)
-  return reactions
+    for line in lines:
+        line = line.strip()
+        
+        if not line or line.startswith("!"):
+            continue  # Skip empty lines and comments
+        
+        # Check if the line contains a reaction
+        # Regex explanation:
+        # ^(.*?)           - Capture everything at the start of the line (reactants) up to the '=>' symbol, as few characters as possible (non-greedy).
+        # (?:=>)           - Match the literal '=>' symbol but do not capture it (non-capturing group).
+        # (.*?)            - Capture everything after '=>' and before the reaction constants as the products, non-greedy.
+        # ([+\-]?\d\.\d{3}E[+\-]?\d{2}\s+[+\-]?\d+\.\d\s+[+\-]?\d+) - Capture the reaction constants (A, n, and E/R):
+        #     [+\-]?       - An optional '+' or '-' sign.
+        #     \d\.\d{3}    - A digit followed by a period and exactly 3 digits.
+        #     E[+\-]?\d{2} - Scientific notation with 'E', an optional sign, and 2 digits for the exponent.
+        #     \s+          - One or more spaces.
+        #     [+\-]?\d+\.\d - Another floating-point number (e.g., n value).
+        #     \s+          - One or more spaces.
+        #     [+\-]?\d+     - A final floating-point number (e.g., E/R value).
+        # This regex extracts the reactants, products, and reaction constants (A, n, E/R) from a line.
 
+        match = re.match(r"^(.*?)(?:=>)(.*?)([+\-]?\d\.\d{3}E[+\-]?\d{2}\s+[+\-]?\d+\.\d\s+[+\-]?\d+)", line)
+        if match:
+            # Save the previous reaction before starting a new one
+            if current_reaction:
+                reactions.append(current_reaction)
+            
+            reactants = match.group(1).strip()
+            products = match.group(2).strip()
+            reaction_values = match.group(3).strip()
+            
+            # Parse A, n, E/R
+            A, n, ER = map(float, reaction_values.split())
+            
+            current_reaction = {
+                "reactants": parse_species_list(reactants),
+                "products": parse_species_list(products),
+                "A": A,
+                "n": n,
+                "E/R": ER,
+                "type": "regular",
+                "extra_values": None,
+            }
+        
+        elif line.count("/") == 2:
+          # Handle special reactions
+          if current_reaction:
+            first_slash = line.find("/")
+            second_slash = line.find("/", first_slash + 1)
+            extra_numbers = line[first_slash + 1:second_slash]
+            extra_values = extra_numbers.split()
+            current_reaction["type"] = line[:first_slash].strip()
+            current_reaction["extra_values"] = [float(val) for val in extra_values]
+        
+        else:
+            # Handle multi-line products
+            if current_reaction and current_reaction["products"][-1]['name'][-1] == "+":
+                current_reaction["products"][-1]['name'] = current_reaction["products"][-1]['name'][:-1] + " " + line.strip()
+    
+    # Add the last reaction
+    if current_reaction:
+        reactions.append(current_reaction)
+    
+    for r in reactions:
+      print(r)
+    return reactions
 
 def main():
     args = parse_arguements()
