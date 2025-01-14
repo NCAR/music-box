@@ -108,7 +108,7 @@ class Conditions:
 
     @classmethod
     def retrieve_initial_conditions_from_JSON(
-            self,
+            cls,
             path_to_json,
             json_object,
             reaction_types):
