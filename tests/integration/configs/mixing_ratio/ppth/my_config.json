@@ -6,17 +6,6 @@
     "output time step [sec]": 1,
     "simulation length [sec]": 100
   },
-  "chemical species deprecated": {
-    "A": {
-      "initial value [ppth]": 22.37646638131061
-    },
-    "B": {
-      "initial value [mol m-3]": 0
-    },
-    "C": {
-      "initial value [mol m-3]": 0
-    }
-  },
   "environmental conditions": {
     "pressure": {
       "initial value [Pa]": 101253.3
