@@ -128,6 +128,8 @@ class Conditions:
             object: A dictionary of name:value pairs.
         """
 
+        logger.debug(f"path_to_json: {path_to_json}   reaction_types: {reaction_types}")
+
         # look for that JSON section
         if (not 'initial conditions' in json_object):
             return({})
@@ -214,17 +216,21 @@ class Conditions:
             json_object['environmental conditions']['temperature'],
             'initial value')
 
-        # we will read species concentrations and reaction rates on two passes
+        logger.debug(f"From original JSON temperature = {temperature}   pessure = {pressure}")
+
+        # we will read environment, species concentrations, and reaction rates on three passes
+        environmental_conditions = Conditions.retrieve_initial_conditions_from_JSON(
+            path_to_json, json_object, {"ENV"})
         species_concentrations = Conditions.retrieve_initial_conditions_from_JSON(
-            path_to_json, json_object, {"ENV", "CONC"})
+            path_to_json, json_object, {"CONC"})
         reaction_rates = Conditions.retrieve_initial_conditions_from_JSON(
             path_to_json, json_object, {"EMIS", "PHOTO", "LOSS"})
 
         # override presure and temperature
-        if ("pressure" in species_concentrations):
-            pressure = species_concentrations["pressure"]
-        if ("temperature" in species_concentrations):
-            temperature = species_concentrations["temperature"]
+        if ("pressure" in environmental_conditions):
+            pressure = environmental_conditions["pressure"]
+        if ("temperature" in environmental_conditions):
+            temperature = environmental_conditions["temperature"]
 
         logger.debug(f"Returning species_concentrations = {species_concentrations}")
         logger.debug(f"Returning reaction_rates = {reaction_rates}")
