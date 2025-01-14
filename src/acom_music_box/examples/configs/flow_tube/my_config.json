@@ -3,8 +3,7 @@
         "grid": "box",
         "chemistry time step [sec]": 1.0,
         "output time step [sec]": 1.0,
-        "simulation length [sec]": 100.0,
-        "real simulation length [hr]": 1.0
+        "simulation length [hr]": 1.0
     },
     "environmental conditions": {
         "temperature": {
