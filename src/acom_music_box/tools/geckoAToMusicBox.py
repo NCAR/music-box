@@ -39,6 +39,7 @@ def setup_logging(verbosity, color_output):
     logging.basicConfig(level=log_level, handlers=[console_handler])
 
 def parse_species(input_path, logger):
+    # this defines the species in the system and some properties they have
     path = os.path.join(input_path, 'dictionary.out')
     
     df = pd.read_fwf(
@@ -65,7 +66,7 @@ def parse_species(input_path, logger):
 
     # set the dtypes
     df = df.astype(dtypes)
-    
+
     return df
 
 def parse_reactions(input_path, logger):
@@ -189,13 +190,19 @@ def parse_reactions(input_path, logger):
     if current_reaction:
         reactions.append(current_reaction)
     
+    reaction_types = [
+        'FALLOFF', 'HV', 'ISOM', 'EXTRA',
+    ]
+    # remove any reactants whose name is a reaction type
+    for r in reactions:
+        r['reactants'] = [s for s in r['reactants'] if s['name'] not in reaction_types]
+        r['products'] = [s for s in r['products'] if s['name'] not in reaction_types]
     return reactions
   
 def parse_initial_conditions(input_path, logger):
-    path = os.path.join(input_path, 'gasspe.dum')
     paths = [
-      (os.path.join(input_path, 'gasspe.dum'), 2),
-      (os.path.join(input_path, 'partspe.dum'), 1)
+      ('gasspe.dum', 2),
+      ('partspe.dum', 1)
     ]
 
     concentrations = {}
@@ -203,7 +210,7 @@ def parse_initial_conditions(input_path, logger):
     for path, skip in paths:
       # read a csv separated by /, skip the first 2 lines
       df = pd.read_csv(
-          path,
+          os.path.join(input_path, path),
           sep='/',
           skiprows=skip,
           header=None,
@@ -222,6 +229,34 @@ def parse_initial_conditions(input_path, logger):
       concentrations.update(df.set_index('Species')['Initial Concentration'].to_dict())
 
     return concentrations
+
+def read_peroxy_species(input_path, logger):
+    """
+    Peroxy radicals are chains of molecules that end in oxygen and are highly reactive
+    Often, many species are grouped together and modeled as a lumped species
+
+    This function reads all of the peroxy radical files to determine what species correspond to the
+    peroxy radicals defined by gecko
+    """
+
+    peroxy_groups = {}
+
+    for peroxy in range(1, 10):
+      # the path is always pero#.dat
+      path = os.path.join(input_path, f"pero{peroxy}.dat")
+      with open(path, 'r') as file:
+          lines = file.readlines()
+          n_species = int(lines[0].split()[0])
+          species = []
+          if (n_species > 0):
+              for line in lines[1:]:
+                  species.append(line.strip())
+              # each file ends with END, remove that species
+              del species[-1]
+          peroxy_groups[f"PERO{peroxy}"] = species
+    
+    return peroxy_groups
+
 
 def main():
     args = parse_arguements()
@@ -246,9 +281,27 @@ def main():
     logger.debug(f"Output file: {output}")
 
     species = parse_species(input, logger)
-    rections = parse_reactions(input, logger)
+    reactions = parse_reactions(input, logger)
     initial_conditions = parse_initial_conditions(input, logger)
+    peroxy_groups = read_peroxy_species(input, logger)
+
+    type_counts = {}
+    for r in reactions:
+        type_counts[r['type']] = type_counts.get(r['type'], 0) + 1
     
     logger.debug(f"parsed {len(species)} species")
-    logger.debug(f"parsed {len(rections)} reactions")
+    logger.debug(f"parsed {len(reactions)} reactions")
+    logger.debug(f"reaction type counts: {type_counts}")
     logger.debug(f"parsed {len(initial_conditions)} initial conditions")
+    logger.debug(f"parsed {len(peroxy_groups)} peroxy groups")
+    for peroxy, species in peroxy_groups.items():
+        logger.debug(f"{peroxy}: {len(species)} species")
+    unique_species = set()
+    for r in reactions:
+        for s in r['reactants'] + r['products']:
+            unique_species.add(s['name'])
+    conditions = set(initial_conditions.keys())
+
+    # find species that don't have initial conditions
+    missing_conditions = unique_species - conditions - set(peroxy_groups.keys()) - set(['NOTHING'])
+    print(missing_conditions)
