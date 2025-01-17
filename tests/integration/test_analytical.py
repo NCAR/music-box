@@ -15,6 +15,11 @@ class TestAnalytical:
 
         box_model.loadJson(conditions_path)
 
+        # The analytical solution below will match the model solution
+        # only when initial B=0 and C=0. A=n from the JSON config is okay.
+        box_model.initial_conditions.species_concentrations["B"] = 0.0
+        box_model.initial_conditions.species_concentrations["C"] = 0.0
+
         # solves and saves output
         df = box_model.solve()
         output = [df.columns.values.tolist()] + df.values.tolist()
@@ -37,13 +42,15 @@ class TestAnalytical:
             box_spec_conc["B"],
             box_spec_conc["C"]
         ])
-        logger.info(f"analytical_concentrations = {analytical_concentrations}")
+        logger.info(f"Initial analytical_concentrations = {analytical_concentrations}")
 
+        # set up the time steps
         chem_time_step = box_model.box_model_options.chem_step_time
         out_time_step = box_model.box_model_options.output_step_time
         logger.debug(f"chem_time_step = {chem_time_step}   out_time_step = {out_time_step}")
         sim_length = box_model.box_model_options.simulation_length
 
+        # set up the initial environment
         temperature = box_model.initial_conditions.temperature
         pressure = box_model.initial_conditions.pressure
 
@@ -63,24 +70,21 @@ class TestAnalytical:
         idx_C = 2
 
         # gets analytical concentrations
-        # For this loop to approximately the model solver accurately,
+        # For this loop to replicate the model solver accurately,
         # out_time_step should be an even multiple of chem_time_step.
+        initial_A = analytical_concentrations[0][idx_A]
         while curr_time <= sim_length:
-
-            initial_A = analytical_concentrations[0][idx_A]
-            initial_B = analytical_concentrations[0][idx_B]
-            C_conc = analytical_concentrations[0][idx_C]
             A_conc = initial_A * math.exp(-(k1) * curr_time)
             B_conc = (
                 initial_A
                 * (k1 / (k2 - k1))
                 * (math.exp(-k1 * curr_time) - math.exp(-k2 * curr_time))
             )
-            C_conc += initial_A * (
+            C_conc = initial_A * (
                 1.0
                 + (k1 * math.exp(-k2 * curr_time) - k2 * math.exp(-k1 * curr_time))
                 / (k2 - k1)
-            ) + initial_B
+            )
 
             if (curr_time >= last_out_time + out_time_step):
                 analytical_concentrations.append([A_conc, B_conc, C_conc])
