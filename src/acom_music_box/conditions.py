@@ -1,5 +1,6 @@
 from .utils import convert_pressure, convert_temperature, convert_concentration
 import pandas as pd
+import numpy
 import os
 
 import logging
@@ -321,7 +322,7 @@ class Conditions:
         if rows != 2:
             raise ValueError(f'Initial conditions data in JSON ({data_json}) should have only header and value rows. There are {rows} rows present.')
 
-        # build the dictionary from the columns
+        # build the dictionary from the reaction columns
         header_row = data_json[0]
         value_row = data_json[1]
         for header, value in zip(header_row, value_row):
@@ -332,6 +333,17 @@ class Conditions:
                     continue
 
             data_values[header] = float(value)
+        logger.debug(f"{react_types} 1: data_values = {data_values}")
+
+        data_values = {key: float(value) for key, value in zip(header_row, value_row)
+            if key.split('.')[0] in react_types}
+        logger.debug(f"{react_types} 2: data_values = {data_values}")
+
+        frame = pd.DataFrame(numpy.array([value_row]), columns=header_row)
+        keys = [key for key in frame.columns if key.split('.')[0] in react_types]
+        sub_frame = frame.loc[:, keys]
+        data_values = sub_frame.to_dict(orient="index")[0]
+        logger.debug(f"{react_types} 3: data_values = {data_values}")
 
         return data_values
 
