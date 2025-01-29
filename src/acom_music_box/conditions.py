@@ -325,25 +325,9 @@ class Conditions:
         # build the dictionary from the reaction columns
         header_row = data_json[0]
         value_row = data_json[1]
-        for header, value in zip(header_row, value_row):
-            # are we looking for this type?
-            if (react_types):
-                header_type = header.split('.')[0]
-                if (header_type not in react_types):
-                    continue
-
-            data_values[header] = float(value)
-        logger.debug(f"{react_types} 1: data_values = {data_values}")
-
         data_values = {key: float(value) for key, value in zip(header_row, value_row)
             if key.split('.')[0] in react_types}
-        logger.debug(f"{react_types} 2: data_values = {data_values}")
-
-        frame = pd.DataFrame(numpy.array([value_row]), columns=header_row)
-        keys = [key for key in frame.columns if key.split('.')[0] in react_types]
-        sub_frame = frame.loc[:, keys]
-        data_values = sub_frame.to_dict(orient="index")[0]
-        logger.debug(f"{react_types} 3: data_values = {data_values}")
+        logger.debug(f"For {react_types} data_values = {data_values}")
 
         return data_values
 
