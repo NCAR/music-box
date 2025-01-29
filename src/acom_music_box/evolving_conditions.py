@@ -125,9 +125,9 @@ class EvolvingConditions:
 
         # Check if 'evolving conditions' is a key in the JSON config
         if (not 'evolving conditions' in config_JSON):
-            return(evolving_conditions)
+            return (evolving_conditions)
         if (len(list(config_JSON['evolving conditions'].keys())) == 0):
-            return(evolving_conditions)
+            return (evolving_conditions)
 
         evolveCond = config_JSON['evolving conditions']
         logger.debug(f"evolveCond: {evolveCond}")
@@ -150,7 +150,7 @@ class EvolvingConditions:
                 overrideSet = allReactions.intersection(fileReactions)
                 if (len(overrideSet) > 0):
                     logger.warning("File {} will override earlier conditions {}"
-                        .format(file_path, sorted(overrideSet)))
+                                   .format(file_path, sorted(overrideSet)))
                 allReactions = allReactions.union(fileReactions)
 
         return evolving_conditions
@@ -168,7 +168,7 @@ class EvolvingConditions:
         # Work backward from end of list, looking for first time <= this new time.
         timeIndex = len(self.times)
         while (timeIndex > 0
-            and self.times[timeIndex - 1] > time_point):
+               and self.times[timeIndex - 1] > time_point):
             timeIndex -= 1
 
         self.times.insert(timeIndex, time_point)
@@ -226,15 +226,15 @@ class EvolvingConditions:
                     reaction_rates[f'{condition_type}.{label}'] = row[key]
 
             self.add_condition(time,
-                Conditions(
-                    pressure,
-                    temperature,
-                    species_concentrations,
-                    reaction_rates
-                )
-            )
+                               Conditions(
+                                   pressure,
+                                   temperature,
+                                   species_concentrations,
+                                   reaction_rates
+                               )
+                               )
 
-        return(header_set)
+        return (header_set)
 
     # allows len overload for this class
 

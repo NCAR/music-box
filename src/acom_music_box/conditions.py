@@ -106,7 +106,6 @@ class Conditions:
             species_concentrations,
             reaction_rates)
 
-
     @classmethod
     def retrieve_initial_conditions_from_JSON(
             cls,
@@ -133,9 +132,9 @@ class Conditions:
 
         # look for that JSON section
         if (not 'initial conditions' in json_object):
-            return({})
+            return ({})
         if (len(list(json_object['initial conditions'].keys())) == 0):
-            return({})
+            return ({})
 
         # retrieve initial conditions from CSV and JSON
         initial_csv = {}
@@ -163,7 +162,7 @@ class Conditions:
                         logger.warning(
                             "Value {}:{} in file {} will override prior value {}"
                             .format(one_csv, file_initial_csv[one_csv],
-                            initial_conditions_path, initial_csv[one_csv]))
+                                    initial_conditions_path, initial_csv[one_csv]))
 
                     initial_csv[one_csv] = file_initial_csv[one_csv]
 
@@ -173,7 +172,7 @@ class Conditions:
             # read initial conditions from in-place CSV (list of headers and list of values)
             dataConditions = initCond['data']
             initial_data = Conditions.read_data_values_from_table(dataConditions,
-                reaction_types)
+                                                                  reaction_types)
             logger.debug(f"initial_data = {initial_data}")
 
         # override the CSV species initial values with JSON data
@@ -183,13 +182,12 @@ class Conditions:
             logger.warning(f"Initial data values ({numData}) from JSON will override initial values ({numCSV}) from CSV.")
         for one_data in initial_data:
             chem_name_alone = one_data.split(".")[1]        # remove reaction type
-            chem_name_alone = chem_name_alone.split(" ")[0] # remove units
+            chem_name_alone = chem_name_alone.split(" ")[0]  # remove units
             initial_csv[chem_name_alone] = initial_data[one_data]
 
         logger.debug(f"Overridden initial_csv = {initial_csv}")
 
-        return(initial_csv)
-
+        return (initial_csv)
 
     @classmethod
     def from_config_JSON(
@@ -242,7 +240,6 @@ class Conditions:
             species_concentrations,
             reaction_rates)
 
-
     @classmethod
     def read_initial_conditions_from_file(cls, file_path, react_types=None):
         """
@@ -291,7 +288,7 @@ class Conditions:
             chem_name_alone = f"{reaction_type}.{label}"    # reaction
             if len(parts) == 2:
                 chem_name_alone = label.split(' ')[0]       # strip off [units] to get chemical
-            reaction_rates[chem_name_alone] = df.at[0, key] # retrieve (row, column)
+            reaction_rates[chem_name_alone] = df.at[0, key]  # retrieve (row, column)
 
         return reaction_rates
 
@@ -326,7 +323,7 @@ class Conditions:
         header_row = data_json[0]
         value_row = data_json[1]
         data_values = {key: float(value) for key, value in zip(header_row, value_row)
-            if key.split('.')[0] in react_types}
+                       if key.split('.')[0] in react_types}
         logger.debug(f"For {react_types} data_values = {data_values}")
 
         return data_values
