@@ -78,6 +78,26 @@ Some basic plots can be made to show concentrations throughout the simulation
 music_box -e Chapman -o output.csv --plot O1D
 ```
 
+You can also make multiple plots by specifying groupings of species
+
+```
+music_box -e TS1 --plot O3 --plot PAN,HF 
+```
+
+Note that the windows may overlap each other
+
+By default all plot units are in `mol m-3`. You can see a list of unit options to specify with `--plot-output-unit`
+
+```
+music_box -h
+```
+
+It is used like this
+
+```
+ music_box -e TS1 --output-format csv --plot O3 --plot-output-unit "ppb"
+```
+
 ### gnuplot
 If you want ascii plots (maybe you're running over ssh and can't view a graphical window), you can set
 the plot tool to gnuplo (`--plot-tool gnuplot`) to view some output

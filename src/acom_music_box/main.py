@@ -3,8 +3,8 @@ import colorlog
 import datetime
 import logging
 import os
-import sys
 from acom_music_box import MusicBox, Examples, __version__, DataOutput, PlotOutput
+from acom_music_box.utils import get_available_units
 
 
 def format_examples_help(examples):
@@ -57,6 +57,7 @@ def parse_arguments():
     parser.add_argument(
         '--plot',
         type=str,
+        action='append',
         help='Plot a comma-separated list of species if gnuplot is available (e.g., CONC.A,CONC.B).'
     )
     parser.add_argument(
@@ -65,6 +66,13 @@ def parse_arguments():
         choices=['gnuplot', 'matplotlib'],
         default='matplotlib',
         help='Choose plotting tool: gnuplot or matplotlib (default: matplotlib).'
+    )
+    parser.add_argument(
+        '--plot-output-unit',
+        type=str,
+        choices=get_available_units(),
+        default='mol m-3',
+        help='Specify the output unit for plotting concentrations.'
     )
     return parser.parse_args()
 
@@ -113,8 +121,6 @@ def main():
         logger.info(f"Using example: {example}")
     else:
         musicBoxConfigFile = args.config
-
-    plot_species_list = args.plot.split(',') if args.plot else None
 
     if not musicBoxConfigFile:
         error = "Configuration file is required."
