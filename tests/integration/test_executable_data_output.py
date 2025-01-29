@@ -71,6 +71,12 @@ def test_create_directory_and_named_csv(temp_dir):
     assert os.path.exists(os.path.join(temp_dir, "results/out.csv"))
 
 
+def test_create_directory_and_named_csv_TS1(temp_dir):
+    os.makedirs(os.path.join(temp_dir, "results"), exist_ok=True)
+    run_main_with_args(['-e', 'TS1', '--output-format', 'csv', '-o', 'results/out.csv'], temp_dir)
+    assert os.path.exists(os.path.join(temp_dir, "results/out.csv"))
+
+
 def test_create_directory_and_timestamped_csv(temp_dir):
     os.makedirs(os.path.join(temp_dir, "results"), exist_ok=True)
     run_main_with_args(['-e', 'Analytical', '--output-format', 'csv', '-o', 'results/'], temp_dir)
