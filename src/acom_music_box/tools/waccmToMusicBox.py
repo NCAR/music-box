@@ -462,11 +462,13 @@ def main():
     if (outputCSV):
         # Write CSV file for MusicBox initial conditions.
         csvName = os.path.join(musicaDir, "initial_conditions.csv")
+        logger.info(f"csvName = {csvName}")
         writeInitCSV(varValues, csvName)
 
     if (outputJSON):
         # Write JSON file for MusicBox initial conditions.
         jsonName = os.path.join(musicaDir, "initial_config.json")
+        logger.info(f"jsonName = {jsonName}")
         writeInitJSON(varValues, jsonName)
 
     logger.info(f"Insert values into template {template}")
