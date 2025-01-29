@@ -46,6 +46,11 @@ class _Examples:
         short_name='TS1',
         folder_name='ts1',
         description='Many species involved in tropospheric-stratospheric chemistry')
+    WACCM = Example.from_config(
+        display_name='Whole Atmosphere Community Climate Model',
+        short_name='WACCM',
+        folder_name='waccm',
+        description='Convert model output to MusicBox initial conditions.')
 
     @classmethod
     def get_all(self):

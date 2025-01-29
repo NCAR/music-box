@@ -266,6 +266,15 @@ def convertWaccm(varDict):
     return (varDict)
 
 
+# Determines if chemical "name" is an environmental variable or not.
+# return True for temperature, pressure, ...
+def isEnvironment(varName):
+    if (varName.lower() in {"temperature", "pressure"}):
+        return(True)
+
+    return(False)
+
+
 # Write CSV file suitable for initial_conditions.csv in MusicBox.
 # initValues = dictionary of Musica varnames and (WACCM name, value, units)
 def writeInitCSV(initValues, filename):
@@ -279,7 +288,11 @@ def writeInitCSV(initValues, filename):
         else:
             fp.write(",")
 
-        fp.write("{} [{}]".format(key, value[unitIndex]))
+        reaction_type = "CONC"
+        if isEnvironment(key):
+            reaction_type = "ENV"
+            
+        fp.write("{}.{} [{}]".format(reaction_type, key, value[unitIndex]))
     fp.write("\n")
 
     # write the variable values
@@ -335,27 +348,15 @@ def insertIntoTemplate(initValues, templateDir):
         with open(myConfigFile) as jsonFile:
             myConfig = json.load(jsonFile)
 
-        # locate the section for chemical concentrations
-        chemSpeciesTag = "chemical species"
-        chemSpecies = myConfig[chemSpeciesTag]
-        logger.info(f"Replace chemSpecies = {chemSpecies}")
-        del myConfig[chemSpeciesTag]  # delete the existing section
-
-        # set up dictionary of chemicals and initial values
-        chemValueDict = {}
+        # retrieve temperature and pressure
         temperature = 0.0
         pressure = 0.0
-        for key, value in initValues.items():
-            if key == "temperature":
-                temperature = safeFloat(value[valueIndex])
-                continue
-            if key == "pressure":
-                pressure = safeFloat(value[valueIndex])
-                continue
-
-            chemValueDict[key] = {f"initial value [{value[unitIndex]}]": value[valueIndex]}
-
-        myConfig[chemSpeciesTag] = chemValueDict
+        key = "temperature"
+        if key in initValues:
+            temperature = safeFloat(initValues[key][valueIndex])
+        key = "pressure"
+        if key in initValues:
+            pressure = safeFloat(initValues[key][valueIndex])
 
         # replace the values of temperature and pressure
         envConditionsTag = "environmental conditions"
@@ -394,8 +395,13 @@ def main():
     if ("waccmDir" in myArgs):
         waccmDir = myArgs.get("waccmDir")
 
-    musicaDir = os.path.dirname(Examples.TS1.path)
+    musicaDir = os.path.dirname(Examples.WACCM.path)
+    if ("musicaDir" in myArgs):
+        musicaDir = myArgs.get("musicaDir")
+
     template = os.path.dirname(Examples.TS1.path)
+    if ("template" in myArgs):
+        template = myArgs.get("template")
 
     # get the date-time to retrieve
     dateStr = None
@@ -456,11 +462,13 @@ def main():
     if (outputCSV):
         # Write CSV file for MusicBox initial conditions.
         csvName = os.path.join(musicaDir, "initial_conditions.csv")
+        logger.info(f"csvName = {csvName}")
         writeInitCSV(varValues, csvName)
 
     if (outputJSON):
         # Write JSON file for MusicBox initial conditions.
         jsonName = os.path.join(musicaDir, "initial_config.json")
+        logger.info(f"jsonName = {jsonName}")
         writeInitJSON(varValues, jsonName)
 
     logger.info(f"Insert values into template {template}")

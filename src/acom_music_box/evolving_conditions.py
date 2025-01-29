@@ -124,48 +124,77 @@ class EvolvingConditions:
         evolving_conditions = EvolvingConditions()
 
         # Check if 'evolving conditions' is a key in the JSON config
-        if 'evolving conditions' in config_JSON:
-            if len(config_JSON['evolving conditions'].keys()) > 0:
-                # Construct the path to the evolving conditions file
+        if (not 'evolving conditions' in config_JSON):
+            return(evolving_conditions)
+        if (len(list(config_JSON['evolving conditions'].keys())) == 0):
+            return(evolving_conditions)
 
+        evolveCond = config_JSON['evolving conditions']
+        logger.debug(f"evolveCond: {evolveCond}")
+        if 'filepaths' in evolveCond:
+            file_paths = evolveCond['filepaths']
+
+            # loop through the CSV files
+            allReactions = set()        # provide warning for duplicates that will override
+            for file_path in file_paths:
+                # read initial conditions from CSV file
                 evolving_conditions_path = os.path.join(
-                    os.path.dirname(path_to_json),
-                    list(config_JSON['evolving conditions'].keys())[0])
+                    os.path.dirname(path_to_json), file_path)
 
-                evolving_conditions = EvolvingConditions.read_conditions_from_file(
+                fileReactions = evolving_conditions.read_conditions_from_file(
                     evolving_conditions_path)
+                logger.debug(f"evolving_conditions.times = {evolving_conditions.times}")
+                logger.debug(f"evolving_conditions.conditions = {evolving_conditions.conditions}")
+
+                # any duplicate conditions?
+                overrideSet = allReactions.intersection(fileReactions)
+                if (len(overrideSet) > 0):
+                    logger.warning("File {} will override earlier conditions {}"
+                        .format(file_path, sorted(overrideSet)))
+                allReactions = allReactions.union(fileReactions)
 
         return evolving_conditions
 
     def add_condition(self, time_point, conditions):
         """
         Add an evolving condition at a specific time point.
+        Keep the two lists sorted in order by time.
+        New arrivals will probably come at the end of the list.
 
         Args:
             time_point (float): The time point for the evolving condition.
             conditions (Conditions): The associated conditions at the given time point.
         """
-        self.time.append(time_point)
-        self.conditions.append(conditions)
+        # Work backward from end of list, looking for first time <= this new time.
+        timeIndex = len(self.times)
+        while (timeIndex > 0
+            and self.times[timeIndex - 1] > time_point):
+            timeIndex -= 1
 
-    @classmethod
-    def read_conditions_from_file(cls, file_path):
+        self.times.insert(timeIndex, time_point)
+        self.conditions.insert(timeIndex, conditions)
+
+    def read_conditions_from_file(self, file_path):
         """
         Read conditions from a file and update the evolving conditions.
 
         Args:
             file_path (str): The path to the file containing conditions UI_JSON.
+
+        Returns:
+            set: the headers read from the CSV file;
+                used for warning about condition overrides
         """
 
-        times = []
-        conditions = []
-
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(file_path, skipinitialspace=True)
+        header_set = set(df.columns)
 
         # if present these columns must use these names
         pressure_key = 'ENV.pressure.Pa'
         temperature_key = 'ENV.temperature.K'
         time_key = 'time.s'
+
+        header_set.remove(time_key)
 
         time_and_environment_keys = [pressure_key, temperature_key, time_key]
         # other keys will depend on the species names and reaction labels configured in the mechanism
@@ -196,15 +225,16 @@ class EvolvingConditions:
                 else:
                     reaction_rates[f'{condition_type}.{label}'] = row[key]
 
-            times.append(time)
-            conditions.append(
+            self.add_condition(time,
                 Conditions(
                     pressure,
                     temperature,
                     species_concentrations,
-                    reaction_rates))
+                    reaction_rates
+                )
+            )
 
-        return cls(times=times, conditions=conditions)
+        return(header_set)
 
     # allows len overload for this class
 
