@@ -270,9 +270,9 @@ def convertWaccm(varDict):
 # return True for temperature, pressure, ...
 def isEnvironment(varName):
     if (varName.lower() in {"temperature", "pressure"}):
-        return(True)
+        return (True)
 
-    return(False)
+    return (False)
 
 
 # Write CSV file suitable for initial_conditions.csv in MusicBox.
@@ -291,7 +291,7 @@ def writeInitCSV(initValues, filename):
         reaction_type = "CONC"
         if isEnvironment(key):
             reaction_type = "ENV"
-            
+
         fp.write("{}.{} [{}]".format(reaction_type, key, value[unitIndex]))
     fp.write("\n")
 
