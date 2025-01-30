@@ -49,4 +49,3 @@ def test_waccm_to_music_box_conversion(temp_dir):
     assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_conditions.csv"))
     assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_config.json"))
     assert os.path.exists(os.path.join(temp_dir, "config.zip"))
-
