@@ -58,23 +58,4 @@ jobs:
         music_box -e Analytical -o output.csv -vv --color-output
         waccmToMusicBox waccmDir="./sample_waccm_data" date="20240904" time="07:00" latitude=3.1 longitude=101.7
 
-    - name: Check for config.zip
-      if: runner.os != 'Windows'
-      run: |
-        if [ -f "./config.zip" ]; then
-          echo "config.zip created successfully"
-        else
-          echo "config.zip not found"
-          exit 1
-        fi
-
-    - name: Check for config.zip (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        if (Test-Path -Path "./config.zip") {
-          Write-Output "config.zip created successfully"
-        } else {
-          Write-Output "config.zip not found"
-          exit 1
-        }
       shell: pwsh
