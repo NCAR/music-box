@@ -424,6 +424,7 @@ def main():
     # get the requested (diagnostic) output
     outputCSV = False
     outputJSON = False
+    insertIntoConfig = False
     if ("output" in myArgs):
         # parameter is like: output=CSV,JSON
         outputFormats = myArgs.get("output").split(",")
@@ -471,8 +472,9 @@ def main():
         logger.info(f"jsonName = {jsonName}")
         writeInitJSON(varValues, jsonName)
 
-    logger.info(f"Insert values into template {template}")
-    insertIntoTemplate(varValues, template)
+    if (insertIntoConfig):
+        logger.info(f"Insert values into template {template}")
+        insertIntoTemplate(varValues, template)
 
     logger.info(f"End time: {datetime.datetime.now()}")
 
