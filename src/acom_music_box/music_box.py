@@ -129,12 +129,12 @@ class MusicBox:
 
         output_array.append(headers)
 
-        curr_time = 0
+        curr_time = 0.0
         next_output_time = curr_time
         # runs the simulation at each timestep
         simulation_length = self.box_model_options.simulation_length
         with tqdm(total=simulation_length, desc="Simulation Progress", unit=f" [model integration steps ({self.box_model_options.chem_step_time} s)]", leave=False) as pbar:
-            while curr_time < simulation_length:
+            while curr_time <= simulation_length:
                 # iterates evolving  conditions if enough time has elapsed
                 while (next_conditions is not None and next_conditions_time <= curr_time):
 
@@ -170,6 +170,12 @@ class MusicBox:
                     if callback is not None:
                         df = pd.DataFrame(output_array[:-1], columns=output_array[0])
                         callback(df, curr_time, curr_conditions, self.box_model_options.simulation_length)
+
+                    # We want to output the initial state before the first solve().
+                    # But we also want to avoid solving() beyond the last output.
+                    # Solution is to bail out mid-loop if we completed the final output step.
+                    if (next_output_time > simulation_length):
+                        break
 
                 # ensure the time step is not greater than the next update to the
                 # evolving conditions or the next output time
