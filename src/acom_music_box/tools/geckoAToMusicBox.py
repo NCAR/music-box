@@ -300,8 +300,8 @@ def main():
     for r in reactions:
         for s in r['reactants'] + r['products']:
             unique_species.add(s['name'])
-    conditions = set(initial_conditions.keys())
 
+    conditions = set(initial_conditions.keys())
     # find species that don't have initial conditions
     missing_conditions = unique_species - conditions - set(peroxy_groups.keys()) - set(['NOTHING'])
     print(missing_conditions)
