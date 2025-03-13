@@ -55,6 +55,7 @@ class TestDataOutput(unittest.TestCase):
     def test_output_csv(self):
         args = Namespace(output=self.csv_path, output_format='csv')
         data_output = DataOutput(self.df, args)
+        data_output._append_units_to_columns()
         data_output.output()
         self.assertTrue(os.path.exists(self.csv_path))
 

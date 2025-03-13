@@ -1,4 +1,4 @@
-from acom_music_box import MusicBox, Examples
+from acom_music_box import MusicBox, Examples, DataOutput
 import os
 
 import csv
@@ -15,7 +15,9 @@ class TestCarbonBond5:
 
         # solves and saves output
         df = box_model.solve()
-        model_output = [df.columns.values.tolist()] + df.values.tolist()
+        dataOutput = DataOutput(df, None)
+        dataOutput._append_units_to_columns()       # for CSV output
+        model_output = [dataOutput.df.columns.values.tolist()] + dataOutput.df.values.tolist()
 
         current_dir = os.path.dirname(__file__)
         expected_results_path = os.path.join(current_dir, "expected_results/full_gas_phase_mechanism.csv")
@@ -91,6 +93,11 @@ class TestCarbonBond5:
             "CONC.HOCL",
             "CONC.OH",
         ]
+
+        # append units to those chemicals for CSV comparison
+        concUnits = ".mol m-3"
+        concs_to_test = [conc + concUnits for conc in concs_to_test]
+
         model_output_header = model_output[0]
         test_output_header = test_output[0]
 
