@@ -1,0 +1,163 @@
+{
+  "camp-data" : [
+    {
+      "name" : "Chapman",
+      "type" : "MECHANISM",
+      "reactions" : [
+        {
+          "type" : "PHOTOLYSIS",
+          "reactants" : {
+            "O2" : { }
+          },
+          "products" : {
+            "O" : { "yield" : 2.0 }
+          },
+          "MUSICA name" : "O2_1"
+        },
+        {
+          "type" : "PHOTOLYSIS",
+          "reactants" : {
+            "O3" : { }
+          },
+          "products" : {
+            "O1D" : { },
+            "O2" : { }
+          },
+          "MUSICA name" : "O3_1"
+        },
+        {
+          "type" : "PHOTOLYSIS",
+          "reactants" : {
+            "O3" : { }
+          },
+          "products" : {
+            "O" : { },
+            "O2" : { }
+          },
+          "MUSICA name" : "O3_2"
+        },
+        {
+          "type" : "ARRHENIUS",
+          "reactants" : {
+            "O1D" : { },
+            "N2" : { }
+          },
+          "products" : {
+            "O" : { },
+            "N2" : { }
+          },
+          "A" : 2.15e-11,
+          "C" : 110.0
+        },
+        {
+          "type" : "ARRHENIUS",
+          "reactants" : {
+            "O1D" : { },
+            "O2" : { }
+          },
+          "products" : {
+            "O" : { },
+            "O2" : { }
+          },
+          "A" : 3.3e-11,
+          "C" : 55.0
+        },
+        {
+          "type" : "ARRHENIUS",
+          "reactants" : {
+            "O" : { },
+            "O3" : { }
+          },
+          "products" : {
+            "O2" : { "yield" : 2.0 }
+          },
+          "A" : 8.0e-12,
+          "C" : -2060.00
+        },
+        {
+          "type" : "ARRHENIUS",
+          "reactants" : {
+            "O" : { },
+            "O2" : { },
+            "M" : { }
+          },
+          "products" : {
+            "O3" : { },
+            "M" : { }
+          },
+          "A" : 6.0e-34,
+          "B" : 2.4
+        },
+        {
+          "type" : "EMISSION",
+          "species" : "O1D",
+          "MUSICA name" : "O1D"
+        },
+        {
+          "type" : "EMISSION",
+          "species" : "O",
+          "MUSICA name" : "O"
+        },
+        {
+          "type" : "EMISSION",
+          "species" : "O3",
+          "MUSICA name" : "O3"
+        },
+        {
+          "type" : "FIRST_ORDER_LOSS",
+          "species" : "N2",
+          "MUSICA name" : "N2"
+        },
+        {
+          "type" : "FIRST_ORDER_LOSS",
+          "species" : "O2",
+          "MUSICA name" : "O2"
+        },
+        {
+          "type" : "FIRST_ORDER_LOSS",
+          "species" : "CO2",
+          "MUSICA name" : "CO2"
+        },
+        {
+          "type" : "FIRST_ORDER_LOSS",
+          "species" : "Ar",
+          "MUSICA name" : "Ar"
+        },
+        {
+          "type" : "FIRST_ORDER_LOSS",
+          "species" : "H2O",
+          "MUSICA name" : "H2O"
+        }
+      ]
+    },
+    {
+      "name" : "droplet phase",
+      "type" : "AERO_PHASE",
+      "species" : ["aH2O"]
+    },
+    {
+      "type" : "AERO_REP_MODAL_BINNED_MASS",
+      "name" : "cloud",
+      "modes/bins" :
+      {
+        "single phase mode" :
+        {
+          "type" : "MODAL",
+          "phases" : [ "droplet phase" ],
+          "shape" : "LOG_NORMAL",
+          "geometric mean diameter" : 2.5e-8,
+          "geometric standard deviation" : 1.2
+        },
+        "binned aerosol" :
+        {
+          "type" : "BINNED",
+          "phases" : [ "droplet phase" ],
+          "bins" : 1,
+          "minimum diameter [m]" : 8.0e-9,
+          "maximum diameter [m]" : 1.0e-6,
+          "scale" : "LOG"
+        }
+      }
+    }
+  ]
+}
