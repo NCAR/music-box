@@ -110,7 +110,6 @@ class DataOutput:
 
     def _output_csv(self):
         """Handles CSV output."""
-        self._append_units_to_columns()
         if self.args.output:
             self._ensure_output_path()
             self.df.to_csv(self.args.output, index=False)
@@ -127,7 +126,6 @@ class DataOutput:
 
     def _output_terminal(self):
         """Handles output to terminal."""
-        self._append_units_to_columns()
         print(self.df.to_csv(index=False))
 
     def output(self):
@@ -137,8 +135,8 @@ class DataOutput:
             self.args.output = self._get_default_filename()
 
         # Determine output type and call the respective method
-        if self.args.output_format is None or self.args.output_format == 'terminal':
-            self._output_terminal()
+        # always display solved results on terminal
+        self._output_terminal()
 
         # Even if we are printing to the terminal, we still allow output to be written to csv if an output path is provided
         if (self.args.output_format == 'csv') or (self.args.output is not None and self.args.output_format == 'terminal'):
