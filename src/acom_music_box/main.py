@@ -134,8 +134,10 @@ def main():
 
     result = myBox.solve(callback=None)
 
-    # Create an instance of DataOutput
+    # Create an instance of DataOutput for multiple output formats.
     dataOutput = DataOutput(result, args)
+    if (args.output_format != "netcdf"):
+        dataOutput._append_units_to_columns()
     dataOutput.output()
 
     # Create an instance of PlotOutput
