@@ -1,0 +1,32 @@
+{
+    "box model options" : {
+      "grid"                      : "box",
+      "chemistry time step [min]" : 5.0,
+      "output time step [hr]"     : 1.0,
+      "simulation length [hr]"    : 2.5
+    },
+    "chemical species" : {
+      "N2"   : { "initial value [mol m-3]" : 3.29e1  },
+      "O2"   : { "initial value [mol m-3]" : 8.84e0  },
+      "Ar"   : { "initial value [mol m-3]" : 3.92e-1 },
+      "CO2"  : { "initial value [mol m-3]" : 1.69e-2 },
+      "O"    : { "initial value [mol m-3]" : 1.0e-5 }
+    },
+    "environmental conditions" : {
+      "temperature" : { "initial value [K]"   : 298.0 },
+      "pressure"    : { "initial value [atm]" : 1.0   }
+    },
+    "model components" : [
+      {
+        "type" : "CAMP",
+        "configuration file" : "camp_data/config.json",
+        "override species" : {
+          "M" : { "mixing ratio mol mol-1" : 1.0 }
+        },
+        "suppress output" : {
+          "M" : { }
+        }
+      }
+    ]
+  }
+  
