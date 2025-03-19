@@ -15,7 +15,7 @@ Copyright (C) 2020 National Science Foundation - National Center for Atmospheric
 
 # Installation
 ```
-pip install acom_music_box
+pip install acom-music-box
 ```
 
 # Command line tool
