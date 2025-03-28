@@ -30,6 +30,7 @@ def parse_arguments():
     parser.add_argument(
         '-o', '--output',
         type=str,
+        action="append",
         help=("Path to save the output file, including the file name."
             + "\nIf not provided, result will be printed to the console."
             + "\nUse the file extension to specify the output format: .csv or .nc (NetCDF)")
