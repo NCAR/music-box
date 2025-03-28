@@ -57,6 +57,12 @@ Output can be saved to a file in csv format when a filename is not specified. In
 music_box -e Chapman
 ```
 
+You may also specify multiple output files with different formats, using the file extension.
+
+```
+music_box -e Analytical -o results.csv -o results.nc
+```
+
 You can also run your own configuration
 
 ```
