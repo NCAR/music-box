@@ -1,0 +1,27 @@
+{
+    "box model options" : {
+      "grid"                      : "box",
+      "chemistry time step [min]" : 5.0,
+      "output time step [hr]"     : 1.0,
+      "simulation length [hr]"    : 2.5
+    },
+    "initial conditions" : {
+      "initial.csv" : {
+        "properties" : {
+          "ENV.pressure" : { "units" : "atm" }
+        }
+      }
+    },
+    "model components" : [
+      {
+        "type" : "CAMP",
+        "configuration file" : "camp_data/config.json",
+        "override species" : {
+          "M" : { "mixing ratio mol mol-1" : 1.0 }
+        },
+        "suppress output" : {
+          "M" : { }
+        }
+      }
+    ]
+  }
