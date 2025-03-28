@@ -30,13 +30,9 @@ def parse_arguments():
     parser.add_argument(
         '-o', '--output',
         type=str,
-        help='Path to save the output file, including the file name. If not provided, result will be printed to the console.'
-    )
-    parser.add_argument(
-        '--output-format',
-        choices=['csv', 'netcdf', 'terminal'],
-        default='terminal',
-        help="Specify output format: 'terminal' (default), 'csv', or 'netcdf'."
+        help=("Path to save the output file, including the file name."
+            + "\nIf not provided, result will be printed to the console."
+            + "\nUse the file extension to specify the output format: .csv or .nc (NetCDF)")
     )
     parser.add_argument(
         '-v', '--verbose',
@@ -136,8 +132,6 @@ def main():
 
     # Create an instance of DataOutput for multiple output formats.
     dataOutput = DataOutput(result, args)
-    if (args.output_format != "netcdf"):
-        dataOutput._append_units_to_columns()
     dataOutput.output()
 
     # Create an instance of PlotOutput

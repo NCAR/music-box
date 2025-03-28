@@ -33,7 +33,7 @@ class DataOutput:
     ...     'ENV.number_density_air': [102, 5096, 850960],
     ...     'time': [0, 1, 2]
     ... })
-    >>> args = Namespace(output='output.nc', output_format='netcdf')
+    >>> args = Namespace(output='output.nc')
     >>> data_output = DataOutput(df, args)
     >>> data_output.output()
     """
@@ -54,7 +54,6 @@ class DataOutput:
         The `args` argument should have the following attributes:
             - output : str
                 The path to save the output file.
-            - output_format : str, optional
                 Format of the output file, either 'csv' or 'netcdf'. Defaults to 'csv'.
         """
         self.df = df.copy(deep=True)
@@ -65,11 +64,12 @@ class DataOutput:
             'ENV.number_density_air': 'kg m-3',
             'time': 's'
         }
+        self.output_format = 'csv'
 
     def _get_default_filename(self):
         """Generate a default filename based on the current datetime and output format."""
         now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        extension = 'csv' if self.args.output_format == 'csv' else 'nc'
+        extension = 'csv' if self.output_format == 'csv' else 'nc'
         return f"music_box_{now}.{extension}"
 
     def _ensure_output_path(self):
@@ -135,12 +135,20 @@ class DataOutput:
             self.args.output = self._get_default_filename()
 
         # Determine output type and call the respective method
+        nameonly, extension = os.path.splitext(self.args.output)
+        if extension.lower() in {'.csv', '.txt'}:
+            self.output_format = 'csv'
+        if extension.lower() in {'.nc', '.nc4'}:
+            self.output_format = 'netcdf'
+
         # always display solved results on terminal
         self._output_terminal()
 
         # Even if we are printing to the terminal, we still allow output to be written to csv if an output path is provided
-        if (self.args.output_format == 'csv') or (self.args.output is not None and self.args.output_format == 'terminal'):
+        if (self.output_format == 'csv') or (self.args.output is not None and self.output_format == 'terminal'):
+            self._append_units_to_columns()
             self._output_csv()
 
-        if self.args.output_format == 'netcdf':
+        if self.output_format == 'netcdf':
             self._output_netcdf()
+
