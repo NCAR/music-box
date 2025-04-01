@@ -146,12 +146,10 @@ class DataOutput:
 
     def output(self):
         """Main method to handle output based on the provided arguments."""
-        # always display solved results on console
-        self._output_terminal()
-
-        # Default output paths based on format
+        # display solved results only on console if no --output specified
         if self.args.output is None:
-            self.args.output = [self._get_default_filename()]
+            self._output_terminal()
+            return
 
         # loop through all the mixed-format output files
         save_columns = self.df.columns.copy()   # for restoring after CSV output
