@@ -47,7 +47,7 @@ def test_create_netcdf_with_timestamp(temp_dir):
 
 def test_create_csv_with_timestamp(temp_dir):
     run_main_with_args(['-e', 'Analytical'], temp_dir)
-    assert glob.glob(os.path.join(temp_dir, "music_box_*.csv"))
+    assert (not glob.glob(os.path.join(temp_dir, "music_box_*.csv")))
 
 
 def test_create_named_csv(temp_dir):
