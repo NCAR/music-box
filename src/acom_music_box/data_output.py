@@ -33,7 +33,7 @@ class DataOutput:
     ...     'ENV.number_density_air': [102, 5096, 850960],
     ...     'time': [0, 1, 2]
     ... })
-    >>> args = Namespace(output='output.nc', output_format='netcdf')
+    >>> args = Namespace(output='output.nc')
     >>> data_output = DataOutput(df, args)
     >>> data_output.output()
     """
@@ -54,7 +54,6 @@ class DataOutput:
         The `args` argument should have the following attributes:
             - output : str
                 The path to save the output file.
-            - output_format : str, optional
                 Format of the output file, either 'csv' or 'netcdf'. Defaults to 'csv'.
         """
         self.df = df.copy(deep=True)
@@ -65,26 +64,32 @@ class DataOutput:
             'ENV.number_density_air': 'kg m-3',
             'time': 's'
         }
+        self.default_output_format = 'csv'
 
     def _get_default_filename(self):
         """Generate a default filename based on the current datetime and output format."""
         now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        extension = 'csv' if self.args.output_format == 'csv' else 'nc'
+        extension = 'csv' if self.default_output_format == 'csv' else 'nc'
         return f"music_box_{now}.{extension}"
 
-    def _ensure_output_path(self):
+    def _ensure_output_path(self, outPath):
         """Ensure the output path is valid and create directories if needed."""
-        if not self.args.output:
-            self.args.output = self._get_default_filename()
+        myFile = outPath
+        if not myFile:
+            myFile = self._get_default_filename()
 
-        if os.path.isdir(self.args.output):
-            self.args.output = os.path.join(
-                self.args.output, self._get_default_filename())
+        outDir, outFile = os.path.split(myFile)
+        if not outFile:
+            # no filename, just a directory like results/
+            myFile = os.path.join(
+                myFile, self._get_default_filename())
 
-        dir_path = os.path.dirname(self.args.output)
+        dir_path = os.path.dirname(myFile)
         if dir_path and not os.path.exists(dir_path):
             os.makedirs(dir_path, exist_ok=True)
             logger.info(f"Created directory: {dir_path}")
+
+        return(myFile)
 
     def _append_units_to_columns(self):
         """Append units to DataFrame column names based on unit mapping."""
@@ -94,7 +99,7 @@ class DataOutput:
             for col in self.df.columns
         ]
 
-    def _convert_to_netcdf(self):
+    def _convert_to_netcdf(self, toFile):
         """Convert DataFrame to xarray Dataset and save as NetCDF with attributes."""
         ds = self.df.set_index(['time']).to_xarray()
         for var in ds.data_vars:
@@ -106,41 +111,57 @@ class DataOutput:
         ds['ENV.number_density_air'].attrs = {'units': 'kg m-3'}
         ds['time'].attrs = {'units': 's'}
 
-        ds.to_netcdf(self.args.output)
+        ds.to_netcdf(toFile)
 
-    def _output_csv(self):
+    def _output_csv(self, toFile):
         """Handles CSV output."""
-        if self.args.output:
-            self._ensure_output_path()
-            self.df.to_csv(self.args.output, index=False)
-            logger.info(f"CSV output written to: {self.args.output}")
+        myFile = toFile
+        if myFile:
+            myFile = self._ensure_output_path(myFile)
+            self.df.to_csv(myFile, index=False)
+            logger.info(f"CSV output written to: {myFile}")
         else:
             print(self.df.to_csv(index=False))
 
-    def _output_netcdf(self):
+    def _output_netcdf(self, toFile):
         """Handles NetCDF output."""
-        if self.args.output:
-            self._ensure_output_path()
-        self._convert_to_netcdf()
-        logger.info(f"NetCDF output written to: {self.args.output}")
+        myFile = toFile
+        if myFile:
+            myFile = self._ensure_output_path(myFile)
+        self._convert_to_netcdf(myFile)
+        logger.info(f"NetCDF output written to: {myFile}")
 
     def _output_terminal(self):
         """Handles output to terminal."""
         print(self.df.to_csv(index=False))
 
+    def _get_output_format(self, out_filename):
+        # Determine output type to call the respective method
+        nameonly, extension = os.path.splitext(out_filename)
+        if extension.lower() in {'.csv', '.txt'}:
+            return('csv')
+        if extension.lower() in {'.nc', '.nc4'}:
+            return('netcdf')
+        return(self.default_output_format)
+
     def output(self):
         """Main method to handle output based on the provided arguments."""
-        # Default output paths based on format
+        # display solved results only on console if no --output specified
         if self.args.output is None:
-            self.args.output = self._get_default_filename()
+            self._output_terminal()
+            return
 
-        # Determine output type and call the respective method
-        # always display solved results on terminal
-        self._output_terminal()
+        # loop through all the mixed-format output files
+        save_columns = self.df.columns.copy()   # for restoring after CSV output
+        for myOutput in self.args.output:
+            # Determine output type and call the respective method
+            myFormat = self._get_output_format(myOutput)
 
-        # Even if we are printing to the terminal, we still allow output to be written to csv if an output path is provided
-        if (self.args.output_format == 'csv') or (self.args.output is not None and self.args.output_format == 'terminal'):
-            self._output_csv()
+            if myFormat == 'csv':
+                self._append_units_to_columns()
+                self._output_csv(myOutput)
+                self.df.columns = save_columns.copy()
 
-        if self.args.output_format == 'netcdf':
-            self._output_netcdf()
+            if myFormat == 'netcdf':
+                self._output_netcdf(myOutput)
+
