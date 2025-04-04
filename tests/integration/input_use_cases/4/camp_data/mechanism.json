@@ -1,0 +1,95 @@
+{
+  "camp-data" : [
+    {
+      "name" : "Chapman",
+      "type" : "MECHANISM",
+      "reactions" : [
+        {
+          "type" : "PHOTOLYSIS",
+          "reactants" : {
+            "O2" : { }
+          },
+          "products" : {
+            "O" : { "yield" : 2.0 }
+          },
+          "MUSICA name" : "O2_1"
+        },
+        {
+          "type" : "PHOTOLYSIS",
+          "reactants" : {
+            "O3" : { }
+          },
+          "products" : {
+            "O1D" : { },
+            "O2" : { }
+          },
+          "MUSICA name" : "O3_1"
+        },
+        {
+          "type" : "PHOTOLYSIS",
+          "reactants" : {
+            "O3" : { }
+          },
+          "products" : {
+            "O" : { },
+            "O2" : { }
+          },
+          "MUSICA name" : "O3_2"
+        },
+        {
+          "type" : "ARRHENIUS",
+          "reactants" : {
+            "O1D" : { },
+            "N2" : { }
+          },
+          "products" : {
+            "O" : { },
+            "N2" : { }
+          },
+          "A" : 2.15e-11,
+          "C" : 110.0
+        },
+        {
+          "type" : "ARRHENIUS",
+          "reactants" : {
+            "O1D" : { },
+            "O2" : { }
+          },
+          "products" : {
+            "O" : { },
+            "O2" : { }
+          },
+          "A" : 3.3e-11,
+          "C" : 55.0
+        },
+        {
+          "type" : "ARRHENIUS",
+          "reactants" : {
+            "O" : { },
+            "O3" : { }
+          },
+          "products" : {
+            "O2" : { "yield" : 2.0 }
+          },
+          "A" : 8.0e-12,
+          "C" : -2060.00
+        },
+        {
+          "type" : "ARRHENIUS",
+          "reactants" : {
+            "O" : { },
+            "O2" : { },
+            "M" : { }
+          },
+          "products" : {
+            "O3" : { },
+            "M" : { }
+          },
+          "A" : 6.0e-34,
+          "B" : 2.4
+        }
+      ]
+    }
+  ]
+}
+
