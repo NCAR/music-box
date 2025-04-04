@@ -17,13 +17,15 @@ logger = logging.getLogger(__name__)
 class MusicBox:
     """
     Represents a box model with attributes such as box model options, species list, reaction list,
-    initial conditions, and evolving conditions.
+    initial conditions, evolving conditions, solver, and state.
 
     Attributes:
         box_model_options (BoxModelOptions): Options for the box model simulation.
         initial_conditions (Conditions): Initial conditions for the simulation.
         evolving_conditions (List[EvolvingConditions]): List of evolving conditions over time.
         config_file (String): File path for the configuration file to be located. Default is "camp_data/config.json".
+        solver: The solver used for the box model simulation.
+        state: The current state of the box model simulation.
     """
 
     def __init__(
@@ -46,6 +48,7 @@ class MusicBox:
         self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([], [])
         self.config_file = config_file if config_file is not None else "camp_data/config.json"
         self.solver = None
+        self.state = None
 
     def add_evolving_condition(self, time_point, conditions):
         """
@@ -107,10 +110,9 @@ class MusicBox:
         if (self.solver is None):
             raise Exception("Error: MusicBox object {} has no solver."
                             .format(self))
-        rate_constant_ordering = musica.user_defined_reaction_rates(
-            self.solver)
 
-        species_constant_ordering = musica.species_ordering(self.solver)
+        rate_constant_ordering = musica.user_defined_reaction_rates(self.solver, self.state)
+        species_constant_ordering = musica.species_ordering(self.solver, self.state)
 
         # adds species headers to output
         ordered_species_headers = [
@@ -121,11 +123,10 @@ class MusicBox:
         for spec in ordered_species_headers:
             headers.append("CONC." + spec)
 
-        ordered_concentrations = self.order_species_concentrations(
-            curr_conditions, species_constant_ordering).tolist()
+        ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering).tolist()
+        self.state.ordered_concentrations = ordered_concentrations
 
-        ordered_rate_constants = self.order_reaction_rates(
-            curr_conditions, rate_constant_ordering).tolist()
+        ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering).tolist()
 
         output_array.append(headers)
 
@@ -139,8 +140,7 @@ class MusicBox:
                 while (next_conditions is not None and next_conditions_time <= curr_time):
 
                     curr_conditions.update_conditions(next_conditions)
-                    ordered_rate_constants = self.order_reaction_rates(
-                        curr_conditions, rate_constant_ordering)
+                    ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering)
 
                     # iterates next_conditions if there are remaining evolving
                     # conditions
@@ -154,6 +154,10 @@ class MusicBox:
                 #  calculate air density from the ideal gas law
                 air_density = curr_conditions.pressure / (GAS_CONSTANT * curr_conditions.temperature)
 
+                self.state.conditions[0].temperature = curr_conditions.temperature
+                self.state.conditions[0].pressure = curr_conditions.pressure
+                self.state.conditions[0].air_density = air_density
+
                 # outputs to output_array if enough time has elapsed
                 if (next_output_time <= curr_time):
                     row = []
@@ -161,8 +165,8 @@ class MusicBox:
                     row.append(curr_conditions.temperature)
                     row.append(curr_conditions.pressure)
                     row.append(air_density)
-                    for conc in ordered_concentrations:
-                        row.append(conc)
+                    row.extend(self.state.ordered_concentrations)
+
                     output_array.append(row)
                     next_output_time += self.box_model_options.output_step_time
 
@@ -188,14 +192,9 @@ class MusicBox:
                 # solves and updates concentration values in concentration array
                 if (not ordered_concentrations or len(ordered_concentrations) == 0):
                     logger.info("Warning: ordered_concentrations list is empty.")
-                musica.micm_solve(
-                    self.solver,
-                    time_step,
-                    curr_conditions.temperature,
-                    curr_conditions.pressure,
-                    air_density,
-                    ordered_concentrations,
-                    ordered_rate_constants)
+                self.state.ordered_rate_constants = ordered_rate_constants
+
+                musica.micm_solve(self.solver, self.state, time_step)
 
                 # increments time
                 curr_time += time_step
@@ -233,6 +232,8 @@ class MusicBox:
 
         # Initalize the musica solver
         self.solver = musica.create_solver(camp_path, musica.micmsolver.rosenbrock_standard_order, 1)
+        self.state =  musica.create_state(self.solver)
+
 
     @staticmethod
     def order_reaction_rates(curr_conditions, rate_constant_ordering):
@@ -277,6 +278,8 @@ class MusicBox:
         """
         concentrations = np.zeros(len(species_constant_ordering), dtype=np.float64)
 
+        print(f"species_constant_ordering = {species_constant_ordering}")
+        print(f"curr_conditions.species_concentrations = {curr_conditions.species_concentrations}")
         for species, _ in species_constant_ordering.items():
             if species not in curr_conditions.species_concentrations:
                 logger.warning(f"Species '{species}' not found in current conditions.")
