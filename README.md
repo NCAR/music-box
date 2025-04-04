@@ -33,34 +33,34 @@ Run an example. Notice that the output, in csv format, is printed to the termina
 music_box -e Chapman
 ```
 
-Output can be saved to a csv file and printed to the terminal.
+Output can be saved to a csv file (the default format) and printed to the terminal.
+
+```
+music_box -e Chapman -o output
+```
+
+Output can be saved to a csv file by specifying the .csv extension for Comma-Separated Values.
 
 ```
 music_box -e Chapman -o output.csv
 ```
 
-Output can be saved to a csv file and the terminal output can be suppressed by specifying the `--output-format`
+Output can be saved to a file as netcdf file by specifying the .nc file extension.
 
 ```
-music_box --output-format csv -e Chapman -o output.csv
+music_box -e Chapman -o output.nc
 ```
 
-Output can be saved to a file as netcdf file when `--output-format` netcdf is passed
+Output can be saved to a file in csv format when a filename is not specified. In this case a timestamped csv file is made.
 
 ```
-music_box --output-format netcdf -e Chapman -o output.nc
+music_box -e Chapman
 ```
 
-Output can be saved to a file in csv format when a filename is not specified. In this case a timestamped csv file is made
+You may also specify multiple output files with different formats, using the file extension.
 
 ```
-music_box --output-format csv -e Chapman
-```
-
-Output can be saved to a file in netcdf format when a filename is not specified. In this case a timestamped netcdf file is made
-
-```
-music_box --output-format netcdf -e Chapman
+music_box -e Analytical -o results.csv -o results.nc
 ```
 
 You can also run your own configuration
@@ -95,7 +95,7 @@ music_box -h
 It is used like this
 
 ```
- music_box -e TS1 --output-format csv --plot O3 --plot-output-unit "ppb"
+ music_box -e TS1 --plot O3 --plot-output-unit "ppb"
 ```
 
 ### gnuplot
