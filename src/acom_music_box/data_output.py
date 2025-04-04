@@ -89,7 +89,7 @@ class DataOutput:
             os.makedirs(dir_path, exist_ok=True)
             logger.info(f"Created directory: {dir_path}")
 
-        return(myFile)
+        return (myFile)
 
     def _append_units_to_columns(self):
         """Append units to DataFrame column names based on unit mapping."""
@@ -139,10 +139,10 @@ class DataOutput:
         # Determine output type to call the respective method
         nameonly, extension = os.path.splitext(out_filename)
         if extension.lower() in {'.csv', '.txt'}:
-            return('csv')
+            return ('csv')
         if extension.lower() in {'.nc', '.nc4'}:
-            return('netcdf')
-        return(self.default_output_format)
+            return ('netcdf')
+        return (self.default_output_format)
 
     def output(self):
         """Main method to handle output based on the provided arguments."""
@@ -164,4 +164,3 @@ class DataOutput:
 
             if myFormat == 'netcdf':
                 self._output_netcdf(myOutput)
-
