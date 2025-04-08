@@ -278,8 +278,6 @@ class MusicBox:
         """
         concentrations = np.zeros(len(species_constant_ordering), dtype=np.float64)
 
-        print(f"species_constant_ordering = {species_constant_ordering}")
-        print(f"curr_conditions.species_concentrations = {curr_conditions.species_concentrations}")
         for species, _ in species_constant_ordering.items():
             if species not in curr_conditions.species_concentrations:
                 logger.warning(f"Species '{species}' not found in current conditions.")
