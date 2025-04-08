@@ -157,6 +157,7 @@ class MusicBox:
                 self.state.conditions[0].temperature = curr_conditions.temperature
                 self.state.conditions[0].pressure = curr_conditions.pressure
                 self.state.conditions[0].air_density = air_density
+                self.state.ordered_rate_constants = ordered_rate_constants
 
                 # outputs to output_array if enough time has elapsed
                 if (next_output_time <= curr_time):
@@ -192,7 +193,6 @@ class MusicBox:
                 # solves and updates concentration values in concentration array
                 if (not ordered_concentrations or len(ordered_concentrations) == 0):
                     logger.info("Warning: ordered_concentrations list is empty.")
-                self.state.ordered_rate_constants = ordered_rate_constants
 
                 musica.micm_solve(self.solver, self.state, time_step)
 
