@@ -232,8 +232,7 @@ class MusicBox:
 
         # Initalize the musica solver
         self.solver = musica.create_solver(camp_path, musica.micmsolver.rosenbrock_standard_order, 1)
-        self.state =  musica.create_state(self.solver)
-
+        self.state = musica.create_state(self.solver)
 
     @staticmethod
     def order_reaction_rates(curr_conditions, rate_constant_ordering):
