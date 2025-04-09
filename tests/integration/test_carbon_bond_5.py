@@ -1,7 +1,7 @@
 from acom_music_box import MusicBox, Examples, DataOutput
 import os
 
-import csv
+import pandas as pd
 import math
 
 
@@ -17,15 +17,17 @@ class TestCarbonBond5:
         df = box_model.solve()
         dataOutput = DataOutput(df, None)
         dataOutput._append_units_to_columns()       # for CSV output
-        model_output = [dataOutput.df.columns.values.tolist()] + dataOutput.df.values.tolist()
+        model_output = [dataOutput.df.columns.values.tolist()] + \
+            dataOutput.df.values.tolist()
 
         current_dir = os.path.dirname(__file__)
-        expected_results_path = os.path.join(current_dir, "expected_results/full_gas_phase_mechanism.csv")
+        expected_results_path = os.path.join(
+            current_dir, "expected_results/full_gas_phase_mechanism.csv")
 
-        # read wall_loss_test.csv into test_output
-        with open(expected_results_path, "r") as file:
-            reader = csv.reader(file)
-            test_output = list(reader)
+        # read full_gas_phase_mechanism.csv into a DataFrame
+        expected = pd.read_csv(expected_results_path)
+        test_output = [expected.columns.values.tolist()] + \
+            expected.values.tolist()
 
         concs_to_test = [
             "CONC.PAN",
