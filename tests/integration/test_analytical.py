@@ -1,5 +1,4 @@
 from acom_music_box import MusicBox, Examples
-import os
 
 import math
 import logging
