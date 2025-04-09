@@ -26,10 +26,10 @@ class TestDataOutput(unittest.TestCase):
         self.temp_dir.cleanup()
 
     def test_ensure_output_path_creates_directories(self):
-        args = Namespace(output=self.csv_path)
+        args = Namespace(output=[self.csv_path])
         data_output = DataOutput(self.df, args)
-        data_output._ensure_output_path()
-        self.assertTrue(os.path.exists(os.path.dirname(args.output)))
+        sure_path = data_output._ensure_output_path(self.csv_path)
+        self.assertTrue(os.path.exists(os.path.dirname(sure_path)))
 
     def test_append_units_to_columns(self):
         args = Namespace(output=None)
@@ -39,9 +39,9 @@ class TestDataOutput(unittest.TestCase):
         self.assertEqual(list(data_output.df.columns), expected_columns)
 
     def test_convert_to_netcdf(self):
-        args = Namespace(output=self.netcdf_path)
+        args = Namespace(output=[self.netcdf_path])
         data_output = DataOutput(self.df, args)
-        data_output._convert_to_netcdf()
+        data_output._convert_to_netcdf(self.netcdf_path)
         self.assertTrue(os.path.exists(self.netcdf_path))
 
         # Load the NetCDF file to check the attributes
@@ -53,8 +53,9 @@ class TestDataOutput(unittest.TestCase):
         ds.close()
 
     def test_output_csv(self):
-        args = Namespace(output=self.csv_path, output_format='csv')
+        args = Namespace(output=[self.csv_path])
         data_output = DataOutput(self.df, args)
+        data_output._append_units_to_columns()
         data_output.output()
         self.assertTrue(os.path.exists(self.csv_path))
 
@@ -64,7 +65,7 @@ class TestDataOutput(unittest.TestCase):
         self.assertEqual(list(output_df.columns), expected_columns)
 
     def test_output_netcdf(self):
-        args = Namespace(output=self.netcdf_path, output_format='netcdf')
+        args = Namespace(output=[self.netcdf_path])
         data_output = DataOutput(self.df, args)
         data_output.output()
         self.assertTrue(os.path.exists(self.netcdf_path))

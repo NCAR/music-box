@@ -1,7 +1,7 @@
 from acom_music_box import MusicBox, Examples
 import os
 
-import csv
+import pandas as pd
 import math
 
 
@@ -20,10 +20,9 @@ class TestWallLoss:
         current_dir = os.path.dirname(__file__)
         expected_results_path = os.path.join(current_dir, "expected_results/wall_loss_test.csv")
 
-        # read wall_loss_test.csv into test_output
-        with open(expected_results_path, "r") as file:
-            reader = csv.reader(file)
-            test_output = list(reader)
+        # read wall_loss_test.csv into a DataFrame
+        expected = pd.read_csv(expected_results_path)
+        test_output = [expected.columns.values.tolist()] + expected.values.tolist()
 
         concs_to_test = ["CONC.SOA1", "CONC.SOA2", "CONC.a-pinene", "CONC.O3"]
         model_output_header = model_output[0]
