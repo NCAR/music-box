@@ -5,31 +5,8 @@
     "output time step [min]": 1.0,
     "simulation length [day]": 3.0
   },
-  "chemical species": {
-    "Ar": {
-      "initial value [mol m-3]": 7.71e-3
-    },
-    "CO2": {
-      "initial value [mol m-3]": 3.08e-4
-    },
-    "H2O": {
-      "initial value [mol m-3]": 2.31e-2
-    },
-    "O": {
-      "initial value [mol m-3]": 3.58e-11
-    },
-    "O1D": {
-      "initial value [mol m-3]": 1.83e-17
-    },
-    "O2": {
-      "initial value [mol m-3]": 1.62e-1
-    },
-    "O3": {
-      "initial value [mol m-3]": 6.43e-6
-    },
-    "N2": {
-      "initial value [mol m-3]": 6.01e-1
-    }
+  "initial conditions": {
+    "filepaths": ["initial_concentrations.csv"]
   },
   "environmental conditions": {
     "temperature": {
@@ -40,9 +17,9 @@
     }
   },
   "evolving conditions": {
-    "conditions_Boulder.csv": {
-      "linear combinations": {}
-    }
+    "filepaths": [
+      "conditions_Boulder.csv"
+    ]
   },
   "model components": [
     {

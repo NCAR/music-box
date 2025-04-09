@@ -2,20 +2,9 @@
 {
   "box model options": {
     "grid": "box",
-    "chemistry time step [sec]": 1,
-    "output time step [sec]": 1,
-    "simulation length [sec]": 100
-  },
-  "chemical species": {
-    "A": {
-      "initial value [mol m-3]": 1
-    },
-    "B": {
-      "initial value [mol m-3]": 0
-    },
-    "C": {
-      "initial value [mol m-3]": 0
-    }
+    "chemistry time step [sec]": 2,
+    "output time step [sec]": 6,
+    "simulation length [sec]": 600
   },
   "environmental conditions": {
     "pressure": {
@@ -25,9 +14,14 @@
       "initial value [K]": 272.5
     }
   },
-  "evolving conditions": {
+  "evolving conditions": {},
+  "initial conditions": {
+    "filepaths": ["initial_conditions.csv"],
+    "data": [
+      ["ENV.temperature [K]", "ENV.pressure [Pa]", "CONC.A [mol m-3]", "CONC.B [mol m-3]"],
+      [200, 70000, 0.8, 0.2]
+    ]
   },
-  "initial conditions": {},
   "model components": [
     {
       "type": "CAMP",
