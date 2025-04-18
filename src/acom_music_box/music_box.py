@@ -81,22 +81,19 @@ class MusicBox:
         curr_conditions = self.initial_conditions
 
         # sets up next condition if evolving conditions is not empty
-        next_conditions = None
-        next_conditions_time = 0
         next_conditions_index = 0
         if (len(self.evolving_conditions) != 0):
             if (self.evolving_conditions.times[0] == 0):
                 initial_concentration = curr_conditions.species_concentrations
                 evolving_concentrations = self.evolving_conditions.conditions[0].species_concentrations
                 initial_concentration.update({k: float(v) for k, v in evolving_concentrations.items() if k in initial_concentration})
-            elif (self.evolving_conditions.times[0] != 0):
-                next_conditions_index = 0
-                next_conditions = self.evolving_conditions.conditions[0]
-                next_conditions_time = self.evolving_conditions.times[0]
-            elif (len(self.evolving_conditions) > 1):
-                next_conditions_index = 1
-                next_conditions = self.evolving_conditions.conditions[1]
-                next_conditions_time = self.evolving_conditions.times[1]
+                next_conditions_index += 1
+        if (len(self.evolving_conditions) > next_conditions_index):
+            next_conditions = self.evolving_conditions.conditions[next_conditions_index]
+            next_conditions_time = self.evolving_conditions.times[next_conditions_index]
+        else:
+            next_conditions = None
+            next_conditions_time = 0
 
         # initalizes output headers
         output_array = []
