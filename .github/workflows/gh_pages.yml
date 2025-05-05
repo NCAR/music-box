@@ -48,6 +48,8 @@ jobs:
 
       # If a push and default branch, copy build to _gh-pages/ as the "main"
       # deployment.
+      # If a push and default branch, copy build to _gh-pages/ as the "main"
+      # deployment.
       - name: Build and copy documentation (default branch)
         if: |
           contains(github.event_name, 'push') &&
@@ -60,7 +62,7 @@ jobs:
           # 1. the frozen version, represented as vX.X in the version switcher
           docker build -t music_box -f docker/Dockerfile.docs .
           id=$(docker create music_box)
-          docker cp $id:/build/docs/build/html tmpdocs
+          docker cp $id:/build/docs/sphinx tmpdocs
           docker rm -v $id
           version=$(sed -nr "s/^release = f'v(.+)\{suffix\}'.*$/\1/p" docs/source/conf.py)
           mv tmpdocs _build/html/versions/${version}
@@ -69,7 +71,7 @@ jobs:
           # edit conf.py to produce a version string that looks like vX.X (stable)
           docker build -t music_box -f docker/Dockerfile.docs --build-arg SUFFIX=" (stable)" .
           id=$(docker create music_box)
-          docker cp $id:/build/docs/build/html tmpdocs
+          docker cp $id:/build/docs/sphinx tmpdocs
           docker rm -v $id
           mv tmpdocs _build/html/versions/stable
           # Delete everything under _gh-pages/ that is from the
@@ -80,7 +82,8 @@ jobs:
           rsync -a _build/html/versions/stable/* _gh-pages/
           mkdir -p _gh-pages/versions
           rsync -a _build/html/versions/* _gh-pages/versions
-          # mv docs/switcher.json _gh-pages
+          ls -l _build/html/versions
+          ls -l _gh-pages/versions
 
       # If a push and not on default branch, then copy the build to
       # _gh-pages/branch/$brname (transforming '/' into '--')
