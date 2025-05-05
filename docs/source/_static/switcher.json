@@ -1,7 +1,17 @@
 [
-    {
-      "name": "dev",
-      "version": "dev",
-      "url": "https://ncar.github.io/music-box/branch/main/"
-    }
+  {
+    "name": "v2.7.0 (stable)",
+    "version": "v2.7.0 (stable)",
+    "url": "https://ncar.github.io/music-box"
+  },
+  {
+    "name": "v2.6.0",
+    "version": "v2.6.0",
+    "url": "https://ncar.github.io/music-box/versions/2.6.0"
+  },
+  {
+    "name": "dev",
+    "version": "dev",
+    "url": "https://ncar.github.io/music-box/branch/main/"
+  }
 ]
