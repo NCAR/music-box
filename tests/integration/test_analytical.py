@@ -23,9 +23,9 @@ class TestAnalytical:
         df = box_model.solve()
         output = [df.columns.values.tolist()] + df.values.tolist()
 
-        conc_a_index = output[0].index("CONC.A")
-        conc_b_index = output[0].index("CONC.B")
-        conc_c_index = output[0].index("CONC.C")
+        conc_a_index = output[0].index("CONC.A.mol m-3")
+        conc_b_index = output[0].index("CONC.B.mol m-3")
+        conc_c_index = output[0].index("CONC.C.mol m-3")
 
         # extracts model concentrations from data output
         model_concentrations = [

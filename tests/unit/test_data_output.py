@@ -12,10 +12,10 @@ class TestDataOutput(unittest.TestCase):
     def setUp(self):
         # Set up a sample DataFrame and arguments for testing
         self.df = pd.DataFrame({
-            'ENV.temperature': [290, 295, 300],
-            'ENV.pressure': [101325, 100000, 98500],
-            'ENV.number_density_air': [102, 5096, 850960],
-            'time': [0, 1, 2]
+            'ENV.temperature.K': [290, 295, 300],
+            'ENV.pressure.Pa': [101325, 100000, 98500],
+            'ENV.air number density.mol m-3': [102, 5096, 850960],
+            'time.s': [0, 1, 2]
         })
         self.temp_dir = tempfile.TemporaryDirectory()
         self.csv_path = os.path.join(self.temp_dir.name, 'output.csv')
@@ -35,7 +35,7 @@ class TestDataOutput(unittest.TestCase):
         args = Namespace(output=None)
         data_output = DataOutput(self.df, args)
         data_output._append_units_to_columns()
-        expected_columns = ['ENV.temperature.K', 'ENV.pressure.Pa', 'ENV.number_density_air.kg m-3', 'time.s']
+        expected_columns = ['ENV.temperature.K', 'ENV.pressure.Pa', 'ENV.air number density.mol m-3', 'time.s']
         self.assertEqual(list(data_output.df.columns), expected_columns)
 
     def test_convert_to_netcdf(self):
@@ -48,7 +48,7 @@ class TestDataOutput(unittest.TestCase):
         ds = xr.open_dataset(self.netcdf_path)
         self.assertEqual(ds['ENV.temperature'].attrs['units'], 'K')
         self.assertEqual(ds['ENV.pressure'].attrs['units'], 'Pa')
-        self.assertEqual(ds['ENV.number_density_air'].attrs['units'], 'kg m-3')
+        self.assertEqual(ds['ENV.number_density_air'].attrs['units'], 'mol m-3')
         self.assertEqual(ds['time'].attrs['units'], 's')
         ds.close()
 
@@ -61,7 +61,7 @@ class TestDataOutput(unittest.TestCase):
 
         # Check the contents of the CSV file
         output_df = pd.read_csv(self.csv_path)
-        expected_columns = ['ENV.temperature.K', 'ENV.pressure.Pa', 'ENV.number_density_air.kg m-3', 'time.s']
+        expected_columns = ['ENV.temperature.K', 'ENV.pressure.Pa', 'ENV.air number density.mol m-3', 'time.s']
         self.assertEqual(list(output_df.columns), expected_columns)
 
     def test_output_netcdf(self):
@@ -74,7 +74,7 @@ class TestDataOutput(unittest.TestCase):
         ds = xr.open_dataset(self.netcdf_path)
         self.assertEqual(ds['ENV.temperature'].attrs['units'], 'K')
         self.assertEqual(ds['ENV.pressure'].attrs['units'], 'Pa')
-        self.assertEqual(ds['ENV.number_density_air'].attrs['units'], 'kg m-3')
+        self.assertEqual(ds['ENV.number_density_air'].attrs['units'], 'mol m-3')
         self.assertEqual(ds['time'].attrs['units'], 's')
         ds.close()
 
