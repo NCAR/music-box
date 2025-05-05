@@ -87,9 +87,6 @@ jobs:
       # If a push and not on default branch, then copy the build to
       # _gh-pages/branch/$brname (transforming '/' into '--')
       - name: Build and copy documentation (branch)
-        if: |
-          (contains(github.event_name, 'push') || contains(github.event_name, 'workflow_dispatch')) &&
-          !contains(github.ref, env.DEFAULT_BRANCH)
         run: |
           set -x
           docker build -t music_box -f docker/Dockerfile.docs .
