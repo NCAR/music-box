@@ -56,7 +56,7 @@ class MusicBox:
         Add an evolving condition at a specific time point.
 
         Args:
-            time_point (float): The time point for the evolving condition.
+            time_point (float): The time point for the evolving condition [s].
             conditions (Conditions): The associated conditions at the given time point.
         """
         self.evolving_conditions.add_condition(time_point, conditions)
@@ -79,6 +79,24 @@ class MusicBox:
         """
         if (self.solver is None):
             raise Exception("Error: MusicBox object {} has no solver."
+                            .format(self))
+        if (self.state is None):
+            raise Exception("Error: MusicBox object {} has no state."
+                            .format(self))
+        if (self.initial_conditions is None):
+            raise Exception("Error: MusicBox object {} has no initial conditions."
+                            .format(self))
+        if (self.box_model_options is None):
+            raise Exception("Error: MusicBox object {} has no time step parameters."
+                            .format(self))
+        if (self.box_model_options.simulation_length is None):
+            raise Exception("Error: MusicBox object {} has no simulation length."
+                            .format(self))
+        if (self.box_model_options.chem_step_time is None):
+            raise Exception("Error: MusicBox object {} has no chemistry step time."
+                            .format(self))
+        if (self.box_model_options.output_step_time is None):
+            raise Exception("Error: MusicBox object {} has no output step time."
                             .format(self))
         
         # sets up initial conditions to be current conditions
@@ -215,55 +233,3 @@ class MusicBox:
         """
         self.solver = musica.MICM(mechanism=mechanism, solver_type=solver_type)
         self.state = self.solver.create_state(1)
-
-    @staticmethod
-    def order_reaction_rates(curr_conditions, rate_constant_ordering):
-        """
-        Orders the reaction rates based on the provided ordering.
-
-        This function takes the current conditions and a specified ordering for the rate constants,
-        and reorders the reaction rates accordingly.
-
-        Args:
-            curr_conditions: A Condition with the current state information
-            rate_constant_ordering: A dictionary which maps reaction names to their index in the reaction rates array
-
-        Returns:
-            list: An ordered list of rate constants.
-        """
-        ordered_rate_constants = np.zeros(len(rate_constant_ordering), dtype=np.float64)
-
-        for rate_label, _ in rate_constant_ordering.items():
-            if rate_label not in curr_conditions.reaction_rates:
-                logger.warning(f"Reaction rate '{rate_label}' not found in current conditions.")
-                continue
-            else:
-                ordered_rate_constants[rate_constant_ordering[rate_label]] = curr_conditions.reaction_rates[rate_label]
-
-        return ordered_rate_constants
-
-    @staticmethod
-    def order_species_concentrations(curr_conditions, species_constant_ordering):
-        """
-        Orders the species concentrations based on the provided ordering.
-
-        This function takes the current conditions and a specified ordering for the species,
-        and reorders the species concentrations accordingly.
-
-        Args:
-            curr_conditions (Conditions): The current conditions.
-            species_constant_ordering (dict): A dictionary that maps species keys to indices for ordering.
-
-        Returns:
-            list: An ordered list of species concentrations.
-        """
-        concentrations = np.zeros(len(species_constant_ordering), dtype=np.float64)
-
-        for species, _ in species_constant_ordering.items():
-            if species not in curr_conditions.species_concentrations:
-                logger.warning(f"Species '{species}' not found in current conditions.")
-                continue
-            else:
-                concentrations[species_constant_ordering[species]] = curr_conditions.species_concentrations[species]
-
-        return concentrations
