@@ -35,4 +35,4 @@ jobs:
         run: docker build -t music-box -f docker/${{ matrix.dockerfile }} . --build-arg MUSIC_BOX_GIT_TAG=${{ github.sha }} --build-arg BUILD_TYPE=${{ matrix.build_type }}
 
       - name: Run tests in container
-        run: docker run --name test-container -t music-box bash -c 'make test ARGS="--rerun-failed --output-on-failure -j8"'
+        run: docker run --name test-container -t music-box
