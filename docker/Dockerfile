@@ -1,5 +1,6 @@
 FROM fedora:latest
 
+ARG MUSIC_BOX_TAG=main
 ARG MUSICA_TAG=cd811c935ea0043370439b6148ebaaf3230f4cdb
 
 RUN dnf -y update \

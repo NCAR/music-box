@@ -190,7 +190,7 @@ class TestInCodeMechanism:
             reactants=[species["B"]], products=[species["C"]], gas_phase=gas)
         arr3 = mc.Arrhenius(name="D->E", A=4.0e-3, C=35,
             reactants=[species["D"]], products=[species["E"]], gas_phase=gas)
-        arr4 = mc.Arrhenius(name="B->C", A=1.2e-4, B=1.4, C=75, D=50, E=0.1,
+        arr4 = mc.Arrhenius(name="E->F", A=1.2e-4, B=1.4, C=75, D=50, E=0.1,
             reactants=[species["E"]], products=[species["F"]], gas_phase=gas)
         mechanism = mc.Mechanism(name="test_mechanism", species=list(species.values()),
             phases=[gas], reactions=[arr1, arr2, arr3, arr4])
