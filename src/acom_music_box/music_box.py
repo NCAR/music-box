@@ -7,6 +7,7 @@ import json
 import os
 import pandas as pd
 import numpy as np
+import mechanism_configuration as mc
 
 from tqdm import tqdm
 
@@ -203,6 +204,16 @@ class MusicBox:
 
         # Initalize the musica solver
         self.solver = musica.MICM(config_path = camp_path, solver_type=musica.SolverType.rosenbrock_standard_order)
+        self.state = self.solver.create_state(1)
+
+    def load_mechanism(self, mechanism, solver_type=musica.SolverType.rosenbrock_standard_order):
+        """
+        Creates a solver for the specified mechanism.
+        
+        Args:
+            mechanism (Mechanism): The mechanism to be used for the solver.
+        """
+        self.solver = musica.MICM(mechanism=mechanism, solver_type=solver_type)
         self.state = self.solver.create_state(1)
 
     @staticmethod
