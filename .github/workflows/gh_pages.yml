@@ -49,6 +49,9 @@ jobs:
       # If a push and default branch, copy build to _gh-pages/ as the "main"
       # deployment.
       - name: Build and copy documentation (default branch)
+        if: |
+          contains(github.event_name, 'push') &&
+          contains(github.ref, env.DEFAULT_BRANCH)
         run: |
           set -x
           mkdir -p _build/html/versions
