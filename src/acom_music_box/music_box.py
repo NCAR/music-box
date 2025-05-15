@@ -7,6 +7,7 @@ import json
 import os
 import pandas as pd
 import numpy as np
+import musica.mechanism_configuration as mc
 
 from tqdm import tqdm
 
@@ -55,7 +56,7 @@ class MusicBox:
         Add an evolving condition at a specific time point.
 
         Args:
-            time_point (float): The time point for the evolving condition.
+            time_point (float): The time point for the evolving condition [s].
             conditions (Conditions): The associated conditions at the given time point.
         """
         self.evolving_conditions.add_condition(time_point, conditions)
@@ -76,6 +77,20 @@ class MusicBox:
             list: A 2D list where each inner list represents the results of the simulation
             at a specific time step.
         """
+        if self.solver is None:
+            raise Exception(f"Error: MusicBox object {self} has no solver.")
+        if self.state is None:
+            raise Exception(f"Error: MusicBox object {self} has no state.")
+        if self.initial_conditions is None:
+            raise Exception(f"Error: MusicBox object {self} has no initial conditions.")
+        if self.box_model_options is None:
+            raise Exception(f"Error: MusicBox object {self} has no time step parameters.")
+        if self.box_model_options.simulation_length is None:
+            raise Exception(f"Error: MusicBox object {self} has no simulation length.")
+        if self.box_model_options.chem_step_time is None:
+            raise Exception(f"Error: MusicBox object {self} has no chemistry step time.")
+        if self.box_model_options.output_step_time is None:
+            raise Exception(f"Error: MusicBox object {self} has no output step time.")
 
         # sets up initial conditions to be current conditions
         curr_conditions = self.initial_conditions
@@ -95,50 +110,51 @@ class MusicBox:
             next_conditions = None
             next_conditions_time = 0
 
-        # initalizes output headers
-        output_array = []
+        header = ["time.s", "ENV.temperature.K", "ENV.pressure.Pa", "ENV.air number density.mol m-3"]
+        for species, _ in self.state.get_concentrations().items():
+            header.append("CONC." + species + ".mol m-3")
 
-        headers = []
-        headers.append("time")
-        headers.append("ENV.temperature")
-        headers.append("ENV.pressure")
-        headers.append("ENV.number_density_air")
+        # set the initial conditions in the state
+        self.state.set_conditions(curr_conditions.temperature, curr_conditions.pressure)  # air denisty will be calculated based on Ideal gas law
+        self.state.set_concentrations(curr_conditions.species_concentrations)
+        self.state.set_user_defined_rate_parameters(curr_conditions.rate_parameters)
 
-        if (self.solver is None):
-            raise Exception("Error: MusicBox object {} has no solver."
-                            .format(self))
-
-        rate_constant_ordering = musica.user_defined_reaction_rates(self.solver, self.state)
-        species_constant_ordering = musica.species_ordering(self.solver, self.state)
-
-        # adds species headers to output
-        ordered_species_headers = [
-            k for k,
-            v in sorted(
-                species_constant_ordering.items(),
-                key=lambda item: item[1])]
-        for spec in ordered_species_headers:
-            headers.append("CONC." + spec)
-
-        ordered_concentrations = self.order_species_concentrations(curr_conditions, species_constant_ordering).tolist()
-        self.state.ordered_concentrations = ordered_concentrations
-
-        ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering).tolist()
-
-        output_array.append(headers)
-
+        # runs the simulation at each timestep
         curr_time = 0.0
         next_output_time = curr_time
-        # runs the simulation at each timestep
         simulation_length = self.box_model_options.simulation_length
+        output_array = []
         with tqdm(total=simulation_length, desc="Simulation Progress", unit=f" [model integration steps ({self.box_model_options.chem_step_time} s)]", leave=False) as pbar:
             while curr_time <= simulation_length:
-                # iterates evolving  conditions if enough time has elapsed
+
+                # outputs to output_array if enough time has elapsed
+                if (next_output_time <= curr_time):
+                    row = []
+                    row.append(curr_time)
+                    conditions = self.state.get_conditions()
+                    row.append(conditions["temperature"][0])
+                    row.append(conditions["pressure"][0])
+                    row.append(conditions["air_density"][0])
+                    for _, concentration in self.state.get_concentrations().items():
+                        row.append(concentration[0])
+                    output_array.append(row)
+
+                    next_output_time += self.box_model_options.output_step_time
+
+                    # calls callback function if present
+                    if callback is not None:
+                        df = pd.DataFrame(output_array[:-1], columns=header)
+                        callback(df, curr_time, curr_conditions, self.box_model_options.simulation_length)
+
+                    # We want to output the initial state before the first solve().
+                    # But we also want to avoid solving() beyond the last output.
+                    # Solution is to bail out mid-loop if we completed the final output step.
+                    if (next_output_time > simulation_length):
+                        break
+
+                # iterates evolving conditions if enough time has elapsed
                 while (next_conditions is not None and next_conditions_time <= curr_time):
-
-                    curr_conditions.update_conditions(next_conditions)
-                    ordered_rate_constants = self.order_reaction_rates(curr_conditions, rate_constant_ordering)
-
+                    curr_conditions = next_conditions
                     # iterates next_conditions if there are remaining evolving
                     # conditions
                     if (len(self.evolving_conditions) > next_conditions_index + 1):
@@ -147,37 +163,10 @@ class MusicBox:
                         next_conditions_time = self.evolving_conditions.times[next_conditions_index]
                     else:
                         next_conditions = None
-
-                #  calculate air density from the ideal gas law
-                air_density = curr_conditions.pressure / (GAS_CONSTANT * curr_conditions.temperature)
-
-                self.state.conditions[0].temperature = curr_conditions.temperature
-                self.state.conditions[0].pressure = curr_conditions.pressure
-                self.state.conditions[0].air_density = air_density
-                self.state.ordered_rate_constants = ordered_rate_constants
-
-                # outputs to output_array if enough time has elapsed
-                if (next_output_time <= curr_time):
-                    row = []
-                    row.append(next_output_time)
-                    row.append(curr_conditions.temperature)
-                    row.append(curr_conditions.pressure)
-                    row.append(air_density)
-                    row.extend(self.state.ordered_concentrations)
-
-                    output_array.append(row)
-                    next_output_time += self.box_model_options.output_step_time
-
-                    # calls callback function if present
-                    if callback is not None:
-                        df = pd.DataFrame(output_array[:-1], columns=output_array[0])
-                        callback(df, curr_time, curr_conditions, self.box_model_options.simulation_length)
-
-                    # We want to output the initial state before the first solve().
-                    # But we also want to avoid solving() beyond the last output.
-                    # Solution is to bail out mid-loop if we completed the final output step.
-                    if (next_output_time > simulation_length):
-                        break
+                    # set the current conditions in the state
+                    self.state.set_conditions(curr_conditions.temperature, curr_conditions.pressure)  # air denisty will be calculated based on Ideal gas law
+                    self.state.set_concentrations(curr_conditions.species_concentrations)
+                    self.state.set_user_defined_rate_parameters(curr_conditions.rate_parameters)
 
                 # ensure the time step is not greater than the next update to the
                 # evolving conditions or the next output time
@@ -187,16 +176,12 @@ class MusicBox:
                 if (next_output_time > curr_time):
                     time_step = min(time_step, next_output_time - curr_time)
 
-                # solves and updates concentration values in concentration array
-                if (not ordered_concentrations or len(ordered_concentrations) == 0):
-                    logger.info("Warning: ordered_concentrations list is empty.")
-
-                musica.micm_solve(self.solver, self.state, time_step)
+                self.solver.solve(self.state, time_step)
 
                 # increments time
                 curr_time += time_step
                 pbar.update(time_step)
-        return pd.DataFrame(output_array[1:], columns=output_array[0])
+        return pd.DataFrame(output_array, columns=header)
 
     def loadJson(self, path_to_json):
         """
@@ -228,57 +213,15 @@ class MusicBox:
         camp_path = os.path.join(os.path.dirname(path_to_json), self.config_file)
 
         # Initalize the musica solver
-        self.solver = musica.create_solver(camp_path, musica.micmsolver.rosenbrock_standard_order, 1)
-        self.state = musica.create_state(self.solver)
+        self.solver = musica.MICM(config_path=camp_path, solver_type=musica.SolverType.rosenbrock_standard_order)
+        self.state = self.solver.create_state(1)
 
-    @staticmethod
-    def order_reaction_rates(curr_conditions, rate_constant_ordering):
+    def load_mechanism(self, mechanism, solver_type=musica.SolverType.rosenbrock_standard_order):
         """
-        Orders the reaction rates based on the provided ordering.
-
-        This function takes the current conditions and a specified ordering for the rate constants,
-        and reorders the reaction rates accordingly.
+        Creates a solver for the specified mechanism.
 
         Args:
-            curr_conditions: A Condition with the current state information
-            rate_constant_ordering: A dictionary which maps reaction names to their index in the reaction rates array
-
-        Returns:
-            list: An ordered list of rate constants.
+            mechanism (Mechanism): The mechanism to be used for the solver.
         """
-        ordered_rate_constants = np.zeros(len(rate_constant_ordering), dtype=np.float64)
-
-        for rate_label, _ in rate_constant_ordering.items():
-            if rate_label not in curr_conditions.reaction_rates:
-                logger.warning(f"Reaction rate '{rate_label}' not found in current conditions.")
-                continue
-            else:
-                ordered_rate_constants[rate_constant_ordering[rate_label]] = curr_conditions.reaction_rates[rate_label]
-
-        return ordered_rate_constants
-
-    @staticmethod
-    def order_species_concentrations(curr_conditions, species_constant_ordering):
-        """
-        Orders the species concentrations based on the provided ordering.
-
-        This function takes the current conditions and a specified ordering for the species,
-        and reorders the species concentrations accordingly.
-
-        Args:
-            curr_conditions (Conditions): The current conditions.
-            species_constant_ordering (dict): A dictionary that maps species keys to indices for ordering.
-
-        Returns:
-            list: An ordered list of species concentrations.
-        """
-        concentrations = np.zeros(len(species_constant_ordering), dtype=np.float64)
-
-        for species, _ in species_constant_ordering.items():
-            if species not in curr_conditions.species_concentrations:
-                logger.warning(f"Species '{species}' not found in current conditions.")
-                continue
-            else:
-                concentrations[species_constant_ordering[species]] = curr_conditions.species_concentrations[species]
-
-        return concentrations
+        self.solver = musica.MICM(mechanism=mechanism, solver_type=solver_type)
+        self.state = self.solver.create_state(1)

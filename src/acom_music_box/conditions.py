@@ -15,8 +15,8 @@ class Conditions:
     Attributes:
         pressure (float): The pressure of the conditions in atmospheres.
         temperature (float): The temperature of the conditions in Kelvin.
-        speciesConcentrations (List[SpeciesConcentration]): A list of species concentrations.
-        reactionRates (List[ReactionRate]): A list of reaction rates.
+        species_concentrations (dict[str, float]): A dictionary of species concentrations.
+        rate_parameters (dict[str, float]): A dictionary of user-specified reaction rate parameters.
     """
 
     def __init__(
@@ -24,26 +24,26 @@ class Conditions:
             pressure=None,
             temperature=None,
             species_concentrations=None,
-            reaction_rates=None):
+            rate_parameters=None):
         """
         Initializes a new instance of the Conditions class.
 
         Args:
             pressure (float): The pressure of the conditions in atmospheres.
             temperature (float): The temperature of the conditions in Kelvin.
-            species_concentrations (Dict[Species, float]): A dictionary of species concentrations.
-            reaction_rates (Dict[Reaction, float]): A dictionary of reaction rates.
+            species_concentrations (Dict[str, float]): A dictionary of species concentrations.
+            rate_parameters (Dict[str, float]): A dictionary of user-specified reaction rate parameters.
         """
         self.pressure = pressure
         self.temperature = temperature
         self.species_concentrations = species_concentrations if species_concentrations is not None else {}
-        self.reaction_rates = reaction_rates if reaction_rates is not None else {}
+        self.rate_parameters = rate_parameters if rate_parameters is not None else {}
 
     def __repr__(self):
-        return f"Conditions(pressure={self.pressure}, temperature={self.temperature}, species_concentrations={self.species_concentrations}, reaction_rates={self.reaction_rates})"
+        return f"Conditions(pressure={self.pressure}, temperature={self.temperature}, species_concentrations={self.species_concentrations}, rate_parameters={self.rate_parameters})"
 
     def __str__(self):
-        return f"Pressure: {self.pressure}, Temperature: {self.temperature}, Species Concentrations: {self.species_concentrations}, Reaction Rates: {self.reaction_rates}"
+        return f"Pressure: {self.pressure}, Temperature: {self.temperature}, Species Concentrations: {self.species_concentrations}, User-Defined Rate Parameters: {self.rate_parameters}"
 
     @classmethod
     def from_UI_JSON(self, UI_JSON, species_list, reaction_list):
@@ -78,17 +78,15 @@ class Conditions:
             concentration = convert_concentration(
                 UI_JSON['conditions']['chemical species'][chem_spec], 'initial value')
 
-            species_concentrations.append(
-                SpeciesConcentration(
-                    species, concentration))
+            species_concentrations[species] = concentration
 
         for species in species_list.species:
             if not any(conc.species.name ==
                        species.name for conc in species_concentrations):
-                species_concentrations.append(SpeciesConcentration(species, 0))
+                species_concentrations[species] = 0
 
         # Set initial reaction rates
-        reaction_rates = []
+        rate_parameters = {}
 
         for reaction in UI_JSON['conditions']['initial conditions']:
             match = filter(
@@ -96,22 +94,23 @@ class Conditions:
                 reaction_list.reactions)
             reaction_from_list = next(match, None)
 
-            rate = UI_JSON['conditions']['initial conditions'][reaction]
+            rate_parameter = UI_JSON['conditions']['initial conditions'][reaction]
 
-            reaction_rates.append(ReactionRate(reaction_from_list, rate))
+            rate_parameters[reaction_from_list] = rate_parameter
 
         return self(
             pressure,
             temperature,
             species_concentrations,
-            reaction_rates)
+            rate_parameters)
 
     @classmethod
     def retrieve_initial_conditions_from_JSON(
             cls,
             path_to_json,
             json_object,
-            reaction_types):
+            reaction_types,
+            preserve_type):
         """
         Retrieves initial conditions from CSV file and JSON structures.
         If both are present, JSON values will override the CSV values.
@@ -122,7 +121,8 @@ class Conditions:
         Args:
             path_to_json (str): The path to the JSON file containing the initial conditions and settings.
             json_object (dict): The configuration JSON object containing the initial conditions and settings.
-            reaction_types: Use set like {"ENV", "CONC"} for species concentrations, {"EMIS", "PHOTO"} for reaction rates.
+            reaction_types: Use set like {"ENV"} for environmental conditions {"CONC"} for species concentrations, {"EMIS", "PHOTO"} for reaction rates.
+            preserve_type: If True, keep the reaction type in the key name. If False, remove the reaction type from the key name.
 
         Returns:
             object: A dictionary of name:value pairs.
@@ -152,7 +152,7 @@ class Conditions:
                     os.path.dirname(path_to_json), file_path)
 
                 file_initial_csv = Conditions.read_initial_conditions_from_file(
-                    initial_conditions_path, reaction_types)
+                    initial_conditions_path, reaction_types, preserve_type)
                 logger.debug(f"file_initial_csv = {file_initial_csv}")
 
                 # tranfer conditions from this file to the aggregated dictionary
@@ -181,8 +181,9 @@ class Conditions:
         if (numCSV > 0 and numData > 0):
             logger.warning(f"Initial data values ({numData}) from JSON will override initial values ({numCSV}) from CSV.")
         for one_data in initial_data:
-            chem_name_alone = one_data.split(".")[1]        # remove reaction type
-            chem_name_alone = chem_name_alone.split(" ")[0]  # remove units
+            chem_name_alone = one_data.split(" [")[0]  # remove units
+            if not preserve_type:
+                chem_name_alone = chem_name_alone.split(".")[1]  # remove type prefix
             initial_csv[chem_name_alone] = initial_data[one_data]
 
         logger.debug(f"Overridden initial_csv = {initial_csv}")
@@ -219,11 +220,11 @@ class Conditions:
 
         # we will read environment, species concentrations, and reaction rates on three passes
         environmental_conditions = Conditions.retrieve_initial_conditions_from_JSON(
-            path_to_json, json_object, {"ENV"})
+            path_to_json, json_object, {"ENV"}, False)
         species_concentrations = Conditions.retrieve_initial_conditions_from_JSON(
-            path_to_json, json_object, {"CONC"})
-        reaction_rates = Conditions.retrieve_initial_conditions_from_JSON(
-            path_to_json, json_object, {"EMIS", "PHOTO", "LOSS"})
+            path_to_json, json_object, {"CONC"}, False)
+        rate_parameters = Conditions.retrieve_initial_conditions_from_JSON(
+            path_to_json, json_object, {"EMIS", "PHOTO", "LOSS", "USER"}, True)
 
         # override presure and temperature
         if ("pressure" in environmental_conditions):
@@ -232,31 +233,31 @@ class Conditions:
             temperature = environmental_conditions["temperature"]
 
         logger.debug(f"Returning species_concentrations = {species_concentrations}")
-        logger.debug(f"Returning reaction_rates = {reaction_rates}")
+        logger.debug(f"Returning user-defined rate parameters = {rate_parameters}")
 
         return self(
             pressure,
             temperature,
             species_concentrations,
-            reaction_rates)
+            rate_parameters)
 
     @classmethod
-    def read_initial_conditions_from_file(cls, file_path, react_types=None):
+    def read_initial_conditions_from_file(cls, file_path, react_types=None, preserve_type=False):
         """
-        Reads initial reaction rates from a file.
+        Reads initial user-defined rate parameters from a file.
 
         This class method takes a file path and a ReactionList, reads the file, and
-        sets the initial reaction rates based on the contents of the file.
+        sets the initial rate parameters based on the contents of the file.
 
         Args:
-            file_path (str): The path to the file containing the initial reaction rates.
+            file_path (str): The path to the file containing the initial rate parameters.
             react_types = set of reaction types only to include, or None to include all.
 
         Returns:
-            dict: A dictionary of initial reaction rates.
+            dict: A dictionary of initial user-defined rate parameters.
         """
 
-        reaction_rates = {}
+        rate_parameters = {}
 
         df = pd.read_csv(file_path, skipinitialspace=True)
         rows, _ = df.shape
@@ -273,9 +274,9 @@ class Conditions:
                 error = f"Unexpected format in key: {key}"
                 logger.error(error)
                 raise ValueError(error)
-            rate_name = f'{reaction_type}.{label}'
-            if rate_name in reaction_rates:
-                raise ValueError(f"Duplicate reaction rate found: {rate_name}")
+            parameter_name = f'{reaction_type}.{label}'
+            if parameter_name in rate_parameters:
+                raise ValueError(f"Duplicate user-defined rate parameter found: {parameter_name}")
 
             # are we looking for this type?
             if (react_types):
@@ -285,12 +286,11 @@ class Conditions:
             # create key-value pair of chemical-concentration
             # initial concentration looks like this:        CONC.a-pinene [mol m-3]
             # reaction rate looks like this:                LOSS.SOA2 wall loss.s-1
-            chem_name_alone = f"{reaction_type}.{label}"    # reaction
-            if len(parts) == 2:
-                chem_name_alone = label.split(' ')[0]       # strip off [units] to get chemical
-            reaction_rates[chem_name_alone] = df.at[0, key]  # retrieve (row, column)
+            chem_name_alone = f"{reaction_type}.{label}" if preserve_type else label
+            chem_name_alone = chem_name_alone.split(' [')[0]  # strip off [units] to get chemical
+            rate_parameters[chem_name_alone] = df.at[0, key]  # retrieve (row, column)
 
-        return reaction_rates
+        return rate_parameters
 
     @classmethod
     def read_data_values_from_table(cls, data_json, react_types=None):
@@ -327,70 +327,3 @@ class Conditions:
         logger.debug(f"For {react_types} data_values = {data_values}")
 
         return data_values
-
-    def add_species_concentration(self, species_concentration):
-        """
-        Add a SpeciesConcentration instance to the list of species concentrations.
-
-        Args:
-            species_concentration (SpeciesConcentration): The SpeciesConcentration instance to be added.
-        """
-        self.species_concentrations.append(species_concentration)
-
-    def add_reaction_rate(self, reaction_rate):
-        """
-        Add a ReactionRate instance to the list of reaction rates.
-
-        Args:
-            reaction_rate (ReactionRate): The ReactionRate instance to be added.
-        """
-        self.reaction_rates.append(reaction_rate)
-
-    def get_concentration_array(self):
-        """
-        Retrieves an array of concentrations from the species_concentrations list.
-
-        Returns:
-            list: An array containing concentrations of each species.
-
-        Notes:
-            This function extracts the concentration attribute from each SpeciesConcentration object in
-            the species_concentrations list and returns them as a single array to be used by the micm solver.
-        """
-        concentration_array = []
-        for species_concentration in self.species_concentrations:
-            concentration_array.append(species_concentration.concentration)
-
-        return concentration_array
-
-    def get_reaction_rate_array(self):
-        """
-        Retrieves an array of reaction rates from the reaction_rates list.
-
-        Returns:
-            list: An array containing reaction rates for each reaction.
-
-        Notes:
-            This function extracts the rate attribute from each ReactionRate object in
-            the reaction_rates list and returns them as a single array to be used by the micm solver.
-        """
-        rate_array = []
-        for reaction_rate in self.reaction_rates:
-            rate_array.append(reaction_rate.rate)
-
-        return rate_array
-
-    def update_conditions(self, new_conditions):
-        """
-        Updates the conditions with new conditions when evolving conditions are present.
-
-        Args:
-            new_conditions (Conditions): The new conditions to be updated.
-        """
-        if new_conditions.pressure is not None:
-            self.pressure = new_conditions.pressure
-        if new_conditions.temperature is not None:
-            self.temperature = new_conditions.temperature
-        self.species_concentrations.update(new_conditions.species_concentrations)
-
-        self.reaction_rates.update(new_conditions.reaction_rates)
