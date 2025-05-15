@@ -61,7 +61,7 @@ class DataOutput:
         self.unit_mapping = {
             'ENV.temperature': 'K',
             'ENV.pressure': 'Pa',
-            'ENV.number_density_air': 'kg m-3',
+            'ENV.number_density_air': 'mol m-3',
             'time': 's'
         }
         self.default_output_format = 'csv'
@@ -101,14 +101,20 @@ class DataOutput:
 
     def _convert_to_netcdf(self, toFile):
         """Convert DataFrame to xarray Dataset and save as NetCDF with attributes."""
-        ds = self.df.set_index(['time']).to_xarray()
+        ds = self.df.set_index(['time.s']).to_xarray()
         for var in ds.data_vars:
             if var.startswith('CONC.'):
                 ds[var].attrs = {'units': 'mol m-3'}
+                new_var_name = '.'.join(var.split('.')[:2])
+                ds = ds.rename({var: new_var_name})
 
+        ds = ds.rename({'ENV.temperature.K': 'ENV.temperature'})
+        ds = ds.rename({'ENV.pressure.Pa': 'ENV.pressure'})
+        ds = ds.rename({'ENV.air number density.mol m-3': 'ENV.number_density_air'})
+        ds = ds.rename({'time.s': 'time'})
         ds['ENV.temperature'].attrs = {'units': 'K'}
         ds['ENV.pressure'].attrs = {'units': 'Pa'}
-        ds['ENV.number_density_air'].attrs = {'units': 'kg m-3'}
+        ds['ENV.number_density_air'].attrs = {'units': 'mol m-3'}
         ds['time'].attrs = {'units': 's'}
 
         ds.to_netcdf(toFile)
