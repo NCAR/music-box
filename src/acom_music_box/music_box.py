@@ -77,27 +77,20 @@ class MusicBox:
             list: A 2D list where each inner list represents the results of the simulation
             at a specific time step.
         """
-        if (self.solver is None):
-            raise Exception("Error: MusicBox object {} has no solver."
-                            .format(self))
-        if (self.state is None):
-            raise Exception("Error: MusicBox object {} has no state."
-                            .format(self))
-        if (self.initial_conditions is None):
-            raise Exception("Error: MusicBox object {} has no initial conditions."
-                            .format(self))
-        if (self.box_model_options is None):
-            raise Exception("Error: MusicBox object {} has no time step parameters."
-                            .format(self))
-        if (self.box_model_options.simulation_length is None):
-            raise Exception("Error: MusicBox object {} has no simulation length."
-                            .format(self))
-        if (self.box_model_options.chem_step_time is None):
-            raise Exception("Error: MusicBox object {} has no chemistry step time."
-                            .format(self))
-        if (self.box_model_options.output_step_time is None):
-            raise Exception("Error: MusicBox object {} has no output step time."
-                            .format(self))
+        if self.solver is None:
+            raise Exception(f"Error: MusicBox object {self} has no solver.")
+        if self.state is None:
+            raise Exception(f"Error: MusicBox object {self} has no state.")
+        if self.initial_conditions is None:
+            raise Exception(f"Error: MusicBox object {self} has no initial conditions.")
+        if self.box_model_options is None:
+            raise Exception(f"Error: MusicBox object {self} has no time step parameters.")
+        if self.box_model_options.simulation_length is None:
+            raise Exception(f"Error: MusicBox object {self} has no simulation length.")
+        if self.box_model_options.chem_step_time is None:
+            raise Exception(f"Error: MusicBox object {self} has no chemistry step time.")
+        if self.box_model_options.output_step_time is None:
+            raise Exception(f"Error: MusicBox object {self} has no output step time.")
         
         # sets up initial conditions to be current conditions
         curr_conditions = self.initial_conditions
