@@ -91,7 +91,7 @@ class MusicBox:
             raise Exception(f"Error: MusicBox object {self} has no chemistry step time.")
         if self.box_model_options.output_step_time is None:
             raise Exception(f"Error: MusicBox object {self} has no output step time.")
-        
+
         # sets up initial conditions to be current conditions
         curr_conditions = self.initial_conditions
 
@@ -112,11 +112,10 @@ class MusicBox:
 
         header = ["time.s", "ENV.temperature.K", "ENV.pressure.Pa", "ENV.air number density.mol m-3"]
         for species, _ in self.state.get_concentrations().items():
-            header.append("CONC."+species+".mol m-3")
-
+            header.append("CONC." + species + ".mol m-3")
 
         # set the initial conditions in the state
-        self.state.set_conditions(curr_conditions.temperature, curr_conditions.pressure) # air denisty will be calculated based on Ideal gas law
+        self.state.set_conditions(curr_conditions.temperature, curr_conditions.pressure)  # air denisty will be calculated based on Ideal gas law
         self.state.set_concentrations(curr_conditions.species_concentrations)
         self.state.set_user_defined_rate_parameters(curr_conditions.rate_parameters)
 
@@ -137,7 +136,7 @@ class MusicBox:
                     row.append(conditions["pressure"][0])
                     row.append(conditions["air_density"][0])
                     for _, concentration in self.state.get_concentrations().items():
-                       row.append(concentration[0])
+                        row.append(concentration[0])
                     output_array.append(row)
 
                     next_output_time += self.box_model_options.output_step_time
@@ -165,7 +164,7 @@ class MusicBox:
                     else:
                         next_conditions = None
                     # set the current conditions in the state
-                    self.state.set_conditions(curr_conditions.temperature, curr_conditions.pressure) # air denisty will be calculated based on Ideal gas law
+                    self.state.set_conditions(curr_conditions.temperature, curr_conditions.pressure)  # air denisty will be calculated based on Ideal gas law
                     self.state.set_concentrations(curr_conditions.species_concentrations)
                     self.state.set_user_defined_rate_parameters(curr_conditions.rate_parameters)
 
@@ -214,13 +213,13 @@ class MusicBox:
         camp_path = os.path.join(os.path.dirname(path_to_json), self.config_file)
 
         # Initalize the musica solver
-        self.solver = musica.MICM(config_path = camp_path, solver_type=musica.SolverType.rosenbrock_standard_order)
+        self.solver = musica.MICM(config_path=camp_path, solver_type=musica.SolverType.rosenbrock_standard_order)
         self.state = self.solver.create_state(1)
 
     def load_mechanism(self, mechanism, solver_type=musica.SolverType.rosenbrock_standard_order):
         """
         Creates a solver for the specified mechanism.
-        
+
         Args:
             mechanism (Mechanism): The mechanism to be used for the solver.
         """

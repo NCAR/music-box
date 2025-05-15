@@ -327,4 +327,3 @@ class Conditions:
         logger.debug(f"For {react_types} data_values = {data_values}")
 
         return data_values
-
