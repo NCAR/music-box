@@ -146,7 +146,7 @@ class TestInCodeMechanism:
                 E_conc = (
                     initial_D
                     * (k3 / (k4 - k3))
-                    * (math.exp(-k3 * curr_time) - math.exp(-k3 * curr_time))
+                    * (math.exp(-k3 * curr_time) - math.exp(-k4 * curr_time))
                 )
                 F_conc = initial_D * (
                     1.0
