@@ -1,4 +1,5 @@
 from acom_music_box import MusicBox, Examples
+import musica.mechanism_configuration as mc
 
 import math
 import logging
@@ -6,13 +7,8 @@ logger = logging.getLogger(__name__)
 
 
 class TestAnalytical:
-    def test_run(self):
-        box_model = MusicBox()
 
-        conditions_path = Examples.Analytical.path
-        logger.info(f"conditions_path = {conditions_path}")
-
-        box_model.loadJson(conditions_path)
+    def solve_and_compare(self, box_model):
 
         # The analytical solution below will match the model solution
         # only when initial B=0 and C=0. A=n from the JSON config is okay.
@@ -23,9 +19,9 @@ class TestAnalytical:
         df = box_model.solve()
         output = [df.columns.values.tolist()] + df.values.tolist()
 
-        conc_a_index = output[0].index("CONC.A")
-        conc_b_index = output[0].index("CONC.B")
-        conc_c_index = output[0].index("CONC.C")
+        conc_a_index = output[0].index("CONC.A.mol m-3")
+        conc_b_index = output[0].index("CONC.B.mol m-3")
+        conc_c_index = output[0].index("CONC.C.mol m-3")
 
         # extracts model concentrations from data output
         model_concentrations = [
@@ -112,8 +108,48 @@ class TestAnalytical:
                 rel_tol=1e-6,
             ), f"Arrays differ at index ({i}, 2)"
 
+    def test_config(self):
+        box_model = MusicBox()
+
+        conditions_path = Examples.Analytical.path
+        logger.info(f"conditions_path = {conditions_path}")
+
+        box_model.loadJson(conditions_path)
+        self.solve_and_compare(box_model)
+
+    def test_in_code(self):
+        box_model = MusicBox()
+
+        # Create the mechanism
+        A = mc.Species(name="A")
+        B = mc.Species(name="B")
+        C = mc.Species(name="C")
+        gas = mc.Phase(name="gas", species=[A, B, C])
+        arr1 = mc.Arrhenius(name="B->C", A=1.2e-4, B=7, C=75, D=50, E=0.5,
+            reactants=[B], products=[C], gas_phase=gas)
+        arr2 = mc.Arrhenius(name="A->B", A=4.0e-3, C=50,
+            reactants=[A], products=[B], gas_phase=gas)
+        mechanism = mc.Mechanism(name="test_mechanism", species=[A, B, C],
+            phases=[gas], reactions=[arr1, arr2])
+        box_model.load_mechanism(mechanism)
+
+        # Set up the initial conditions
+        box_model.initial_conditions.species_concentrations["A"] = 0.9
+        box_model.initial_conditions.species_concentrations["B"] = 0.1
+        box_model.initial_conditions.species_concentrations["C"] = 0.3
+        box_model.initial_conditions.temperature = 283.6
+        box_model.initial_conditions.pressure = 102364.4
+
+        # Set up the simulation options
+        box_model.box_model_options.simulation_length = 600.0
+        box_model.box_model_options.chem_step_time = 2
+        box_model.box_model_options.output_step_time = 6
+
+        self.solve_and_compare(box_model)
+
+    
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     test = TestAnalytical()
-    test.test_run()
+    test.test_config()
