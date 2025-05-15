@@ -22,7 +22,7 @@ for root, _, files in os.walk('data'):
         ds_sel.to_netcdf(f'sample_waccm_data/{file}')
 ```
 
-You can extract a coniguraiton file with 
+You can extract a configuration file with 
 
 ```
 waccmToMusicBox waccmDir="./sample_waccm_data" date="20240904" time="07:00" latitude=3.1 longitude=101.7

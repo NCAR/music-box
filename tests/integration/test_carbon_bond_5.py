@@ -16,7 +16,6 @@ class TestCarbonBond5:
         # solves and saves output
         df = box_model.solve()
         dataOutput = DataOutput(df, None)
-        dataOutput._append_units_to_columns()       # for CSV output
         model_output = [dataOutput.df.columns.values.tolist()] + \
             dataOutput.df.values.tolist()
 
