@@ -126,11 +126,11 @@ class TestAnalytical:
         C = mc.Species(name="C")
         gas = mc.Phase(name="gas", species=[A, B, C])
         arr1 = mc.Arrhenius(name="B->C", A=1.2e-4, B=7, C=75, D=50, E=0.5,
-            reactants=[B], products=[C], gas_phase=gas)
+                            reactants=[B], products=[C], gas_phase=gas)
         arr2 = mc.Arrhenius(name="A->B", A=4.0e-3, C=50,
-            reactants=[A], products=[B], gas_phase=gas)
+                            reactants=[A], products=[B], gas_phase=gas)
         mechanism = mc.Mechanism(name="test_mechanism", species=[A, B, C],
-            phases=[gas], reactions=[arr1, arr2])
+                                 phases=[gas], reactions=[arr1, arr2])
         box_model.load_mechanism(mechanism)
 
         # Set up the initial conditions
@@ -147,7 +147,6 @@ class TestAnalytical:
 
         self.solve_and_compare(box_model)
 
-    
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
