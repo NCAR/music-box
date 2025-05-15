@@ -7,7 +7,7 @@ import json
 import os
 import pandas as pd
 import numpy as np
-import mechanism_configuration as mc
+import musica.mechanism_configuration as mc
 
 from tqdm import tqdm
 

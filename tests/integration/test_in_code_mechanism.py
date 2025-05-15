@@ -1,5 +1,5 @@
 from acom_music_box import MusicBox, Conditions
-import mechanism_configuration as mc
+import musica.mechanism_configuration as mc
 
 import math
 import logging
