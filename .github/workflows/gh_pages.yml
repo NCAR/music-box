@@ -3,8 +3,6 @@ name: GitHub Pages
 
 on: 
   push:
-    branches:
-      - main
   pull_request:
   workflow_dispatch:
 
@@ -130,21 +128,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: _gh-pages/
           force_orphan: true
-  comment-doc-link:
-    name: Comment documentation link on PR
-    if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Post documentation link
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const branchName = context.payload.pull_request.head.ref;
-            const docLink = `https://ncar.github.io/musica/branch/${branchName}/`;
-            const commentBody = `📄 Documentation for this branch is available at: [${docLink}](${docLink})`;
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-              body: commentBody
-            });
