@@ -17,6 +17,39 @@ Copyright (C) 2020 National Science Foundation - National Center for Atmospheric
 ```
 pip install acom-music-box
 ```
+# Using the MusicBox API
+MusicBox makes its chemical mechanism analysis and visualization available through a python API. The following example works through solving a simple chemistry system. Please refer to the [official documentation](https://ncar.github.io/music-box/branch/main/index.html) for further tutorials and examples. 
+
+1. Import MusicBox, MusicBox conditions, and Musica mechanisms:
+```
+from acom_music_box import MusicBox, Conditions
+import musica.mechanism_configuration as mc                                      
+```
+
+2. Define species of interest
+
+MusicBox uses [Musica](https://ncar.github.io/musica/index.html) to create specific chemical species and phases of interest.
+```
+A = mc.Species(name="A")
+B = mc.Species(name="B")
+C = mc.Species(name="C")  
+
+species = {"A":A,"B":B,"C":C}
+
+gas = mc.Phase(name="gas",species=list(species.values()))
+```
+3. Define a configuration (mechanism + initial conditions)
+
+Through Musica, several different mechanisms can be explored to define reaction rates.
+```
+arr1 = mc.Arrhenius(name="A->B", A=4.0e-3, C=50,reactants=[species["A"]], products=[species["B"]], gas_phase=gas)                                   
+```
+
+4. Create a box model
+
+5. Solve
+
+6. Example output
 
 # Command line tool
 MusicBox provides a command line tool that can run configurations as well as some pre-configured examples. Basic plotting can be done if gnuplot is installed.
