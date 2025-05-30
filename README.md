@@ -35,7 +35,7 @@ A = mc.Species(name="A")
 B = mc.Species(name="B")
 C = mc.Species(name="C")  
 
-species = {"A":A,"B":B,"C":C}
+species = {"A":A, "B":B, "C":C}
 
 gas = mc.Phase(name="gas", species=list(species.values()))
 
@@ -61,13 +61,13 @@ box_model.load_mechanism(mechanism)
 # In the box model, the initial set of conditions represent the starting environment for the reactions.
 # Both initial and evolving conditions are typically created alongside the creation of the box model:
 
-box_model.initial_conditions = Conditions(temperature=300.0,pressure=101000.0,species_concentrations={ "A": 1.0,"B": 3.0,"C": 5.0,})
+box_model.initial_conditions = Conditions(temperature=300.0, pressure=101000.0, species_concentrations={ "A": 1.0, "B": 3.0, "C": 5.0})
 
 
 # Evolving conditions represent a set of environmental and species values or rate constants that the box model should use at a specific time step.
-# To add an evolving condition to the model:
+# The following adds an evolving condition to the model, the first float represents the time when the condition evolves:
 
-box_model.add_evolving_condition(300.0,Conditions(temperature=290.0,pressure=100200.0,species_concentrations={"A": 1.0,"B": 3.0,"C": 10.0,})) # The first float represents the time when the condition evolves
+box_model.add_evolving_condition(300.0,Conditions(temperature=290.0, pressure=100200.0, species_concentrations={"A": 1.0, "B": 3.0, "C": 10.0}))
 
 box_model.box_model_options.simulation_length = 20 # total simulation time
 box_model.box_model_options.chem_step_time = 1 # time step for chemical reaction
