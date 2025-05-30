@@ -36,7 +36,7 @@ C = mc.Species(name="C")
 
 species = {"A":A,"B":B,"C":C}
 
-gas = mc.Phase(name="gas",species=list(species.values()))
+gas = mc.Phase(name="gas", species=list(species.values()))
 ```
 3. Define a mechanism of interest
 
@@ -62,16 +62,16 @@ In the box model, the initial set of conditions represent the starting environme
 box_model.initial_conditions = Conditions(temperature=300.0,pressure=101000.0,species_concentrations={ "A": 1.0,"B": 3.0,"C": 5.0,})
 ```
 
-Evolving conditions represent a set of changes to the previous conditions of the box model. To add an evolving condition to the model, where the first float represents the time when the condition evolves:
+Evolving conditions represent a set of environmental and species values or rate constants that the box model should use at a specific time step. To add an evolving condition to the model, where the first float represents the time when the condition evolves:
 ```
 box_model.add_evolving_condition(300.0,Conditions(temperature=290.0,pressure=100200.0,species_concentrations={"A": 1.0,"B": 3.0,"C": 10.0,}))
 ```
 
 
 ```
-box_model.box_model_options.simulation_length = 600.0 # total simulation time
-box_model.box_model_options.chem_step_time = 2 # time step for chemical reaction
-box_model.box_model_options.output_step_time = 6 # time step between each output
+box_model.box_model_options.simulation_length = 20 # total simulation time
+box_model.box_model_options.chem_step_time = 1 # time step for chemical reaction
+box_model.box_model_options.output_step_time = 4 # time step between each output
 ```
 
 5. Solve
@@ -85,7 +85,6 @@ print(df)
 6. Example Output
 <details><summary>&nbsp;&nbsp;&nbsp;<b>Click to Expand</b></summary>
 
-```python
 |     |   time.s |   ENV.temperature.K |   ENV.pressure.Pa |   ENV.air number density.mol m-3 |   CONC.A.mol m-3 |   CONC.B.mol m-3 |   CONC.C.mol m-3 |
 |----:|---------:|--------------------:|------------------:|---------------------------------:|-----------------:|-----------------:|-----------------:|
 |   0 |        0 |                 300 |            101000 |                          40.4917 |         1        |      3           |          5       |
@@ -189,7 +188,6 @@ print(df)
 |  98 |      588 |                 290 |            100200 |                          41.5562 |         0.254419 |      1.9168e-06  |         13.7456  |
 |  99 |      594 |                 290 |            100200 |                          41.5562 |         0.247267 |      1.86291e-06 |         13.7527  |
 | 100 |      600 |                 290 |            100200 |                          41.5562 |         0.240315 |      1.81054e-06 |         13.7597  |
-```
 </details><br></br>
 
 # Command line tool
