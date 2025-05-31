@@ -17,6 +17,76 @@ Copyright (C) 2020 National Science Foundation - National Center for Atmospheric
 ```
 pip install acom-music-box
 ```
+# Using the MusicBox API
+
+MusicBox makes its chemical mechanism analysis and visualization available through a Python API. The following example works through solving a simple chemistry system. Please refer to the [official documentation](https://ncar.github.io/music-box/branch/main/index.html) for further tutorials and examples.
+```
+# Import MusicBox, MusicBox conditions, and Musica mechanisms:
+
+from acom_music_box import MusicBox, Conditions
+import musica.mechanism_configuration as mc                                      
+
+
+# Define the chemical system of interest
+
+# MusicBox uses Musica (https://ncar.github.io/musica/index.html) to create specific chemical species and phases of interest for chemical mechanisms.
+
+A = mc.Species(name="A")
+B = mc.Species(name="B")
+C = mc.Species(name="C")  
+
+species = {"A":A, "B":B, "C":C}
+
+gas = mc.Phase(name="gas", species=list(species.values()))
+
+# Define a mechanism of interest
+
+# Through Musica, several different mechanisms can be explored to define reaction rates. Here, we use the Arrhenius equation as a simple example.
+
+arr1 = mc.Arrhenius(name="A->B", A=4.0e-3, C=50,reactants=[species["A"]], products=[species["B"]], gas_phase=gas)  
+
+arr2 = mc.Arrhenius(name="B->C", A=1.2e-4, B=2.5, C=75, D=50, E=0.5, reactants=[species["B"]], products=[species["C"]], gas_phase=gas)
+
+mechanism = mc.Mechanism(name="test_mechanism", species=list(species.values()),phases=[gas], reactions=[arr1, arr2])
+
+
+# Create a box model
+
+# To create a box model, including its mechanisms, conditions, length, time, and step times:
+
+box_model = MusicBox()
+box_model.load_mechanism(mechanism)
+
+
+# In the box model, the initial set of conditions represent the starting environment for the reactions.
+# Both initial and evolving conditions are typically created alongside the creation of the box model:
+
+box_model.initial_conditions = Conditions(temperature=300.0, pressure=101000.0, species_concentrations={ "A": 1.0, "B": 3.0, "C": 5.0})
+
+
+# Evolving conditions represent a set of environmental and species values or rate constants that the box model should use at a specific time step.
+# The following adds an evolving condition to the model, the first float represents the time when the condition evolves:
+
+box_model.add_evolving_condition(300.0,Conditions(temperature=290.0, pressure=100200.0, species_concentrations={"A": 1.0, "B": 3.0, "C": 10.0}))
+
+box_model.box_model_options.simulation_length = 20 # total simulation time
+box_model.box_model_options.chem_step_time = 1 # time step for chemical reaction
+box_model.box_model_options.output_step_time = 4 # time step between each output
+
+
+# Solve your newly-created box model and view results:
+
+df = box_model.solve()
+print(df)
+
+# To visualize specific results:
+
+import matplotlib.pyplot as plt
+
+df.plot(x='time.s', y=['CONC.A.mol m-3', 'CONC.B.mol m-3', 'CONC.C.mol m-3'], title='Concentration over time', ylabel='Concentration (mol m-3)', xlabel='Time (s)')
+plt.show()
+
+```
 
 # Command line tool
 MusicBox provides a command line tool that can run configurations as well as some pre-configured examples. Basic plotting can be done if gnuplot is installed.
