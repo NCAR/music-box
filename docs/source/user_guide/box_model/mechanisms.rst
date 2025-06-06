@@ -1,2 +1,2 @@
-Chemical Mechanisms
+Chemical mechanisms
 ===================

@@ -7,6 +7,7 @@ This section details the components of the box model, including reactions, mecha
    :maxdepth: 1
 
    reactions
-   mechanisms
-   conditions
-   configurations
+   Chemical mechanisms <mechanisms>
+   Initial and evolving conditions <conditions>
+   Configuration options <configurations>
+
