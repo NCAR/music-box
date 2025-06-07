@@ -299,11 +299,13 @@ class Conditions:
 
         This class method takes a JSON element, reads two rows, and
         sets variable names and values to the header and value rows.
-        Example of the data:
-                "data": [
-                    ["ENV.temperature [K]", "ENV.pressure [Pa]", "CONC.A [mol m-3]", "CONC.B [mol m-3]"],
-                    [200, 70000, 0.67, 2.3e-9]
-                ]
+        
+        Example::
+
+            "data": [
+                ["ENV.temperature [K]", "ENV.pressure [Pa]", "CONC.A [mol m-3]", "CONC.B [mol m-3]"],
+                [200, 70000, 0.67, 2.3e-9]
+            ]
 
         Args:
             data_json (object): JSON list of two lists.
@@ -312,6 +314,8 @@ class Conditions:
         Returns:
             dict: A dictionary of initial data values.
         """
+
+
 
         data_values = {}
 
