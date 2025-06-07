@@ -38,8 +38,8 @@ nbsphinx_execute = 'auto'
 nbsphinx_prolog = ''
 nbsphinx_epilog = ''
 nbsphinx_allow_errors = True
-nbsphinx_input_prompt = '' 
-nbsphinx_output_prompt = ''
+nbsphinx_input_prompt = '%s' 
+nbsphinx_output_prompt = '%s'
 
 templates_path = ['_templates']
 exclude_patterns = []

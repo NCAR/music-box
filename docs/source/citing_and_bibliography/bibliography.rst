@@ -3,5 +3,3 @@
 Bibliography
 ############
 
-.. bibliography::
-   :all:

@@ -29,4 +29,5 @@ The software can be cited like this
     version      = {v2.8.0},
     doi          = {10.5281/zenodo.15427735},
     url          = {https://doi.org/10.5281/zenodo.15427735},
+
 }
