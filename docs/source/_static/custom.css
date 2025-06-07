@@ -5,3 +5,16 @@
   margin-right: auto;
   margin-top: 10px;
 }
+
+/* Hide input prompts (e.g., In [1]:) */
+div.nbinput .prompt,
+div.nboutput .prompt {
+    display: none;
+}
+
+/* Ensure full-width appearance for all code cells */
+div.nbinput pre,
+div.nboutput pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
