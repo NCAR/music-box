@@ -20,7 +20,8 @@ Welcome to Music Box's documentation!
 
     .. grid-item-card:: Getting started
         :img-top: _static/index_getting_started.svg
-        :link: getting_started.ipynb
+        :link: getting_started
+        :link-type: doc
 
         Check out the getting started guide to install music box.
 
