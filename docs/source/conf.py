@@ -1,7 +1,7 @@
 import sys
 import os
 import datetime
-#import acom_music_box
+import acom_music_box
 sys.path.insert(0, os.path.abspath('..'))
 
 # Configuration file for the Sphinx documentation builder.
@@ -12,8 +12,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-#version = acom_music_box.__version__
-version = "2.8.0"
+version = acom_music_box.__version__
 project = f'Music Box ({version})'
 copyright = f'2024-{datetime.datetime.now().year}, NSF-NCAR/UCAR'
 author = 'NSF-NCAR/UCAR'
