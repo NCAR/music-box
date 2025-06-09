@@ -16,7 +16,7 @@ COPY . /music-box/
 WORKDIR /music-box
 
 
-RUN pip3 install -e .
+# RUN pip3 install -e .
 
 ARG SUFFIX=""
 ENV SWITCHER_SUFFIX=$SUFFIX
