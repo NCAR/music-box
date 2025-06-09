@@ -15,7 +15,7 @@ env:
 jobs:
   build-and-deploy:
     name: Build and deploy to gh-pages
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -135,8 +135,8 @@ jobs:
 
   comment-doc-link:
     name: Comment documentation link on PR
-    # if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
-    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
+    runs-on: macos-latest
     steps:
       - name: Post documentation link
         uses: actions/github-script@v6
