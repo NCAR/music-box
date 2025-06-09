@@ -27,26 +27,15 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx_copybutton',
     'sphinx_design',
-    'nbsphinx',
 ]
 
-# -- nb sphinx formatting -----
-nbsphinx_codecell_lexer = 'ipython3'
-nbsphinx_codecell_style = 'default'
-nbsphinx_show_input = True
-nbsphinx_execute = 'auto'
-nbsphinx_prolog = ''
-nbsphinx_epilog = ''
-nbsphinx_allow_errors = True
-nbsphinx_input_prompt = '%s' 
-nbsphinx_output_prompt = '%s'
-
 templates_path = ['_templates']
 exclude_patterns = []
 
 templates_path = ['_templates']
 exclude_patterns = []
 
+highlight_language = 'python'
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
