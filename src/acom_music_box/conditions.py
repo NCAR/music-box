@@ -299,7 +299,7 @@ class Conditions:
 
         This class method takes a JSON element, reads two rows, and
         sets variable names and values to the header and value rows.
-        
+
         Example::
 
             "data": [
@@ -314,8 +314,6 @@ class Conditions:
         Returns:
             dict: A dictionary of initial data values.
         """
-
-
 
         data_values = {}
 
