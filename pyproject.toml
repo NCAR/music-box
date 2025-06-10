@@ -28,7 +28,8 @@ dependencies = [
   "tqdm",
   "netcdf4",
   "matplotlib",
-  "mplcursors"
+  "mplcursors",
+  "typing_extensions"
 ]
 
 [project.urls]
