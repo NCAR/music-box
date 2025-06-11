@@ -16,8 +16,6 @@ class TestChapman:
         # solves and saves output
         model = box_model.solve()
 
-        model.columns = [column for column in model.columns]
-
         current_dir = os.path.dirname(__file__)
         expected_results_path = os.path.join(current_dir, "expected_results/chapman_test.csv")
 
@@ -46,8 +44,6 @@ class TestChapmanConfig:
 
         # solves and saves output
         model = box_model.solve()
-
-        model.columns = [column for column in model.columns]
 
         current_dir = os.path.dirname(__file__)
         expected_results_path = os.path.join(current_dir, "expected_results/chapman_test.csv")
