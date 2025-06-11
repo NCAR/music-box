@@ -2,9 +2,7 @@
 Getting started
 ###############
 
-MusicBox User Tutorial
-----------------------
-Hello, and welcome to the MusicBox user tutorial! Here, we will be covering some basic usages of the MusicBox library.
+Hello, and welcome to the MusicBox! Here, we will be covering some basic usages of the MusicBox library.
 
 What is MusicBox?
 ------------------
