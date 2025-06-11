@@ -2,7 +2,7 @@
 Getting started
 ###############
 
-Hello, and welcome to the MusicBox! Here, we will be covering some basic usages of the MusicBox library.
+Hello, and welcome to MusicBox! Here, we will be covering some basic usages of the MusicBox library.
 
 What is MusicBox?
 ------------------
