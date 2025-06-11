@@ -5,6 +5,7 @@ from .evolving_conditions import EvolvingConditions
 from .constants import GAS_CONSTANT
 import json
 import os
+import atexit
 import pandas as pd
 import numpy as np
 import musica.mechanism_configuration as mc
@@ -204,11 +205,13 @@ class MusicBox:
             elif "mechanism" in data and data["mechanism"]:
                 # V1 mechanism configuration (in the same file)
                 mechanism_json = data['mechanism']
-                with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=True) as tmp_mech_file:
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp_mech_file:
                     tmp_mech_file.write(json.dumps(mechanism_json))
                     tmp_mech_file.flush()
-                    # Initalize the musica solver
-                    self.solver = musica.MICM(config_path=tmp_mech_file.name, solver_type=musica.SolverType.rosenbrock_standard_order)
+                    tmp_mech_file_path = tmp_mech_file.name
+                # Initalize the musica solver
+                self.solver = musica.MICM(config_path=tmp_mech_file_path, solver_type=musica.SolverType.rosenbrock_standard_order)
+                atexit.register(os.remove, tmp_mech_file_path)
 
             # Set box model options
             self.box_model_options = BoxModelOptions.from_config_JSON(data)
