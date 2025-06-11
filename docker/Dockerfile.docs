@@ -6,6 +6,7 @@ RUN dnf -y update \
         gcc \
         gcc-c++ \
         make \
+        pandoc \
         python3-devel \
         python3-pip \
     && dnf clean all
@@ -13,6 +14,7 @@ RUN dnf -y update \
 COPY . /music-box/
 
 WORKDIR /music-box
+
 
 RUN pip3 install -e .
 

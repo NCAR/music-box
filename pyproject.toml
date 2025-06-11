@@ -21,14 +21,15 @@ classifiers = ["License :: OSI Approved :: Apache Software License"]
 dynamic = ["version", "description"]
 
 dependencies = [
-  "musica==0.11.1",
+  "musica==0.11.1.4",
   "xarray",
   "colorlog",
   "pandas",
   "tqdm",
   "netcdf4",
   "matplotlib",
-  "mplcursors"
+  "mplcursors",
+  "typing_extensions"
 ]
 
 [project.urls]

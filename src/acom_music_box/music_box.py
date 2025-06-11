@@ -5,6 +5,7 @@ from .evolving_conditions import EvolvingConditions
 from .constants import GAS_CONSTANT
 import json
 import os
+import atexit
 import pandas as pd
 import numpy as np
 import musica.mechanism_configuration as mc
@@ -12,6 +13,7 @@ import musica.mechanism_configuration as mc
 from tqdm import tqdm
 
 import logging
+import tempfile
 logger = logging.getLogger(__name__)
 
 
@@ -24,7 +26,6 @@ class MusicBox:
         box_model_options (BoxModelOptions): Options for the box model simulation.
         initial_conditions (Conditions): Initial conditions for the simulation.
         evolving_conditions (List[EvolvingConditions]): List of evolving conditions over time.
-        config_file (String): File path for the configuration file to be located. Default is "camp_data/config.json".
         solver: The solver used for the box model simulation.
         state: The current state of the box model simulation.
     """
@@ -33,8 +34,7 @@ class MusicBox:
             self,
             box_model_options=None,
             initial_conditions=None,
-            evolving_conditions=None,
-            config_file=None):
+            evolving_conditions=None):
         """
         Initializes a new instance of the BoxModel class.
 
@@ -42,12 +42,10 @@ class MusicBox:
             box_model_options (BoxModelOptions): Options for the box model simulation.
             initial_conditions (Conditions): Initial conditions for the simulation.
             evolving_conditions (List[EvolvingConditions]): List of evolving conditions over time.
-            config_file (String): File path for the configuration file to be located. Default is "camp_data/config.json".
         """
         self.box_model_options = box_model_options if box_model_options is not None else BoxModelOptions()
         self.initial_conditions = initial_conditions if initial_conditions is not None else Conditions()
         self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([], [])
-        self.config_file = config_file if config_file is not None else "camp_data/config.json"
         self.solver = None
         self.state = None
 
@@ -199,7 +197,21 @@ class MusicBox:
 
         with open(path_to_json, 'r') as json_file:
             data = json.load(json_file)
-            self.config_file = data['model components'][0]['configuration file']
+
+            if "model components" in data and data["model components"]:
+                # V0 mechanism configuration (already in separate file)
+                camp_path = os.path.join(os.path.dirname(path_to_json), data['model components'][0]['configuration file'])
+                self.solver = musica.MICM(config_path=camp_path, solver_type=musica.SolverType.rosenbrock_standard_order)
+            elif "mechanism" in data and data["mechanism"]:
+                # V1 mechanism configuration (in the same file)
+                mechanism_json = data['mechanism']
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp_mech_file:
+                    tmp_mech_file.write(json.dumps(mechanism_json))
+                    tmp_mech_file.flush()
+                    tmp_mech_file_path = tmp_mech_file.name
+                # Initalize the musica solver
+                self.solver = musica.MICM(config_path=tmp_mech_file_path, solver_type=musica.SolverType.rosenbrock_standard_order)
+                atexit.register(os.remove, tmp_mech_file_path)
 
             # Set box model options
             self.box_model_options = BoxModelOptions.from_config_JSON(data)
@@ -210,10 +222,7 @@ class MusicBox:
             # Set evolving conditions
             self.evolving_conditions = EvolvingConditions.from_config_JSON(path_to_json, data)
 
-        camp_path = os.path.join(os.path.dirname(path_to_json), self.config_file)
-
-        # Initalize the musica solver
-        self.solver = musica.MICM(config_path=camp_path, solver_type=musica.SolverType.rosenbrock_standard_order)
+        # Create a state for the solver
         self.state = self.solver.create_state(1)
 
     def load_mechanism(self, mechanism, solver_type=musica.SolverType.rosenbrock_standard_order):
