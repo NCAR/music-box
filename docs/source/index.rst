@@ -39,7 +39,7 @@ Welcome to Music Box's documentation!
 
         The source code for music box is heavily documented. This reference will help you understand the internals of music box.
 
-    .. grid-item-card::  Contributors guide
+    .. grid-item-card::  Contributor's guide
         :img-top: _static/index_contribute.svg
         :link: contributing/index
         :link-type: doc
@@ -56,7 +56,7 @@ Welcome to Music Box's documentation!
    user_guide/index
    api/index
    contributing/index
-   citing_and_bibliography/index
+   citing/index
 
 Indices and tables
 ==================
