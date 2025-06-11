@@ -27,4 +27,4 @@ MusicBox is a group scientific and software effort. The software can be cited li
     publisher    = {Zenodo},
     version      = {v2.8.0},
     doi          = {10.5281/zenodo.15427735},
-    url          = {https://doi.org/10.5281/zenodo.15427735},
+    url          = {https://doi.org/10.5281/zenodo.15427735}
