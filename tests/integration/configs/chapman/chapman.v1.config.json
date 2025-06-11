@@ -1,0 +1,226 @@
+{
+  "box model options": {
+    "grid": "box",
+    "chemistry time step [min]": 1.0,
+    "output time step [min]": 1.0,
+    "simulation length [day]": 3.0
+  },
+  "initial conditions": {
+    "filepaths": [ "initial_concentrations.csv" ]
+  },
+  "environmental conditions": {
+    "temperature": {
+      "initial value [K]": 217.6
+    },
+    "pressure": {
+      "initial value [Pa]": 1394.3
+    }
+  },
+  "evolving conditions": {
+    "filepaths": [
+      "conditions_Boulder.csv"
+    ]
+  },
+  "mechanism": {
+    "version": "1.0.0",
+    "name": "Chapman",
+    "species": [
+      {
+        "name": "M",
+        "tracer type": "THIRD_BODY",
+        "__description": "Third-body molecule. This is any molecule present in the system."
+      },
+      {
+        "name": "Ar",
+        "absolute tolerance": 1e-12
+      },
+      {
+        "name": "CO2",
+        "absolute tolerance": 1e-12
+      },
+      {
+        "name": "H2O",
+        "absolute tolerance": 1e-12
+      },
+      {
+        "name": "O1D",
+        "absolute tolerance": 1e-12
+      },
+      {
+        "name": "O",
+        "absolute tolerance": 1e-12
+      },
+      {
+        "name": "O2",
+        "absolute tolerance": 1e-12
+      },
+      {
+        "name": "O3",
+        "absolute tolerance": 1e-12
+      },
+      {
+        "name": "N2",
+        "absolute tolerance": 1e-12
+      }
+    ],
+      "phases": [
+      {
+        "name": "gas",
+        "species": [
+          "M",
+          "Ar",
+          "CO2",
+          "H2O",
+          "O",
+          "O2",
+          "O3",
+          "O1D",
+          "N2"
+        ]
+      }
+    ],
+    "reactions": [
+      {
+        "type": "PHOTOLYSIS",
+        "gas phase": "gas",
+        "reactants": [
+          {
+            "species name": "O2"
+          }
+        ],
+        "products": [
+          {
+            "species name": "O",
+            "coefficient": 2.0
+          }
+        ],
+        "name": "O2_1"
+      },
+      {
+        "type": "PHOTOLYSIS",
+        "gas phase": "gas",
+        "reactants": [
+          {
+            "species name": "O3"
+          }
+        ],
+        "products": [
+          {
+            "species name": "O1D"
+          },
+          {
+            "species name": "O2"
+          }
+        ],
+        "name": "O3_1"
+      },
+      {
+        "type": "PHOTOLYSIS",
+        "gas phase": "gas",
+        "reactants": [
+          {
+            "species name": "O3"
+          }
+        ],
+        "products": [
+          {
+            "species name": "O"
+          },
+          {
+            "species name": "O2"
+          }
+        ],
+        "name": "O3_2"
+      },
+      {
+        "type": "ARRHENIUS",
+        "gas phase": "gas",
+        "reactants": [
+          {
+            "species name": "O1D"
+          },
+          {
+            "species name": "N2"
+          }
+        ],
+        "products": [
+          {
+            "species name": "O"
+          },
+          {
+            "species name": "N2"
+          }
+        ],
+        "A": 1.29476026340E+07,
+        "Ea": -1.518e-21
+      },
+      {
+        "type": "ARRHENIUS",
+        "gas phase": "gas",
+        "reactants": [
+          {
+            "species name": "O1D"
+          },
+          {
+            "species name": "O2"
+          }
+        ],
+        "products": [
+          {
+            "species name": "O"
+          },
+          {
+            "species name": "O2"
+          }
+        ],
+        "A": 1.98730645080E+07,
+        "Ea": -7.59e-22
+      },
+      {
+        "type": "ARRHENIUS",
+        "gas phase": "gas",
+        "reactants": [
+          {
+            "species name": "O"
+          },
+          {
+            "species name": "O3"
+          }
+        ],
+        "products": [
+          {
+            "species name": "O2",
+            "coefficient": 2.0
+          }
+        ],
+        "A": 4.81771260800E+06,
+        "Ea": 2.8428e-20
+      },
+      {
+        "type": "ARRHENIUS",
+        "gas phase": "gas",
+        "reactants": [
+          {
+            "species name": "O"
+          },
+          {
+            "species name": "O2"
+          },
+          {
+            "species name": "M"
+          }
+        ],
+        "products": [
+          {
+            "species name": "O3"
+          },
+          {
+            "species name": "M"
+          }
+        ],
+        "A": 2.17597076000E+02,
+        "B": -2.4
+      }
+    ]
+  }
+}
