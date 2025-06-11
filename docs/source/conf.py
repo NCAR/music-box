@@ -38,7 +38,7 @@ exclude_patterns = []
 
 highlight_language = 'python'
 
-#-- link to MUSICA documentation ---
+# -- link to MUSICA documentation ---
 
 intersphinx_mapping = {
     'musica': ('https://ncar.github.io/musica/api/', None),
