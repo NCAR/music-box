@@ -3,9 +3,6 @@ name: GitHub Pages
 
 on: 
   push:
-    branches:
-      - main
-      - release
   pull_request:
   workflow_dispatch:
 
@@ -96,10 +93,16 @@ jobs:
           id=$(docker create music_box)
           docker cp $id:/music-box/docs/build/html tmpdocs
           docker rm -v $id
-          brname="${{github.ref}}"
-          brname="${brname##refs/heads/}"
+          # Determine branch name for deployment directory
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            brname="${{ github.head_ref }}"
+          else
+            brname="${{ github.ref }}"
+            brname="${brname##refs/heads/}"
+          fi
           brdir=${brname//\//--}   # replace '/' with '--'
           rm -rf   _gh-pages/branch/${brdir}
+          mkdir -p _gh-pages/branch/${brdir}
           rsync -a tmpdocs/ _gh-pages/branch/${brdir}
 
       # Go through each branch in _gh-pages/branch/, if it's not a
