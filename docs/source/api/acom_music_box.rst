@@ -1,7 +1,7 @@
 MusicBox
 ========
 
-Contents
+Submodules
 ---------
 
 .. automodule:: acom_music_box
