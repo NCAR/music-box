@@ -1,13 +1,12 @@
 
+##########################
 Citing MusicBox
-===============
+##########################
 
-MusicBox is a group scientific and software effort. 
+.. toctree::
+   :maxdepth: 1
 
-Cite the software
------------------
-
-The software can be cited like this
+MusicBox is a group scientific and software effort. The software can be cited like this:
 
 .. code-block:: console
 
@@ -28,6 +27,4 @@ The software can be cited like this
     publisher    = {Zenodo},
     version      = {v2.8.0},
     doi          = {10.5281/zenodo.15427735},
-    url          = {https://doi.org/10.5281/zenodo.15427735},
-
-}
+    url          = {https://doi.org/10.5281/zenodo.15427735}

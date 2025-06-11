@@ -1,8 +1,10 @@
 MusicBox
 ========
 
-Submodules
-----------
+.. automodule:: acom_music_box
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 acom\_music\_box.music\_box module
 ----------------------------------
@@ -60,10 +62,3 @@ acom\_music\_box.utils module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: acom_music_box
-   :members:
-   :undoc-members:
-   :show-inheritance:
