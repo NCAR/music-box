@@ -1,13 +1,14 @@
-Chemical species
-================
+Defining chemical systems
+=========================
 
-This section covers the definitions and phases of chemical species used in MusicBox. As a reminder, this section assumes you have imported::
+This section covers the components of a chemical system as defined in MusicBox: Species, Phases, Reactions, and Mechanisms.
+As a reminder, this section assumes you have imported::
    
    import musica.mechanism_configuration as mc
 
-Defining species
-----------------
-Chemical species are the fundamental units that participate in reactions. Define species using the `species` class::
+Species
+--------
+Chemical species are the fundamental units that participate in reactions. Define species using the `Species` class::
    
    X = mc.Species(name="X")
    Y = mc.Species(name="Y")
@@ -15,8 +16,8 @@ Chemical species are the fundamental units that participate in reactions. Define
 
    species = {"X":X,"Y":Y,"Z":Z}
 
-Defining phases
------------------
-Species can be grouped into a phase. Most simpel models use a single gas phase::
+Phases
+-------
+Species can be grouped into a phase. Most simple models use a single gas phase::
    
    gas = mc.Phase(name="gas",species=list(species.values()))

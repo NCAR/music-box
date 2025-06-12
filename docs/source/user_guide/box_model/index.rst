@@ -2,12 +2,6 @@ Box model
 =========
 This section details the components of the box model, including reactions, mechanisms, conditions, and solutions.
 
-Reactions
-----------
-
-Chemical mechanisms
---------------------
-
 Initial and evolving conditions
 --------------------------------
 
