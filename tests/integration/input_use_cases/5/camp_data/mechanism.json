@@ -1,0 +1,26 @@
+{
+  "camp-data" : [
+    {
+      "name" : "Chapman",
+      "type" : "MECHANISM",
+      "reactions" : [
+        {
+          "type" : "EMISSION",
+          "species" : "O1D",
+          "MUSICA name" : "O1D"
+        },
+        {
+          "type" : "EMISSION",
+          "species" : "O",
+          "MUSICA name" : "O"
+        },
+        {
+          "type" : "EMISSION",
+          "species" : "O3",
+          "MUSICA name" : "O3"
+        }
+      ]
+    }
+  ]
+}
+
