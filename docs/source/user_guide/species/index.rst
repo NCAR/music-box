@@ -1,3 +1,5 @@
+.. _species:
+
 Defining chemical systems
 =========================
 
