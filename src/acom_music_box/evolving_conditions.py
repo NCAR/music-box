@@ -29,7 +29,6 @@ class EvolvingConditions:
         self.times = times if times is not None else []
         self.conditions = conditions if conditions is not None else []
 
-
     @staticmethod
     def from_config(
             path_to_json,
