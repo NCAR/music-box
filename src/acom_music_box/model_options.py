@@ -38,33 +38,9 @@ class BoxModelOptions:
     def __str__(self):
         return f"BoxModelOptions Time step: {self.chem_step_time}, Output time step: {self.output_step_time}, Simulation length: {self.simulation_length}, Grid: {self.grid}"
 
-    @classmethod
-    def from_UI_JSON(cls, UI_JSON):
-        """
-        Create a new instance of the BoxModelOptions class from a JSON object from the MusicBox Interactive UI.
-
-        Args:
-            UI_JSON (dict): A JSON object representing the box model options from the user interface options.
-
-        Returns:
-            BoxModelOptions: A new instance of the BoxModelOptions class.
-        """
-        chem_step_time = convert_time(
-            UI_JSON['conditions']['box model options'],
-            'chemistry time step')
-        output_step_time = convert_time(
-            UI_JSON['conditions']['box model options'],
-            'output time step')
-        simulation_length = convert_time(
-            UI_JSON['conditions']['box model options'],
-            'simulation length')
-
-        grid = UI_JSON['conditions']['box model options']['grid']
-
-        return cls(chem_step_time, output_step_time, simulation_length, grid)
 
     @classmethod
-    def from_config_JSON(cls, config_JSON):
+    def from_config(cls, config_JSON):
         """
         Create a new instance of the BoxModelOptions class from a JSON object from a configuration JSON.
 
