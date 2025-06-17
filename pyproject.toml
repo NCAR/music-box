@@ -15,7 +15,7 @@ authors = [
   { name = "Carl Drews", email = "drews@ucar.edu" },
   { name = "Montek Thind"},
   { name = "Aditya Kiran"},
-  { name = "Aidan Winney"}
+  { name = "Aidan Winney"},
   { name = "Angela Pak"}
 ]
 maintainers = [{ name = "ACOM MUSICA Developers", email = "musica-support@ucar.edu" }]
