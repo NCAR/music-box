@@ -5,14 +5,14 @@ Running premade examples
 -------------------------
 MusicBox provides a selection of pre-made example configurations for the user to work with:
 
-* Analytical
-* CarbonBond5
-* Chapman
-* FlowTube
-* TS1
-* WACCM
+* `Analytical <https://github.com/NCAR/music-box/tree/main/src/acom_music_box/examples/configs/analytical>`_
+* `CarbonBond5 <https://github.com/NCAR/music-box/tree/main/src/acom_music_box/examples/configs/carbon_bond_5>`_
+* `Chapman <https://github.com/NCAR/music-box/tree/main/src/acom_music_box/examples/configs/chapman>`_
+* `FlowTube <https://github.com/NCAR/music-box/tree/main/src/acom_music_box/examples/configs/flow_tube>`_
+* `TS1 <https://github.com/NCAR/music-box/tree/main/src/acom_music_box/examples/configs/ts1>`_
+* `WACCM <https://github.com/NCAR/music-box/tree/main/src/acom_music_box/examples/configs/waccm>`_
 
-Each example (found in `src/acom_music_box/examples`) includes an associated set of JSON files acccessible through the Examples class::
+Each example (found in `src/acom_music_box/examples/configs`) includes an associated set of JSON files acccessible through the Examples class::
 
     from acom_music_box import MusicBox, Examples
     import matplotlib.pyplot as plt
