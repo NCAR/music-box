@@ -71,11 +71,11 @@ Full details of each class can be found in the :ref:`API Reference <api-ref>`.
       k_{\text{alkoxy}} = \left( X e^{-Y / T} \right) 
       \left( \frac{Z}{Z + A} \right)
 
-   - X: Pre-exponential branching factor [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`].
-   - Y: Exponential branching factor [:math:`\mathrm{K} ^{-1}`].
-   - T: Temperature [:math:`\mathrm{K}`]
+   - X: pre-exponential branching factor [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`].
+   - Y: exponential branching factor [:math:`\mathrm{K} ^{-1}`].
+   - T: temperature [:math:`\mathrm{K}`]
    - Z: normalization term [unitless]. Denoted `a0` in `Branched` class parameters.
-   - A: Branching ratio parameter [unitless]. Denoted `n` in `Branched` class parameters.
+   - A: branching ratio parameter [unitless]. Denoted `n` in `Branched` class parameters.
 
    Example usage::
 
@@ -92,7 +92,7 @@ Full details of each class can be found in the :ref:`API Reference <api-ref>`.
       \rightarrow X
 
 
-   - X: Species being emmitted
+   - X: species being emmitted
 
    Example usage::
       
@@ -104,7 +104,7 @@ Full details of each class can be found in the :ref:`API Reference <api-ref>`.
 
       X \rightarrow
 
-   - X: Species being lost
+   - X: species being lost
 
    Example usage::
 
@@ -116,9 +116,9 @@ Full details of each class can be found in the :ref:`API Reference <api-ref>`.
 
       X + h\nu \rightarrow Y_1 \; (+ Y_2 \ldots)
 
-   - X: Species being photolyzed
+   - X: species being photolyzed
    - :math:`h\nu`: photon
-   - Y: Photolysis products
+   - Y: photolysis products
 
    Example usage::
 
@@ -142,7 +142,7 @@ Full details of each class can be found in the :ref:`API Reference <api-ref>`.
 
    - R: ideal gas constant [:math:`\mathrm{J}\mathrm{K}^{-1}\mathrm{mol}^{-1}`]
    - T: temperature [:math:`\mathrm{K}`]
-   - MW: Molecular weight of the gas-phase reactant [:math:`\mathrm{kg}\mathrm{mol}^{-1}`]
+   - MW: molecular weight of the gas-phase reactant [:math:`\mathrm{kg}\mathrm{mol}^{-1}`]
 
 
    Note that, of the reaction rate parameters, the `Surface` reaction class only requires the input of a reaction probability parameter.
@@ -180,12 +180,12 @@ Full details of each class can be found in the :ref:`API Reference <api-ref>`.
 
    Note that the `Troe` class takes each component of the :math:`k_0` and :math:`k_{\infty}` reaction rates as arguments:
 
-   - k0_A: Pre-exponential factor for the low-pressure limit [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`].
-   - k0_B: Temperature exponent for the low-pressure limit [unitless].
-   - k0_C: Exponential term for the low-pressure limit [:math:`\mathrm{K}^{-1}`].
-   - kinf_A: Pre-exponential factor for the high-pressure limit [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`].
-   - kinf_B: Temperature exponent for the high-pressure limit [unitless].
-   - kinf_C: Exponential term for the high-pressure limit [:math:`\mathrm{K}^{-1}`].
+   - k0_A: pre-exponential factor for the low-pressure limit [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`].
+   - k0_B: temperature exponent for the low-pressure limit [unitless].
+   - k0_C: exponential term for the low-pressure limit [:math:`\mathrm{K}^{-1}`].
+   - kinf_A: pre-exponential factor for the high-pressure limit [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`].
+   - kinf_B: temperature exponent for the high-pressure limit [unitless].
+   - kinf_C: exponential term for the high-pressure limit [:math:`\mathrm{K}^{-1}`].
    
    For more information on these parameters,please see :mod:`musica.mechanism_configuration`. 
 
