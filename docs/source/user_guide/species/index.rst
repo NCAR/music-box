@@ -34,19 +34,30 @@ Each class takes a unique set of rate parameters and the participating species::
 
    arr1 = mc.Arrhenius(name="X->Y", A=4.0e-3, C=50, reactants=[species["X"]], products=[species["Y"]], gas_phase=gas)
    arr2 = mc.Arrhenius(name="Y->Z", A=4.0e-3, C=50, reactants=[species["Y"]], products=[species["Z"]], gas_phase=gas)
+   
+For passing later on into a `Mechanism`, it is helpful to store your selected reactions into a dictionary::
+
    rxns = {"X->Y": arr1, "Y->Z": arr2} 
 
 Several other reaction types are made available through MusicBox. Click the dropdowns below to learn more information about a specific reaction.
-Full details of each class can be found in the :ref:`API Reference <api-ref>`. Additional reactions than those listed below may be present in the
-`mechanism_configuration` class, but are not yet supported via MusicBox and will be implemented in future versions.
+Full details of each class can be found in the :ref:`API Reference <api-ref>`.
 
 .. dropdown:: Arrhenius
 
    .. math::
 
-      A e^{-E_a / (k_b T)} (T D)^B (1.0 + E^* P)
+      A e^{C/T} (\frac{T}{D})^B (1.0 + E \times P)
 
-   .. code-block::
+   - A: pre-exponential factor [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`]
+   - B: temperature exponent [unitless]
+   - C: exponential term [:math:`\mathrm{K} ^{-1}`]
+   - D: reference temperature [:math:`\mathrm{K}`]
+   - E: pressure scaling term [:math:`\mathrm{Pa}^{-1}`]
+   - T: temperature [:math:`\mathrm{K} ^{-1}`]
+   - P: pressure [:math:`\mathrm{Pa}`]
+   - n = number of reactants
+
+   Example usage::
       
       arr = mc.Arrhenius(name="arr_ex", A=4.0e-3, C=50, reactants=[species["X"]], products=[species["Y"]], gas_phase=gas)
 
@@ -55,19 +66,18 @@ Full details of each class can be found in the :ref:`API Reference <api-ref>`. A
    .. math::
 
       k_{\text{nitrate}} = \left( X e^{-Y / T} \right) 
-      \left( \frac{A(T, [M], n)}{A(T, [M], n) + Z} \right)
+      \left( \frac{A}{A+ Z} \right)
       
       k_{\text{alkoxy}} = \left( X e^{-Y / T} \right) 
-      \left( \frac{Z}{Z + A(T, [M], n)} \right)
+      \left( \frac{Z}{Z + A} \right)
 
-      A(T, [M], n) = \frac{2 \times 10^{-22} e^n [M]}
-      {1 + 2 \times 10^{-22} e^n [M]^{0.43} \left( \frac{T}{298} \right)^{-80.41} 
-      \left( 1 + \left[ \log \left( 2 \times 10^{-22} e^n [M]^{0.43} \left( \frac{T}{298} \right)^{-8} \right) \right]^2 \right)}
+   - X: Pre-exponential branching factor [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`].
+   - Y: Exponential branching factor [:math:`\mathrm{K} ^{-1}`].
+   - T: Temperature [:math:`\mathrm{K}`]
+   - Z: normalization term [unitless]. Denoted `a0` in `Branched` class parameters.
+   - A: Branching ratio parameter [unitless]. Denoted `n` in `Branched` class parameters.
 
-      Z(\alpha_0, n) = A\left(T=293\,\mathrm{K}, [M] = 2.45 \times 10^{19}\,\mathrm{molec\,cm}^{-3}, n\right) 
-      (1 - \alpha_0) \, \alpha_0
-
-   .. code-block::
+   Example usage::
 
       branched = mc.Branched(name="branched_ex", X=1.2, Y=204.3, a0=1e-03, n=2,
          reactants=[species["X"]],
@@ -81,9 +91,12 @@ Full details of each class can be found in the :ref:`API Reference <api-ref>`. A
 
       \rightarrow X
 
-   .. code-block::
+
+   - X: Species being emmitted
+
+   Example usage::
       
-      emission = mc.Emission(name="emission_ex",scaling_factor=2,products =[species["Y"],species["Z"]], gas_phase=gas)
+      emission = mc.Emission(name="emission_ex", products =[species["Y"], species["Z"]], gas_phase=gas)
 
 .. dropdown:: First-order Loss
 
@@ -91,9 +104,11 @@ Full details of each class can be found in the :ref:`API Reference <api-ref>`. A
 
       X \rightarrow
 
-   .. code-block::
+   - X: Species being lost
 
-      loss = mc.FirstOrderLoss(name="loss_ex",scaling_factor=2,reactants=[species["X"],species["Y"]], gas_phase=gas)
+   Example usage::
+
+      loss = mc.FirstOrderLoss(name="loss_ex", reactants=[species["X"],species["Y"]], gas_phase=gas)
 
 .. dropdown:: Photolysis
 
@@ -101,60 +116,102 @@ Full details of each class can be found in the :ref:`API Reference <api-ref>`. A
 
       X + h\nu \rightarrow Y_1 \; (+ Y_2 \ldots)
 
-   .. code-block::
+   - X: Species being photolyzed
+   - :math:`h\nu`: photon
+   - Y: Photolysis products
 
-      photo = mc.Photolysis(name="photo_ex", scaling_factor=1.2, reactants=[species["X"]], products=[species["Y"]], gas_phase=gas)
+   Example usage::
+
+      photo = mc.Photolysis(name="photo_ex", reactants=[species["X"]], products=[species["Y"]], gas_phase=gas)
       
 .. dropdown:: Surface
-   
-   double check
 
    .. math::
 
-      r_{\text{surface}} = k_{\text{surface}} [X]
+      k_{\text{surface}} = \frac{4N_a \pi r_e^2}{\frac{r_e}{D_g} + \frac{4}{v(T) \gamma}}
 
-      k_{\text{surface}} = 4 N_a \pi r_e^2 \left( r_e D_g + 4 v(T) \gamma \right)
+   - :math:`N_a`: concentration of particles [particles :math:`\mathrm{m}^{-3}`]
+   - :math:`r_e`: effective particle radius [:math:`\mathrm{m}`]
+   - :math:`D_g`: gas-phase diffusion coefficiente of the reactant [:math:`\mathrm{m}^{2}\mathrm{s}^{-1}`]
+   - :math:`\gamma`: reaction probability [unitless]
+   - v: mean free speed of the gas-phase reactant
+
+   .. math::
 
       v = \sqrt{ \frac{8 R T}{\pi M_W} }
 
-   Surface needs additional species parameters defined.
+   - R: ideal gas constant [:math:`\mathrm{J}\mathrm{K}^{-1}\mathrm{mol}^{-1}`]
+   - T: temperature [:math:`\mathrm{K}`]
+   - MW: Molecular weight of the gas-phase reactant [:math:`\mathrm{kg}\mathrm{mol}^{-1}`]
 
-   .. code-block::
 
-      X = mc.Species(name="X", diffusion_coefficient_m2_s=200,molecular_weight_kg_mol=1)
-      Y = mc.Species(name="Y", diffusion_coefficient_m2_s=200,molecular_weight_kg_mol=1)
-      Z = mc.Species(name="Z", diffusion_coefficient_m2_s=200,molecular_weight_kg_mol=1)
+   Note that, of the reaction rate parameters, the `Surface` reaction class only requires the input of a reaction probability parameter.
+   Diffusion coefficients and molecular weights must be handled with the initialization of `Species` invovled in a Surface reaction::
+
+      X = mc.Species(name="X", diffusion_coefficient_m2_s=200, molecular_weight_kg_mol=1)
+      Y = mc.Species(name="Y", diffusion_coefficient_m2_s=200, molecular_weight_kg_mol=1)
+      Z = mc.Species(name="Z", diffusion_coefficient_m2_s=200, molecular_weight_kg_mol=1)
       species = {"X": X, "Y": Y, "Z": Z}
       gas = mc.Phase(name="gas", species=list(species.values()))
 
-   .. code-block::
+   Additional parameters are handled internally. 
 
-      surface = mc.Surface(name="surface_ex",reaction_probability=0.9,gas_phase_species = X,gas_phase_products=[species["Y"]],gas_phase=gas)
+   Example usage::
+
+      surface = mc.Surface(name="surface_ex", reaction_probability=0.9, gas_phase_species = X, gas_phase_products=[species["Y"]], gas_phase=gas)
 
 .. dropdown:: Troe (fall-off)
    
-   check
-   
    .. math::
 
-      k = \frac{k_0 [M]}{1 + \frac{k_0 [M]}{k_{\infty}}} 
+      \frac{k_0 [M]}{1 + \frac{k_0 [M]}{k_{\infty}}} 
       \cdot F_C^{\left(1 + \frac{1}{N \left( \log_{10} \left( \frac{k_0 [M]}{k_{\infty}} \right) \right)^2} \right)^{-1}}
 
-   .. code-block::
+   - :math:`k_0`: low-pressure limiting rate constant, Arrhenius form
+   - :math:`k_{\infty}`: high-pressure limiting rate constant, Arrhenius form
+   - M: air density [:math:`\mathrm{mol}\ \mathrm{m}^{-3}`]
+   - Fc: Troe parameter to determine shape of fall-off curve [unitless].
+   - N: Troe parameter to determine shape of fall-off curve [unitless].
+
+   Example usage::
       
-      test = mc.Troe(name="troe_ex", k0_A=7.23e21, k0_B=167,
+      troe = mc.Troe(name="troe_ex", k0_A=7.23e21, k0_B=167,
          k0_C=3,kinf_A=4.32e-18,kinf_B=-3.1,kinf_C=402.1,Fc=0.9, N=1.2, reactants=[species["X"]],products=[species["Z"]], gas_phase=gas)
 
+   Note that the `Troe` class takes each component of the :math:`k_0` and :math:`k_{\infty}` reaction rates as arguments:
+
+   - k0_A: Pre-exponential factor for the low-pressure limit [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`].
+   - k0_B: Temperature exponent for the low-pressure limit [unitless].
+   - k0_C: Exponential term for the low-pressure limit [:math:`\mathrm{K}^{-1}`].
+   - kinf_A: Pre-exponential factor for the high-pressure limit [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`].
+   - kinf_B: Temperature exponent for the high-pressure limit [unitless].
+   - kinf_C: Exponential term for the high-pressure limit [:math:`\mathrm{K}^{-1}`].
+   
+   For more information on these parameters,please see :mod:`musica.mechanism_configuration`. 
 
 .. dropdown:: Tunneling
    
    .. math::
 
-      A e^{-B T} e^{C T^{3}}
+      A e^{\frac{-B}{T}}e^{\frac{C}{T^{3}}}
 
-   .. code-block::
+   - A: pre-exponential factor [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`]
+   - B: tunneling parameter for temperature dependence [:math:`\mathrm{K} ^{-1}`]
+   - C: tunneling parameter for tempetarute dependence [:math:`\mathrm{K} ^{-3}`]
+   - T: temperature [:math:`\mathrm{K}`]
+   - n = number of reactants
 
-      test = mc.Tunneling(name="tunn_ex", A=1.2, B=2.3, C=302.3, reactants=[species["X"]], products=[species["Y"]], gas_phase=gas)
+
+   Example usage::
+
+      tunnel = mc.Tunneling(name="tunn_ex", A=1.2, B=2.3, C=302.3, reactants=[species["X"]], products=[species["Y"]], gas_phase=gas)
+
+Additional reactions than those listed below may be present in the `mechanism_configuration` class, but are not yet 
+supported via MusicBox and will be implemented in future versions.
 
 Mechanisms
 ----------
+A mechanism defines a collection of chemical species, their associated phases, and the reactions between them. Mechanisms can be defined as
+follows::
+
+   mechanism = mc.Mechanism(name="tutorial_mechanism", species=list(species.values()), phases=[gas], reactions=list(rxns.values()))
