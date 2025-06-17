@@ -31,7 +31,7 @@ Each box model also contains three time parameters that must be defined:
 * chem_step_time: the number of time steps between each simulation calculation
 * output_step_time: the number of time steps between each output of the model
 
-All three of these have seconds as their unit::
+All three parameters are in seconds::
     
     box_model.box_model_options.simulation_length = 200 # Units: Seconds (s)
     box_model.box_model_options.chem_step_time = 1 # Units: Seconds (s)

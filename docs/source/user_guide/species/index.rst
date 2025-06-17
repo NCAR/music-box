@@ -71,11 +71,11 @@ Full details of each class can be found in the :ref:`API Reference <api-ref>`.
       k_{\text{alkoxy}} = \left( X e^{-Y / T} \right) 
       \left( \frac{Z}{Z + A} \right)
 
-   - X: pre-exponential branching factor [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`].
-   - Y: exponential branching factor [:math:`\mathrm{K} ^{-1}`].
+   - X: pre-exponential branching factor [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`]
+   - Y: exponential branching factor [:math:`\mathrm{K} ^{-1}`]
    - T: temperature [:math:`\mathrm{K}`]
-   - Z: normalization term [unitless]. Denoted `a0` in `Branched` class parameters.
-   - A: branching ratio parameter [unitless]. Denoted `n` in `Branched` class parameters.
+   - Z: normalization term [unitless], denoted `a0` in `Branched` class parameters
+   - A: branching ratio parameter [unitless], denoted `n` in `Branched` class parameters
 
    Example usage::
 
@@ -170,8 +170,8 @@ Full details of each class can be found in the :ref:`API Reference <api-ref>`.
    - :math:`k_0`: low-pressure limiting rate constant, Arrhenius form
    - :math:`k_{\infty}`: high-pressure limiting rate constant, Arrhenius form
    - M: air density [:math:`\mathrm{mol}\ \mathrm{m}^{-3}`]
-   - Fc: Troe parameter to determine shape of fall-off curve [unitless].
-   - N: Troe parameter to determine shape of fall-off curve [unitless].
+   - Fc: Troe parameter to determine shape of fall-off curve [unitless]
+   - N: Troe parameter to determine shape of fall-off curve [unitless]
 
    Example usage::
       
@@ -180,12 +180,12 @@ Full details of each class can be found in the :ref:`API Reference <api-ref>`.
 
    Note that the `Troe` class takes each component of the :math:`k_0` and :math:`k_{\infty}` reaction rates as arguments:
 
-   - k0_A: pre-exponential factor for the low-pressure limit [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`].
-   - k0_B: temperature exponent for the low-pressure limit [unitless].
-   - k0_C: exponential term for the low-pressure limit [:math:`\mathrm{K}^{-1}`].
-   - kinf_A: pre-exponential factor for the high-pressure limit [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`].
-   - kinf_B: temperature exponent for the high-pressure limit [unitless].
-   - kinf_C: exponential term for the high-pressure limit [:math:`\mathrm{K}^{-1}`].
+   - k0_A: pre-exponential factor for the low-pressure limit [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`]
+   - k0_B: temperature exponent for the low-pressure limit [unitless]
+   - k0_C: exponential term for the low-pressure limit [:math:`\mathrm{K}^{-1}`]
+   - kinf_A: pre-exponential factor for the high-pressure limit [(:math:`\mathrm{mol\ m}{-3})^{(n-1)}s^{-1}`]
+   - kinf_B: temperature exponent for the high-pressure limit [unitless]
+   - kinf_C: exponential term for the high-pressure limit [:math:`\mathrm{K}^{-1}`]
    
    For more information on these parameters,please see :mod:`musica.mechanism_configuration`. 
 
