@@ -1,6 +1,6 @@
 Box model
 =========
-This section details the components of the box model, including reactions, mechanisms, conditions, and solutions. To use the MusicBox model, import::
+This section details the components of the box model, a mechanism (the set of reactions and species), conditions, and solutions. To use the MusicBox model, import::
     
     from acom_music_box import MusicBox, Conditions
 
