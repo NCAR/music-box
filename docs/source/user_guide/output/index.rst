@@ -1,7 +1,7 @@
 Output and visualization
 ========================
-MusicBox supports the visualization of simulation results, with integration of `Matplotlib <https://matplotlib.org>`_ for customization. Matplotlib
-comes installed with MusicBox. To utilize it, first::
+MusicBox simulation results can easily be visualized with `Matplotlib <https://matplotlib.org>`_. Matplotlib
+is a dependency of MusixBox and will be installed when MusicBox is installed. To utilize it, first::
 
     import matplotlib.pyplot as plt
 

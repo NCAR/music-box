@@ -1,13 +1,11 @@
 Box model
 =========
-
 .. note::
     
     MusicBox uses the Model-Independent Chemical Module (MICM) as its core chemistry solver. For more information about available reaction types,
     species configuration, and solver behavior, see the `MICM documentation <micm:index>`_.
 
-    
-This section details the components of the box model, including reactions, mechanisms, conditions, and solutions. To use the MusicBox model, 
+This section details the components of the box model, a mechanism (the set of reactions and species), conditions, and solutions. To use the MusicBox model,
 import the :class:`acom_music_box.music_box.MusicBox` class::
     
     from acom_music_box import MusicBox, Conditions

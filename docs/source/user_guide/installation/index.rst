@@ -43,7 +43,7 @@ If you've chosen to install MusicBox locally, the following command will functio
 With MusicBox successfully installed, you should be able to import the package from a Python shell or script and print the version. Note that the
 full package name is `acom_music_box`::
 
-    import acom_music_box
+    import acom_music_box; print(acom_music_box.__version__)
 
 Developer installation
 ----------------------
