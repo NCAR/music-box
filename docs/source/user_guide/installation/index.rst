@@ -19,7 +19,7 @@ Within your new conda environment, install MusicBox via pip:
 
 .. code-block:: console
     
-    $ pip install acom-music-box
+    $ pip install acom_music_box
 
 Note that this step can also be performed without a virtual environment if a local installation is acceptable.
 
@@ -31,7 +31,7 @@ To verify that MusicBox was installed, run the following command within your con
     
     $ conda list
 
-This should print a list of all available packages within your conda environment, one of which should be `acom-music-box` with
+This should print a list of all available packages within your conda environment, one of which should be `acom_music_box` with
 the version listing matching the latest release as listed on our `Github <https://github.com/NCAR/music-box>`_.
 
 If you've chosen to install MusicBox locally, the following command will function in the same manner:
@@ -40,8 +40,8 @@ If you've chosen to install MusicBox locally, the following command will functio
     
     $ pip list
 
-With MusicBox successfully installed, you should be able to import the package from a Python shell or script. Note that the
-full package name is `acom-music-box`::
+With MusicBox successfully installed, you should be able to import the package from a Python shell or script and print the version. Note that the
+full package name is `acom_music_box`::
 
     import acom_music_box
 
