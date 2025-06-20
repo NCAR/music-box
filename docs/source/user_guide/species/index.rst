@@ -37,7 +37,7 @@ Each class takes a unique set of rate parameters and the participating species::
    
 For passing later on into a Mechanism (see :class:`musica.mechanism_configuration.Mechanism`), it is helpful to store your selected reactions into a dictionary::
 
-   rxns = {"X->Y": arr1, "Y->Z": arr2} 
+   rxns = {r.name: r for r in [arr1, arr2]}
 
 .. note::
 
