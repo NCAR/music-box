@@ -10,7 +10,7 @@ As a reminder, this section assumes you have imported::
 
 Species
 --------
-Chemical species are the fundamental units that participate in reactions. Define species using the `Species` class::
+Chemical species are the fundamental units that participate in reactions. Define species using the :class:`musica.mechanism_configuration.Species` class::
    
    X = mc.Species(name="X")
    Y = mc.Species(name="Y")
@@ -23,19 +23,19 @@ documentation <https://ncar.github.io/musica/api/python.html#musica.mechanism_co
 
 Phases
 -------
-Species can be grouped into a phase. Most simple models use a single gas phase::
+Species can be grouped into a Phase (see :class:`musica.mechanism_configuration.Phase`). Most simple models use a single gas phase::
    
    gas = mc.Phase(name="gas",species=list(species.values()))
 
 Reactions
 ----------
-Reactions are defined with using rate-based classes such as `Arrhenius`.
+Reactions are defined with using rate-based classes such as :class:`musica.mechanism_configuration.Arrhenius`.
 Each class takes a unique set of rate parameters and the participating species::
 
    arr1 = mc.Arrhenius(name="X->Y", A=4.0e-3, C=50, reactants=[species["X"]], products=[species["Y"]], gas_phase=gas)
    arr2 = mc.Arrhenius(name="Y->Z", A=4.0e-3, C=50, reactants=[species["Y"]], products=[species["Z"]], gas_phase=gas)
    
-For passing later on into a `Mechanism`, it is helpful to store your selected reactions into a dictionary::
+For passing later on into a Mechanism (see :class:`musica.mechanism_configuration.Mechanism`), it is helpful to store your selected reactions into a dictionary::
 
    rxns = {"X->Y": arr1, "Y->Z": arr2} 
 
