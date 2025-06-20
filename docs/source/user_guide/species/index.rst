@@ -39,8 +39,8 @@ For passing later on into a `Mechanism`, it is helpful to store your selected re
 
    rxns = {"X->Y": arr1, "Y->Z": arr2} 
 
-Several other reaction types are made available through MusicBox. Click the dropdowns below to learn more information about a specific reaction.
-Full details of each class can be found in the :ref:`API Reference <api-ref>`.
+Several other reaction types are made available for use in MusicBox. For a full list of supported reactions types as well as their parameters,
+please see the :ref:`mc:reactions` page in the OpenAtmos Mechanism Configuration documentation.
 
 .. dropdown:: Arrhenius
 

@@ -59,3 +59,8 @@ Once all components of the box model have been defined (in code or via JSON), it
     df = box_model.solve()
 
 This returns a dataframe of the conditions and Species concentrations as they've varied across time steps.
+
+.. note::
+    
+    MusicBox uses the Model-Independent Chemical Module (MICM) as its core chemistry solver. For more information about available reaction types,
+    species configuration, and solver behavior, see the `MICM documentation <micm:index>`_.
