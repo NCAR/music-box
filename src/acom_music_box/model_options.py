@@ -38,7 +38,6 @@ class BoxModelOptions:
     def __str__(self):
         return f"BoxModelOptions Time step: {self.chem_step_time}, Output time step: {self.output_step_time}, Simulation length: {self.simulation_length}, Grid: {self.grid}"
 
-
     @classmethod
     def from_config(cls, config_JSON):
         """
