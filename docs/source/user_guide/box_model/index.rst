@@ -17,7 +17,7 @@ Using the previously defined in-code mechanism (see :ref:`Defining chemical syst
 
 Initial and evolving conditions
 --------------------------------
-Use :class:`acom_music_box.conditions.Conditions` to set environmental parameters and species concentrations. Initial conditions define the environment that 
+Use :class:`acom_music_box.conditions.Conditions` to set environmental parameters and species concentrations (:math:`\textsf{mol m}^{-3}`). Initial conditions define the environment that 
 the mechanism takes place in at the start of the simulation through the parameters temperature (K), pressure (Pa), and optionally 
 air density. Without an air density provided, the Ideal Gas Law is used to calculate this parameter. The initial concentrations of each
 Species is also included::
