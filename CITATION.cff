@@ -23,5 +23,9 @@ authors:
     given-names: Montek
   - family-names: Kiran
     given-names: Aditya
+  - family-names: Winney
+    given-names: Aidan
+  - family-names: Pak
+    given-names: Angela
 license: Apache-2.0
 url: "https://github.com/NCAR/music-box"
