@@ -2,7 +2,6 @@ import musica
 from .conditions import Conditions
 from .model_options import BoxModelOptions
 from .evolving_conditions import EvolvingConditions
-from .constants import GAS_CONSTANT
 import json
 import os
 import atexit
@@ -214,13 +213,13 @@ class MusicBox:
                 atexit.register(os.remove, tmp_mech_file_path)
 
             # Set box model options
-            self.box_model_options = BoxModelOptions.from_config_JSON(data)
+            self.box_model_options = BoxModelOptions.from_config(data)
 
             # Set initial conditions
-            self.initial_conditions = Conditions.from_config_JSON(path_to_json, data)
+            self.initial_conditions = Conditions.from_config(path_to_json, data)
 
             # Set evolving conditions
-            self.evolving_conditions = EvolvingConditions.from_config_JSON(path_to_json, data)
+            self.evolving_conditions = EvolvingConditions.from_config(path_to_json, data)
 
         # Create a state for the solver
         self.state = self.solver.create_state(1)

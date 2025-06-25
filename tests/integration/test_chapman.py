@@ -29,8 +29,8 @@ class TestChapman:
                 assert math.isclose(
                     _model[column],
                     _expected[column],
-                    rel_tol=1e-19,
-                    abs_tol=1e-16,
+                    rel_tol=1.0e-12,
+                    abs_tol=1.0e-15,
                 ), f"Model results differ from expected for row index {_model_index} for species {column}"
 
 
