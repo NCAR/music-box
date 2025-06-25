@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: If you use this software, please cite it as below.
 title: MusicBox
-version: v2.6.0
+version: v2.9.0
 authors:
   - family-names: Dawson
     given-names: Matthew
