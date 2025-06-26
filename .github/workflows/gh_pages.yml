@@ -58,7 +58,7 @@ jobs:
           # 1. the frozen version, represented as vX.X in the version switcher
           docker build -t music_box -f docker/Dockerfile.docs .
           id=$(docker create music_box)
-          docker cp $id:/build/docs/build/html tmpdocs
+          docker cp $id:/music-box/docs/build/html  tmpdocs
           docker rm -v $id
           version=$(sed -nr "s/^release = f'v(.+)\{suffix\}'.*$/\1/p" docs/source/conf.py)
           mv tmpdocs _build/html/versions/${version}
@@ -67,7 +67,7 @@ jobs:
           # edit conf.py to produce a version string that looks like vX.X (stable)
           docker build -t music_box -f docker/Dockerfile.docs --build-arg SUFFIX=" (stable)" .
           id=$(docker create music_box)
-          docker cp $id:/build/docs/build/html tmpdocs
+          docker cp $id:/music-box/docs/build/html  tmpdocs
           docker rm -v $id
           mv tmpdocs _build/html/versions/stable
           # Delete everything under _gh-pages/ that is from the
