@@ -29,80 +29,8 @@ class EvolvingConditions:
         self.times = times if times is not None else []
         self.conditions = conditions if conditions is not None else []
 
-    @classmethod
-    def from_UI_JSON(cls, UI_JSON, species_list, reaction_list):
-        """
-        Create a new instance of the EvolvingConditions class from a JSON object.
-
-        Args:
-        UI_JSON (dict): A JSON object representing the evolving conditions.
-
-        Returns:
-            EvolvingConditions: A new instance of the EvolvingConditions class.
-        """
-        times = []
-        conditions = []
-
-        headers = UI_JSON['conditions']['evolving conditions'][0]
-
-        evol_from_json = UI_JSON['conditions']['evolving conditions']
-        for i in range(1, len(evol_from_json)):
-            times.append(float(evol_from_json[i][0]))
-
-            pressure = None
-            if 'ENV.pressure.Pa' in headers:
-                pressure = float(
-                    evol_from_json[i][headers.index('ENV.pressure.Pa')])
-
-            temperature = None
-            if 'ENV.temperature.K' in headers:
-                temperature = float(
-                    evol_from_json[i][headers.index('ENV.temperature.K')])
-
-            concentrations = []
-            concentration_headers = list(
-                filter(lambda x: 'CONC' in x, headers))
-            for j in range(len(concentration_headers)):
-                match = filter(
-                    lambda x: x.name == concentration_headers[j].split('.')[1],
-                    species_list.species)
-                species = next(match, None)
-
-                concentration = float(
-                    evol_from_json[i][headers.index(concentration_headers[j])])
-                concentrations.append(
-                    SpeciesConcentration(
-                        species, concentration))
-
-            rates = []
-            rate_headers = list(filter(lambda x: 's-1' in x, headers))
-            for k in range(len(rate_headers)):
-                name_to_match = rate_headers[k].split('.')
-
-                if name_to_match[0] == 'LOSS' or name_to_match[0] == 'EMIS':
-                    name_to_match = name_to_match[0] + '_' + name_to_match[1]
-                else:
-                    name_to_match = name_to_match[1]
-
-                match = filter(
-                    lambda x: x.name == name_to_match,
-                    reaction_list.reactions)
-                reaction = next(match, None)
-
-                rate = float(evol_from_json[i][headers.index(rate_headers[k])])
-                rates.append(ReactionRate(reaction, rate))
-
-            conditions.append(
-                Conditions(
-                    pressure,
-                    temperature,
-                    concentrations,
-                    rates))
-
-        return cls(headers, times, conditions)
-
     @staticmethod
-    def from_config_JSON(
+    def from_config(
             path_to_json,
             config_JSON):
         """
@@ -124,48 +52,77 @@ class EvolvingConditions:
         evolving_conditions = EvolvingConditions()
 
         # Check if 'evolving conditions' is a key in the JSON config
-        if 'evolving conditions' in config_JSON:
-            if len(config_JSON['evolving conditions'].keys()) > 0:
-                # Construct the path to the evolving conditions file
+        if (not 'evolving conditions' in config_JSON):
+            return (evolving_conditions)
+        if (len(list(config_JSON['evolving conditions'].keys())) == 0):
+            return (evolving_conditions)
 
+        evolveCond = config_JSON['evolving conditions']
+        logger.debug(f"evolveCond: {evolveCond}")
+        if 'filepaths' in evolveCond:
+            file_paths = evolveCond['filepaths']
+
+            # loop through the CSV files
+            allReactions = set()        # provide warning for duplicates that will override
+            for file_path in file_paths:
+                # read initial conditions from CSV file
                 evolving_conditions_path = os.path.join(
-                    os.path.dirname(path_to_json),
-                    list(config_JSON['evolving conditions'].keys())[0])
+                    os.path.dirname(path_to_json), file_path)
 
-                evolving_conditions = EvolvingConditions.read_conditions_from_file(
+                fileReactions = evolving_conditions.read_conditions_from_file(
                     evolving_conditions_path)
+                logger.debug(f"evolving_conditions.times = {evolving_conditions.times}")
+                logger.debug(f"evolving_conditions.conditions = {evolving_conditions.conditions}")
+
+                # any duplicate conditions?
+                overrideSet = allReactions.intersection(fileReactions)
+                if (len(overrideSet) > 0):
+                    logger.warning("File {} will override earlier conditions {}"
+                                   .format(file_path, sorted(overrideSet)))
+                allReactions = allReactions.union(fileReactions)
 
         return evolving_conditions
 
     def add_condition(self, time_point, conditions):
         """
         Add an evolving condition at a specific time point.
+        Keep the two lists sorted in order by time.
+        New arrivals will probably come at the end of the list.
 
         Args:
             time_point (float): The time point for the evolving condition.
             conditions (Conditions): The associated conditions at the given time point.
         """
-        self.time.append(time_point)
-        self.conditions.append(conditions)
+        # Work backward from end of list, looking for first time <= this new time.
+        timeIndex = len(self.times)
+        while (timeIndex > 0
+               and self.times[timeIndex - 1] > time_point):
+            timeIndex -= 1
 
-    @classmethod
-    def read_conditions_from_file(cls, file_path):
+        self.times.insert(timeIndex, time_point)
+        self.conditions.insert(timeIndex, conditions)
+
+    def read_conditions_from_file(self, file_path):
         """
         Read conditions from a file and update the evolving conditions.
 
         Args:
             file_path (str): The path to the file containing conditions UI_JSON.
+
+        Returns:
+            set: the headers read from the CSV file;
+                used for warning about condition overrides
         """
 
-        times = []
-        conditions = []
-
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(file_path, skipinitialspace=True)
+        header_set = set(df.columns)
 
         # if present these columns must use these names
         pressure_key = 'ENV.pressure.Pa'
         temperature_key = 'ENV.temperature.K'
         time_key = 'time.s'
+
+        header_set.remove(time_key)
 
         time_and_environment_keys = [pressure_key, temperature_key, time_key]
         # other keys will depend on the species names and reaction labels configured in the mechanism
@@ -196,15 +153,16 @@ class EvolvingConditions:
                 else:
                     reaction_rates[f'{condition_type}.{label}'] = row[key]
 
-            times.append(time)
-            conditions.append(
-                Conditions(
-                    pressure,
-                    temperature,
-                    species_concentrations,
-                    reaction_rates))
+            self.add_condition(time,
+                               Conditions(
+                                   pressure,
+                                   temperature,
+                                   species_concentrations,
+                                   reaction_rates
+                               )
+                               )
 
-        return cls(times=times, conditions=conditions)
+        return (header_set)
 
     # allows len overload for this class
 

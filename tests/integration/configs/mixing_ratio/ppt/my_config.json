@@ -6,17 +6,6 @@
     "output time step [sec]": 1,
     "simulation length [sec]": 100
   },
-  "chemical species": {
-    "A": {
-      "initial value [ppt]": 22376466381.310608
-    },
-    "B": {
-      "initial value [mol m-3]": 0
-    },
-    "C": {
-      "initial value [mol m-3]": 0
-    }
-  },
   "environmental conditions": {
     "pressure": {
       "initial value [Pa]": 101253.3
@@ -27,7 +16,9 @@
   },
   "evolving conditions": {
   },
-  "initial conditions": {},
+  "initial conditions": {
+    "filepaths": ["initial_concentrations.csv"]
+  },
   "model components": [
     {
       "type": "CAMP",

@@ -3,14 +3,18 @@ FROM fedora:37
 RUN dnf -y update \
     && dnf -y install \
         git \
+        gcc \
+        gcc-c++ \
         make \
-        python3 \
+        pandoc \
+        python3-devel \
         python3-pip \
     && dnf clean all
 
 COPY . /music-box/
 
 WORKDIR /music-box
+
 
 RUN pip3 install -e .
 

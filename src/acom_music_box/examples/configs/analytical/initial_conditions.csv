@@ -1,0 +1,2 @@
+ENV.temperature [K],ENV.pressure [Pa],CONC.A [mol m-3],CONC.B [mol m-3],CONC.C [mol m-3]
+283.6,102364.4,0.9,0.1,0.3

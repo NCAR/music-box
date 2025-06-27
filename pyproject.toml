@@ -12,7 +12,11 @@ authors = [
   { name = "Walker Drury"},
   { name = "Alexander Garza"},
   { name = "Brendan Fattig"},
-  { name = "Carl Drews", email = "drews@ucar.edu" }
+  { name = "Carl Drews", email = "drews@ucar.edu" },
+  { name = "Montek Thind"},
+  { name = "Aditya Kiran"},
+  { name = "Aidan Winney"},
+  { name = "Angela Pak"}
 ]
 maintainers = [{ name = "ACOM MUSICA Developers", email = "musica-support@ucar.edu" }]
 readme = "README.md"
@@ -21,14 +25,15 @@ classifiers = ["License :: OSI Approved :: Apache Software License"]
 dynamic = ["version", "description"]
 
 dependencies = [
-  "musica==0.9.0",
+  "musica==0.12.0",
   "xarray",
   "colorlog",
   "pandas",
   "tqdm",
   "netcdf4",
   "matplotlib",
-  "mplcursors"
+  "mplcursors",
+  "typing_extensions"
 ]
 
 [project.urls]

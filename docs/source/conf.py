@@ -27,10 +27,24 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx_copybutton',
     'sphinx_design',
+    'sphinx.ext.intersphinx'
 ]
 
 templates_path = ['_templates']
 exclude_patterns = []
+
+templates_path = ['_templates']
+exclude_patterns = []
+
+highlight_language = 'python'
+
+# -- link to MUSICA documentation ---
+
+intersphinx_mapping = {
+    'musica': ('https://ncar.github.io/musica/api/', None),
+    'micm': ('https://ncar.github.io/micm/', None),
+    'mc': ('https://ncar.github.io/MechanismConfiguration/', None)
+}
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -43,6 +57,10 @@ html_theme_options = {
     "external_links": [],
     "github_url": "https://github.com/NCAR/music-box",
     "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    "switcher": {
+        "json_url": "https://ncar.github.io/music-box/_static/switcher.json",
+        "version_match": release,  # assumes `release` is defined
+    },
     "pygment_light_style": "tango",
     "pygment_dark_style": "monokai"
 }

@@ -3,8 +3,6 @@ name: GitHub Pages
 
 on: 
   push:
-    branches:
-      - main
   pull_request:
   workflow_dispatch:
 
@@ -60,7 +58,7 @@ jobs:
           # 1. the frozen version, represented as vX.X in the version switcher
           docker build -t music_box -f docker/Dockerfile.docs .
           id=$(docker create music_box)
-          docker cp $id:/build/docs/build/html tmpdocs
+          docker cp $id:/music-box/docs/build/html  tmpdocs
           docker rm -v $id
           version=$(sed -nr "s/^release = f'v(.+)\{suffix\}'.*$/\1/p" docs/source/conf.py)
           mv tmpdocs _build/html/versions/${version}
@@ -69,7 +67,7 @@ jobs:
           # edit conf.py to produce a version string that looks like vX.X (stable)
           docker build -t music_box -f docker/Dockerfile.docs --build-arg SUFFIX=" (stable)" .
           id=$(docker create music_box)
-          docker cp $id:/build/docs/build/html tmpdocs
+          docker cp $id:/music-box/docs/build/html  tmpdocs
           docker rm -v $id
           mv tmpdocs _build/html/versions/stable
           # Delete everything under _gh-pages/ that is from the
@@ -86,7 +84,8 @@ jobs:
       # _gh-pages/branch/$brname (transforming '/' into '--')
       - name: Build and copy documentation (branch)
         if: |
-          contains(github.event_name, 'push') &&
+          (contains(github.event_name, 'push') ||
+          contains(github.event_name, 'pull_request')) &&
           !contains(github.ref, env.DEFAULT_BRANCH)
         run: |
           set -x
@@ -94,10 +93,16 @@ jobs:
           id=$(docker create music_box)
           docker cp $id:/music-box/docs/build/html tmpdocs
           docker rm -v $id
-          brname="${{github.ref}}"
-          brname="${brname##refs/heads/}"
+          # Determine branch name for deployment directory
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            brname="${{ github.head_ref }}"
+          else
+            brname="${{ github.ref }}"
+            brname="${brname##refs/heads/}"
+          fi
           brdir=${brname//\//--}   # replace '/' with '--'
           rm -rf   _gh-pages/branch/${brdir}
+          mkdir -p _gh-pages/branch/${brdir}
           rsync -a tmpdocs/ _gh-pages/branch/${brdir}
 
       # Go through each branch in _gh-pages/branch/, if it's not a
@@ -130,3 +135,22 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: _gh-pages/
           force_orphan: true
+
+  comment-doc-link:
+    name: Comment documentation link on PR
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post documentation link
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const branchName = context.payload.pull_request.head.ref;
+            const docLink = `https://ncar.github.io/music-box/branch/${branchName}/`;
+            const commentBody = `📄 Documentation for this branch is available at: [${docLink}](${docLink})`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: commentBody
+            });
