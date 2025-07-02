@@ -87,11 +87,11 @@ def parse_reactions(input_path, logger):
             part = part.strip()
             if ' ' in part:
                 coefficient, name = part.split(' ', 1)
-                species_list.append({'name': name.strip(), 'coefficient': float(coefficient)})
+                species_list.append({'species name': name.strip(), 'coefficient': float(coefficient)})
             else:
                 # sometimes part can be an emptry string, ignore it
                 if part:
-                    species_list.append({'name': part, 'coefficient': 1.0})
+                    species_list.append({'species name': part, 'coefficient': 1.0})
         return species_list
     
     for line in lines:
@@ -198,17 +198,17 @@ def parse_reactions(input_path, logger):
     ]
     # remove any reactants whose name is a reaction type
     for r in reactions:
-        r['reactants'] = [s for s in r['reactants'] if s['name'] not in reaction_types]
-        r['products'] = [s for s in r['products'] if s['name'] not in reaction_types]
+        r['reactants'] = [s for s in r['reactants'] if s['species name'] not in reaction_types]
+        r['products'] = [s for s in r['products'] if s['species name'] not in reaction_types]
     return reactions
   
-def parse_initial_conditions(input_path, logger):
+def parse_molecular_weights(input_path, logger):
     paths = [
       ('gasspe.dum', 2),
       ('partspe.dum', 1)
     ]
 
-    concentrations = {}
+    molecular_weights = {}
 
     for path, skip in paths:
       # read a csv separated by /, skip the first 2 lines
@@ -217,7 +217,7 @@ def parse_initial_conditions(input_path, logger):
           sep='/',
           skiprows=skip,
           header=None,
-          names=['Species', 'Initial Concentration', 'Empty'],
+          names=['Species', 'Molecular Weight', 'Empty'],
           engine='python'
       )
 
@@ -229,9 +229,37 @@ def parse_initial_conditions(input_path, logger):
 
       df['Species'] = df['Species'].str.strip()
 
-      concentrations.update(df.set_index('Species')['Initial Concentration'].to_dict())
+      molecular_weights.update(df.set_index('Species')['Molecular Weight'].to_dict())
 
-    return concentrations
+    return molecular_weights
+
+def parse_chemical_formulas(input_path, logger):
+    """
+    Parse chemical formulas from a file.
+    """
+    chemical_formulas = {}
+    path = os.path.join(input_path, 'dictionary.out')
+    df = pd.read_fwf(
+        path,
+        skiprows=1,
+        header=None,
+        widths=[9, 100],
+        names=[
+            "Species", "Formula"
+        ],
+        dtype=str
+    )
+
+    # drop the last row which is END
+    df = df.drop(df.tail(1).index)
+
+    df['Species'] = df['Species'].str.strip()
+    df['Formula'] = df['Formula'].str.strip()
+
+    chemical_formulas.update(df.set_index('Species')['Formula'].to_dict())
+
+    return chemical_formulas
+
 
 def read_peroxy_species(input_path, logger):
     """
@@ -260,6 +288,121 @@ def read_peroxy_species(input_path, logger):
     
     return peroxy_groups
 
+def convert_reactions_to_musica(reactions, logger):
+    """
+    Convert GECKO-A reactions to MusicBox format.
+    """
+    converted_reactions = []
+    for r in reactions:
+        if r['type'] == 'regular':
+            converted_reaction = {
+                "type": "ARRHENIUS",
+                "A": r['A'],
+                "B": r['n'],
+                "C": -r['E/R'],
+                "reactants": r["reactants"],
+                "products": r['products']
+            }
+        elif r['type'] == 'FALLOFF':
+            converted_reaction = {
+                "type": "TROE",
+                "k0_A": r['A'],
+                "k0_B": r['n'],
+                "k0_C": -r['E/R'],
+                "kinf_A": r['extra_values'][0],
+                "kinf_B": r['extra_values'][1],
+                "kinf_C": r['extra_values'][2],
+                "Fc": r['extra_values'][3],
+                "reactants": r["reactants"],
+                "products": r['products']
+            }
+        elif r['type'] == 'HV':
+            converted_reaction = {
+                "type": "PHOTOLYSIS",
+                "name": "PHOTO." + str(int(r['extra_values'][0])),
+                "scaling factor": r['extra_values'][1],
+                "reactants": r["reactants"],
+                "products": r['products']
+            }
+        elif r['type'] == 'ISOM':
+            converted_reaction = {
+                "type": "ISOMERIZATION",
+                "A": r['A'],
+                "B": r['n'],
+                "C": -r['E/R'],
+                "taylor series": r['extra_values'][::-1],
+                "reactants": r["reactants"],
+                "products": r['products']
+            }
+        elif r['type'] == 'EXTRA' and r['extra_values'][0] == 100:
+            # This is the O + O2 + M -> O3 + M reaction
+            # The rate constant parameters are from TS1 because I couldn't figure out where they exist in GECKO
+            reactants = r["reactants"]
+            reactants.append({'species name': 'O2', 'coefficient': 1.0})
+            reactants.append({'species name': 'M', 'coefficient': 1.0})
+            converted_reaction = {
+                "type": "ARRHENIUS",
+                "A": r['A'],
+                "B": r['n'],
+                "C": -r['E/R'],
+                "reactants": reactants,
+                "products": r['products']
+            }
+        elif r['type'] == 'EXTRA' and r['extra_values'][0] == 500:
+            # This adds H2O as a reactant
+            reactants = r["reactants"]
+            reactants.append({'species name': 'H2O', 'coefficient': 1.0})
+            converted_reaction = {
+                "type": "ARRHENIUS",
+                "A": r['A'],
+                "B": r['n'],
+                "C": -r['E/R'],
+                "reactants": reactants,
+                "products": r['products']
+            }
+        elif r['type'] == 'EXTRA' and r['extra_values'][0] == 501:
+            # This adds H2O and M as reactants
+            reactants = r["reactants"]
+            reactants.append({'species name': 'H2O', 'coefficient': 1.0})
+            reactants.append({'species name': 'M', 'coefficient': 1.0})
+            converted_reaction = {
+                "type": "ARRHENIUS",
+                "A": r['A'],
+                "B": r['n'],
+                "C": -r['E/R'],
+                "reactants": reactants,
+                "products": r['products']
+            }
+        elif r['type'] == 'EXTRA' and r['extra_values'][0] == 550:
+            # This is the combination of an Arrhenius and a Troe reaction
+            converted_reaction = {
+                "type": "ARRHENIUS",
+                "A": r['A'],
+                "B": r['n'],
+                "C": -r['E/R'],
+                "reactants": r["reactants"],
+                "products": r['products']
+            }
+            converted_reactions.append(converted_reaction)
+            converted_reaction = {
+                "type": "TROE",
+                "k0_A": r['extra_values'][1],
+                "k0_B": r['extra_values'][2],
+                "k0_C": -r['extra_values'][3],
+                "kinf_A": r['extra_values'][4],
+                "kinf_B": r['extra_values'][5],
+                "kinf_C": -r['extra_values'][6],
+                "Fc": 0,
+                "reactants": r["reactants"],
+                "products": r['products']
+            }
+        else:
+            logger.warning(f"Unknown reaction type, skipping conversion. Reaction data: {r}")
+            continue
+
+        converted_reactions.append(converted_reaction)
+    return converted_reactions
+
 
 def main():
     args = parse_arguements()
@@ -281,7 +424,8 @@ def main():
 
     species = parse_species(input, logger)
     reactions = parse_reactions(input, logger)
-    initial_conditions = parse_initial_conditions(input, logger)
+    molecular_weights = parse_molecular_weights(input, logger)
+    chemical_formulas = parse_chemical_formulas(input, logger)
     peroxy_groups = read_peroxy_species(input, logger)
 
     type_counts = {}
@@ -293,19 +437,39 @@ def main():
     logger.debug(f"parsed {len(species)} species")
     logger.debug(f"parsed {len(reactions)} reactions")
     logger.debug(f"reaction type counts: {type_counts}")
-    logger.debug(f"parsed {len(initial_conditions)} initial conditions")
+    logger.debug(f"parsed {len(molecular_weights)} molecular weights")
     logger.debug(f"parsed {len(peroxy_groups)} peroxy groups")
-    for peroxy, species in peroxy_groups.items():
-        logger.debug(f"{peroxy}: {len(species)} species")
+    for peroxy, peroxy_species in peroxy_groups.items():
+        logger.debug(f"{peroxy}: {len(peroxy_species)} species")
     unique_species = set()
     for r in reactions:
         for s in r['reactants'] + r['products']:
-            unique_species.add(s['name'])
+            unique_species.add(s['species name'])
 
-    conditions = set(initial_conditions.keys())
-    # find species that don't have initial conditions
-    missing_conditions = unique_species - conditions - set(peroxy_groups.keys()) - set(['NOTHING'])
-    # print(missing_conditions)
+    # Output species to mechanism.json
+    import json
+    species_list = []
+    for _, row in species.iterrows():
+        name = row["GECKO-A Name"]
+        entry = {"name": name}
+        mw = molecular_weights.get("G" + name)
+        if mw is not None and float(mw) != 1:
+            entry["molecular weight [kg mol-1]"] = float(mw) / 1000.0  # Convert g/mol to kg/mol
+        formula = chemical_formulas.get(name)
+        if formula is not None:
+            entry["__chemical formula"] = formula
+        species_list.append(entry)
 
-if __name__ == "__main__":
-    main()
+    reactions = convert_reactions_to_musica(reactions, logger)
+
+    mechanism_json = {
+        "version": "1.0.0",
+        "name": "GECKO mechanism",
+        "species": species_list,
+        "reactions": reactions
+    }
+    with open('mechanism.json', 'w') as f:
+        json.dump(mechanism_json, f, indent=2)
+    logger.info('GECKO mechanism written to mechanism.json')
+
+    
