@@ -102,6 +102,7 @@ def parse_reactions(input_path, logger):
         
         # match a reaction that is all on one line, with arrhenius values
         match = re.match(r"^(.*?)(?:=>)(.*?)([+\-]?\d\.\d{3}E[+\-]?\d{2}\s+[+\-]?\d+\.\d\s+[+\-]?\d+)", line)
+
         if match:
             if current_reaction:
                 reactions.append(current_reaction)
@@ -132,6 +133,8 @@ def parse_reactions(input_path, logger):
                 extra_values = extra_numbers.split()
                 current_reaction["type"] = line[:first_slash].strip()
                 current_reaction["extra_values"] = [float(val) for val in extra_values]
+                reactions.append(current_reaction)
+                current_reaction = None
         
         # some reactions span multiple lines, this is the start of that
         elif re.match(r"^(.*?)=>\s*(.*?\+)\s*$", line):
@@ -300,4 +303,7 @@ def main():
     conditions = set(initial_conditions.keys())
     # find species that don't have initial conditions
     missing_conditions = unique_species - conditions - set(peroxy_groups.keys()) - set(['NOTHING'])
-    print(missing_conditions)
+    # print(missing_conditions)
+
+if __name__ == "__main__":
+    main()
