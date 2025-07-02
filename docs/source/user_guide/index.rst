@@ -14,7 +14,7 @@ Interactive Jupyter notebooks can also be found on our `Github <https://github.c
    :caption: Contents
 
    installation/index
-   species/index
+   chemistry/index
    box_model/index
    output/index
    examples/index
