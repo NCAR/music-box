@@ -272,10 +272,6 @@ def main():
       error = "No input directory provided."
       logger.error(error)
       raise ValueError(error)
-    if not output:
-      error = "No output file provided."
-      logger.error(error)
-      raise ValueError(error)
     
     logger.debug(f"Input directory: {input}")
     logger.debug(f"Output file: {output}")
