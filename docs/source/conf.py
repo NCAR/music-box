@@ -41,7 +41,7 @@ highlight_language = 'python'
 # -- link to MUSICA documentation ---
 
 intersphinx_mapping = {
-    'musica': ('https://ncar.github.io/musica/api/', None),
+    'musica': ('https://ncar.github.io/musica/', None),
     'micm': ('https://ncar.github.io/micm/', None),
     'mc': ('https://ncar.github.io/MechanismConfiguration/', None)
 }
