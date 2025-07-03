@@ -286,6 +286,8 @@ def main():
 
     type_counts = {}
     for r in reactions:
+        name = "_".join([s['name'] for s in r['reactants'] + r['products']])
+        print(name, r['reactants'], r['products'])
         type_counts[r['type']] = type_counts.get(r['type'], 0) + 1
     
     logger.debug(f"parsed {len(species)} species")
