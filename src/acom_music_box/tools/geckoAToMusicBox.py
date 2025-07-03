@@ -109,11 +109,6 @@ def parse_reactions(input_path, logger):
     for line in lines:
         line = line.strip()
 
-        found = line.count("G3K5000 + GNO3 ") > 0
-        if found:
-            logger.warning(
-                "Found a reaction with G2K6001 + PERO9, this is a known issue in GECKO-A. This reaction will be skipped.")
-
         if not line or line.startswith("!"):
             continue  # Skip empty lines and comments
 
