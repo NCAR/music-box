@@ -49,3 +49,4 @@ dev = [
   "pytest-mock",
   "pytest-cov"
 ]
+gpu = ["musica[gpu]==0.12.0"]
