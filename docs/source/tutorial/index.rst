@@ -1,10 +1,12 @@
+.. _tutorial:
+
 #########
 Tutorial
 #########
 
 MusicBox offers a series of tutorial notebooks that guide users from simple workflows to more advanced simulations, available in multiple formats below for ease of access.
 
-Binder (recommended)
+Interactive Notebooks
 ----------------------
 The MusicBox repository utilizes `Binder <https://mybinder.readthedocs.io/en/latest/index.html#>`_ to allow users to interact with the tutorial notebooks on a `JupyterHub <https://jupyter.org/hub>`_.
 Each of the links below will open a JupyterHub set up with all necessary dependencies to run each tutorial:
