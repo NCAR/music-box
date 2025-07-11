@@ -27,11 +27,4 @@ Each example (found in `src/acom_music_box/examples/configs`) includes an associ
 
 Interactive tutorial notebooks
 -------------------------------
-Looking for hands on examples of the concepts covered in this guide? Explore our `tutorial notebooks <https://github.com/NCAR/music-box/tree/main/tutorial>`_ for detailed, interactive walkthroughs.
-The tutorials thus far cover:
-
-1. `a basic MusicBox workflow <https://github.com/NCAR/music-box/blob/main/tutorial/1.%20basic_workflow.ipynb>`_
-2. `overriding mechanisms <https://github.com/NCAR/music-box/blob/main/tutorial/2.%20override_mechanism.ipynb>`_
-3. `loading custom box models <https://github.com/NCAR/music-box/blob/main/tutorial/3.%20loading_custom_box_models.ipynb>`_
-
-and will continue to be updated!
+Looking for hands on examples of the concepts covered in this guide? Explore our tutorials page for detailed, interactive walkthroughs.
