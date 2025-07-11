@@ -2,7 +2,7 @@
 #
 # copy current tutorials
 copy:
-	cp -r ../tutorial/* source/tutorial/
+	cp -r ../tutorials/* source/tutorials/
 
 
 # You can set these variables from the command line, and also
