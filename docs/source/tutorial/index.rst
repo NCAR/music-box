@@ -25,3 +25,10 @@ For users that wish to directly download local copies of the tutorial notebooks,
 Web View
 ---------
 The tutorial notebooks are also included here in the documentation for convenient online browsing.
+
+.. toctree::
+   :maxdepth: 1
+
+   1. basic_workflow
+   2. override_mechanism
+   3. loading_custom_box_models
