@@ -1,7 +1,7 @@
-.. _tutorial:
+.. _tutorials page:
 
 #########
-Tutorial
+Tutorials
 #########
 
 MusicBox offers a series of tutorial notebooks that guide users from simple workflows to more advanced simulations, available in multiple formats below for ease of access.

@@ -27,4 +27,4 @@ Each example (found in `src/acom_music_box/examples/configs`) includes an associ
 
 Interactive tutorial notebooks
 -------------------------------
-Looking for hands on examples of the concepts covered in this guide? Explore our :ref:`Tutorials <tutorial>` page for detailed, interactive walkthroughs.
+Looking for hands on examples of the concepts covered in this guide? Explore our :ref:`Tutorials <tutorials page>` page for detailed, interactive walkthroughs.
