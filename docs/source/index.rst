@@ -54,6 +54,7 @@ Welcome to Music Box's documentation!
 
    getting_started
    user_guide/index
+   tutorial/index
    api/index
    contributing/index
    citing/index
