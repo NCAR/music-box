@@ -46,65 +46,6 @@ class Conditions:
         return f"Pressure: {self.pressure}, Temperature: {self.temperature}, Species Concentrations: {self.species_concentrations}, User-Defined Rate Parameters: {self.rate_parameters}"
 
     @classmethod
-    def from_UI_JSON(self, UI_JSON, species_list, reaction_list):
-        """
-        Creates an instance of the class from a UI JSON object.
-
-        This class method takes a UI JSON object, a species list, and a reaction list,
-        and uses them to create a new instance of the class.
-
-        Args:
-            UI_JSON (dict): The UI JSON object containing the initial conditions and settings.
-            species_list (SpeciesList): A SpeciesList containing the species involved in the simulation.
-            reaction_list (ReactionList): A ReactionList containing the reactions involved in the simulation.
-
-        Returns:
-            object: An instance of the Conditions class with the settings from the UI JSON object.
-        """
-        pressure = convert_pressure(
-            UI_JSON['conditions']['environmental conditions']['pressure'],
-            'initial value')
-
-        temperature = convert_temperature(
-            UI_JSON['conditions']['environmental conditions']['temperature'],
-            'initial value')
-
-        # Set initial species concentrations
-        species_concentrations = []
-        for chem_spec in UI_JSON['conditions']['chemical species']:
-            match = filter(lambda x: x.name == chem_spec, species_list.species)
-            species = next(match, None)
-
-            concentration = convert_concentration(
-                UI_JSON['conditions']['chemical species'][chem_spec], 'initial value')
-
-            species_concentrations[species] = concentration
-
-        for species in species_list.species:
-            if not any(conc.species.name ==
-                       species.name for conc in species_concentrations):
-                species_concentrations[species] = 0
-
-        # Set initial reaction rates
-        rate_parameters = {}
-
-        for reaction in UI_JSON['conditions']['initial conditions']:
-            match = filter(
-                lambda x: x.name == reaction.split('.')[1],
-                reaction_list.reactions)
-            reaction_from_list = next(match, None)
-
-            rate_parameter = UI_JSON['conditions']['initial conditions'][reaction]
-
-            rate_parameters[reaction_from_list] = rate_parameter
-
-        return self(
-            pressure,
-            temperature,
-            species_concentrations,
-            rate_parameters)
-
-    @classmethod
     def retrieve_initial_conditions_from_JSON(
             cls,
             path_to_json,
@@ -191,7 +132,7 @@ class Conditions:
         return (initial_csv)
 
     @classmethod
-    def from_config_JSON(
+    def from_config(
             self,
             path_to_json,
             json_object):

@@ -2,7 +2,6 @@ import musica
 from .conditions import Conditions
 from .model_options import BoxModelOptions
 from .evolving_conditions import EvolvingConditions
-from .constants import GAS_CONSTANT
 import json
 import os
 import atexit
@@ -48,6 +47,7 @@ class MusicBox:
         self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([], [])
         self.solver = None
         self.state = None
+        self.__mechanism = None
 
     def add_evolving_condition(self, time_point, conditions):
         """
@@ -209,18 +209,21 @@ class MusicBox:
                     tmp_mech_file.write(json.dumps(mechanism_json))
                     tmp_mech_file.flush()
                     tmp_mech_file_path = tmp_mech_file.name
+                # Save mechanism
+                parser = mc.Parser()
+                self.__mechanism = parser.parse(tmp_mech_file_path)
                 # Initalize the musica solver
                 self.solver = musica.MICM(config_path=tmp_mech_file_path, solver_type=musica.SolverType.rosenbrock_standard_order)
                 atexit.register(os.remove, tmp_mech_file_path)
 
             # Set box model options
-            self.box_model_options = BoxModelOptions.from_config_JSON(data)
+            self.box_model_options = BoxModelOptions.from_config(data)
 
             # Set initial conditions
-            self.initial_conditions = Conditions.from_config_JSON(path_to_json, data)
+            self.initial_conditions = Conditions.from_config(path_to_json, data)
 
             # Set evolving conditions
-            self.evolving_conditions = EvolvingConditions.from_config_JSON(path_to_json, data)
+            self.evolving_conditions = EvolvingConditions.from_config(path_to_json, data)
 
         # Create a state for the solver
         self.state = self.solver.create_state(1)
@@ -232,5 +235,6 @@ class MusicBox:
         Args:
             mechanism (Mechanism): The mechanism to be used for the solver.
         """
+        self.__mechanism = mechanism
         self.solver = musica.MICM(mechanism=mechanism, solver_type=solver_type)
         self.state = self.solver.create_state(1)

@@ -27,7 +27,8 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx_copybutton',
     'sphinx_design',
-    'sphinx.ext.intersphinx'
+    'sphinx.ext.intersphinx',
+    'nbsphinx'
 ]
 
 templates_path = ['_templates']
@@ -41,7 +42,9 @@ highlight_language = 'python'
 # -- link to MUSICA documentation ---
 
 intersphinx_mapping = {
-    'musica': ('https://ncar.github.io/musica/api/', None),
+    'musica': ('https://ncar.github.io/musica/', None),
+    'micm': ('https://ncar.github.io/micm/', None),
+    'mc': ('https://ncar.github.io/MechanismConfiguration/', None)
 }
 
 # -- Options for HTML output -------------------------------------------------
