@@ -11,9 +11,9 @@ Interactive Notebooks
 The MusicBox repository utilizes `Binder <https://mybinder.readthedocs.io/en/latest/index.html#>`_ to allow users to interact with the tutorial notebooks on a `JupyterHub <https://jupyter.org/hub>`_.
 Each of the links below will open a JupyterHub set up with all necessary dependencies to run each tutorial:
 
-1. `a basic MusicBox workflow <https://mybinder.org/v2/gh/NCAR/music-box/3ba8be9dc0539a3b44455d95d306c0b97d74bc85?urlpath=lab%2Ftree%2Ftutorial%2F1.%20basic_workflow.ipynb>`_
-2. `overriding mechanisms <https://mybinder.org/v2/gh/NCAR/music-box/3ba8be9dc0539a3b44455d95d306c0b97d74bc85?urlpath=lab%2Ftree%2Ftutorial%2F2.%20override_mechanism.ipynb>`_
-3. `loading custom box models <https://mybinder.org/v2/gh/NCAR/music-box/3ba8be9dc0539a3b44455d95d306c0b97d74bc85?urlpath=lab%2Ftree%2Ftutorial%2F3.%20loading_custom_box_models.ipynb>`_
+1. `a basic MusicBox workflow <https://mybinder.org/v2/gh/NCAR/music-box/d2e3ce8df4d1e8b80bf1d240876a31ba6e3e9a4d?urlpath=lab%2Ftree%2Ftutorials%2F1.%20basic_workflow.ipynb>`_
+2. `overriding mechanisms <https://mybinder.org/v2/gh/NCAR/music-box/d2e3ce8df4d1e8b80bf1d240876a31ba6e3e9a4d?urlpath=lab%2Ftree%2Ftutorials%2F2.%20override_mechanism.ipynb>`_
+3. `loading custom box models <https://mybinder.org/v2/gh/NCAR/music-box/d2e3ce8df4d1e8b80bf1d240876a31ba6e3e9a4d?urlpath=lab%2Ftree%2Ftutorials%2F3.%20loading_custom_box_models.ipynb>`_
 
 Github
 --------
