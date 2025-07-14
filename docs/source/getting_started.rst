@@ -2,9 +2,7 @@
 Getting started
 ###############
 
-MusicBox User Tutorial
-----------------------
-Hello, and welcome to the MusicBox user tutorial! Here, we will be covering some basic usages of the MusicBox library.
+Hello, and welcome to MusicBox! Here, we will be covering some basic usages of the MusicBox library.
 
 What is MusicBox?
 ------------------
@@ -17,7 +15,7 @@ To install MusicBox onto your device, run
 
 .. code-block:: console
 
-    $ pip install acom-music-box
+    $ pip install acom_music_box
 
 **Note:** Installing MusicBox will automatically install MUSICA, a required dependency of MusicBox that is used throughout this tutorial.
 

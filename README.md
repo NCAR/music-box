@@ -9,14 +9,24 @@ MusicBox: A MUSICA model for boxes and columns.
 [![codecov](https://codecov.io/github/NCAR/music-box/graph/badge.svg?token=OR7JEQJSRQ)](https://codecov.io/github/NCAR/music-box)
 [![PyPI version](https://badge.fury.io/py/acom-music-box.svg)](https://badge.fury.io/py/acom-music-box)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14008358.svg)](https://doi.org/10.5281/zenodo.14008358)
-
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/NCAR/music-box/HEAD)
 
 Copyright (C) 2020 National Science Foundation - National Center for Atmospheric Research
 
 # Installation
 ```
-pip install acom-music-box
+pip install acom_music_box
 ```
+
+If you would like GPU support, you must first add the [NVIDIA pypi index](https://docs.nvidia.com/cuda/cuda-quick-start-guide/#pip-wheels-linux) and then you can specify the
+gpu install option for music box.
+
+```
+pip install --upgrade setuptools pip wheel
+pip install nvidia-pyindex
+pip install acom_music_box[gpu]
+```
+
 # Using the MusicBox API
 
 MusicBox makes its chemical mechanism analysis and visualization available through a Python API. The following example works through solving a simple chemistry system. Please refer to the [official documentation](https://ncar.github.io/music-box/branch/main/index.html) for further tutorials and examples.
