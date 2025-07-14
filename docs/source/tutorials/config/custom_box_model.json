@@ -1,0 +1,82 @@
+{
+  "box model options": {
+    "grid": "box",
+    "chemistry time step [sec]": 2,
+    "output time step [sec]": 6,
+    "simulation length [sec]": 600
+  },
+  "initial conditions": {
+    "filepaths": [ "initial_conditions.csv" ]
+  },
+  "environmental conditions": {
+    "temperature": {
+      "initial value [K]": 272.5
+    },
+    "pressure": {
+      "initial value [Pa]": 101253.3
+    }
+  },
+  "evolving conditions": {},
+  "mechanism": {
+    "version": "1.0.0",
+    "name": "Analytical",
+    "species": [
+      {
+        "name": "A"
+      },
+      {
+        "name": "B"
+      },
+      {
+        "name": "C"
+      }
+    ],
+      "phases": [
+      {
+        "name": "gas",
+        "species": [
+          "A",
+          "B",
+          "C"
+        ]
+      }
+    ],
+    "reactions": [
+      {
+        "type": "ARRHENIUS",
+        "gas phase": "gas",
+        "reactants": [
+          {
+            "species name": "B"
+          }
+        ],
+        "products": [
+          {
+            "species name": "C"
+          }
+        ],
+        "A": 0.00012,
+        "B": 7,
+        "C": 75,
+        "D": 50,
+        "E": 0.5
+      },
+      {
+        "type": "ARRHENIUS",
+        "gas phase": "gas",
+        "reactants": [
+          {
+            "species name": "A"
+          }
+        ],
+        "products": [
+          {
+            "species name": "B"
+          }
+        ],
+        "A": 0.004,
+        "C": 50
+      }
+    ]
+  }
+}
