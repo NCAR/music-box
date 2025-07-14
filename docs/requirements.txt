@@ -4,3 +4,4 @@ sphinx-copybutton
 sphinx-design
 sphinxcontrib-bibtex
 pydata-sphinx-theme
+nbsphinx

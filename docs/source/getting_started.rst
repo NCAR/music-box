@@ -15,7 +15,7 @@ To install MusicBox onto your device, run
 
 .. code-block:: console
 
-    $ pip install acom-music-box
+    $ pip install acom_music_box
 
 **Note:** Installing MusicBox will automatically install MUSICA, a required dependency of MusicBox that is used throughout this tutorial.
 
