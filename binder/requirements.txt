@@ -1,5 +1,4 @@
 acom_music_box
-musica==0.11.1.4
 pandas
 matplotlib
 scikit-learn
