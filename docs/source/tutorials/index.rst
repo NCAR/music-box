@@ -17,11 +17,11 @@ Each of the links below will open a JupyterHub set up with all necessary depende
 
 Github
 --------
-For users that wish to directly download local copies of the tutorial notebooks, they are each made available on our Github within the `tutorials <https://github.com/NCAR/music-box/tree/main/tutorial>`_ folder. Each notebook is also linked below:
+For users that wish to directly download local copies of the tutorial notebooks, they are each made available on our Github within the `tutorials <https://github.com/NCAR/music-box/tree/main/tutorials>`_ folder. Each notebook is also linked below:
 
-1. `a basic MusicBox workflow <https://github.com/NCAR/music-box/blob/main/tutorial/1.%20basic_workflow.ipynb>`_
-2. `overriding mechanisms <https://github.com/NCAR/music-box/blob/main/tutorial/2.%20override_mechanism.ipynb>`_
-3. `loading custom box models <https://github.com/NCAR/music-box/blob/main/tutorial/3.%20loading_custom_box_models.ipynb>`_
+1. `a basic MusicBox workflow <https://github.com/NCAR/music-box/blob/main/tutorials/1.%20basic_workflow.ipynb>`_
+2. `overriding mechanisms <https://github.com/NCAR/music-box/blob/main/tutorials/2.%20override_mechanism.ipynb>`_
+3. `loading custom box models <https://github.com/NCAR/music-box/blob/main/tutorials/3.%20loading_custom_box_models.ipynb>`_
 
 
 Web View
