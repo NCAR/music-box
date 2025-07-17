@@ -25,6 +25,6 @@ RUN echo "The suffix is '$SWITCHER_SUFFIX'"
 
 RUN cd docs \
     && pip install -r requirements.txt \
-    && pip install --upgrade pip ipython ipykernel
+    && pip install --upgrade pip ipython ipykernel \
     && make html
 
