@@ -9,7 +9,7 @@ MusicBox: A MUSICA model for boxes and columns.
 [![codecov](https://codecov.io/github/NCAR/music-box/graph/badge.svg?token=OR7JEQJSRQ)](https://codecov.io/github/NCAR/music-box)
 [![PyPI version](https://badge.fury.io/py/acom-music-box.svg)](https://badge.fury.io/py/acom-music-box)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14008358.svg)](https://doi.org/10.5281/zenodo.14008358)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://hub.gesis.mybinder.org/user/ncar-music-box-dnr09mum/lab/tree/tutorials)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/NCAR/music-box/96b7c7b619791bfbddafc6c8e34fb7982f26c4ca?urlpath=lab%2Ftree%2Ftutorials)
 
 Copyright (C) 2020 National Science Foundation - National Center for Atmospheric Research
 
