@@ -39,6 +39,10 @@ exclude_patterns = []
 
 highlight_language = 'python'
 
+# do not require users locally compiling documentation to have all notebook libraries
+
+nbsphinx_allow_errors = True
+
 # -- link to MUSICA documentation ---
 
 intersphinx_mapping = {
