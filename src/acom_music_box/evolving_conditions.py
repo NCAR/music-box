@@ -178,3 +178,8 @@ class EvolvingConditions:
             int: The number of time points in the EvolvingConditions instance.
         """
         return len(self.times)
+    
+    def to_dict(self):
+        return {
+            # TODO:
+        }

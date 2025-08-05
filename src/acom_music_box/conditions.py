@@ -270,3 +270,12 @@ class Conditions:
         logger.debug(f"For {react_types} data_values = {data_values}")
 
         return data_values
+    
+    def to_dict(self):
+        # TODO:
+        return {
+            "temperature": self.temperature,
+            "pressure": self.pressure,
+            "species_concentrations": self.species_concentrations,
+            "rate_parameters": self.rate_parameters,
+        }

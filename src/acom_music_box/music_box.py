@@ -238,3 +238,12 @@ class MusicBox:
         self.__mechanism = mechanism
         self.solver = musica.MICM(mechanism=mechanism, solver_type=solver_type)
         self.state = self.solver.create_state(1)
+
+    def to_dict(self):
+        # TODO:
+        return {
+            "box model options": self.box_model_options.to_dict(),
+            "initial conditions": self.initial_conditions.to_dict(),
+            "evolving conditions": self.evolving_conditions.to_dict(),
+        }
+        pass

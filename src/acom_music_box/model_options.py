@@ -63,3 +63,12 @@ class BoxModelOptions:
         grid = config_JSON['box model options']['grid']
 
         return cls(chem_step_time, output_step_time, simulation_length, grid)
+    
+    def to_dict(self):
+        # TODO:
+        return {
+            "grid": self.grid,
+            "chemistry time step [min]": self.chem_step_time,
+            "output time step [min]": self.output_step_time,
+            "simulation length [day]": self.simulation_length,
+        }
