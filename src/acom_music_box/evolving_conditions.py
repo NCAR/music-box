@@ -180,6 +180,12 @@ class EvolvingConditions:
         return len(self.times)
     
     def to_dict(self):
+        conditions = []
+        for condition in self.conditions:
+            conditions.append(condition.to_dict())
+        
         return {
-            # TODO:
+            "headers": self.headers,
+            "times": self.times,
+            "conditions": conditions,
         }
