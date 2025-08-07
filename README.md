@@ -99,7 +99,7 @@ plt.show()
 ```
 
 # Command line tool
-MusicBox provides a command line tool that can run configurations as well as some pre-configured examples. Basic plotting can be done if gnuplot is installed.
+MusicBox provides a command line tool that can run configurations as well as some pre-configured examples. Basic plotting can be done with matplotlib.
 
 Checkout the command line options
 
@@ -150,9 +150,7 @@ music_box -c my_config.json
 ```
 
 ## Plotting
-Some basic plots can be made to show concentrations throughout the simulation
-
-### matplotlib
+Some basic plots can be made to show concentrations throughout the simulation using matplotlib.
 
 ```
 music_box -e Chapman -o output.csv --plot O1D
@@ -176,14 +174,6 @@ It is used like this
 
 ```
  music_box -e TS1 --plot O3 --plot-output-unit "ppb"
-```
-
-### gnuplot
-If you want ascii plots (maybe you're running over ssh and can't view a graphical window), you can set
-the plot tool to gnuplo (`--plot-tool gnuplot`) to view some output
-
-```
-music_box -e Chapman -o output.csv --plot O1D --plot-tool gnuplot
 ```
 
 # Development and Contributing
