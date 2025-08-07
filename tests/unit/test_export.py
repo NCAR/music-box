@@ -25,18 +25,10 @@ def create_evolving_conditions():
         pressure=100100.0, # Units: Pascals (Pa)
     )
     condition2 = Conditions(
-        temperature=298.15, # Units: Kelvin (K)
-        pressure=101325.0, # Units: Pascals (Pa)
+        temperature=150, # Units: Kelvin (K)
+        pressure=100500.0, # Units: Pascals (Pa)
     ) 
-    return EvolvingConditions(times=[100.0, 400.0], conditions=[condition1, condition2])
-
-
-def create_music_box():
-    return MusicBox(
-        box_model_options=create_box_model_options(),
-        initial_conditions=create_condition(),
-        evolving_conditions=create_evolving_conditions()
-    )
+    return EvolvingConditions(times=[100.0, 300.0], conditions=[condition1, condition2])
 
 
 def create_mechanism():
@@ -49,7 +41,17 @@ def create_mechanism():
     arr2 = mc.Arrhenius(name="Y->Z", A=4.0e-3, C=50, reactants=[species["Y"]], products=[species["Z"]], gas_phase=gas)
     rxns = {"X->Y": arr1, "Y->Z": arr2}
     return mc.Mechanism(name="tutorial_mechanism", species=list(species.values()), phases=[gas], reactions=list(rxns.values()), version = mc.Version("1.0.1"))
-    
+
+
+def create_music_box():
+    music_box = MusicBox(
+        box_model_options=create_box_model_options(),
+        initial_conditions=create_condition(),
+        evolving_conditions=create_evolving_conditions()
+    )
+    music_box.load_mechanism(create_mechanism())
+    return music_box
+
 
 def test_model_options_to_dict():
     model_options = BoxModelOptions()
@@ -108,13 +110,36 @@ def test_box_model_to_dict():
     assert len(music_box_dict) == 1
     music_box = create_music_box()
     music_box_dict = music_box.to_dict()
-    assert len(music_box_dict) == 3
+    assert len(music_box_dict) == 4
 
 
 def test_box_model_export(tmp_path):
     music_box = create_music_box()
-    music_box.load_mechanism(create_mechanism())
     file_path = f'{tmp_path}/music_box_config.json'
     assert not os.path.exists(file_path)
     music_box.export(file_path)
     assert os.path.exists(file_path)
+
+
+def test_music_box_export_import_solutions(tmp_path):
+    music_box = create_music_box()
+    file_path = f'{tmp_path}/music_box_config.json'
+    data = music_box.solve()
+    print()
+    print(data)
+    
+    music_box.export(file_path)
+    music_box_2 = MusicBox()
+    music_box_2.loadJson(file_path)
+    # data_2 = music_box_2.solve()
+    # print()
+    # print(data_2)
+
+    print()
+    # print(music_box.to_dict(True))
+    # print(music_box_2.to_dict(True))
+    music_box_2.export(f'{tmp_path}/music_box_config_2.json')
+
+    # assert data.equals(data_2)
+    assert False
+

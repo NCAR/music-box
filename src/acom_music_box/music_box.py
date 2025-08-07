@@ -240,7 +240,7 @@ class MusicBox:
         self.solver = musica.MICM(mechanism=mechanism, solver_type=solver_type)
         self.state = self.solver.create_state(1)
 
-    def to_dict(self):
+    def to_dict(self, pretty = False):
         config = {
             "box model options": self.box_model_options.to_dict(),
             "initial conditions": self.initial_conditions.to_dict(),
@@ -248,7 +248,7 @@ class MusicBox:
         }
         if self.__mechanism is not None:
             config["mechanism"] = self.__mechanism.to_dict()
-        return _remove_empty_keys(config)
+        return json.dumps(config, indent=4) if pretty else _remove_empty_keys(config)
 
     def export(self, file_path = "./music_box_config.json"):
         json_str = json.dumps(self.to_dict(), indent=4)

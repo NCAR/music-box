@@ -149,13 +149,25 @@ class Conditions:
         Returns:
             object: An instance of the Conditions class with the settings from the configuration JSON object.
         """
-        pressure = convert_pressure(
-            json_object['environmental conditions']['pressure'],
-            'initial value')
 
-        temperature = convert_temperature(
-            json_object['environmental conditions']['temperature'],
-            'initial value')
+        # Environmental Conditions will likely be deprecated in future versions.
+        try:
+            pressure = json_object['initial conditions']['pressure']
+            temperature = json_object['initial conditions']['temperature']
+        except KeyError as ke:
+            try:
+                pressure = convert_pressure(
+                    json_object['environmental conditions']['pressure'],
+                    'initial value')
+
+                temperature = convert_temperature(
+                    json_object['environmental conditions']['temperature'],
+                    'initial value')
+                
+                # TODO: test
+                logger.warning("'environmental conditions' will likely be deprecated in future versions. Please use 'initial conditions' or 'evolving conditions'.")
+            except KeyError as ke2:
+                raise ke2
 
         logger.debug(f"From original JSON temperature = {temperature}   pessure = {pressure}")
 
