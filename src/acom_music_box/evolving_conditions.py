@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import re
 from .conditions import Conditions
+from .utils import _remove_empty_keys
 
 import logging
 logger = logging.getLogger(__name__)
@@ -184,8 +185,8 @@ class EvolvingConditions:
         for condition in self.conditions:
             conditions.append(condition.to_dict())
         
-        return {
+        return _remove_empty_keys({
             "headers": self.headers,
             "times": self.times,
             "conditions": conditions,
-        }
+        })

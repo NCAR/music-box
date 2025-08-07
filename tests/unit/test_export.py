@@ -1,4 +1,5 @@
 from acom_music_box import MusicBox, Examples, BoxModelOptions, Conditions, EvolvingConditions
+import musica.mechanism_configuration as mc
 
 
 # TODO: remove or assert tests
@@ -37,6 +38,18 @@ def create_music_box():
         initial_conditions=create_condition(),
         evolving_conditions=create_evolving_conditions()
     )
+
+
+def create_mechanism():
+    X = mc.Species(name="X")
+    Y = mc.Species(name="Y")
+    Z = mc.Species(name="Z")
+    species = {"X": X, "Y": Y, "Z": Z}
+    gas = mc.Phase(name="gas", species=list(species.values()))
+    arr1 = mc.Arrhenius(name="X->Y", A=4.0e-3, C=50, reactants=[species["X"]], products=[species["Y"]], gas_phase=gas)
+    arr2 = mc.Arrhenius(name="Y->Z", A=4.0e-3, C=50, reactants=[species["Y"]], products=[species["Z"]], gas_phase=gas)
+    rxns = {"X->Y": arr1, "Y->Z": arr2}
+    return mc.Mechanism(name="tutorial_mechanism", species=list(species.values()), phases=[gas], reactions=list(rxns.values()), version = mc.Version("1.0.1"))
     
 
 def test_model_options_to_dict():
@@ -107,10 +120,9 @@ def test_box_model_to_dict():
     print(music_box_dict)
 
 
-# TODO: test export and load loop? determine what are acceptable form factors?
-# TODO: test and export the tutorial examples
-def test_box_model_export():
-    # TODO: assert that a file is created?
+def test_box_model_export(tmp_path):
     music_box = create_music_box()
-
-    pass
+    music_box.load_mechanism(create_mechanism())
+    file_path = f'{tmp_path}/music_box_config.json'
+    print(file_path)
+    music_box.export(file_path)

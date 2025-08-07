@@ -1,4 +1,4 @@
-from .utils import convert_pressure, convert_temperature, convert_concentration
+from .utils import convert_pressure, convert_temperature, convert_concentration, _remove_empty_keys
 import pandas as pd
 import numpy
 import os
@@ -272,10 +272,9 @@ class Conditions:
         return data_values
     
     def to_dict(self):
-        # TODO:
-        return {
+        return _remove_empty_keys({
             "temperature": self.temperature,
             "pressure": self.pressure,
             "species_concentrations": self.species_concentrations,
             "rate_parameters": self.rate_parameters,
-        }
+        })

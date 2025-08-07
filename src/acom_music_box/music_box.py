@@ -2,6 +2,7 @@ import musica
 from .conditions import Conditions
 from .model_options import BoxModelOptions
 from .evolving_conditions import EvolvingConditions
+from .utils import _remove_empty_keys
 import json
 import os
 import atexit
@@ -240,10 +241,16 @@ class MusicBox:
         self.state = self.solver.create_state(1)
 
     def to_dict(self):
-        # TODO:
-        return {
+        config = {
             "box model options": self.box_model_options.to_dict(),
             "initial conditions": self.initial_conditions.to_dict(),
             "evolving conditions": self.evolving_conditions.to_dict(),
         }
-        pass
+        if self.__mechanism is not None:
+            config["mechanism"] = self.__mechanism.to_dict()
+        return _remove_empty_keys(config)
+
+    def export(self, file_path = "./music_box_config.json"):
+        json_str = json.dumps(self.to_dict(), indent=4)
+        with open(file_path, 'w') as file:
+                file.write(json_str)

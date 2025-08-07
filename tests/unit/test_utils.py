@@ -5,7 +5,8 @@ from acom_music_box.utils import (
     convert_temperature,
     convert_concentration,
     calculate_air_density,
-    convert_from_number_density
+    convert_from_number_density,
+    _remove_empty_keys
 )
 import math
 
@@ -79,3 +80,17 @@ def test_invalid_concentration():
                          ])
 def test_convert_from_number_density(data, output_unit, temperature, pressure, expected):
     assert math.isclose(convert_from_number_density(data, output_unit, temperature, pressure), expected)
+
+
+@pytest.mark.parametrize("data, expected", [
+    ({'time': 60}, 1),
+    ({'times': [60], 'headers': []}, 1),
+    ({'times': [60], 'headers': ['something']}, 2),
+    ({'times': [60], 'headers': ['something'], 'name': ''}, 2),
+    ({'times': [60], 'headers': ['something'], 'name': 'my name'}, 3),
+    ({'times': [60], 'headers': ['something'], 'name': 'my name', 'reactions': {}}, 3),
+    ({'times': [60], 'headers': ['something'], 'name': 'my name', 'reactions': {'some reaction'}}, 4),
+])
+def test_remove_empty_keys(data, expected):
+    ret = _remove_empty_keys(data)
+    assert len(ret) == expected
