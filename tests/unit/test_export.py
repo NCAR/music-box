@@ -1,8 +1,7 @@
+import os
 from acom_music_box import MusicBox, Examples, BoxModelOptions, Conditions, EvolvingConditions
 import musica.mechanism_configuration as mc
 
-
-# TODO: remove or assert tests
 
 def create_box_model_options(chem_step_time=1.0, output_step_time=1.0, simulation_length=400, grid="box"):
     return BoxModelOptions(chem_step_time, output_step_time, simulation_length, grid)
@@ -53,23 +52,18 @@ def create_mechanism():
     
 
 def test_model_options_to_dict():
-    print()
-    print('BoxModelOptions Test:')
     model_options = BoxModelOptions()
     mo_dict = model_options.to_dict()
-    print(mo_dict)
-
+    assert len(mo_dict) == 1
     model_options = BoxModelOptions(1, 1.0, 400, 'box')
     mo_dict = model_options.to_dict()
-    print(mo_dict)
+    assert len(mo_dict) == 4
 
 
 def test_condtions_to_dict():
-    print()
-    print('Conditions Test:')
     condition = Conditions()
-    cond_dict = condition.to_dict()
-    print(cond_dict)
+    condition_dict = condition.to_dict()
+    assert len(condition_dict) == 0
 
     condition = Conditions(
         temperature=298.15, # Units: Kelvin (K)
@@ -81,15 +75,13 @@ def test_condtions_to_dict():
         }
     )
     condition_dict = condition.to_dict()
-    print(condition_dict)
+    assert len(condition_dict) == 3
 
 
 def test_evolving_conditions_to_dict():
-    print()
-    print('Evolving Conditions Test:')
     e_cond = EvolvingConditions()
     e_cond_dict = e_cond.to_dict()
-    print(e_cond_dict)
+    assert len(e_cond_dict) == 0
 
     condition1 = Conditions(
         temperature=298.15, # Units: Kelvin (K)
@@ -106,23 +98,23 @@ def test_evolving_conditions_to_dict():
     )
     e_cond = EvolvingConditions(times=[0.0, 100.0], conditions=[condition1, condition2])
     e_cond_dict = e_cond.to_dict()
-    print(e_cond_dict)
+    assert len(e_cond_dict) == 2
+    assert len(e_cond_dict['conditions']) == 2
 
 
 def test_box_model_to_dict():
-    print()
-    print('MusicBox Test:')
     music_box = MusicBox()
     music_box_dict = music_box.to_dict()
-    print(music_box_dict)
+    assert len(music_box_dict) == 1
     music_box = create_music_box()
     music_box_dict = music_box.to_dict()
-    print(music_box_dict)
+    assert len(music_box_dict) == 3
 
 
 def test_box_model_export(tmp_path):
     music_box = create_music_box()
     music_box.load_mechanism(create_mechanism())
     file_path = f'{tmp_path}/music_box_config.json'
-    print(file_path)
+    assert not os.path.exists(file_path)
     music_box.export(file_path)
+    assert os.path.exists(file_path)

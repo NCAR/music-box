@@ -90,6 +90,7 @@ def test_convert_from_number_density(data, output_unit, temperature, pressure, e
     ({'times': [60], 'headers': ['something'], 'name': 'my name'}, 3),
     ({'times': [60], 'headers': ['something'], 'name': 'my name', 'reactions': {}}, 3),
     ({'times': [60], 'headers': ['something'], 'name': 'my name', 'reactions': {'some reaction'}}, 4),
+    ({'times': None, 'name': 'my name'}, 1),
 ])
 def test_remove_empty_keys(data, expected):
     ret = _remove_empty_keys(data)
