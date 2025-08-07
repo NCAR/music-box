@@ -1,9 +1,6 @@
 import logging
 import matplotlib.pyplot as plt
 import mplcursors
-import subprocess
-import os
-import tempfile
 from acom_music_box.utils import convert_from_number_density  # Assuming a utility function for unit conversion
 
 logger = logging.getLogger(__name__)
@@ -12,7 +9,7 @@ logger = logging.getLogger(__name__)
 class PlotOutput:
     """
     A class to handle plotting operations for a DataFrame, including plotting species
-    concentrations over time using gnuplot or matplotlib.
+    concentrations over time using matplotlib.
 
     This class manages the plotting tool, species list, and data output formats based on
     the provided arguments, ensuring valid paths and creating necessary directories.
@@ -114,46 +111,6 @@ class PlotOutput:
             converted_data.rename(columns={column: column.replace('mol m-3', self.output_unit)}, inplace=True)
         return converted_data
 
-    def _plot_with_gnuplot(self):
-        """
-        Plot the specified species using gnuplot.
-        """
-        # Prepare columns and data for plotting
-        if not self.species_list:
-            return
-        for species_group in self.species_list:
-            columns = ['time'] + species_group
-            data_to_plot = self.df[columns]
-
-            data_csv = data_to_plot.to_csv(index=False)
-
-            try:
-                with tempfile.NamedTemporaryFile(suffix='.csv', mode='w+', delete=True) as data_file:
-                    data_file.write(data_csv)
-                    data_file.flush()
-                    data_file_path = data_file.name
-
-                    plot_commands = ',\n\t'.join(
-                        f"'{data_file_path}' using 1:{i+2} with lines title '{species}'" for i,
-                        species in enumerate(species_group))
-
-                    gnuplot_command = f"""
-                set datafile separator ",";
-                set terminal dumb size 120,25;
-                set xlabel 'Time [s]';
-                set ylabel 'Concentration [{self.output_unit}]';
-                set title 'Time vs Species';
-                plot {plot_commands}
-                """
-
-                    subprocess.run(['gnuplot', '-e', gnuplot_command], check=True)
-            except FileNotFoundError as e:
-                logging.critical("gnuplot is not installed. Skipping plotting.")
-                raise e
-            except subprocess.CalledProcessError as e:
-                logging.error(f"Error occurred while plotting: {e}")
-                raise e
-
     def _plot_with_matplotlib(self):
         """
         Plot the specified species using matplotlib.
@@ -186,7 +143,7 @@ class PlotOutput:
 
     def plot(self):
         """
-        Plot the specified species using the selected plotting tool.
+        Plot the specified species using matplotlib.
         """
 
         if self.species_list is None:
@@ -194,7 +151,4 @@ class PlotOutput:
             return
 
         self.df = self._convert_units(self.df)
-        if self.args.plot_tool == 'gnuplot':
-            self._plot_with_gnuplot()
-        else:
-            self._plot_with_matplotlib()
+        self._plot_with_matplotlib()
