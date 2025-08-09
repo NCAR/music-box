@@ -55,15 +55,9 @@ def parse_arguments():
         '--plot',
         type=str,
         action='append',
-        help='Plot a comma-separated list of species if gnuplot is available (e.g., CONC.A,CONC.B).'
+        help='Plot a comma-separated list of species (e.g., CONC.A,CONC.B).'
     )
-    parser.add_argument(
-        '--plot-tool',
-        type=str,
-        choices=['gnuplot', 'matplotlib'],
-        default='matplotlib',
-        help='Choose plotting tool: gnuplot or matplotlib (default: matplotlib).'
-    )
+
     parser.add_argument(
         '--plot-output-unit',
         type=str,
