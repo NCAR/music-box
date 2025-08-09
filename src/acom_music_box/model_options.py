@@ -1,4 +1,4 @@
-from .utils import convert_time, convert_pressure, convert_temperature, convert_concentration
+from .utils import convert_time, convert_pressure, convert_temperature, convert_concentration, _remove_empty_keys
 
 
 class BoxModelOptions:
@@ -63,3 +63,11 @@ class BoxModelOptions:
         grid = config_JSON['box model options']['grid']
 
         return cls(chem_step_time, output_step_time, simulation_length, grid)
+    
+    def to_dict(self):
+        return _remove_empty_keys({
+            "grid": self.grid,
+            "chemistry time step [min]": self.chem_step_time,
+            "output time step [min]": self.output_step_time,
+            "simulation length [day]": self.simulation_length,
+        })
