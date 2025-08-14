@@ -30,7 +30,7 @@ pip install acom_music_box[gpu]
 # Using the MusicBox API
 
 MusicBox makes its chemical mechanism analysis and visualization available through a Python API. The following example works through solving a simple chemistry system. Please refer to the [official documentation](https://ncar.github.io/music-box/branch/main/index.html) for further tutorials and examples.
-```
+```python
 # Import MusicBox, MusicBox conditions, and Musica mechanisms:
 
 from acom_music_box import MusicBox, Conditions
