@@ -128,7 +128,7 @@ def getMusicaSpecies(templateDir):
 # waccmSpecies = list of variable names in the WACCM model output
 # musicaSpecies = list of variable names in species.json
 # return ordered dictionary
-def getMusicaDictionary(waccmSpecies=None, musicaSpecies=None):
+def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     if ((waccmSpecies is None) or (musicaSpecies is None)):
         logger.warning("No species map found for WACCM or MUSICA.")
 
@@ -152,7 +152,7 @@ def getMusicaDictionary(waccmSpecies=None, musicaSpecies=None):
     waccmOnly = [species for species in waccmSpecies if species not in musicaSpecies]
     musicaOnly = [species for species in musicaSpecies if species not in waccmSpecies]
     if (len(waccmOnly) > 0):
-        logger.warning(f"The following chemical species are only in WACCM: {waccmOnly}")
+        logger.warning(f"The following chemical species are only in the model: {waccmOnly}")
     if (len(musicaOnly) > 0):
         logger.warning(f"The following chemical species are only in MUSICA: {musicaOnly}")
 
@@ -161,10 +161,19 @@ def getMusicaDictionary(waccmSpecies=None, musicaSpecies=None):
     # as most of the entries are identical. We may map additional
     # pairs in the future. This map is still useful in identifying
     # the common species between WACCM and MUSICA.
-    varMap = {
-        "T": "temperature",
-        "PS": "pressure"
-    }
+    if (modelType == WACCM_OUT):
+        varMap = {
+            "T": "temperature",
+            "PS": "pressure"
+        }
+    elif (modelType == WRFCHEM_OUT):
+        varMap = {
+            # WRF-Chem: MusicBox
+            "T": "temperature",
+            "P": "pressure",
+            "isopr": "ISOPB02",
+            "o3": "O3"
+        }
 
     logger.info(f"inCommon = {inCommon}")
     for varName in inCommon:
@@ -178,9 +187,11 @@ def getMusicaDictionary(waccmSpecies=None, musicaSpecies=None):
 # latitude, longitude = geo-coordinates of retrieval point
 # when = date and time to extract
 # modelDir = directory containing model output
+# waccmFilename = name of the model output file
+# modelType = WACCM_OUT or WRFCHEM_OUT
 # return dictionary of MUSICA variable names, values, and units
 def readWACCM(waccmMusicaDict, latitude, longitude,
-              when, modelDir, waccmFilename):
+              when, modelDir, waccmFilename, modelType):
 
     logger.info(f"WACCM file = {waccmFilename}")
 
@@ -193,9 +204,12 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
     # retrieve all vars at a single point
     whenStr = when.strftime("%Y-%m-%d %H:%M:%S")
     logger.info(f"whenStr = {whenStr}")
-    singlePoint = waccmDataSet.sel(lon=longitude, lat=latitude, lev=1000.0,
+    if (modelType == WACCM_OUT):
+        singlePoint = waccmDataSet.sel(lon=longitude, lat=latitude, lev=1000.0,
                                    time=whenStr, method="nearest")
-    if (False):
+    elif (modelType == WRFCHEM_OUT):
+        singlePoint = waccmDataSet.sel(west_east=12, south_north=34, bottom_top=0, Time=0)  # bogus latitude and longitude
+    if (True):
         # diagnostic to look at single point structure
         logger.info(f"WACCM singlePoint = {singlePoint}")
 
@@ -380,6 +394,11 @@ def insertIntoTemplate(initValues, templateDir):
         logger.info(f"Configuration zipped to {zip_path}")
 
 
+# type of model output in directory
+WACCM_OUT = 1
+WRFCHEM_OUT = 2
+modelNames = [None, "waccm", "wrf-chem"]
+
 # Main routine begins here.
 def main():
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -394,6 +413,10 @@ def main():
     waccmDir = None
     if ("waccmDir" in myArgs):
         waccmDir = myArgs.get("waccmDir")
+
+    wrfChemDir = None
+    if ("wrfchemDir" in myArgs):
+        wrfChemDir = myArgs.get("wrfchemDir")
 
     musicaDir = os.path.dirname(Examples.WACCM.path)
     if ("musicaDir" in myArgs):
@@ -432,49 +455,61 @@ def main():
         outputCSV = "csv" in outputFormats
         outputJSON = "json" in outputFormats
 
-    # locate the WACCM output file
-    when = datetime.datetime.strptime(
-        f"{dateStr} {timeStr}", "%Y%m%d %H:%M")
-    waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02}-00000.nc"
+    for modelDir, modelType in zip(
+        [waccmDir, wrfChemDir], [WACCM_OUT, WRFCHEM_OUT]):
+        if not modelDir:
+            continue
 
-    # read and glean chemical species from WACCM and MUSICA
-    waccmChems = getWaccmSpecies(waccmDir, waccmFilename)
-    musicaChems = getMusicaSpecies(template)
+        logger.info(f"Directory: {modelDir}   type {modelType}")
 
-    # create map of species common to both WACCM and MUSICA
-    commonDict = getMusicaDictionary(waccmChems, musicaChems)
-    logger.info(f"Species in common are = {commonDict}")
-    if (len(commonDict) == 0):
-        logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
+        # locate the WACCM output file
+        when = datetime.datetime.strptime(
+            f"{dateStr} {timeStr}", "%Y%m%d %H:%M")
+        if (modelType == WACCM_OUT):
+            waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02}-00000.nc"
+        elif (modelType == WRFCHEM_OUT):
+            waccmFilename = f"wrfout_hourly_d01_{when.year:4d}-{when.month:02d}-{when.day:02}_{when.hour:02d}:00:00"
 
-    # Read named variables from WACCM model output.
-    logger.info(f"Retrieve WACCM conditions at ({lat} North, {lon} East)   when {when}.")
-    varValues = readWACCM(commonDict,
-                          lat, lon, when, waccmDir, waccmFilename)
-    logger.info(f"Original WACCM varValues = {varValues}")
+        # read and glean chemical species from WACCM and MUSICA
+        waccmChems = getWaccmSpecies(modelDir, waccmFilename)
+        musicaChems = getMusicaSpecies(template)
 
-    # add molecular Nitrogen, Oxygen, and Argon
-    varValues = addStandardGases(varValues)
+        # create map of species common to both WACCM and MUSICA
+        commonDict = getMusicaDictionary(modelType, waccmChems, musicaChems)
+        logger.info(f"Species in common are = {commonDict}")
+        if (len(commonDict) == 0):
+            logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
 
-    # Perform any conversions needed, or derive variables.
-    varValues = convertWaccm(varValues)
-    logger.info(f"Converted WACCM varValues = {varValues}")
+        # Read named variables from WACCM model output.
+        logger.info(f"Retrieve WACCM conditions at ({lat} North, {lon} East)   when {when}.")
+        varValues = readWACCM(commonDict, lat, lon, when,
+            modelDir, waccmFilename, modelType)
+        logger.info(f"Original WACCM varValues = {varValues}")
 
-    if (outputCSV):
-        # Write CSV file for MusicBox initial conditions.
-        csvName = os.path.join(musicaDir, "initial_conditions.csv")
-        logger.info(f"csvName = {csvName}")
-        writeInitCSV(varValues, csvName)
+        # add molecular Nitrogen, Oxygen, and Argon
+        varValues = addStandardGases(varValues)
 
-    if (outputJSON):
-        # Write JSON file for MusicBox initial conditions.
-        jsonName = os.path.join(musicaDir, "initial_config.json")
-        logger.info(f"jsonName = {jsonName}")
-        writeInitJSON(varValues, jsonName)
+        # Perform any conversions needed, or derive variables.
+        varValues = convertWaccm(varValues)
+        logger.info(f"Converted WACCM varValues = {varValues}")
 
-    if (insertIntoConfig):
-        logger.info(f"Insert values into template {template}")
-        insertIntoTemplate(varValues, template)
+        if (outputCSV):
+            # Write CSV file for MusicBox initial conditions.
+            csvName = os.path.join(musicaDir,
+                "initial_conditions-{}.csv".format(modelNames[modelType]))
+            logger.info(f"csvName = {csvName}")
+            writeInitCSV(varValues, csvName)
+
+        if (outputJSON):
+            # Write JSON file for MusicBox initial conditions.
+            jsonName = os.path.join(musicaDir,
+                "initial_config-{}.json".format(modelNames[modelType]))
+            logger.info(f"jsonName = {jsonName}")
+            writeInitJSON(varValues, jsonName)
+
+        if (insertIntoConfig):
+            logger.info(f"Insert values into template {template}")
+            insertIntoTemplate(varValues, template)
 
     logger.info(f"End time: {datetime.datetime.now()}")
 
