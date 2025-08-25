@@ -206,7 +206,7 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
     logger.info(f"whenStr = {whenStr}")
     if (modelType == WACCM_OUT):
         singlePoint = waccmDataSet.sel(lon=longitude, lat=latitude, lev=1000.0,
-                                   time=whenStr, method="nearest")
+                                       time=whenStr, method="nearest")
     elif (modelType == WRFCHEM_OUT):
         singlePoint = waccmDataSet.sel(west_east=12, south_north=34, bottom_top=0, Time=0)  # bogus latitude and longitude
     if (True):
@@ -400,6 +400,8 @@ WRFCHEM_OUT = 2
 modelNames = [None, "waccm", "wrf-chem"]
 
 # Main routine begins here.
+
+
 def main():
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     logger.info(f"{__file__}")
@@ -456,7 +458,7 @@ def main():
         outputJSON = "json" in outputFormats
 
     for modelDir, modelType in zip(
-        [waccmDir, wrfChemDir], [WACCM_OUT, WRFCHEM_OUT]):
+            [waccmDir, wrfChemDir], [WACCM_OUT, WRFCHEM_OUT]):
         if not modelDir:
             continue
 
@@ -483,7 +485,7 @@ def main():
         # Read named variables from WACCM model output.
         logger.info(f"Retrieve WACCM conditions at ({lat} North, {lon} East)   when {when}.")
         varValues = readWACCM(commonDict, lat, lon, when,
-            modelDir, waccmFilename, modelType)
+                              modelDir, waccmFilename, modelType)
         logger.info(f"Original WACCM varValues = {varValues}")
 
         # add molecular Nitrogen, Oxygen, and Argon
@@ -496,14 +498,14 @@ def main():
         if (outputCSV):
             # Write CSV file for MusicBox initial conditions.
             csvName = os.path.join(musicaDir,
-                "initial_conditions-{}.csv".format(modelNames[modelType]))
+                                   "initial_conditions-{}.csv".format(modelNames[modelType]))
             logger.info(f"csvName = {csvName}")
             writeInitCSV(varValues, csvName)
 
         if (outputJSON):
             # Write JSON file for MusicBox initial conditions.
             jsonName = os.path.join(musicaDir,
-                "initial_config-{}.json".format(modelNames[modelType]))
+                                    "initial_config-{}.json".format(modelNames[modelType]))
             logger.info(f"jsonName = {jsonName}")
             writeInitJSON(varValues, jsonName)
 
