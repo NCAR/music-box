@@ -141,17 +141,33 @@ class EvolvingConditions:
                 condition_type, label, unit = None, None, None
                 if len(parts) == 3:
                     condition_type, label, unit = parts
-                elif len(parts) == 2:
-                    condition_type, label = parts
                 else:
                     error = f"Unexpected format in key: {key}"
                     logger.error(error)
                     raise ValueError(error)
 
-                if condition_type == 'CONC':
+                if condition_type == 'CONC' and unit == 'mol m-3':
                     species_concentrations[label] = row[key]
-                else:
+                elif condition_type in ['PHOTO', 'LOSS']:
+                    if unit == 's-1':
+                       reaction_rates[f'{condition_type}.{label}'] = row[key]
+                    else:
+                       error = f"Invalid units for reaction {condition_type}.{label}: {unit}"
+                       logger.error(error)
+                       raise ValueError(error)
+                elif condition_type in ['EMIS']:
+                    if unit == 'mol m-3 s-1':
+                       reaction_rates[f'{condition_type}.{label}'] = row[key]
+                    else:
+                       error = f"Invalid units for reaction {condition_type}.{label}: {unit}"
+                       logger.error(error)
+                       raise ValueError(error)
+                elif condition_type in ['USER']:
                     reaction_rates[f'{condition_type}.{label}'] = row[key]
+                else:
+                    error = f"Invalid condition type for {condition_type}.{label}.{unit}: {condition_type}"
+                    logger.error(error)
+                    raise ValueError(error)
 
             self.add_condition(time,
                                Conditions(
