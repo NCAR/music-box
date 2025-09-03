@@ -1,7 +1,7 @@
 FROM fedora:latest
 
 ARG MUSIC_BOX_TAG=main
-ARG MUSICA_TAG=3d5f425091430836884dd04c1798ad42fc7b88e2
+ARG MUSICA_TAG=v0.12.2
 
 RUN dnf -y update \
     && dnf -y install \
