@@ -1,7 +1,7 @@
 FROM fedora:latest
 
 ARG MUSIC_BOX_TAG=main
-ARG MUSICA_TAG=v0.12.0
+ARG MUSICA_TAG=v0.12.2
 
 RUN dnf -y update \
     && dnf -y install \
@@ -10,6 +10,7 @@ RUN dnf -y update \
         gcc-fortran \
         gdb \
         git \
+        lapack-devel \
         make \
         netcdf-fortran-devel \
         python3 \
