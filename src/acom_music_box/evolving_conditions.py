@@ -146,22 +146,27 @@ class EvolvingConditions:
                     logger.error(error)
                     raise ValueError(error)
 
-                if condition_type == 'CONC' and unit == 'mol m-3':
-                    species_concentrations[label] = row[key]
+                if condition_type == 'CONC':
+                    if unit == 'mol m-3':
+                        species_concentrations[label] = row[key]
+                    else:
+                        error = f"Invalid units for concentration {label}: {unit}"
+                        logger.error(error)
+                        raise ValueError(error)
                 elif condition_type in ['PHOTO', 'LOSS']:
                     if unit == 's-1':
-                       reaction_rates[f'{condition_type}.{label}'] = row[key]
+                        reaction_rates[f'{condition_type}.{label}'] = row[key]
                     else:
-                       error = f"Invalid units for reaction {condition_type}.{label}: {unit}"
-                       logger.error(error)
-                       raise ValueError(error)
+                        error = f"Invalid units for reaction {condition_type}.{label}: {unit}"
+                        logger.error(error)
+                        raise ValueError(error)
                 elif condition_type in ['EMIS']:
                     if unit == 'mol m-3 s-1':
-                       reaction_rates[f'{condition_type}.{label}'] = row[key]
+                        reaction_rates[f'{condition_type}.{label}'] = row[key]
                     else:
-                       error = f"Invalid units for reaction {condition_type}.{label}: {unit}"
-                       logger.error(error)
-                       raise ValueError(error)
+                        error = f"Invalid units for reaction {condition_type}.{label}: {unit}"
+                        logger.error(error)
+                        raise ValueError(error)
                 elif condition_type in ['USER']:
                     reaction_rates[f'{condition_type}.{label}'] = row[key]
                 else:
