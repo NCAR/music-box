@@ -1,4 +1,4 @@
-from .utils import convert_pressure, convert_temperature, convert_concentration
+from .utils import convert_pressure, convert_temperature, convert_concentration, _remove_empty_keys
 import pandas as pd
 import numpy
 import os
@@ -149,13 +149,25 @@ class Conditions:
         Returns:
             object: An instance of the Conditions class with the settings from the configuration JSON object.
         """
-        pressure = convert_pressure(
-            json_object['environmental conditions']['pressure'],
-            'initial value')
 
-        temperature = convert_temperature(
-            json_object['environmental conditions']['temperature'],
-            'initial value')
+        # Environmental Conditions will likely be deprecated in future versions.
+        try:
+            pressure = json_object['initial conditions']['pressure']
+            temperature = json_object['initial conditions']['temperature']
+        except KeyError as ke:
+            try:
+                pressure = convert_pressure(
+                    json_object['environmental conditions']['pressure'],
+                    'initial value')
+
+                temperature = convert_temperature(
+                    json_object['environmental conditions']['temperature'],
+                    'initial value')
+                
+                # TODO: test
+                logger.warning("'environmental conditions' will likely be deprecated in future versions. Please use 'initial conditions' or 'evolving conditions'.")
+            except KeyError as ke2:
+                raise ke2
 
         logger.debug(f"From original JSON temperature = {temperature}   pessure = {pressure}")
 
@@ -270,3 +282,11 @@ class Conditions:
         logger.debug(f"For {react_types} data_values = {data_values}")
 
         return data_values
+    
+    def to_dict(self):
+        return _remove_empty_keys({
+            "temperature": self.temperature,
+            "pressure": self.pressure,
+            "species_concentrations": self.species_concentrations,
+            "rate_parameters": self.rate_parameters,
+        })

@@ -226,3 +226,7 @@ def get_available_units():
         list: The list of available units.
     """
     return list(unit_conversions.keys())
+
+
+def _remove_empty_keys(dictionary):
+    return {k: v for k, v in dictionary.items() if v is not None and v != "" and v != [] and v != {}}
