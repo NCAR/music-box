@@ -201,6 +201,8 @@ class MusicBox:
             if "model components" in data and data["model components"]:
                 # V0 mechanism configuration (already in separate file)
                 camp_path = os.path.join(os.path.dirname(path_to_json), data['model components'][0]['configuration file'])
+                parser = mc.Parser()
+                self.__mechanism = parser.parse_and_convert_v0(camp_path)
                 self.solver = musica.MICM(config_path=camp_path, solver_type=musica.SolverType.rosenbrock_standard_order)
             elif "mechanism" in data and data["mechanism"]:
                 # V1 mechanism configuration (in the same file)
