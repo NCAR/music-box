@@ -238,3 +238,9 @@ class MusicBox:
         self.__mechanism = mechanism
         self.solver = musica.MICM(mechanism=mechanism, solver_type=solver_type)
         self.state = self.solver.create_state(1)
+
+    @property
+    def mechanism(self):
+        if not self.__mechanism:
+            raise ValueError("Mechanism is not loaded.")
+        return self.__mechanism
