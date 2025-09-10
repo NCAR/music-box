@@ -243,6 +243,6 @@ class MusicBox:
 
     @property
     def mechanism(self):
-        if not self.__mechanism:
+        if self.__mechanism is None:
             raise ValueError("Mechanism is not loaded.")
         return self.__mechanism
