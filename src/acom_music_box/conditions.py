@@ -233,7 +233,6 @@ class Conditions:
                 if (reaction_type not in react_types):
                     continue
 
-            logger.info(f"rate: {parameter_name}, value: {value} from key: {key}")
             rate_parameters[parameter_name] = value
 
         return rate_parameters

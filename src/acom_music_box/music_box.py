@@ -112,9 +112,6 @@ class MusicBox:
         for species, _ in self.state.get_concentrations().items():
             header.append("CONC." + species + ".mol m-3")
 
-        logger.debug(f"Parameter ordering: {self.state.get_user_defined_rate_parameters_ordering()}")
-        logger.debug(f"Species ordering: {self.state.get_species_ordering()}")
-
         # set the initial conditions in the state
         self.state.set_conditions(curr_conditions.temperature, curr_conditions.pressure)  # air denisty will be calculated based on Ideal gas law
         self.state.set_concentrations(curr_conditions.species_concentrations)
