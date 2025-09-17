@@ -29,7 +29,7 @@ dependencies = [
   "matplotlib>=3.6.0",
   "mplcursors>=0.3",
   # "musica>=0.12.2",
-  "musica @ git+https://github.com/NCAR/musica.git@update_set_handling",
+  "musica @ git+https://github.com/NCAR/musica.git@a562b3f82edbc410d9bd9ae563624cff3ce885cb",
   "netcdf4>=1.6.0",
   "numpy>=2.0.0",
   "pandas>=2.2.0",
