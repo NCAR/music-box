@@ -5,7 +5,10 @@ RUN dnf -y update \
         git \
         gcc \
         gcc-c++ \
+        gfortran \
+        lapack-devel \
         make \
+        netcdf-fortran-devel \
         pandoc \
         python3-devel \
         python3-pip \

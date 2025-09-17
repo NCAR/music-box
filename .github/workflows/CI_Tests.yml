@@ -22,12 +22,14 @@ jobs:
       with:
         submodules: recursive
 
+    # Only needed when using a musica branch, not a PyPI version
     - name: Install dependencies
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt-get install -y libnetcdf-dev netcdf-bin libnetcdff-dev liblapack-dev
     
+    # Only needed when using a musica branch, not a PyPI version
     - name: Install dependencies
       if: matrix.os == 'macos-latest'
       run: |
