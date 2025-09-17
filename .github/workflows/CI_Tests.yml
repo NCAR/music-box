@@ -42,6 +42,8 @@ jobs:
 
     - name: Install this package
       run: pip install -e '.[dev]'
+      env: 
+        FC: gfortran-14
 
     - name: Run tests and generate coverage reports
       run: pytest --cov src/
