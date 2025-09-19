@@ -7993,8 +7993,8 @@
             },
             "COFCL": {}
           }
-        }
-    {
+        },
+        {
           "type": "SURFACE",
           "MUSICA name": "usr_HO2_aer",
           "reaction probability": 0.02,
