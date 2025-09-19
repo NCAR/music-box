@@ -23,6 +23,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+
 # configure argparse for key-value pairs
 class KeyValueAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -193,22 +194,31 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
 def readWACCM(waccmMusicaDict, latitude, longitude,
               when, modelDir, waccmFilename, modelType):
 
-    logger.info(f"WACCM file = {waccmFilename}")
+    waccmFilepath = os.path.join(modelDir, waccmFilename)
+    logger.info(f"WACCM file path = {waccmFilepath}")
 
     # open dataset for reading
-    waccmDataSet = xarray.open_dataset(os.path.join(modelDir, waccmFilename))
+    waccmDataSet = xarray.open_dataset(waccmFilepath)
     if (False):
         # diagnostic to look at dataset structure
         logger.info(f"WACCM dataset = {waccmDataSet}")
 
     # retrieve all vars at a single point
     whenStr = when.strftime("%Y-%m-%d %H:%M:%S")
-    logger.info(f"whenStr = {whenStr}")
+    singlePoint = None
     if (modelType == WACCM_OUT):
+        logger.info(f"whenStr = {whenStr}")
         singlePoint = waccmDataSet.sel(lon=longitude, lat=latitude, lev=1000.0,
                                    time=whenStr, method="nearest")
     elif (modelType == WRFCHEM_OUT):
-        singlePoint = waccmDataSet.sel(west_east=12, south_north=34, bottom_top=0, Time=0)  # bogus latitude and longitude
+        whenStr = when.strftime("%Y-%m-%d_%H:%M:%S")
+        logger.info(f"whenStr = {whenStr}")
+
+        # Lambert Conformal is not an orthogonal grid;
+        # latitude and longitude are not 1D vectors but 2D array.
+        singlePoint = waccmDataSet.isel(Time=0, west_east=12, south_north=34,   # bogus values
+            bottom_top=0)
+
     if (True):
         # diagnostic to look at single point structure
         logger.info(f"WACCM singlePoint = {singlePoint}")
