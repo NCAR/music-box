@@ -184,13 +184,28 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     return (varMap)
 
 
+# Calcuate the squared distance between points.
+# x1, y1, x2, y2 = coordinates of first and second points
+# return the square of the Pythagorean hypotenuse
+#   Avoid taking square root for faster calculation
+def distSquared(x1, y1, x2, y2):
+    return ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
+
+
+# constants for marking compass directions
+kNoChange = 0
+kNorth = 1
+kSouth = 2
+kEast = 3
+kWest = 4
+
 # Search and locate the closest grid point to the specified coordinates.
 # This function is applicable for any non-orthogonal projection, not just Lambert Conformal.
 # This function will often be called repeatedly for a grid request;
-# recycle the previous returns values into the init suggestions
-# in order to make the searching more efficient.
+# recycle the previous return values into the init suggestions
+# in order to make the nearby searching more efficient.
 # wrfChemDataSet = already-open NetCDF file as xarray
-# latsVarname, lonsVarname = coordinate variables
+# latsVarname, lonsVarname = coordinate variables in the dataset
 # latitude, longitude = want to retrieve data at this location
 # initLatIndex, initLonIndex = caller's suggestion where to start the search
 def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
@@ -224,15 +239,71 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
     if (latIndex >= numLats):
         latIndex = numLats - 1
     if (lonIndex >= numLons):
-        lonIndex = numLons
+        lonIndex = numLons - 1
 
     lats = latsVar.data[timeIndex, :, :]
     lons = lonsVar.data[timeIndex, :, :]
     myLat = lats[latIndex, lonIndex]
     myLon = lons[latIndex, lonIndex]
+    numSteps = 0
     logger.info(f"Starting vertex search at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
 
-    return(latIndex, lonIndex)
+    # try to decrease the distance by searching adjacent cells
+    while (True):
+        # calculate the change in the four compass directions
+        currentDist = distSquared(myLat, myLon, latitude, longitude)
+        logger.info(f"currentDist = {currentDist}")
+        northChange = southChange = eastWest = westChange = 0.0
+
+        if (latIndex < numLats - 1):
+            northChange = distSquared(lats[latIndex + 1, lonIndex], lons[latIndex + 1, lonIndex], latitude, longitude) - currentDist
+        if (latIndex > 0):
+            southChange = distSquared(lats[latIndex - 1, lonIndex], lons[latIndex - 1, lonIndex], latitude, longitude) - currentDist
+        if (lonIndex < numLons - 1):
+            eastChange = distSquared(lats[latIndex, lonIndex + 1], lons[latIndex, lonIndex + 1], latitude, longitude) - currentDist
+        if (lonIndex > 0):
+            westChange = distSquared(lats[latIndex, lonIndex - 1], lons[latIndex, lonIndex - 1], latitude, longitude) - currentDist
+        logger.info(f"Changes are north {northChange} south {southChange} east {eastChange} west {westChange}")
+
+        # which direction will produce the greatest improvement (go closer)?
+        goDirection = kNoChange
+        goDecrease = 0.0
+
+        if (northChange < goDecrease):
+            goDirection = kNorth
+            goDecrease = northChange
+        if (southChange < goDecrease):
+            goDirection = kSouth
+            goDecrease = southChange
+        if (eastChange < goDecrease):
+            goDirection = kEast
+            goDecrease = eastChange
+        if (westChange < goDecrease):
+            goDirection = kWest
+            goDecrease = westChange
+
+        logger.info(f"goDirection = {goDirection}   goDecrease = {goDecrease}")
+        if (goDecrease >= 0.0):
+            # we can go no closer than the current position
+            break
+
+        # move in the best direction
+        if (goDirection == kNorth):
+            latIndex += 1
+        elif (goDirection == kSouth):
+            latIndex -= 1
+        elif (goDirection == kEast):
+            lonIndex += 1
+        elif (goDirection == kWest):
+            lonIndex -= 1
+        numSteps += 1
+
+        myLat = lats[latIndex, lonIndex]
+        myLon = lons[latIndex, lonIndex]
+        logger.info(f"\tvertex search now at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
+
+    logger.info(f"Closest vertex reached in {numSteps} steps.")
+    return (latIndex, lonIndex)
 
 
 # Read array values at a single lat-lon-time point.
@@ -269,6 +340,8 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
         # Lambert Conformal is not an orthogonal grid;
         # latitude and longitude are not 1D vectors but 2D array.
         iLat, iLon = None, None
+        iLat, iLon = 100, 200       # bogus
+        iLat, iLon = 250, 30       # bogus
         iLat, iLon = findClosestVertex(waccmDataSet, "XLAT", "XLONG",
             latitude, longitude, iLat, iLon)
         logger.info(f"iLat = {iLat}   iLon = {iLon}")
