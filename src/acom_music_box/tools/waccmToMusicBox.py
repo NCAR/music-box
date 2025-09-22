@@ -22,6 +22,7 @@ from acom_music_box.utils import calculate_air_density
 import logging
 logger = logging.getLogger(__name__)
 import math
+import numpy
 
 
 
@@ -252,7 +253,7 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
     while (True):
         # calculate the change in the four compass directions
         currentDist = distSquared(myLat, myLon, latitude, longitude)
-        logger.info(f"currentDist = {currentDist}")
+        #logger.info(f"currentDist = {currentDist}")
         northChange = southChange = eastWest = westChange = 0.0
 
         if (latIndex < numLats - 1):
@@ -263,7 +264,7 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
             eastChange = distSquared(lats[latIndex, lonIndex + 1], lons[latIndex, lonIndex + 1], latitude, longitude) - currentDist
         if (lonIndex > 0):
             westChange = distSquared(lats[latIndex, lonIndex - 1], lons[latIndex, lonIndex - 1], latitude, longitude) - currentDist
-        logger.info(f"Changes are north {northChange} south {southChange} east {eastChange} west {westChange}")
+        #logger.info(f"Changes are north {northChange} south {southChange} east {eastChange} west {westChange}")
 
         # which direction will produce the greatest improvement (go closer)?
         goDirection = kNoChange
@@ -282,7 +283,7 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
             goDirection = kWest
             goDecrease = westChange
 
-        logger.info(f"goDirection = {goDirection}   goDecrease = {goDecrease}")
+        #logger.info(f"goDirection = {goDirection}   goDecrease = {goDecrease}")
         if (goDecrease >= 0.0):
             # we can go no closer than the current position
             break
@@ -300,7 +301,7 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
 
         myLat = lats[latIndex, lonIndex]
         myLon = lons[latIndex, lonIndex]
-        logger.info(f"\tvertex search now at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
+        #logger.info(f"\tvertex search now at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
 
     logger.info(f"Closest vertex reached in {numSteps} steps.")
     return (latIndex, lonIndex)
@@ -333,19 +334,23 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
         logger.info(f"whenStr = {whenStr}")
         singlePoint = waccmDataSet.sel(lon=longitude, lat=latitude, lev=1000.0,
                                    time=whenStr, method="nearest")
+
     elif (modelType == WRFCHEM_OUT):
+        # find the time index
         whenStr = when.strftime("%Y-%m-%d_%H:%M:%S")
         logger.info(f"whenStr = {whenStr}")
+        timesVar = waccmDataSet["Times"]
+        timesVarStrings = timesVar.str.decode("utf-8")
+        stringMatches = numpy.where(timesVarStrings == whenStr)
+        timeIndex = stringMatches[0][0]
+        logger.info(f"timeIndex = {timeIndex}")
 
-        # Lambert Conformal is not an orthogonal grid;
-        # latitude and longitude are not 1D vectors but 2D array.
+        # select data from the nearest grid point
         iLat, iLon = None, None
-        iLat, iLon = 100, 200       # bogus
-        iLat, iLon = 250, 30       # bogus
         iLat, iLon = findClosestVertex(waccmDataSet, "XLAT", "XLONG",
             latitude, longitude, iLat, iLon)
         logger.info(f"iLat = {iLat}   iLon = {iLon}")
-        singlePoint = waccmDataSet.isel(Time=0, west_east=iLon, south_north=iLat,
+        singlePoint = waccmDataSet.isel(Time=timeIndex, west_east=iLon, south_north=iLat,
             bottom_top=0)
 
     if (True):
