@@ -21,6 +21,7 @@ from acom_music_box.utils import calculate_air_density
 
 import logging
 logger = logging.getLogger(__name__)
+import math
 
 
 
@@ -183,6 +184,57 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     return (varMap)
 
 
+# Search and locate the closest grid point to the specified coordinates.
+# This function is applicable for any non-orthogonal projection, not just Lambert Conformal.
+# This function will often be called repeatedly for a grid request;
+# recycle the previous returns values into the init suggestions
+# in order to make the searching more efficient.
+# wrfChemDataSet = already-open NetCDF file as xarray
+# latsVarname, lonsVarname = coordinate variables
+# latitude, longitude = want to retrieve data at this location
+# initLatIndex, initLonIndex = caller's suggestion where to start the search
+def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
+    latitude, longitude, initLatIndex=None, initLonIndex=None):
+    timeIndex = 0
+
+    latsVar = wrfChemDataSet.get(latsVarname)
+    #logger.info(f"lats = {lats}")
+    latCoord = latsVar.coords["south_north"]
+    numLats = len(latCoord)
+    #logger.info(f"latCoord = {latCoord}")
+
+    lonsVar = wrfChemDataSet.get(lonsVarname)
+    lonCoord = lonsVar.coords["west_east"]
+    numLons = len(lonCoord)
+
+    latIndex = initLatIndex
+    lonIndex = initLonIndex
+    if (latIndex is None):
+        # start the search in the middle of the grid
+        latIndex = math.floor(numLats / 2)
+    if (lonIndex is None):
+        lonIndex = math.floor(numLons / 2)
+
+    # make sure that supplied initial indexes are in bounds
+    if (latIndex < 0):
+        latIndex = 0
+    if (lonIndex < 0):
+        lonIndex = 0
+
+    if (latIndex >= numLats):
+        latIndex = numLats - 1
+    if (lonIndex >= numLons):
+        lonIndex = numLons
+
+    lats = latsVar.data[timeIndex, :, :]
+    lons = lonsVar.data[timeIndex, :, :]
+    myLat = lats[latIndex, lonIndex]
+    myLon = lons[latIndex, lonIndex]
+    logger.info(f"Starting vertex search at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
+
+    return(latIndex, lonIndex)
+
+
 # Read array values at a single lat-lon-time point.
 # waccmMusicaDict = mapping from WACCM names to MusicBox
 # latitude, longitude = geo-coordinates of retrieval point
@@ -216,7 +268,11 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
 
         # Lambert Conformal is not an orthogonal grid;
         # latitude and longitude are not 1D vectors but 2D array.
-        singlePoint = waccmDataSet.isel(Time=0, west_east=12, south_north=34,   # bogus values
+        iLat, iLon = None, None
+        iLat, iLon = findClosestVertex(waccmDataSet, "XLAT", "XLONG",
+            latitude, longitude, iLat, iLon)
+        logger.info(f"iLat = {iLat}   iLon = {iLon}")
+        singlePoint = waccmDataSet.isel(Time=0, west_east=iLon, south_north=iLat,
             bottom_top=0)
 
     if (True):
