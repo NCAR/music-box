@@ -172,7 +172,7 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     elif (modelType == WRFCHEM_OUT):
         varMap = {
             # WRF-Chem: MusicBox
-            "T": "temperature",
+            "T2": "temperature",
             "P": "pressure",
             "isopr": "ISOPB02",
             "o3": "O3"
