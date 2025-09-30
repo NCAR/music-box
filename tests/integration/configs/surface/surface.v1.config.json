@@ -24,8 +24,7 @@
     "species": [
       {
         "name": "A",
-        "molecular weight [kg mol-1]": 6,
-        "diffusion coefficient [m2 s-1]": 1e-9
+        "molecular weight [kg mol-1]": 6
       },
       {
         "name": "B"
@@ -35,13 +34,13 @@
       {
         "name": "gas",
         "species": [
-          "A",
-          "B"
-        ]
-      },
-      {
-        "name": "condensed",
-        "species": [
+          {
+            "name": "A",
+            "diffusion coefficient [m2 s-1]": 1e-9
+          },
+          {
+            "name": "B"
+          }
         ]
       }
     ],
@@ -51,7 +50,6 @@
         "name": "surface",
         "reaction probability": 1.0,
         "gas phase": "gas",
-        "condensed phase": "condensed",
         "gas-phase species": "A",
         "gas-phase products": [
           {
