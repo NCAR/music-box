@@ -25,15 +25,16 @@ classifiers = ["License :: OSI Approved :: Apache Software License"]
 dynamic = ["version", "description"]
 
 dependencies = [
-  "musica==0.12.0",
-  "xarray",
-  "colorlog",
-  "pandas",
-  "tqdm",
-  "netcdf4",
-  "matplotlib",
-  "mplcursors",
-  "typing_extensions"
+  "colorlog>=6.7.0",
+  "matplotlib>=3.6.0",
+  "mplcursors>=0.3",
+  "musica>=0.13.0",
+  "netcdf4>=1.6.0",
+  "numpy>=2.0.0",
+  "pandas>=2.2.0",
+  "tqdm>=4.64.0",
+  "typing_extensions>=4.4.0",
+  "xarray>=2022.3.0",
 ]
 
 [project.urls]
@@ -45,7 +46,10 @@ waccmToMusicBox = "acom_music_box.tools.waccmToMusicBox:main"
 
 [project.optional-dependencies]
 dev = [
-  "pytest",
-  "pytest-mock",
-  "pytest-cov"
+  "pytest>=7.0.0",
+  "pytest-mock>=3.15.0",
+  "pytest-cov>=7.0.0"
+]
+gpu = [
+  "musica[gpu]==0.13.0"
 ]

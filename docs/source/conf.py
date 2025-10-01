@@ -27,7 +27,8 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx_copybutton',
     'sphinx_design',
-    'sphinx.ext.intersphinx'
+    'sphinx.ext.intersphinx',
+    'nbsphinx'
 ]
 
 templates_path = ['_templates']
@@ -38,10 +39,14 @@ exclude_patterns = []
 
 highlight_language = 'python'
 
+# do not require users locally compiling documentation to have all notebook libraries
+
+nbsphinx_allow_errors = True
+
 # -- link to MUSICA documentation ---
 
 intersphinx_mapping = {
-    'musica': ('https://ncar.github.io/musica/api/', None),
+    'musica': ('https://ncar.github.io/musica/', None),
     'micm': ('https://ncar.github.io/micm/', None),
     'mc': ('https://ncar.github.io/MechanismConfiguration/', None)
 }

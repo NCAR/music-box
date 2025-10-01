@@ -9,7 +9,7 @@ MusicBox: A MUSICA model for boxes and columns.
 [![codecov](https://codecov.io/github/NCAR/music-box/graph/badge.svg?token=OR7JEQJSRQ)](https://codecov.io/github/NCAR/music-box)
 [![PyPI version](https://badge.fury.io/py/acom-music-box.svg)](https://badge.fury.io/py/acom-music-box)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14008358.svg)](https://doi.org/10.5281/zenodo.14008358)
-
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/NCAR/music-box/96b7c7b619791bfbddafc6c8e34fb7982f26c4ca?urlpath=lab%2Ftree%2Ftutorials)
 
 Copyright (C) 2020 National Science Foundation - National Center for Atmospheric Research
 
@@ -17,10 +17,20 @@ Copyright (C) 2020 National Science Foundation - National Center for Atmospheric
 ```
 pip install acom_music_box
 ```
+
+If you would like GPU support, you must first add the [NVIDIA pypi index](https://docs.nvidia.com/cuda/cuda-quick-start-guide/#pip-wheels-linux) and then you can specify the
+gpu install option for music box.
+
+```
+pip install --upgrade setuptools pip wheel
+pip install nvidia-pyindex
+pip install acom_music_box[gpu]
+```
+
 # Using the MusicBox API
 
 MusicBox makes its chemical mechanism analysis and visualization available through a Python API. The following example works through solving a simple chemistry system. Please refer to the [official documentation](https://ncar.github.io/music-box/branch/main/index.html) for further tutorials and examples.
-```
+```python
 # Import MusicBox, MusicBox conditions, and Musica mechanisms:
 
 from acom_music_box import MusicBox, Conditions
@@ -89,7 +99,7 @@ plt.show()
 ```
 
 # Command line tool
-MusicBox provides a command line tool that can run configurations as well as some pre-configured examples. Basic plotting can be done if gnuplot is installed.
+MusicBox provides a command line tool that can run configurations as well as some pre-configured examples. Basic plotting can be done with matplotlib.
 
 Checkout the command line options
 
@@ -140,9 +150,7 @@ music_box -c my_config.json
 ```
 
 ## Plotting
-Some basic plots can be made to show concentrations throughout the simulation
-
-### matplotlib
+Some basic plots can be made to show concentrations throughout the simulation using matplotlib.
 
 ```
 music_box -e Chapman -o output.csv --plot O1D
@@ -166,14 +174,6 @@ It is used like this
 
 ```
  music_box -e TS1 --plot O3 --plot-output-unit "ppb"
-```
-
-### gnuplot
-If you want ascii plots (maybe you're running over ssh and can't view a graphical window), you can set
-the plot tool to gnuplo (`--plot-tool gnuplot`) to view some output
-
-```
-music_box -e Chapman -o output.csv --plot O1D --plot-tool gnuplot
 ```
 
 # Development and Contributing
