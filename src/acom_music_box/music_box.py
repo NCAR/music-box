@@ -47,6 +47,7 @@ class MusicBox:
         self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([], [])
         self.solver = None
         self.state = None
+        self.__mechanism = None
 
     def add_evolving_condition(self, time_point, conditions):
         """
@@ -200,6 +201,12 @@ class MusicBox:
             if "model components" in data and data["model components"]:
                 # V0 mechanism configuration (already in separate file)
                 camp_path = os.path.join(os.path.dirname(path_to_json), data['model components'][0]['configuration file'])
+                try:
+                    parser = mc.Parser()
+                    self.__mechanism = parser.parse_and_convert_v0(camp_path)
+                except Exception as e:
+                    logger.warning(
+                        f"Failed to parse V0 mechanism configuration from {camp_path}: {e}. This may affect downstream packages that depend on the mechanism property being set.")
                 self.solver = musica.MICM(config_path=camp_path, solver_type=musica.SolverType.rosenbrock_standard_order)
             elif "mechanism" in data and data["mechanism"]:
                 # V1 mechanism configuration (in the same file)
@@ -208,6 +215,9 @@ class MusicBox:
                     tmp_mech_file.write(json.dumps(mechanism_json))
                     tmp_mech_file.flush()
                     tmp_mech_file_path = tmp_mech_file.name
+                # Save mechanism
+                parser = mc.Parser()
+                self.__mechanism = parser.parse(tmp_mech_file_path)
                 # Initalize the musica solver
                 self.solver = musica.MICM(config_path=tmp_mech_file_path, solver_type=musica.SolverType.rosenbrock_standard_order)
                 atexit.register(os.remove, tmp_mech_file_path)
@@ -231,5 +241,12 @@ class MusicBox:
         Args:
             mechanism (Mechanism): The mechanism to be used for the solver.
         """
+        self.__mechanism = mechanism
         self.solver = musica.MICM(mechanism=mechanism, solver_type=solver_type)
         self.state = self.solver.create_state(1)
+
+    @property
+    def mechanism(self):
+        if self.__mechanism is None:
+            raise ValueError("Mechanism is not loaded.")
+        return self.__mechanism
