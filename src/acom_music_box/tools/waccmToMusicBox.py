@@ -309,13 +309,14 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
 
 # Read array values at a single lat-lon-time point.
 # waccmMusicaDict = mapping from WACCM names to MusicBox
-# latitude, longitude = geo-coordinates of retrieval point
+# latitudes, longitudes = geo-coordinates of retrieval point(s)
+#   Could be a single point or corners of a selection rectangle.
 # when = date and time to extract
 # modelDir = directory containing model output
 # waccmFilename = name of the model output file
 # modelType = WACCM_OUT or WRFCHEM_OUT
 # return dictionary of MUSICA variable names, values, and units
-def readWACCM(waccmMusicaDict, latitude, longitude,
+def readWACCM(waccmMusicaDict, latitudes, longitudes,
               when, modelDir, waccmFilename, modelType):
 
     waccmFilepath = os.path.join(modelDir, waccmFilename)
@@ -323,7 +324,7 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
 
     # open dataset for reading
     waccmDataSet = xarray.open_dataset(waccmFilepath)
-    if (False):
+    if (True):
         # diagnostic to look at dataset structure
         logger.info(f"WACCM dataset = {waccmDataSet}")
 
@@ -331,9 +332,22 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
     whenStr = when.strftime("%Y-%m-%d %H:%M:%S")
     singlePoint = None
     if (modelType == WACCM_OUT):
+        latVar = waccmDataSet["lat"].data
+        latStride = latVar[1] - latVar[0]
+        lonVar = waccmDataSet["lon"].data
+        lonStride = lonVar[1] - lonVar[0]
+        logger.info(f"latStride = {latStride}   lonStride = {lonStride}")
+
+        # use xarray to select sub-grid and then take average
         logger.info(f"whenStr = {whenStr}")
-        singlePoint = waccmDataSet.sel(lon=longitude, lat=latitude, lev=1000.0,
+        numGridLats = math.ceil(latitudes[1] - latitudes[0]) + 1
+        numGridLons = math.ceil(longitudes[1] - longitudes[0]) + 1
+        logger.info(f"Requested sub-grid will be {numGridLats} lats x {numGridLons} lons.")
+        gridBox = waccmDataSet.sel(lat=numpy.linspace(latitudes[0], latitudes[1], numGridLats), lev=1000.0,
+                                   lon=numpy.linspace(longitudes[0], longitudes[1], numGridLons),
                                    time=whenStr, method="nearest")
+        gridBox = gridBox.drop_vars(["date_written", "time_written"])   # cannot take the mean() of strings
+        singlePoint = gridBox.mean(dim=["lat", "lon"], keep_attrs=True)
 
     elif (modelType == WRFCHEM_OUT):
         # find the time index
@@ -348,7 +362,7 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
         # select data from the nearest grid point
         iLat, iLon = None, None
         iLat, iLon = findClosestVertex(waccmDataSet, "XLAT", "XLONG",
-            latitude, longitude, iLat, iLon)
+            latitudes[0], longitudes[0], iLat, iLon)
         logger.info(f"iLat = {iLat}   iLon = {iLon}")
         singlePoint = waccmDataSet.isel(Time=timeIndex, west_east=iLon, south_north=iLat,
             bottom_top=0)
@@ -367,6 +381,7 @@ def readWACCM(waccmMusicaDict, latitude, longitude,
             continue
 
         chemSinglePoint = singlePoint[waccmKey]
+        #logger.info(f"WACCM chemSinglePoint = {chemSinglePoint}")
         if (True):
             logger.info(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
         musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)   # from 0-dim array
@@ -579,14 +594,35 @@ def main():
     if ("time" in myArgs):
         timeStr = myArgs.get("time")
 
-    # get the geographical location to retrieve
-    lat = None
+    # get the geographical location(s) to retrieve
+    lats = []
     if ("latitude" in myArgs):
-        lat = safeFloat(myArgs.get("latitude"))
+        latStrings = myArgs.get("latitude").split(",")
+        for latString in latStrings:
+            lats.append(safeFloat(latString))
 
-    lon = None
+    lons = []
     if ("longitude" in myArgs):
-        lon = safeFloat(myArgs.get("longitude"))
+        lonStrings = myArgs.get("longitude").split(",")
+        for lonString in lonStrings:
+            lons.append(safeFloat(lonString))
+
+    # fix common lat-lon errors
+    if (len(lats) > 1):
+        if (lats[0] > lats[1]):
+            # swap latitudes
+            lats = [lats[1], lats[0]]
+
+    # always use two lat-lon bounds
+    if (len(lats) < 2):
+        lats.append(lats[0])
+    if (len(lons) < 2):
+        lons.append(lons[0])
+
+    # For longitude, we assume the user knows the model's
+    # longitude conventions regarding 0:360 or -180:180.
+
+    logger.info(f"lats = {lats}   lons = {lons}")
 
     # get the requested (diagnostic) output
     outputCSV = False
@@ -625,8 +661,8 @@ def main():
             logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
 
         # Read named variables from WACCM model output.
-        logger.info(f"Retrieve WACCM conditions at ({lat} North, {lon} East)   when {when}.")
-        varValues = readWACCM(commonDict, lat, lon, when,
+        logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
+        varValues = readWACCM(commonDict, lats, lons, when,
             modelDir, waccmFilename, modelType)
         logger.info(f"Original WACCM varValues = {varValues}")
 
@@ -661,4 +697,5 @@ def main():
 if (__name__ == "__main__"):
     main()
     logger.info(f"End time: {datetime.datetime.now()}")
-    # sys.exit(0)  # no error
+    sys.exit(0)  # no error
+
