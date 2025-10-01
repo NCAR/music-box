@@ -22,6 +22,19 @@ jobs:
       with:
         submodules: recursive
 
+    # Only needed when using a musica branch, not a PyPI version
+    - name: Install dependencies
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libnetcdf-dev netcdf-bin libnetcdff-dev liblapack-dev
+    
+    # Only needed when using a musica branch, not a PyPI version
+    - name: Install dependencies
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install netcdf netcdf-fortran lapack
+
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
@@ -29,6 +42,8 @@ jobs:
 
     - name: Install this package
       run: pip install -e '.[dev]'
+      env: 
+        FC: gfortran-14
 
     - name: Run tests and generate coverage reports
       run: pytest --cov src/
