@@ -201,11 +201,12 @@ class MusicBox:
             if "model components" in data and data["model components"]:
                 # V0 mechanism configuration (already in separate file)
                 camp_path = os.path.join(os.path.dirname(path_to_json), data['model components'][0]['configuration file'])
-                try: 
+                try:
                     parser = mc.Parser()
                     self.__mechanism = parser.parse_and_convert_v0(camp_path)
                 except Exception as e:
-                    logger.warning(f"Failed to parse V0 mechanism configuration from {camp_path}: {e}. This may affect downstream packages that depend on the mechanism property being set.")
+                    logger.warning(
+                        f"Failed to parse V0 mechanism configuration from {camp_path}: {e}. This may affect downstream packages that depend on the mechanism property being set.")
                 self.solver = musica.MICM(config_path=camp_path, solver_type=musica.SolverType.rosenbrock_standard_order)
             elif "mechanism" in data and data["mechanism"]:
                 # V1 mechanism configuration (in the same file)

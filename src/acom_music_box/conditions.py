@@ -219,7 +219,7 @@ class Conditions:
                 reaction_type, label = parts
                 parameter_name = f"{reaction_type}.{label}"
                 if reaction_type == 'CONC':
-                    #strip out the units if they are separated by a space
+                    # strip out the units if they are separated by a space
                     parameter_name = label.split(' [')[0]
             else:
                 error = f"Unexpected format in key: {key}"
