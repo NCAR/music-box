@@ -1,0 +1,63 @@
+{
+  "box model options": {
+    "grid": "box",
+    "chemistry time step [sec]": 1.0,
+    "output time step [sec]": 1.0,
+    "simulation length [sec]": 10
+  },
+  "initial conditions": {
+    "filepaths": ["initial_conditions.csv"]
+  },
+  "environmental conditions": {
+    "temperature": {
+      "initial value [K]": 300
+    },
+    "pressure": {
+      "initial value [Pa]": 101325
+    }
+  },
+  "evolving conditions": {
+  },
+  "mechanism": {
+    "version": "1.0.0",
+    "name": "Surface",
+    "species": [
+      {
+        "name": "A",
+        "molecular weight [kg mol-1]": 6
+      },
+      {
+        "name": "B"
+      }
+    ],
+    "phases": [
+      {
+        "name": "gas",
+        "species": [
+          {
+            "name": "A",
+            "diffusion coefficient [m2 s-1]": 1e-9
+          },
+          {
+            "name": "B"
+          }
+        ]
+      }
+    ],
+    "reactions": [
+      {
+        "type": "SURFACE",
+        "name": "surface",
+        "reaction probability": 1.0,
+        "gas phase": "gas",
+        "gas-phase species": "A",
+        "gas-phase products": [
+          {
+            "species name": "B",
+            "coefficient": 1
+          }
+        ]
+      }
+    ]
+  }
+}

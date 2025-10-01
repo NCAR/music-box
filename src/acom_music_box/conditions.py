@@ -165,7 +165,7 @@ class Conditions:
         species_concentrations = Conditions.retrieve_initial_conditions_from_JSON(
             path_to_json, json_object, {"CONC"}, False)
         rate_parameters = Conditions.retrieve_initial_conditions_from_JSON(
-            path_to_json, json_object, {"EMIS", "PHOTO", "LOSS", "USER"}, True)
+            path_to_json, json_object, {"EMIS", "PHOTO", "LOSS", "USER", "SURF"}, True)
 
         # override presure and temperature
         if ("pressure" in environmental_conditions):
@@ -207,29 +207,33 @@ class Conditions:
         for key in df.columns:
             parts = key.split('.')
             reaction_type, label = None, None
-            if len(parts) == 3:
+            value = df.at[0, key]
+            if len(parts) == 4:
+                # surface reactions
+                reaction_type, label, surface_condition, units = parts
+                parameter_name = f"{reaction_type}.{label}.{surface_condition} [{units}]"
+            elif len(parts) == 3:
                 reaction_type, label, units = parts
+                parameter_name = f"{reaction_type}.{label}"
             elif len(parts) == 2:
                 reaction_type, label = parts
+                parameter_name = f"{reaction_type}.{label}"
+                if reaction_type == 'CONC':
+                    #strip out the units if they are separated by a space
+                    parameter_name = label.split(' [')[0]
             else:
                 error = f"Unexpected format in key: {key}"
                 logger.error(error)
                 raise ValueError(error)
-            parameter_name = f'{reaction_type}.{label}'
+
             if parameter_name in rate_parameters:
                 raise ValueError(f"Duplicate user-defined rate parameter found: {parameter_name}")
 
-            # are we looking for this type?
             if (react_types):
                 if (reaction_type not in react_types):
                     continue
 
-            # create key-value pair of chemical-concentration
-            # initial concentration looks like this:        CONC.a-pinene [mol m-3]
-            # reaction rate looks like this:                LOSS.SOA2 wall loss.s-1
-            chem_name_alone = f"{reaction_type}.{label}" if preserve_type else label
-            chem_name_alone = chem_name_alone.split(' [')[0]  # strip off [units] to get chemical
-            rate_parameters[chem_name_alone] = df.at[0, key]  # retrieve (row, column)
+            rate_parameters[parameter_name] = value
 
         return rate_parameters
 
