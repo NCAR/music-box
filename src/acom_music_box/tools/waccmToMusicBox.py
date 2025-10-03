@@ -247,7 +247,8 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
     myLat = lats[latIndex, lonIndex]
     myLon = lons[latIndex, lonIndex]
     numSteps = 0
-    logger.info(f"Starting vertex search at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
+    if (False):
+        logger.info(f"Starting vertex search at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
 
     # try to decrease the distance by searching adjacent cells
     while (True):
@@ -332,6 +333,7 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
     whenStr = when.strftime("%Y-%m-%d %H:%M:%S")
     singlePoint = None
     if (modelType == WACCM_OUT):
+        # determine the grid spacing
         latVar = waccmDataSet["lat"].data
         latStride = latVar[1] - latVar[0]
         lonVar = waccmDataSet["lon"].data
@@ -340,13 +342,19 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
 
         # use xarray to select sub-grid and then take average
         logger.info(f"whenStr = {whenStr}")
-        numGridLats = math.ceil(latitudes[1] - latitudes[0]) + 1
-        numGridLons = math.ceil(longitudes[1] - longitudes[0]) + 1
+        numGridLats = math.ceil((latitudes[1] - latitudes[0]) / latStride) + 1      # include the endpoint
+        numGridLons = math.ceil((longitudes[1] - longitudes[0]) / lonStride) + 1
         logger.info(f"Requested sub-grid will be {numGridLats} lats x {numGridLons} lons.")
-        gridBox = waccmDataSet.sel(lat=numpy.linspace(latitudes[0], latitudes[1], numGridLats), lev=1000.0,
-                                   lon=numpy.linspace(longitudes[0], longitudes[1], numGridLons),
-                                   time=whenStr, method="nearest")
+
+        latTicks = numpy.linspace(latitudes[0], latitudes[1], numGridLats)
+        lonTicks = numpy.linspace(longitudes[0], longitudes[1], numGridLons)
+        logger.info(f"latTicks = {latTicks}")
+        logger.info(f"lonTicks = {lonTicks}")
+
+        gridBox = waccmDataSet.sel(lat=latTicks, lon=lonTicks,
+                                   lev=1000.0, time=whenStr, method="nearest")
         gridBox = gridBox.drop_vars(["date_written", "time_written"])   # cannot take the mean() of strings
+        logger.info(f"WACCM gridBox = {gridBox}")
         singlePoint = gridBox.mean(dim=["lat", "lon"], keep_attrs=True)
 
     elif (modelType == WRFCHEM_OUT):
@@ -359,17 +367,49 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
         timeIndex = stringMatches[0][0]
         logger.info(f"timeIndex = {timeIndex}")
 
-        # select data from the nearest grid point
+        # estimate the grid spacing
+        latVar = waccmDataSet["XLAT"].data
+        latStride = latVar[timeIndex, 1, 0] - latVar[timeIndex, 0, 0]
+        lonVar = waccmDataSet["XLONG"].data
+        lonStride = lonVar[timeIndex, 0, 1] - lonVar[timeIndex, 0, 0]
+        logger.info(f"latStride = {latStride}   lonStride = {lonStride}")
+
+        # loop through the sub-grid and extract points
+        numGridLats = math.ceil((latitudes[1] - latitudes[0]) / latStride) + 1      # include the endpoint
+        numGridLons = math.ceil((longitudes[1] - longitudes[0]) / lonStride) + 1
+        logger.info(f"Requested sub-grid will be {numGridLats} lats x {numGridLons} lons.")
+
+        latTicks = numpy.linspace(latitudes[0], latitudes[1], numGridLats)
+        lonTicks = numpy.linspace(longitudes[0], longitudes[1], numGridLons)
+        logger.info(f"latTicks = {latTicks}")
+        logger.info(f"lonTicks = {lonTicks}")
+
         iLat, iLon = None, None
-        iLat, iLon = findClosestVertex(waccmDataSet, "XLAT", "XLONG",
-            latitudes[0], longitudes[0], iLat, iLon)
-        logger.info(f"iLat = {iLat}   iLon = {iLon}")
-        singlePoint = waccmDataSet.isel(Time=timeIndex, west_east=iLon, south_north=iLat,
-            bottom_top=0)
+        singlePoints = []
+        for latFloat in latTicks:
+            for lonFloat in lonTicks:
+                #logger.info(f"latFloat = {latFloat}   lonFloat = {lonFloat}")
+
+                # select data from the nearest grid point
+                iLat, iLon = findClosestVertex(waccmDataSet, "XLAT", "XLONG",
+                    latFloat, lonFloat, iLat, iLon)
+                #logger.info(f"iLat = {iLat}   iLon = {iLon}")
+                singlePoint = waccmDataSet.isel(Time=timeIndex,
+                    west_east=iLon, south_north=iLat, bottom_top=0)
+                singlePoints.append(singlePoint)
+
+        logger.info(f"Combining {len(singlePoints)} points into a single set...")
+        pointDimension = "point_index"
+        pointSet = xarray.concat(singlePoints, pointDimension)
+        logger.info(f"WACCM / WRF-Chem pointSet = {pointSet}")
+
+        logger.info(f"Calculating mean value of the set...")
+        meanPoint = pointSet.mean(dim=[pointDimension], keep_attrs=True)
+        logger.info(f"WACCM / WRF-Chem meanPoint = {meanPoint}")
 
     if (True):
         # diagnostic to look at single point structure
-        logger.info(f"WACCM singlePoint = {singlePoint}")
+        logger.info(f"WACCM / WRF-Chem meanPoint = {meanPoint}")
 
     # loop through vars and build another dictionary
     musicaDict = {}
