@@ -331,8 +331,8 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
 
     # retrieve all vars at a single point
     whenStr = when.strftime("%Y-%m-%d %H:%M:%S")
-    singlePoint = None
-    if (modelType == WACCM_OUT):
+    meanPoint = None
+    if (modelType == WACCM_OUT):            # straight grid
         # determine the grid spacing
         latVar = waccmDataSet["lat"].data
         latStride = latVar[1] - latVar[0]
@@ -355,9 +355,9 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
                                    lev=1000.0, time=whenStr, method="nearest")
         gridBox = gridBox.drop_vars(["date_written", "time_written"])   # cannot take the mean() of strings
         logger.info(f"WACCM gridBox = {gridBox}")
-        singlePoint = gridBox.mean(dim=["lat", "lon"], keep_attrs=True)
+        meanPoint = gridBox.mean(dim=["lat", "lon"], keep_attrs=True)
 
-    elif (modelType == WRFCHEM_OUT):
+    elif (modelType == WRFCHEM_OUT):        # curved grid
         # find the time index
         whenStr = when.strftime("%Y-%m-%d_%H:%M:%S")
         logger.info(f"whenStr = {whenStr}")
@@ -414,13 +414,13 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
     # loop through vars and build another dictionary
     musicaDict = {}
     for waccmKey, musicaName in waccmMusicaDict.items():
-        if waccmKey not in singlePoint:
+        if waccmKey not in meanPoint:
             logger.warning(f"Requested variable {waccmKey} not found in WACCM model output.")
             musicaTuple = (waccmKey, None, None)
             musicaDict[musicaName] = musicaTuple
             continue
 
-        chemSinglePoint = singlePoint[waccmKey]
+        chemSinglePoint = meanPoint[waccmKey]
         #logger.info(f"WACCM chemSinglePoint = {chemSinglePoint}")
         if (True):
             logger.info(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
