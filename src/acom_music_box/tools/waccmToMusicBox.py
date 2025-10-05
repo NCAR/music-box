@@ -214,10 +214,8 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
     timeIndex = 0
 
     latsVar = wrfChemDataSet.get(latsVarname)
-    #logger.info(f"lats = {lats}")
     latCoord = latsVar.coords["south_north"]
     numLats = len(latCoord)
-    #logger.info(f"latCoord = {latCoord}")
 
     lonsVar = wrfChemDataSet.get(lonsVarname)
     lonCoord = lonsVar.coords["west_east"]
@@ -247,14 +245,17 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
     myLat = lats[latIndex, lonIndex]
     myLon = lons[latIndex, lonIndex]
     numSteps = 0
-    if (False):
+
+    infoSearch = False
+    if (infoSearch):
         logger.info(f"Starting vertex search at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
 
     # try to decrease the distance by searching adjacent cells
     while (True):
         # calculate the change in the four compass directions
         currentDist = distSquared(myLat, myLon, latitude, longitude)
-        #logger.info(f"currentDist = {currentDist}")
+        if (infoSearch):
+            logger.info(f"currentDist = {currentDist}")
         northChange = southChange = eastWest = westChange = 0.0
 
         if (latIndex < numLats - 1):
@@ -265,7 +266,8 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
             eastChange = distSquared(lats[latIndex, lonIndex + 1], lons[latIndex, lonIndex + 1], latitude, longitude) - currentDist
         if (lonIndex > 0):
             westChange = distSquared(lats[latIndex, lonIndex - 1], lons[latIndex, lonIndex - 1], latitude, longitude) - currentDist
-        #logger.info(f"Changes are north {northChange} south {southChange} east {eastChange} west {westChange}")
+        if (infoSearch):
+            logger.info(f"Changes are north {northChange} south {southChange} east {eastChange} west {westChange}")
 
         # which direction will produce the greatest improvement (go closer)?
         goDirection = kNoChange
@@ -284,7 +286,8 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
             goDirection = kWest
             goDecrease = westChange
 
-        #logger.info(f"goDirection = {goDirection}   goDecrease = {goDecrease}")
+        if (infoSearch):
+            logger.info(f"goDirection = {goDirection}   goDecrease = {goDecrease}")
         if (goDecrease >= 0.0):
             # we can go no closer than the current position
             break
@@ -302,9 +305,11 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
 
         myLat = lats[latIndex, lonIndex]
         myLon = lons[latIndex, lonIndex]
-        #logger.info(f"\tvertex search now at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
+        if (infoSearch):
+            logger.info(f"\tvertex search now at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
 
-    logger.info(f"Closest vertex reached in {numSteps} steps.")
+    if (False):
+        logger.info(f"Closest vertex reached in {numSteps} steps.")
     return (latIndex, lonIndex)
 
 
@@ -378,16 +383,20 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair):
     logger.info(f"latTicks = {latTicks}")
     logger.info(f"lonTicks = {lonTicks}")
 
+    infoGrid = False
+
     iLat, iLon = None, None
     singlePoints = []
     for latFloat in latTicks:
         for lonFloat in lonTicks:
-            #logger.info(f"latFloat = {latFloat}   lonFloat = {lonFloat}")
+            if (infoGrid):
+                logger.info(f"latFloat = {latFloat}   lonFloat = {lonFloat}")
 
             # select data from the nearest grid point
             iLat, iLon = findClosestVertex(gridDataset, "XLAT", "XLONG",
                 latFloat, lonFloat, iLat, iLon)
-            #logger.info(f"iLat = {iLat}   iLon = {iLon}")
+            if (infoGrid):
+                logger.info(f"iLat = {iLat}   iLon = {iLon}")
             singlePoint = gridDataset.isel(Time=timeIndex,
                 west_east=iLon, south_north=iLat, bottom_top=0)
             singlePoints.append(singlePoint)
@@ -395,11 +404,11 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair):
     logger.info(f"Combining {len(singlePoints)} points into a single set...")
     pointDimension = "point_index"
     pointSet = xarray.concat(singlePoints, pointDimension)
-    logger.info(f"WACCM / WRF-Chem pointSet = {pointSet}")
+    if (False):
+        logger.info(f"WACCM / WRF-Chem pointSet = {pointSet}")
 
     logger.info(f"Calculating mean value of the set...")
     meanPoint = pointSet.mean(dim=[pointDimension], keep_attrs=True)
-    logger.info(f"WACCM / WRF-Chem meanPoint = {meanPoint}")
 
     return meanPoint
 
@@ -421,7 +430,7 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
 
     # open dataset for reading
     waccmDataSet = xarray.open_dataset(waccmFilepath)
-    if (True):
+    if (False):
         # diagnostic to look at dataset structure
         logger.info(f"WACCM dataset = {waccmDataSet}")
 
@@ -449,7 +458,6 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
             continue
 
         chemSinglePoint = meanPoint[waccmKey]
-        #logger.info(f"WACCM chemSinglePoint = {chemSinglePoint}")
         if (True):
             logger.info(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
         musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)   # from 0-dim array
