@@ -343,7 +343,18 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair):
 
     gridBox = gridDataset.sel(lat=latTicks, lon=lonTicks,
                                lev=1000.0, time=whenStr, method="nearest")
-    gridBox = gridBox.drop_vars(["date_written", "time_written"])   # cannot take the mean() of strings
+
+    # cannot take the mean() of strings, so remove them
+    stringVars = []
+    for varName, varDataArray in gridBox.data_vars.items():
+        if not (numpy.issubdtype(varDataArray.dtype, numpy.number)
+            or numpy.issubdtype(varDataArray.dtype, numpy.datetime64)
+            or numpy.issubdtype(varDataArray.dtype, numpy.timedelta64)
+            ):
+            stringVars.append(varName)
+    logger.info(f"removing stringVars = {stringVars}")
+    gridBox = gridBox.drop_vars(stringVars)
+
     logger.info(f"WACCM gridBox = {gridBox}")
     meanPoint = gridBox.mean(dim=["lat", "lon"], keep_attrs=True)
 
