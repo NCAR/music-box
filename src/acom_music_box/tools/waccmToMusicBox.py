@@ -131,7 +131,7 @@ def getMusicaSpecies(templateDir):
 # waccmSpecies = list of variable names in the WACCM model output
 # musicaSpecies = list of variable names in species.json
 # return ordered dictionary
-def getMusicaDictionary(waccmSpecies=None, musicaSpecies=None):
+def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     if ((waccmSpecies is None) or (musicaSpecies is None)):
         logger.warning("No species map found for WACCM or MUSICA.")
 
@@ -430,6 +430,8 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair):
 #   Could be a single point or corners of a selection rectangle.
 # when = date and time to extract
 # modelDir = directory containing model output
+# waccmFilename = name of the model output file
+# modelType = WACCM_OUT or WRFCHEM_OUT
 # return dictionary of MUSICA variable names, values, and units
 def readWACCM(waccmMusicaDict, latitudes, longitudes,
               when, modelDir, waccmFilename, modelType):
@@ -638,6 +640,12 @@ def insertIntoTemplate(initValues, templateDir):
         logger.info(f"Configuration zipped to {zip_path}")
 
 
+# type of model output in directory
+WACCM_OUT = 1
+WRFCHEM_OUT = 2
+modelNames = [None, "waccm", "wrf-chem"]
+
+
 # Main routine begins here.
 def main():
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -652,6 +660,10 @@ def main():
     waccmDir = None
     if ("waccmDir" in myArgs):
         waccmDir = myArgs.get("waccmDir")
+
+    wrfChemDir = None
+    if ("wrfchemDir" in myArgs):
+        wrfChemDir = myArgs.get("wrfchemDir")
 
     musicaDir = os.path.dirname(Examples.WACCM.path)
     if ("musicaDir" in myArgs):
