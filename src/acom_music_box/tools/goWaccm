@@ -1,5 +1,5 @@
 #python3 waccmToMusicBox.py waccmDir=~/MusicBox/WACCM/model-output musicaDir=~/MusicBox/WACCM/csvJsonDir date=20240301 time=07:00 latitude=3.1 longitude=101.7 template=~/MusicBox/WACCM/templates/TS1 output=CSV,JSON
 #python3 waccmToMusicBox.py waccmDir=~/MusicBox/WACCM/model-output musicaDir=~/MusicBox/WACCM/csvJsonDir date=20240301 time=07:00 latitude=2.0,4.0 longitude=101.0,103.0 template=~/MusicBox/WACCM/templates/TS1 output=CSV,JSON
 #python3 waccmToMusicBox.py wrfchemDir=~/MusicBox/WRF-Chem/model-output musicaDir=~/MusicBox/WRF-Chem/csvJsonDir date=20250820 time=08:00 latitude=47.6 longitude=-122.325 template=~/MusicBox/WRF-Chem/templates/TS1 output=CSV,JSON
-python3 waccmToMusicBox.py wrfchemDir=~/MusicBox/WRF-Chem/model-output musicaDir=~/MusicBox/WRF-Chem/csvJsonDir date=20250820 time=08:00 latitude=47.0,49.0 longitude=-123.0,-121.0 template=~/MusicBox/WRF-Chem/templates/TS1 output=CSV,JSON
+python3 waccmToMusicBox.py wrfchemDir=~/MusicBox/music-box-311-wrf-chem-extract/sample_waccm_data musicaDir=~/MusicBox/WRF-Chem/csvJsonDir date=20250820 time=08:00 latitude=47.0,49.0 longitude=-123.0,-121.0 template=~/MusicBox/WRF-Chem/templates/TS1 output=CSV,JSON
 
