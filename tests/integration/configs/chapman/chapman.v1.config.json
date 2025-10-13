@@ -27,40 +27,32 @@
     "species": [
       {
         "name": "M",
-        "tracer type": "THIRD_BODY",
+        "is third body": true,
         "__description": "Third-body molecule. This is any molecule present in the system."
       },
       {
-        "name": "Ar",
-        "absolute tolerance": 1e-12
+        "name": "Ar"
       },
       {
-        "name": "CO2",
-        "absolute tolerance": 1e-12
+        "name": "CO2"
       },
       {
-        "name": "H2O",
-        "absolute tolerance": 1e-12
+        "name": "H2O"
       },
       {
-        "name": "O1D",
-        "absolute tolerance": 1e-12
+        "name": "O1D"
       },
       {
-        "name": "O",
-        "absolute tolerance": 1e-12
+        "name": "O"
       },
       {
-        "name": "O2",
-        "absolute tolerance": 1e-12
+        "name": "O2"
       },
       {
-        "name": "O3",
-        "absolute tolerance": 1e-12
+        "name": "O3"
       },
       {
-        "name": "N2",
-        "absolute tolerance": 1e-12
+        "name": "N2"
       }
     ],
       "phases": [
