@@ -46,8 +46,8 @@ def test_waccm_to_music_box_conversion(temp_dir):
     run_waccm_to_music_box_with_args(args, temp_dir)
 
     # Check if the output files are created
-    assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_conditions.csv"))
-    assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_config.json"))
+    assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_conditions-waccm.csv"))
+    assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_config-waccm.json"))
 
     # Set up arguments for the WRF-Chem conversion
     args = [
@@ -63,6 +63,6 @@ def test_waccm_to_music_box_conversion(temp_dir):
     run_waccm_to_music_box_with_args(args, temp_dir)
 
     # Check if the output files are created
-    assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_conditions.csv"))
-    assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_config.json"))
+    assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_conditions-wrf-chem.csv"))
+    assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_config-wrf-chem.json"))
 
