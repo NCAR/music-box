@@ -65,6 +65,9 @@ def test_waccm_to_music_box_conversion(temp_dir):
             os.path.join(sample_data_dir, "wrfout_hourly_d01_2025-08-20_08:00:00"))
     except FileExistsError:
         pass
+    except OSError:
+        # the colon link is not allowed under Windows
+        pass
 
     # Run the waccmToMusicBox script with the arguments
     run_waccm_to_music_box_with_args(args, temp_dir)
