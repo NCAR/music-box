@@ -24,6 +24,8 @@ logger = logging.getLogger(__name__)
 import math
 import numpy
 
+import pathvalidate
+
 
 
 # configure argparse for key-value pairs
@@ -737,6 +739,10 @@ def main():
             waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02}-00000.nc"
         elif (modelType == WRFCHEM_OUT):
             waccmFilename = f"wrfout_hourly_d01_{when.year:4d}-{when.month:02d}-{when.day:02}_{when.hour:02d}:00:00"
+
+        # Windows does not allow colons : in filenames. Replace with hyphen -.
+        if not pathvalidate.is_valid_filename(waccmFilename, platform="auto"):
+            waccmFilename = waccmFilename.replace(":", "-")
 
         # read and glean chemical species from WACCM and MUSICA
         waccmChems = getWaccmSpecies(modelDir, waccmFilename)

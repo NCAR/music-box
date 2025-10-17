@@ -59,6 +59,13 @@ def test_waccm_to_music_box_conversion(temp_dir):
         "output=csv,json"
     ]
 
+    # Create symbolic from Linux colon filename pointing to Window-safe hyphen file.
+    try:
+        os.symlink(os.path.join(sample_data_dir, "wrfout_hourly_d01_2025-08-20_08-00-00"),
+            os.path.join(sample_data_dir, "wrfout_hourly_d01_2025-08-20_08:00:00"))
+    except FileExistsError:
+        pass
+
     # Run the waccmToMusicBox script with the arguments
     run_waccm_to_music_box_with_args(args, temp_dir)
 
