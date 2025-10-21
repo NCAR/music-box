@@ -62,7 +62,7 @@ def test_waccm_to_music_box_conversion(temp_dir):
     # Create symbolic link from Linux colon filename pointing to Window-safe hyphen file.
     try:
         os.symlink(os.path.join(sample_data_dir, "wrfout_hourly_d01_2025-08-20_08-00-00"),
-            os.path.join(sample_data_dir, "wrfout_hourly_d01_2025-08-20_08:00:00"))
+                   os.path.join(sample_data_dir, "wrfout_hourly_d01_2025-08-20_08:00:00"))
     except FileExistsError:
         pass
     except OSError:
@@ -75,4 +75,3 @@ def test_waccm_to_music_box_conversion(temp_dir):
     # Check if the output files are created
     assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_conditions-wrf-chem.csv"))
     assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_config-wrf-chem.json"))
-
