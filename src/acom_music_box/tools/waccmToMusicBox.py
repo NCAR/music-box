@@ -7,6 +7,9 @@
 # Copyright 2024 by Atmospheric Chemistry Observations & Modeling (UCAR/ACOM)
 
 # import os
+import pathvalidate
+import numpy
+import math
 import argparse
 import datetime
 import xarray
@@ -21,11 +24,6 @@ from acom_music_box.utils import calculate_air_density
 
 import logging
 logger = logging.getLogger(__name__)
-import math
-import numpy
-
-import pathvalidate
-
 
 
 # configure argparse for key-value pairs
@@ -91,7 +89,7 @@ def getWaccmSpecies(modelDir, waccmFilename):
 
     # open dataset for reading
     waccmDataSet = xarray.open_dataset(os.path.join(modelDir, waccmFilename),
-        engine="netcdf4")
+                                       engine="netcdf4")
 
     # collect the data variables
     waccmNames = [varName for varName in waccmDataSet.data_vars]
@@ -212,8 +210,10 @@ kWest = 4
 # latsVarname, lonsVarname = coordinate variables in the dataset
 # latitude, longitude = want to retrieve data at this location
 # initLatIndex, initLonIndex = caller's suggestion where to start the search
+
+
 def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
-    latitude, longitude, initLatIndex=None, initLonIndex=None):
+                      latitude, longitude, initLatIndex=None, initLonIndex=None):
     timeIndex = 0
 
     latsVar = wrfChemDataSet.get(latsVarname)
@@ -345,15 +345,15 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair):
     logger.info(f"lonTicks = {lonTicks}")
 
     gridBox = gridDataset.sel(lat=latTicks, lon=lonTicks,
-                               lev=1000.0, time=whenStr, method="nearest")
+                              lev=1000.0, time=whenStr, method="nearest")
 
     # cannot take the mean() of strings, so remove them
     stringVars = []
     for varName, varDataArray in gridBox.data_vars.items():
         if not (numpy.issubdtype(varDataArray.dtype, numpy.number)
-            or numpy.issubdtype(varDataArray.dtype, numpy.datetime64)
-            or numpy.issubdtype(varDataArray.dtype, numpy.timedelta64)
-            ):
+                or numpy.issubdtype(varDataArray.dtype, numpy.datetime64)
+                or numpy.issubdtype(varDataArray.dtype, numpy.timedelta64)
+                ):
             stringVars.append(varName)
     logger.info(f"removing stringVars = {stringVars}")
     gridBox = gridBox.drop_vars(stringVars)
@@ -408,11 +408,11 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair):
 
             # select data from the nearest grid point
             iLat, iLon = findClosestVertex(gridDataset, "XLAT", "XLONG",
-                latFloat, lonFloat, iLat, iLon)
+                                           latFloat, lonFloat, iLat, iLon)
             if (infoGrid):
                 logger.info(f"iLat = {iLat}   iLon = {iLon}")
             singlePoint = gridDataset.isel(Time=timeIndex,
-                west_east=iLon, south_north=iLat, bottom_top=0)
+                                           west_east=iLon, south_north=iLat, bottom_top=0)
             singlePoints.append(singlePoint)
 
     logger.info(f"Combining {len(singlePoints)} points into a single set...")
@@ -452,11 +452,11 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
     meanPoint = None
     if (modelType == WACCM_OUT):            # straight grid
         meanPoint = meanStraightGrid(waccmDataSet, when,
-            latitudes, longitudes)
+                                     latitudes, longitudes)
 
     elif (modelType == WRFCHEM_OUT):        # curved grid
         meanPoint = meanCurvedGrid(waccmDataSet, when,
-            latitudes, longitudes)
+                                   latitudes, longitudes)
 
     if (True):
         # diagnostic to look at single point structure
@@ -727,7 +727,7 @@ def main():
         outputJSON = "json" in outputFormats
 
     for modelDir, modelType in zip(
-        [waccmDir, wrfChemDir], [WACCM_OUT, WRFCHEM_OUT]):
+            [waccmDir, wrfChemDir], [WACCM_OUT, WRFCHEM_OUT]):
         if not modelDir:
             continue
 
@@ -758,7 +758,7 @@ def main():
         # Read named variables from WACCM model output.
         logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
         varValues = readWACCM(commonDict, lats, lons, when,
-            modelDir, waccmFilename, modelType)
+                              modelDir, waccmFilename, modelType)
         logger.info(f"Original WACCM varValues = {varValues}")
 
         # add molecular Nitrogen, Oxygen, and Argon
@@ -771,14 +771,14 @@ def main():
         if (outputCSV):
             # Write CSV file for MusicBox initial conditions.
             csvName = os.path.join(musicaDir,
-                "initial_conditions-{}.csv".format(modelNames[modelType]))
+                                   "initial_conditions-{}.csv".format(modelNames[modelType]))
             logger.info(f"csvName = {csvName}")
             writeInitCSV(varValues, csvName)
 
         if (outputJSON):
             # Write JSON file for MusicBox initial conditions.
             jsonName = os.path.join(musicaDir,
-                "initial_config-{}.json".format(modelNames[modelType]))
+                                    "initial_config-{}.json".format(modelNames[modelType]))
             logger.info(f"jsonName = {jsonName}")
             writeInitJSON(varValues, jsonName)
 
@@ -793,4 +793,3 @@ if (__name__ == "__main__"):
     main()
     logger.info(f"End time: {datetime.datetime.now()}")
     sys.exit(0)  # no error
-
