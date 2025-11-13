@@ -34,12 +34,12 @@ def test_waccm_to_music_box_conversion(temp_dir):
 
     # Set up arguments for the WACCM conversion
     args = [
-        f"waccmDir={sample_data_dir}",
-        "date=20240904",
-        "time=07:00",
-        "latitude=3.1",
-        "longitude=101.7",
-        "output=csv,json"
+        f"--waccmDir {sample_data_dir}",
+        "--date 20240904",
+        "--time 07:00",
+        "--latitude 3.1",
+        "--longitude 101.7",
+        "--output csv,json"
     ]
 
     # Run the waccmToMusicBox script with the arguments
@@ -51,12 +51,12 @@ def test_waccm_to_music_box_conversion(temp_dir):
 
     # Set up arguments for the WRF-Chem conversion
     args = [
-        f"wrfchemDir={sample_data_dir}",
-        "date=20250820",
-        "time=08:00",
-        "latitude=47.0,49.0",
-        "longitude=-123.0,-121.0",
-        "output=csv,json"
+        f"--wrfchemDir {sample_data_dir}",
+        "--date 20250820",
+        "--time 08:00",
+        "--latitude 47.0,49.0",
+        "--longitude \\\"-123.0,-121.0\\\"",
+        "--output csv,json"
     ]
 
     # Create symbolic link from Linux colon filename pointing to Window-safe hyphen file.
