@@ -702,34 +702,26 @@ def main():
     logger.info(f"Command line = {myArgs}")
 
     # set up the directories
-    waccmDir = None
-    if ("waccmDir" in myArgs):
-        waccmDir = myArgs.waccmDir
-
-    wrfChemDir = None
-    if ("wrfchemDir" in myArgs):
-        wrfChemDir = myArgs.wrfchemDir
+    waccmDir = myArgs.waccmDir
+    wrfChemDir = myArgs.wrfchemDir
 
     musicaDir = os.path.dirname(Examples.WACCM.path)
-    if ("musicaDir" in myArgs):
+    if (myArgs.musicaDir is not None):
         musicaDir = myArgs.musicaDir
 
     template = os.path.dirname(Examples.TS1.path)
-    if ("template" in myArgs):
+    if (myArgs.template is not None):
         template = myArgs.template
 
     # get the date-time to retrieve
-    dateStr = None
-    if ("date" in myArgs):
-        dateStr = myArgs.date
-
+    dateStr = myArgs.date
     timeStr = "00:00"
-    if ("time" in myArgs):
+    if (myArgs.time is not None):
         timeStr = myArgs.time
 
     # get the geographical location(s) to retrieve
     lats = []
-    if ("latitude" in myArgs):
+    if (myArgs.latitude is not None):
         # negative values must be specified on command line like this: --latitude \"-5.0,-2.0\"
         latString = myArgs.latitude.replace("'","").replace('"','')
         latStrings = latString.split(",")
@@ -737,7 +729,7 @@ def main():
             lats.append(safeFloat(latString))
 
     lons = []
-    if ("longitude" in myArgs):
+    if (myArgs.longitude is not None):
         lonString = myArgs.longitude.replace("'","").replace('"','')
         lonStrings = lonString.split(",")
         for lonString in lonStrings:
