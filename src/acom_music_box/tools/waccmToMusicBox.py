@@ -77,7 +77,7 @@ def parse_arguments():
         '--latitude',
         type=str,
         help=("Latitude of grid cell(s) to extract: 47.0,49.0"
-            + "\nSpecify negative value pairs as: --latitude \\\"-4.0,-2.0\\\""
+            + "\nSpecify negative value pairs as: --latitude \"'-4.0,-2.0'\""
             + "\nIf two latitudes supplied, then average over that range.")
     )
     parser.add_argument(
@@ -722,7 +722,7 @@ def main():
     # get the geographical location(s) to retrieve
     lats = []
     if (myArgs.latitude is not None):
-        # negative values must be specified on command line like this: --latitude \"-5.0,-2.0\"
+        # negative values must be specified on command line like this: --latitude "'-5.0,-2.0'"
         latString = myArgs.latitude.replace("'","").replace('"','')
         latStrings = latString.split(",")
         for latString in latStrings:
