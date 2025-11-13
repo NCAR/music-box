@@ -764,7 +764,7 @@ def main():
     outputCSV = False
     outputJSON = False
     insertIntoConfig = False
-    if ("output" in myArgs):
+    if (myArgs.output is not None):
         # parameter is like: output=CSV,JSON
         outputFormats = myArgs.output.split(",")
         outputFormats = [lowFormat.lower() for lowFormat in outputFormats]
