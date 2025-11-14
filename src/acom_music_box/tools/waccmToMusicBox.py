@@ -19,40 +19,95 @@ import os
 import shutil
 import tempfile
 import zipfile
-from acom_music_box import Examples
+from acom_music_box import Examples, __version__
 from acom_music_box.utils import calculate_air_density
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-# configure argparse for key-value pairs
-class KeyValueAction(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-        for value in values:
-            key, val = value.split('=')
-            setattr(namespace, key, val)
+# Set up the amount of information logged.
+# verbosity = from the -v and --verbose args
+def setup_logging(verbosity):
+    log_level = logging.DEBUG if verbosity >= 2 else logging.INFO if verbosity == 1 else logging.CRITICAL
+    datefmt = '%Y-%m-%d %H:%M:%S'
+    format_string = '%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s'
+    formatter = logging.Formatter(format_string, datefmt=datefmt)
+    console_handler = logging.StreamHandler()
 
-# Retrieve named arguments from the command line and
-# return in a dictionary of keywords.
-# argPairs = list of arguments, probably from sys.argv[1:]
-#       named arguments are formatted like this=3.14159
-# return dictionary of keywords and values
+    console_handler.setFormatter(formatter)
+
+    console_handler.setLevel(log_level)
+    logging.basicConfig(level=log_level, handlers=[console_handler], force=True)
+    return
 
 
-def getArgsDictionary(argPairs):
+# Parse the command-line arguments in this form: --parameter value
+def parse_arguments():
     parser = argparse.ArgumentParser(
-        description='Process some key=value pairs.')
-    parser.add_argument(
-        'key_value_pairs',
-        nargs='+',  # This means one or more arguments are expected
-        action=KeyValueAction,
-        help="Arguments in key=value format. Example: configFile=my_config.json"
+        description='Extraction of WACCM model output for input to MusicBox.',
+        formatter_class=argparse.RawTextHelpFormatter
     )
-
-    argDict = vars(parser.parse_args(argPairs))      # return dictionary
-
-    return (argDict)
+    parser.add_argument(
+        '--waccmDir',
+        type=str,
+        help='Directory containing WACCM model output as NetCDF files.'
+    )
+    parser.add_argument(
+        '--wrfchemDir',
+        type=str,
+        help='Directory containing WRF-Chem model output as NetCDF files.'
+    )
+    parser.add_argument(
+        '--musicaDir',
+        type=str,
+        help='Write MusicBox initial conditions into this directory as CSV and/or JSON.'
+    )
+    parser.add_argument(
+        '--date',
+        type=str,
+        help="Date of model output to extract, in format YYYYMMDD"
+    )
+    parser.add_argument(
+        '--time',
+        type=str,
+        help="Time of model output to extract, in format HH:MM"
+    )
+    parser.add_argument(
+        '--latitude',
+        type=str,
+        help=("Latitude of grid cell(s) to extract: 47.0,49.0"
+            + "\nSpecify negative value pairs as: --latitude \"'-4.0,-2.0'\""
+            + "\nIf two latitudes supplied, then average over that range.")
+    )
+    parser.add_argument(
+        '--longitude',
+        type=str,
+        help=("Longitude of grid cell(s) to extract: 101.7"
+            + "\nIf two longitudes supplied, then average over that range.")
+    )
+    parser.add_argument(
+        '--template',
+        type=str,
+        help="Extract MusicBox chemical species from a configuration in this directory."
+    )
+    parser.add_argument(
+        '-v', '--verbose',
+        action='count',
+        default=0,
+        help='Increase logging verbosity. Use -v for info, -vv for debug.'
+    )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version=f'MusicBox {__version__}',
+    )
+    parser.add_argument(
+        '--output',
+        type=str,
+        help="Format(s) for writing the initial conditions: CSV,JSON"
+    )
+    return parser.parse_args()
 
 
 # Convert safely from string to integer (alphas convert to 0).
@@ -249,16 +304,13 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
     myLon = lons[latIndex, lonIndex]
     numSteps = 0
 
-    infoSearch = False
-    if (infoSearch):
-        logger.info(f"Starting vertex search at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
+    logger.debug(f"Starting vertex search at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
 
     # try to decrease the distance by searching adjacent cells
     while (True):
         # calculate the change in the four compass directions
         currentDist = distSquared(myLat, myLon, latitude, longitude)
-        if (infoSearch):
-            logger.info(f"currentDist = {currentDist}")
+        logger.debug(f"currentDist = {currentDist}")
         northChange = southChange = eastWest = westChange = 0.0
 
         if (latIndex < numLats - 1):
@@ -269,8 +321,7 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
             eastChange = distSquared(lats[latIndex, lonIndex + 1], lons[latIndex, lonIndex + 1], latitude, longitude) - currentDist
         if (lonIndex > 0):
             westChange = distSquared(lats[latIndex, lonIndex - 1], lons[latIndex, lonIndex - 1], latitude, longitude) - currentDist
-        if (infoSearch):
-            logger.info(f"Changes are north {northChange} south {southChange} east {eastChange} west {westChange}")
+        logger.debug(f"Changes are north {northChange} south {southChange} east {eastChange} west {westChange}")
 
         # which direction will produce the greatest improvement (go closer)?
         goDirection = kNoChange
@@ -289,8 +340,7 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
             goDirection = kWest
             goDecrease = westChange
 
-        if (infoSearch):
-            logger.info(f"goDirection = {goDirection}   goDecrease = {goDecrease}")
+        logger.debug(f"goDirection = {goDirection}   goDecrease = {goDecrease}")
         if (goDecrease >= 0.0):
             # we can go no closer than the current position
             break
@@ -308,11 +358,9 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
 
         myLat = lats[latIndex, lonIndex]
         myLon = lons[latIndex, lonIndex]
-        if (infoSearch):
-            logger.info(f"\tvertex search now at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
+        logger.debug(f"\tvertex search now at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
 
-    if (False):
-        logger.info(f"Closest vertex reached in {numSteps} steps.")
+    logger.debug(f"Closest vertex reached in {numSteps} steps.")
     return (latIndex, lonIndex)
 
 
@@ -397,20 +445,16 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair):
     logger.info(f"latTicks = {latTicks}")
     logger.info(f"lonTicks = {lonTicks}")
 
-    infoGrid = False
-
     iLat, iLon = None, None
     singlePoints = []
     for latFloat in latTicks:
         for lonFloat in lonTicks:
-            if (infoGrid):
-                logger.info(f"latFloat = {latFloat}   lonFloat = {lonFloat}")
+            logger.debug(f"latFloat = {latFloat}   lonFloat = {lonFloat}")
 
             # select data from the nearest grid point
             iLat, iLon = findClosestVertex(gridDataset, "XLAT", "XLONG",
                                            latFloat, lonFloat, iLat, iLon)
-            if (infoGrid):
-                logger.info(f"iLat = {iLat}   iLon = {iLon}")
+            logger.debug(f"iLat = {iLat}   iLon = {iLon}")
             singlePoint = gridDataset.isel(Time=timeIndex,
                                            west_east=iLon, south_north=iLat, bottom_top=0)
             singlePoints.append(singlePoint)
@@ -418,8 +462,7 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair):
     logger.info(f"Combining {len(singlePoints)} points into a single set...")
     pointDimension = "point_index"
     pointSet = xarray.concat(singlePoints, pointDimension)
-    if (False):
-        logger.info(f"WACCM / WRF-Chem pointSet = {pointSet}")
+    logger.debug(f"WACCM / WRF-Chem pointSet = {pointSet}")
 
     logger.info(f"Calculating mean value of the set...")
     meanPoint = pointSet.mean(dim=[pointDimension], keep_attrs=True)
@@ -444,9 +487,8 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
 
     # open dataset for reading
     waccmDataSet = xarray.open_dataset(waccmFilepath)
-    if (False):
-        # diagnostic to look at dataset structure
-        logger.info(f"WACCM dataset = {waccmDataSet}")
+    # diagnostic to look at dataset structure
+    logger.debug(f"WACCM dataset = {waccmDataSet}")
 
     # retrieve all vars at a single point
     meanPoint = None
@@ -458,9 +500,8 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
         meanPoint = meanCurvedGrid(waccmDataSet, when,
                                    latitudes, longitudes)
 
-    if (True):
-        # diagnostic to look at single point structure
-        logger.info(f"WACCM / WRF-Chem meanPoint = {meanPoint}")
+    # diagnostic to look at single point structure
+    logger.info(f"WACCM / WRF-Chem meanPoint = {meanPoint}")
 
     # loop through vars and build another dictionary
     musicaDict = {}
@@ -472,8 +513,7 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
             continue
 
         chemSinglePoint = meanPoint[waccmKey]
-        if (True):
-            logger.info(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
+        logger.info(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
         musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)   # from 0-dim array
         musicaDict[musicaName] = musicaTuple
 
@@ -651,50 +691,47 @@ modelNames = [None, "waccm", "wrf-chem"]
 
 # Main routine begins here.
 def main():
+    # start with basic logging until args are parsed
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     logger.info(f"{__file__}")
     logger.info(f"Start time: {datetime.datetime.now()}")
 
     # retrieve and parse the command-line arguments
-    myArgs = getArgsDictionary(sys.argv[1:])
+    myArgs = parse_arguments()
+    setup_logging(myArgs.verbose)
     logger.info(f"Command line = {myArgs}")
 
     # set up the directories
-    waccmDir = None
-    if ("waccmDir" in myArgs):
-        waccmDir = myArgs.get("waccmDir")
-
-    wrfChemDir = None
-    if ("wrfchemDir" in myArgs):
-        wrfChemDir = myArgs.get("wrfchemDir")
+    waccmDir = myArgs.waccmDir
+    wrfChemDir = myArgs.wrfchemDir
 
     musicaDir = os.path.dirname(Examples.WACCM.path)
-    if ("musicaDir" in myArgs):
-        musicaDir = myArgs.get("musicaDir")
+    if (myArgs.musicaDir is not None):
+        musicaDir = myArgs.musicaDir
 
     template = os.path.dirname(Examples.TS1.path)
-    if ("template" in myArgs):
-        template = myArgs.get("template")
+    if (myArgs.template is not None):
+        template = myArgs.template
 
     # get the date-time to retrieve
-    dateStr = None
-    if ("date" in myArgs):
-        dateStr = myArgs.get("date")
-
+    dateStr = myArgs.date
     timeStr = "00:00"
-    if ("time" in myArgs):
-        timeStr = myArgs.get("time")
+    if (myArgs.time is not None):
+        timeStr = myArgs.time
 
     # get the geographical location(s) to retrieve
     lats = []
-    if ("latitude" in myArgs):
-        latStrings = myArgs.get("latitude").split(",")
+    if (myArgs.latitude is not None):
+        # negative values must be specified on command line like this: --latitude "'-5.0,-2.0'"
+        latString = myArgs.latitude.replace("'","").replace('"','')
+        latStrings = latString.split(",")
         for latString in latStrings:
             lats.append(safeFloat(latString))
 
     lons = []
-    if ("longitude" in myArgs):
-        lonStrings = myArgs.get("longitude").split(",")
+    if (myArgs.longitude is not None):
+        lonString = myArgs.longitude.replace("'","").replace('"','')
+        lonStrings = lonString.split(",")
         for lonString in lonStrings:
             lons.append(safeFloat(lonString))
 
@@ -719,9 +756,9 @@ def main():
     outputCSV = False
     outputJSON = False
     insertIntoConfig = False
-    if ("output" in myArgs):
+    if (myArgs.output is not None):
         # parameter is like: output=CSV,JSON
-        outputFormats = myArgs.get("output").split(",")
+        outputFormats = myArgs.output.split(",")
         outputFormats = [lowFormat.lower() for lowFormat in outputFormats]
         outputCSV = "csv" in outputFormats
         outputJSON = "json" in outputFormats
@@ -791,5 +828,5 @@ def main():
 
 if (__name__ == "__main__"):
     main()
-    logger.info(f"End time: {datetime.datetime.now()}")
     sys.exit(0)  # no error
+
