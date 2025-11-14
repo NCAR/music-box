@@ -77,14 +77,14 @@ def parse_arguments():
         '--latitude',
         type=str,
         help=("Latitude of grid cell(s) to extract: 47.0,49.0"
-            + "\nSpecify negative value pairs as: --latitude \"'-4.0,-2.0'\""
-            + "\nIf two latitudes supplied, then average over that range.")
+              + "\nSpecify negative value pairs as: --latitude \"'-4.0,-2.0'\""
+              + "\nIf two latitudes supplied, then average over that range.")
     )
     parser.add_argument(
         '--longitude',
         type=str,
         help=("Longitude of grid cell(s) to extract: 101.7"
-            + "\nIf two longitudes supplied, then average over that range.")
+              + "\nIf two longitudes supplied, then average over that range.")
     )
     parser.add_argument(
         '--template',
@@ -723,14 +723,14 @@ def main():
     lats = []
     if (myArgs.latitude is not None):
         # negative values must be specified on command line like this: --latitude "'-5.0,-2.0'"
-        latString = myArgs.latitude.replace("'","").replace('"','')
+        latString = myArgs.latitude.replace("'", "").replace('"', '')
         latStrings = latString.split(",")
         for latString in latStrings:
             lats.append(safeFloat(latString))
 
     lons = []
     if (myArgs.longitude is not None):
-        lonString = myArgs.longitude.replace("'","").replace('"','')
+        lonString = myArgs.longitude.replace("'", "").replace('"', '')
         lonStrings = lonString.split(",")
         for lonString in lonStrings:
             lons.append(safeFloat(lonString))
@@ -829,4 +829,3 @@ def main():
 if (__name__ == "__main__"):
     main()
     sys.exit(0)  # no error
-
