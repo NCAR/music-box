@@ -192,7 +192,7 @@ pytest
 
 ## Tool: waccmToMusicBox
 
-The python script waccmToMusicBox will extract concentrations of chemical species from WACCM and WRF-Chem, and write those values to intial conditions of MusicBox. Here are several examples of its use:
+The python script waccmToMusicBox will extract concentrations of chemical species from WACCM and WRF-Chem, and write those values to initial conditions for MusicBox. Here are several examples of its use:
 
 ```
 waccmToMusicBox --waccmDir "./sample_waccm_data" --date "20240904" --time "07:00" --latitude 3.1 --longitude 101.7
