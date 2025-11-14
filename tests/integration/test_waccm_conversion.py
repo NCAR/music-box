@@ -75,4 +75,3 @@ def test_waccm_to_music_box_conversion(temp_dir):
     # Check if the output files are created
     assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_conditions-wrf-chem.csv"))
     assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_config-wrf-chem.json"))
-
