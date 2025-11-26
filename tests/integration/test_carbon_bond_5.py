@@ -3,6 +3,8 @@ import os
 
 import pandas as pd
 import math
+import argparse
+from acom_music_box.plot_output import PlotOutput
 
 
 class TestCarbonBond5:
@@ -123,6 +125,12 @@ class TestCarbonBond5:
                     rel_tol=1e-4,
                     abs_tol=1e-4,
                 ), f"Arrays differ at index ({i}, {j}, species {concs_to_test[j]})"
+
+        # test plotting those calculated results
+        args = argparse.Namespace(example='CB5', plot=['CH4.mol m-3'],
+            output=["out.nc"], plot_output_unit='mol m-3')
+        plot_output = PlotOutput(df, args)
+        plot_output.plot()
 
 
 if __name__ == "__main__":

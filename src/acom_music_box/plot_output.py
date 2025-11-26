@@ -102,8 +102,8 @@ class PlotOutput:
             The DataFrame with data converted to the specified unit.
         """
         converted_data = data.copy()
-        temperature = data['ENV.temperature']
-        pressure = data['ENV.pressure']
+        temperature = data['ENV.temperature.K']
+        pressure = data['ENV.pressure.Pa']
         for column in data.columns:
             if ('time' in column) or ('ENV' in column):
                 continue
@@ -118,7 +118,7 @@ class PlotOutput:
         if not self.species_list:
             return
         for species_group in self.species_list:
-            indexed = self.df.set_index('time')
+            indexed = self.df.set_index('time.s')
             fig, ax = plt.subplots()
             indexed[species_group].plot(ax=ax)
 
