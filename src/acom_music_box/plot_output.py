@@ -63,7 +63,8 @@ class PlotOutput:
         Format the species list for plotting.
 
         This method formats the species list for plotting by adding the 'CONC.' prefix
-        to each species name if it is not already present.
+        to each species name if it is not already present, and the default units
+        if no units are already specified.
 
         Parameters
         ----------
@@ -83,6 +84,8 @@ class PlotOutput:
                 species = species.strip()
                 if 'CONC.' not in species:
                     species = f'CONC.{species}'
+                if (species.count('.') < 2):
+                    species = f'{species}.{self.output_unit}'
                 plot_list.append(species)
 
         return plot_list
