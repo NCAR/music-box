@@ -3,6 +3,8 @@ import os
 
 import pandas as pd
 import math
+import argparse
+from acom_music_box.plot_output import PlotOutput
 
 
 class TestCarbonBond5:
@@ -96,8 +98,8 @@ class TestCarbonBond5:
         ]
 
         # append units to those chemicals for CSV comparison
-        concUnits = ".mol m-3"
-        concs_to_test = [conc + concUnits for conc in concs_to_test]
+        concUnits = "mol m-3"
+        concs_to_test = [f"{conc}.{concUnits}" for conc in concs_to_test]
 
         model_output_header = model_output[0]
         test_output_header = test_output[0]
@@ -123,6 +125,12 @@ class TestCarbonBond5:
                     rel_tol=1e-4,
                     abs_tol=1e-4,
                 ), f"Arrays differ at index ({i}, {j}, species {concs_to_test[j]})"
+
+        # test plotting those calculated results
+        args = argparse.Namespace(example='CB5', plot=['CH4'],
+            output=["out.nc"], plot_output_unit=concUnits)
+        plot_output = PlotOutput(df, args)
+        plot_output.plot()
 
 
 if __name__ == "__main__":

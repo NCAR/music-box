@@ -63,7 +63,8 @@ class PlotOutput:
         Format the species list for plotting.
 
         This method formats the species list for plotting by adding the 'CONC.' prefix
-        to each species name if it is not already present.
+        to each species name if it is not already present, and the default units
+        if no units are already specified.
 
         Parameters
         ----------
@@ -83,6 +84,8 @@ class PlotOutput:
                 species = species.strip()
                 if 'CONC.' not in species:
                     species = f'CONC.{species}'
+                if (species.count('.') < 2):
+                    species = f'{species}.{self.output_unit}'
                 plot_list.append(species)
 
         return plot_list
@@ -102,8 +105,8 @@ class PlotOutput:
             The DataFrame with data converted to the specified unit.
         """
         converted_data = data.copy()
-        temperature = data['ENV.temperature']
-        pressure = data['ENV.pressure']
+        temperature = data['ENV.temperature.K']
+        pressure = data['ENV.pressure.Pa']
         for column in data.columns:
             if ('time' in column) or ('ENV' in column):
                 continue
@@ -118,7 +121,7 @@ class PlotOutput:
         if not self.species_list:
             return
         for species_group in self.species_list:
-            indexed = self.df.set_index('time')
+            indexed = self.df.set_index('time.s')
             fig, ax = plt.subplots()
             indexed[species_group].plot(ax=ax)
 
