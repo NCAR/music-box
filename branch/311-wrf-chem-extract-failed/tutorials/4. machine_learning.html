@@ -1,0 +1,2124 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Machine Learning in MusicBox &#8212; Music Box (2.10.0) 2.10.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=9cf20cd0" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=67920a36"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/4. machine_learning';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://ncar.github.io/music-box/_static/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2.10.0';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
+        </script>
+    <link rel="icon" href="../_static/favicon.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Enabling Your GPU for a Solver in MusicBox" href="5.%20gpu_solver.html" />
+    <link rel="prev" title="Loading A Custom Box Model in MusicBox" href="3.%20loading_custom_box_models.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/MusicBox.svg" class="logo__image only-light" alt="Music Box (2.10.0) 2.10.0 documentation - Home"/>
+    <script>document.write(`<img src="../_static/MusicBox.svg" class="logo__image only-dark" alt="Music Box (2.10.0) 2.10.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+      <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../contributing/index.html">
+    Contributing
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../citing/index.html">
+    Citing MusicBox
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/NCAR/music-box" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../contributing/index.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../citing/index.html">
+    Citing MusicBox
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/NCAR/music-box" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="1.%20basic_workflow.html">MusicBox Basic Workflow Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2.%20override_mechanism.html">Overriding a Mechanism in MusicBox</a></li>
+<li class="toctree-l1"><a class="reference internal" href="3.%20loading_custom_box_models.html">Loading A Custom Box Model in MusicBox</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Machine Learning in MusicBox</a></li>
+<li class="toctree-l1"><a class="reference internal" href="5.%20gpu_solver.html">Enabling Your GPU for a Solver in MusicBox</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Tutorials</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">Machine...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="Machine-Learning-in-MusicBox">
+<h1>Machine Learning in MusicBox<a class="headerlink" href="#Machine-Learning-in-MusicBox" title="Link to this heading">#</a></h1>
+<p>While MusicBox does not support machine learning directly, it is possible to feed in the model’s output to a learner to create a generalized machine learning (ML) model. Machine learning involves the development of statistical algorithms that learn from existing data so that the model can be generalized to new data. This tutorial will go through a very basic example of running a simulation with the data being passed into a linear regression model as well as a random forest model. Do note that
+both of the models that will be created are toy models and do not represent real-life situtations.</p>
+<section id="1.-Importing-Libraries">
+<h2>1. Importing Libraries<a class="headerlink" href="#1.-Importing-Libraries" title="Link to this heading">#</a></h2>
+<p>Below is a list of the required libraries for this tutorial:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">root_mean_squared_error</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">MinMaxScaler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">acom_music_box</span><span class="w"> </span><span class="kn">import</span> <span class="n">MusicBox</span><span class="p">,</span> <span class="n">Examples</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="2.-Setting-up-and-Solving-the-System">
+<h2>2. Setting up and Solving the System<a class="headerlink" href="#2.-Setting-up-and-Solving-the-System" title="Link to this heading">#</a></h2>
+<p>This code cell is simply a copy of the setup from the <a class="reference internal" href="3.%20loading_custom_box_models.html"><span class="doc">Loading Custom Box Models Tutorial</span></a> but with the Chapman reaction rather than the Analytical reaction.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">box_model</span> <span class="o">=</span> <span class="n">MusicBox</span><span class="p">()</span>
+<span class="n">conditions_path</span> <span class="o">=</span> <span class="n">Examples</span><span class="o">.</span><span class="n">Chapman</span><span class="o">.</span><span class="n">path</span>
+<span class="n">box_model</span><span class="o">.</span><span class="n">loadJson</span><span class="p">(</span><span class="n">conditions_path</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">box_model</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+<span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time.s</th>
+      <th>ENV.temperature.K</th>
+      <th>ENV.pressure.Pa</th>
+      <th>ENV.air number density.mol m-3</th>
+      <th>CONC.Ar.mol m-3</th>
+      <th>CONC.CO2.mol m-3</th>
+      <th>CONC.H2O.mol m-3</th>
+      <th>CONC.N2.mol m-3</th>
+      <th>CONC.O.mol m-3</th>
+      <th>CONC.O1D.mol m-3</th>
+      <th>CONC.O2.mol m-3</th>
+      <th>CONC.O3.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.0</td>
+      <td>217.6</td>
+      <td>1394.3</td>
+      <td>0.770661</td>
+      <td>0.00771</td>
+      <td>0.000308</td>
+      <td>0.0231</td>
+      <td>0.601</td>
+      <td>3.580000e-11</td>
+      <td>1.830000e-17</td>
+      <td>0.162000</td>
+      <td>0.000006</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>60.0</td>
+      <td>217.6</td>
+      <td>1394.3</td>
+      <td>0.770661</td>
+      <td>0.00771</td>
+      <td>0.000308</td>
+      <td>0.0231</td>
+      <td>0.601</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.162000</td>
+      <td>0.000006</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>120.0</td>
+      <td>217.6</td>
+      <td>1394.3</td>
+      <td>0.770661</td>
+      <td>0.00771</td>
+      <td>0.000308</td>
+      <td>0.0231</td>
+      <td>0.601</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.162000</td>
+      <td>0.000006</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>180.0</td>
+      <td>217.6</td>
+      <td>1394.3</td>
+      <td>0.770661</td>
+      <td>0.00771</td>
+      <td>0.000308</td>
+      <td>0.0231</td>
+      <td>0.601</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.162000</td>
+      <td>0.000006</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>240.0</td>
+      <td>217.6</td>
+      <td>1394.3</td>
+      <td>0.770661</td>
+      <td>0.00771</td>
+      <td>0.000308</td>
+      <td>0.0231</td>
+      <td>0.601</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.162000</td>
+      <td>0.000006</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>4316</th>
+      <td>258960.0</td>
+      <td>217.6</td>
+      <td>1394.3</td>
+      <td>0.770661</td>
+      <td>0.00771</td>
+      <td>0.000308</td>
+      <td>0.0231</td>
+      <td>0.601</td>
+      <td>7.553605e-11</td>
+      <td>4.828101e-17</td>
+      <td>0.161998</td>
+      <td>0.000008</td>
+    </tr>
+    <tr>
+      <th>4317</th>
+      <td>259020.0</td>
+      <td>217.6</td>
+      <td>1394.3</td>
+      <td>0.770661</td>
+      <td>0.00771</td>
+      <td>0.000308</td>
+      <td>0.0231</td>
+      <td>0.601</td>
+      <td>7.553831e-11</td>
+      <td>4.828246e-17</td>
+      <td>0.161998</td>
+      <td>0.000008</td>
+    </tr>
+    <tr>
+      <th>4318</th>
+      <td>259080.0</td>
+      <td>217.6</td>
+      <td>1394.3</td>
+      <td>0.770661</td>
+      <td>0.00771</td>
+      <td>0.000308</td>
+      <td>0.0231</td>
+      <td>0.601</td>
+      <td>7.554057e-11</td>
+      <td>4.828391e-17</td>
+      <td>0.161998</td>
+      <td>0.000008</td>
+    </tr>
+    <tr>
+      <th>4319</th>
+      <td>259140.0</td>
+      <td>217.6</td>
+      <td>1394.3</td>
+      <td>0.770661</td>
+      <td>0.00771</td>
+      <td>0.000308</td>
+      <td>0.0231</td>
+      <td>0.601</td>
+      <td>7.554284e-11</td>
+      <td>4.828536e-17</td>
+      <td>0.161998</td>
+      <td>0.000008</td>
+    </tr>
+    <tr>
+      <th>4320</th>
+      <td>259200.0</td>
+      <td>217.6</td>
+      <td>1394.3</td>
+      <td>0.770661</td>
+      <td>0.00771</td>
+      <td>0.000308</td>
+      <td>0.0231</td>
+      <td>0.601</td>
+      <td>7.554510e-11</td>
+      <td>4.828680e-17</td>
+      <td>0.161998</td>
+      <td>0.000008</td>
+    </tr>
+  </tbody>
+</table>
+<p>4321 rows × 12 columns</p>
+</div></div>
+</div>
+</section>
+<section id="3.-Defining-the-Independent-and-Dependent-Variables">
+<h2>3. Defining the Independent and Dependent Variables<a class="headerlink" href="#3.-Defining-the-Independent-and-Dependent-Variables" title="Link to this heading">#</a></h2>
+<p>Next, the independent and dependent variables must be defined. For any ML model, your independent variables will be predicting the dependent variables. Here, the indepedent variables are two species’ concentrations: O and O1D, while the dependent variable is a third species’ concentration: O3 For more complicated systems where the temperature, pressure, or time step length vary throughout the simulation, those should also be added as independent variables.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;CONC.O.mol m-3&#39;</span><span class="p">,</span> <span class="s1">&#39;CONC.O1D.mol m-3&#39;</span><span class="p">]]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;CONC.O3.mol m-3&#39;</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="4.-Making-the-Train-Test-Split-for-the-Data">
+<h2>4. Making the Train-Test Split for the Data<a class="headerlink" href="#4.-Making-the-Train-Test-Split-for-the-Data" title="Link to this heading">#</a></h2>
+<p>Once the independent and dependent variables are defined, they can each be split into training and testing data. Training data refers to the data that is fed into the model in order to fit it. For linear regression, this fit will be an equation of the form ax + b, where a represents the slope and b represents the y-intercept. On the other hand, the testing data is data that the model is blind to and will attempt to predict after being shown the training data. For this model, 70% of the data will
+be for training, and 30% will be for testing. Also, shuffling is disabled so that the every testing data point comes after every training data point in time. This directs the model to try and predict the future (test data) from past data points (train data). You can see this by looking at the indices in the displayed training and testing data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Split data into train/test (70/30)</span>
+<span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">x_train</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">y_test</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CONC.O.mol m-3</th>
+      <th>CONC.O1D.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>3.580000e-11</td>
+      <td>1.830000e-17</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>3019</th>
+      <td>3.007502e-22</td>
+      <td>5.034120e-42</td>
+    </tr>
+    <tr>
+      <th>3020</th>
+      <td>3.007502e-22</td>
+      <td>5.034120e-42</td>
+    </tr>
+    <tr>
+      <th>3021</th>
+      <td>3.007502e-22</td>
+      <td>5.034120e-42</td>
+    </tr>
+    <tr>
+      <th>3022</th>
+      <td>3.007502e-22</td>
+      <td>5.034120e-42</td>
+    </tr>
+    <tr>
+      <th>3023</th>
+      <td>3.007502e-22</td>
+      <td>5.034120e-42</td>
+    </tr>
+  </tbody>
+</table>
+<p>3024 rows × 2 columns</p>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CONC.O3.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.000006</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.000006</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.000006</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0.000006</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.000006</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>3019</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3020</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3021</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3022</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3023</th>
+      <td>0.000007</td>
+    </tr>
+  </tbody>
+</table>
+<p>3024 rows × 1 columns</p>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CONC.O.mol m-3</th>
+      <th>CONC.O1D.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>3024</th>
+      <td>3.007502e-22</td>
+      <td>5.034120e-42</td>
+    </tr>
+    <tr>
+      <th>3025</th>
+      <td>3.007502e-22</td>
+      <td>5.034120e-42</td>
+    </tr>
+    <tr>
+      <th>3026</th>
+      <td>3.007502e-22</td>
+      <td>5.034120e-42</td>
+    </tr>
+    <tr>
+      <th>3027</th>
+      <td>3.007502e-22</td>
+      <td>5.034120e-42</td>
+    </tr>
+    <tr>
+      <th>3028</th>
+      <td>3.007502e-22</td>
+      <td>5.034120e-42</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>4316</th>
+      <td>7.553605e-11</td>
+      <td>4.828101e-17</td>
+    </tr>
+    <tr>
+      <th>4317</th>
+      <td>7.553831e-11</td>
+      <td>4.828246e-17</td>
+    </tr>
+    <tr>
+      <th>4318</th>
+      <td>7.554057e-11</td>
+      <td>4.828391e-17</td>
+    </tr>
+    <tr>
+      <th>4319</th>
+      <td>7.554284e-11</td>
+      <td>4.828536e-17</td>
+    </tr>
+    <tr>
+      <th>4320</th>
+      <td>7.554510e-11</td>
+      <td>4.828680e-17</td>
+    </tr>
+  </tbody>
+</table>
+<p>1297 rows × 2 columns</p>
+</div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CONC.O3.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>3024</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3025</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3026</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3027</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3028</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>4316</th>
+      <td>0.000008</td>
+    </tr>
+    <tr>
+      <th>4317</th>
+      <td>0.000008</td>
+    </tr>
+    <tr>
+      <th>4318</th>
+      <td>0.000008</td>
+    </tr>
+    <tr>
+      <th>4319</th>
+      <td>0.000008</td>
+    </tr>
+    <tr>
+      <th>4320</th>
+      <td>0.000008</td>
+    </tr>
+  </tbody>
+</table>
+<p>1297 rows × 1 columns</p>
+</div></div>
+</div>
+</section>
+<section id="5.-Normalizing-the-Concentrations">
+<h2>5. Normalizing the Concentrations<a class="headerlink" href="#5.-Normalizing-the-Concentrations" title="Link to this heading">#</a></h2>
+<p>For many ML models, including linear regression, normalizing your data will ensure that each of the input and output features are weighted equally when they are not on the same scale initially. To normalize the data, two <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html">MinMaxScaler()</a> objects are created, one for the dependent concentration variables, and one for the independent concentration variables. These scalers can be fitted and alter the
+training data concentration columns in place with its fit_transform() function by taking in a column that is used to calcuate the normalized values. However, the testing data is scaled with the transform() function since you never want to fit on your testing data, as it will lead to data leakages, causing the model to overfit. All the unscaled and scaled DataFrames are then displayed so that you can see what the normalization does to the concentration values.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x_scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">()</span>
+<span class="n">x_train_scaled</span> <span class="o">=</span> <span class="n">x_scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">x_train</span><span class="p">)</span>
+<span class="n">x_train_scaled_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">x_train_scaled</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">x_train</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">x_train</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">x_train</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="n">display</span><span class="p">(</span><span class="n">x_train_scaled_df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+
+<span class="n">x_test_scaled</span> <span class="o">=</span> <span class="n">x_scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<span class="n">x_test_scaled_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">x_test_scaled</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">x_test</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">x_test</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">x_test</span><span class="o">.</span><span class="n">tail</span><span class="p">())</span>
+<span class="n">display</span><span class="p">(</span><span class="n">x_test_scaled_df</span><span class="o">.</span><span class="n">tail</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CONC.O.mol m-3</th>
+      <th>CONC.O1D.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>3.580000e-11</td>
+      <td>1.830000e-17</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CONC.O.mol m-3</th>
+      <th>CONC.O1D.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.384077</td>
+      <td>1.830000e-17</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CONC.O.mol m-3</th>
+      <th>CONC.O1D.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>4316</th>
+      <td>7.553605e-11</td>
+      <td>4.828101e-17</td>
+    </tr>
+    <tr>
+      <th>4317</th>
+      <td>7.553831e-11</td>
+      <td>4.828246e-17</td>
+    </tr>
+    <tr>
+      <th>4318</th>
+      <td>7.554057e-11</td>
+      <td>4.828391e-17</td>
+    </tr>
+    <tr>
+      <th>4319</th>
+      <td>7.554284e-11</td>
+      <td>4.828536e-17</td>
+    </tr>
+    <tr>
+      <th>4320</th>
+      <td>7.554510e-11</td>
+      <td>4.828680e-17</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CONC.O.mol m-3</th>
+      <th>CONC.O1D.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>4316</th>
+      <td>0.810381</td>
+      <td>4.828101e-17</td>
+    </tr>
+    <tr>
+      <th>4317</th>
+      <td>0.810405</td>
+      <td>4.828246e-17</td>
+    </tr>
+    <tr>
+      <th>4318</th>
+      <td>0.810429</td>
+      <td>4.828391e-17</td>
+    </tr>
+    <tr>
+      <th>4319</th>
+      <td>0.810453</td>
+      <td>4.828536e-17</td>
+    </tr>
+    <tr>
+      <th>4320</th>
+      <td>0.810478</td>
+      <td>4.828680e-17</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">()</span>
+<span class="n">y_train_scaled</span> <span class="o">=</span> <span class="n">y_scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span>
+<span class="n">y_train_scaled_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">y_train_scaled</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">y_train</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">y_train</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">y_train</span><span class="o">.</span><span class="n">tail</span><span class="p">())</span>
+<span class="n">display</span><span class="p">(</span><span class="n">y_train_scaled_df</span><span class="o">.</span><span class="n">tail</span><span class="p">())</span>
+
+<span class="n">y_test_scaled</span> <span class="o">=</span> <span class="n">y_scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">y_test</span><span class="p">)</span>
+<span class="n">y_test_scaled_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">y_test_scaled</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">y_test</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">y_test</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">y_test</span><span class="o">.</span><span class="n">tail</span><span class="p">())</span>
+<span class="n">display</span><span class="p">(</span><span class="n">y_test_scaled_df</span><span class="o">.</span><span class="n">tail</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CONC.O3.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>3019</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3020</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3021</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3022</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3023</th>
+      <td>0.000007</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CONC.O3.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>3019</th>
+      <td>0.999274</td>
+    </tr>
+    <tr>
+      <th>3020</th>
+      <td>0.999274</td>
+    </tr>
+    <tr>
+      <th>3021</th>
+      <td>0.999274</td>
+    </tr>
+    <tr>
+      <th>3022</th>
+      <td>0.999274</td>
+    </tr>
+    <tr>
+      <th>3023</th>
+      <td>0.999274</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CONC.O3.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>4316</th>
+      <td>0.000008</td>
+    </tr>
+    <tr>
+      <th>4317</th>
+      <td>0.000008</td>
+    </tr>
+    <tr>
+      <th>4318</th>
+      <td>0.000008</td>
+    </tr>
+    <tr>
+      <th>4319</th>
+      <td>0.000008</td>
+    </tr>
+    <tr>
+      <th>4320</th>
+      <td>0.000008</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CONC.O3.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>4316</th>
+      <td>1.505976</td>
+    </tr>
+    <tr>
+      <th>4317</th>
+      <td>1.506288</td>
+    </tr>
+    <tr>
+      <th>4318</th>
+      <td>1.506601</td>
+    </tr>
+    <tr>
+      <th>4319</th>
+      <td>1.506914</td>
+    </tr>
+    <tr>
+      <th>4320</th>
+      <td>1.507226</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="6.-Fitting,-Predicting,-and-Evaluating-the-Model">
+<h2>6. Fitting, Predicting, and Evaluating the Model<a class="headerlink" href="#6.-Fitting,-Predicting,-and-Evaluating-the-Model" title="Link to this heading">#</a></h2>
+<p>Since all of the model preparation is out of the way, the model can now be created, fitted with the training data, and used to predict from the testing data. However, y_pred is currently normalized since it was fitted and predicted on normalized data, and it needs to be un-normalized so that it can be evaluated and visualized with the correct scale. To un-normalize the prediction array, simply take the y_scaler variable from step 5 and call its inverse_transform() function to undo the
+normalization. With the predicted concentration values calculated, the root mean square error (RMSE) can be calculated as well. RMSE represents the average magnitude that a prediction is off. For example, a RMSE of 1 means the average concentration prediction is 1 mol/m3 off from being correct.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fit on training set</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train_scaled</span><span class="p">,</span> <span class="n">y_train_scaled</span><span class="p">)</span>
+
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test_scaled</span><span class="p">)</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_scaler</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+<span class="n">test_rmse</span> <span class="o">=</span> <span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Test RMSE: </span><span class="si">{</span><span class="n">test_rmse</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Test RMSE: 5.239710325081405e-07
+</pre></div></div>
+</div>
+</section>
+<section id="7.-Preparing-the-Predicted-Data-for-Visualization">
+<h2>7. Preparing the Predicted Data for Visualization<a class="headerlink" href="#7.-Preparing-the-Predicted-Data-for-Visualization" title="Link to this heading">#</a></h2>
+<p>In its current state, the y_pred array cannot be visualized properly due to indexing issues; it only represents 30% of the original dataset, so 70% of the indices are missing. To fix the missing indices issue, the y_pred array is bundled into a DataFrame, taking the test indices as input initally. Then, the DataFrame is reindexed based on the original DataFrame’s indices. This will add back the missing indices with all NaN values, indicating that those time steps should not be plotted. The
+DataFrame is displayed before and after the reindexing so you can get an idea of what the reindex() function is doing.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">conc_pred</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">y_test</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Predicted CONC.O3.mol m-3&#39;</span><span class="p">])</span>
+<span class="n">display</span><span class="p">(</span><span class="n">conc_pred</span><span class="p">)</span>
+
+<span class="n">conc_pred</span> <span class="o">=</span> <span class="n">conc_pred</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">conc_pred</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Predicted CONC.O3.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>3024</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3025</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3026</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3027</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3028</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>4316</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4317</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4318</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4319</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4320</th>
+      <td>0.000007</td>
+    </tr>
+  </tbody>
+</table>
+<p>1297 rows × 1 columns</p>
+</div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Predicted CONC.O3.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>4316</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4317</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4318</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4319</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4320</th>
+      <td>0.000007</td>
+    </tr>
+  </tbody>
+</table>
+<p>4321 rows × 1 columns</p>
+</div></div>
+</div>
+</section>
+<section id="8.-Plot-the-Linear-Regression-Model">
+<h2>8. Plot the Linear Regression Model<a class="headerlink" href="#8.-Plot-the-Linear-Regression-Model" title="Link to this heading">#</a></h2>
+<p>This code cell simply plots the dependent species’ (O3) concentration over time, with the predicted concentration only covering the time steps present in the testing data. Due to the lack of helpful independent variables in this model, it is incredibly inaccurate, but ML models will have a lower RMSE when done well.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;time.s&#39;</span><span class="p">],</span> <span class="n">conc_pred</span><span class="p">[</span><span class="s1">&#39;Predicted CONC.O3.mol m-3&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Predicted CONC.O3.mol m-3&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;time.s&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;CONC.O3.mol m-3&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CONC.O3.mol m-3&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Concentration over time&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Concentration (mol m-3)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper center&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/tutorials_4._machine_learning_17_0.png" src="../_images/tutorials_4._machine_learning_17_0.png" />
+</div>
+</div>
+</section>
+<section id="9.-Running-and-Evaluating-the-Random-Forest-Model">
+<h2>9. Running and Evaluating the Random Forest Model<a class="headerlink" href="#9.-Running-and-Evaluating-the-Random-Forest-Model" title="Link to this heading">#</a></h2>
+<p>With the training and testing data already set up, there is not much work to get the random forest model running. However, one new thing here is the addition of the n_estimators argument which defines the number of trees in the model. Feel free to change this number to experiment. There is also an additional step in the fit() function, which is wrapping the y training data into NumPy’s ravel() function due to a quirk with the RandomForestRegressor class. As with the linear regression model, it
+is fitted based on the training data, ran on the testing data, and then evaluated against the ground truth. Due to the use of the ravel() function, an additional line needs to be added at the top to fix the y_pred array’s incorrect shape. To achieve this, the reshape() function is called with the -1 parameter representing any number of rows and the 1 parameter representing 1 column. Thus, this makes the y_pred array a single column with a row for every predicted time step. Do note how the random
+forest model is a bit more accurate than the linear model (~4.93e-7 RMSE vs ~5.24e-7 RMSE). This is expected behavior for the models, as linear regression should be less accurate than random forest when the data itself is not linear.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fit on training set</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train_scaled_df</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">y_train_scaled_df</span><span class="p">))</span>
+
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test_scaled_df</span><span class="p">)</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_scaler</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+<span class="n">test_rmse</span> <span class="o">=</span> <span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Test RMSE: </span><span class="si">{</span><span class="n">test_rmse</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Test RMSE: 4.928728531233833e-07
+</pre></div></div>
+</div>
+</section>
+<section id="10.-Data-Preparation-for-Visualization">
+<h2>10. Data Preparation for Visualization<a class="headerlink" href="#10.-Data-Preparation-for-Visualization" title="Link to this heading">#</a></h2>
+<p>This step is identical and achieves the same goal as step 7, refer to that step for an explanation.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">conc_pred</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">y_test</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Predicted CONC.O3.mol m-3&#39;</span><span class="p">])</span>
+<span class="n">display</span><span class="p">(</span><span class="n">conc_pred</span><span class="p">)</span>
+
+<span class="n">conc_pred</span> <span class="o">=</span> <span class="n">conc_pred</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">conc_pred</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Predicted CONC.O3.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>3024</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3025</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3026</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3027</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>3028</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>4316</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4317</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4318</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4319</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4320</th>
+      <td>0.000007</td>
+    </tr>
+  </tbody>
+</table>
+<p>1297 rows × 1 columns</p>
+</div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Predicted CONC.O3.mol m-3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>4316</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4317</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4318</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4319</th>
+      <td>0.000007</td>
+    </tr>
+    <tr>
+      <th>4320</th>
+      <td>0.000007</td>
+    </tr>
+  </tbody>
+</table>
+<p>4321 rows × 1 columns</p>
+</div></div>
+</div>
+</section>
+<section id="11.-Plot-the-Random-Forest-Model">
+<h2>11. Plot the Random Forest Model<a class="headerlink" href="#11.-Plot-the-Random-Forest-Model" title="Link to this heading">#</a></h2>
+<p>This step is identical and achieves the same goal as step 8 but with the random forest model, refer to that step for an explanation. Note how the predictions are slightly closer to the actual concentration curve on average compared to the linear model.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;time.s&#39;</span><span class="p">],</span> <span class="n">conc_pred</span><span class="p">[</span><span class="s1">&#39;Predicted CONC.O3.mol m-3&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Predicted CONC.O3.mol m-3&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;time.s&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;CONC.O3.mol m-3&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CONC.O3.mol m-3&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Concentration over time&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Concentration (mol m-3)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper center&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/tutorials_4._machine_learning_23_0.png" src="../_images/tutorials_4._machine_learning_23_0.png" />
+</div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="3.%20loading_custom_box_models.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Loading A Custom Box Model in MusicBox</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="5.%20gpu_solver.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Enabling Your GPU for a Solver in MusicBox</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#1.-Importing-Libraries">1. Importing Libraries</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#2.-Setting-up-and-Solving-the-System">2. Setting up and Solving the System</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#3.-Defining-the-Independent-and-Dependent-Variables">3. Defining the Independent and Dependent Variables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#4.-Making-the-Train-Test-Split-for-the-Data">4. Making the Train-Test Split for the Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#5.-Normalizing-the-Concentrations">5. Normalizing the Concentrations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#6.-Fitting,-Predicting,-and-Evaluating-the-Model">6. Fitting, Predicting, and Evaluating the Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#7.-Preparing-the-Predicted-Data-for-Visualization">7. Preparing the Predicted Data for Visualization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#8.-Plot-the-Linear-Regression-Model">8. Plot the Linear Regression Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#9.-Running-and-Evaluating-the-Random-Forest-Model">9. Running and Evaluating the Random Forest Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#10.-Data-Preparation-for-Visualization">10. Data Preparation for Visualization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#11.-Plot-the-Random-Forest-Model">11. Plot the Random Forest Model</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/tutorials/4. machine_learning.ipynb.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024-2025, NSF-NCAR/UCAR.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
