@@ -128,7 +128,7 @@ class TestCarbonBond5:
 
         # test plotting those calculated results
         args = argparse.Namespace(example='CB5', plot=['CH4'],
-            output=["out.nc"], plot_output_unit=concUnits)
+                                  output=["out.nc"], plot_output_unit=concUnits)
         plot_output = PlotOutput(df, args)
         plot_output.plot()
 
