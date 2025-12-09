@@ -780,13 +780,16 @@ def main():
         if (modelType == WACCM_OUT):
             waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02d}-00000.nc"
         elif (modelType == WRFCHEM_OUT):
-            dateDir = f"{when.year:4d}{when.month:02d}{when.day:02d}/"
-            waccmFilename = (dateDir
-                + f"wrfout_hourly_d01_{when.year:4d}-{when.month:02d}-{when.day:02d}_{when.hour:02d}:00:00")
+            waccmFilename = f"wrfout_hourly_d01_{when.year:4d}-{when.month:02d}-{when.day:02d}_{when.hour:02d}:00:00"
 
         # Windows does not allow colons : in filenames. Replace with hyphen -.
         if not pathvalidate.is_valid_filename(waccmFilename, platform="auto"):
             waccmFilename = waccmFilename.replace(":", "-")
+
+        if (modelType == WRFCHEM_OUT):
+            # WRF-Chem convention stores files in sub-directories by date
+            dateDir = f"{when.year:4d}{when.month:02d}{when.day:02d}"
+            waccmFilename = os.path.join(dateDir, waccmFilename)
 
         # read and glean chemical species from WACCM and MUSICA
         waccmChems = getWaccmSpecies(modelDir, waccmFilename)
