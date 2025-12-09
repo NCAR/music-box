@@ -713,11 +713,11 @@ def main():
     if (myArgs.template is not None):
         template = myArgs.template
 
-    # get the date-time to retrieve
-    dateStr = myArgs.date
-    timeStr = "00:00"
+    # get the date-times to retrieve
+    dateStrs = myArgs.date.split(",")
+    timeStrs = ["00:00"]
     if (myArgs.time is not None):
-        timeStr = myArgs.time
+        timeStrs = myArgs.time.split(",")
 
     # get the geographical location(s) to retrieve
     lats = []
@@ -770,13 +770,19 @@ def main():
 
         logger.info(f"Directory: {modelDir}   type {modelType}")
 
+        #for dateStr, timeStr in zip(dateStrs, timeStrs):
+        dateStr = dateStrs[0]       # bogus
+        timeStr = timeStrs[0]
+
         # locate the WACCM output file
         when = datetime.datetime.strptime(
             f"{dateStr} {timeStr}", "%Y%m%d %H:%M")
         if (modelType == WACCM_OUT):
-            waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02}-00000.nc"
+            waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02d}-00000.nc"
         elif (modelType == WRFCHEM_OUT):
-            waccmFilename = f"wrfout_hourly_d01_{when.year:4d}-{when.month:02d}-{when.day:02}_{when.hour:02d}:00:00"
+            dateDir = f"{when.year:4d}{when.month:02d}{when.day:02d}/"
+            waccmFilename = (dateDir
+                + f"wrfout_hourly_d01_{when.year:4d}-{when.month:02d}-{when.day:02d}_{when.hour:02d}:00:00")
 
         # Windows does not allow colons : in filenames. Replace with hyphen -.
         if not pathvalidate.is_valid_filename(waccmFilename, platform="auto"):
