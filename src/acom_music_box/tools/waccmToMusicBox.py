@@ -789,7 +789,7 @@ def main():
         if (modelType == WRFCHEM_OUT):
             # WRF-Chem convention stores files in sub-directories by date
             dateDir = f"{when.year:4d}{when.month:02d}{when.day:02d}"
-            waccmFilename = os.path.join(dateDir, waccmFilename)
+            waccmFilename = os.path.join(dateDir, "wrf", waccmFilename)
 
         # read and glean chemical species from WACCM and MUSICA
         waccmChems = getWaccmSpecies(modelDir, waccmFilename)
