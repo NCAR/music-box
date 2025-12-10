@@ -58,14 +58,10 @@ html_static_path = ['_static']
 html_theme = 'pydata_sphinx_theme'
 
 html_theme_options = {
-    "navbar_start": ["navbar-logo", "version-switcher"],
+    "navbar_start": ["navbar-logo"],
     "external_links": [],
     "github_url": "https://github.com/NCAR/music-box",
     "navbar_end": ["theme-switcher", "navbar-icon-links"],
-    "switcher": {
-        "json_url": "https://ncar.github.io/music-box/_static/switcher.json",
-        "version_match": release,  # assumes `release` is defined
-    },
     "pygment_light_style": "tango",
     "pygment_dark_style": "monokai"
 }

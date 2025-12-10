@@ -74,6 +74,7 @@ jobs:
           rm -rf _gh-pages/.git/
           mkdir -p _gh-pages/versions/
           mkdir -p _gh-pages/dev/
+          mkdir -p _gh-pages/branch/
 
       # If a push to main branch, build dev documentation
       - name: Build and copy documentation (dev)
@@ -128,15 +129,56 @@ jobs:
           mkdir -p ../_gh-pages/versions/${TAG_VERSION}
           cp -r build/html/* ../_gh-pages/versions/${TAG_VERSION}/
 
-      # If a push and not on default branch, build dev documentation for testing
-      - name: Build documentation (pull request)
+
+      # If a push and not on default branch, then copy the build to
+      # _gh-pages/branch/$brname (transforming '/' into '--')
+      - name: Build and copy documentation (branch)
         if: |
-          contains(github.event_name, 'push') &&
+          (contains(github.event_name, 'push') ||
+          contains(github.event_name, 'pull_request')) &&
           !contains(github.ref, env.DEFAULT_BRANCH)
         run: |
           set -x
+          docker build -t musica -f docker/Dockerfile.docs .
+          id=$(docker create musica)
+          docker cp $id:/build/docs/sphinx tmpdocs
+          docker rm -v $id
+          # Determine branch name for deployment directory
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            brname="${{ github.head_ref }}"
+          else
+            brname="${{ github.ref }}"
+            brname="${brname##refs/heads/}"
+          fi
+          brdir=${brname//\//--}   # replace '/' with '--'
+          rm -rf   _gh-pages/branch/${brdir}
+          mkdir -p _gh-pages/branch/${brdir}
+          rsync -a tmpdocs/ _gh-pages/branch/${brdir}
+
+      # Build documentation for branches/ folder
+      - name: Build and copy documentation (branch)
+        if: |
+          (contains(github.event_name, 'push') ||
+          contains(github.event_name, 'pull_request')) &&
+          !contains(github.ref, env.DEFAULT_BRANCH)
+        run: |
+          # Build the docs
           cd docs
           make html
+
+          # Determine branch name for deployment directory
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            brname="${{ github.head_ref }}"
+          else
+            brname="${{ github.ref }}"
+            brname="${brname##refs/heads/}"
+          fi
+          brdir=${brname//\//--}   # replace '/' with '--'
+
+          # Copy to branches folder
+          rm -rf   _gh-pages/branch/${brdir}
+          mkdir -p _gh-pages/branch/${brdir}
+          rsync -a build/html/ _gh-pages/branch/${brdir}
 
       # Add the .nojekyll file
       - name: nojekyll
