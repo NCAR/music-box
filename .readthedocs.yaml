@@ -14,13 +14,6 @@ build:
 sphinx:
    configuration: docs/source/conf.py
 
-git:
-  # Build all tags and a specific branch
-  versions:
-    tag: true          # build all tags
-    branch:
-      - main           # build main branch
-
 # Optionally, but recommended,
 # declare the Python requirements required to build your documentation
 # See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
