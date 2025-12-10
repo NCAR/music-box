@@ -14,11 +14,10 @@ sys.path.insert(0, os.path.abspath('..'))
 
 version = acom_music_box.__version__
 project = f'Music Box ({version})'
-copyright = f'2024-{datetime.datetime.now().year}, NSF-NCAR/UCAR'
-author = 'NSF-NCAR/UCAR'
+copyright = f'2024-{datetime.datetime.now().year}, NSF-NCAR/ACOM'
+author = 'NSF-NCAR/ACOM'
 
-suffix = os.getenv("SWITCHER_SUFFIX", "")
-release = f'{version}{suffix}'
+release = f'{version}'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
