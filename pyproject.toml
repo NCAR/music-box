@@ -4,6 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "acom_music_box"
+requires-python = ">=3.10"
 authors = [
   { name = "Matthew Dawson", email = "mattdawson@ucar.edu" },
   { name = "Kyle Shores", email = "kshores@ucar.edu" },

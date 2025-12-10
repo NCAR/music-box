@@ -1,23 +1,54 @@
-# Build and deploy documentation to GitHub Pages
 name: GitHub Pages
-
-on: 
+on:
   push:
+    branches:
+      - main
   pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+  release:
+    types: [published]
   workflow_dispatch:
 
 env:
-  DEFAULT_BRANCH: "release"
+  DEFAULT_BRANCH: "main"
+
+permissions:
+    contents: write
+    pull-requests: write
 
 jobs:
-  build-and-deploy:
-    name: Build and deploy to gh-pages
+  comment-doc-link:
+    name: Comment documentation link on PR
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Post documentation link
+        uses: actions/github-script@v6
         with:
-          fetch-depth: 0
-          lfs: true
+          script: |
+            const branchName = context.payload.pull_request.head.ref;
+            const docLink = `https://ncar.github.io/MechanismConfiguration/branch/${branchName}/`;
+            const commentBody = `📄 Documentation for this branch is available at: [${docLink}](${docLink})`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: commentBody
+            });
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+
+      - name: Install dependencies
+        run: |
+          pip install .
+          pip install -r docs/requirements.txt
 
       - name: Debugging information
         run: |
@@ -34,123 +65,99 @@ jobs:
           pip list --not-required
           pip list
 
-      # Clone and set up the old gh-pages branch
-      - name: Clone old gh-pages
-        if: ${{ github.event_name == 'push' }}
+      - name: Setup gh-pages folder
+        if: ${{ github.event_name == 'push' || github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
         run: |
           set -x
           git fetch
           ( git branch gh-pages remotes/origin/gh-pages && git clone . --branch=gh-pages _gh-pages/ ) || mkdir _gh-pages
           rm -rf _gh-pages/.git/
-          mkdir -p _gh-pages/branch/
+          mkdir -p _gh-pages/versions/
+          mkdir -p _gh-pages/dev/
 
-      # If a push and default branch, copy build to _gh-pages/ as the "main"
-      # deployment.
-      - name: Build and copy documentation (default branch)
+      # If a push to main branch, build dev documentation
+      - name: Build and copy documentation (dev)
         if: |
           contains(github.event_name, 'push') &&
           contains(github.ref, env.DEFAULT_BRANCH)
         run: |
+            set -x
+            cd docs
+            VERSION=$(python -c "import acom_music_box; print(acom_music_box.__version__)")
+            export SWITCHER_SUFFIX=" (dev)"
+            export VERSION="v${VERSION}"
+            make html
+            ls -l
+            ls -l build/html
+            rm -rf ../_gh-pages/dev/*
+            cp -r build/html/* ../_gh-pages/dev/
+
+      # If a release, build versioned documentation
+      - name: Build and copy documentation (release)
+        if: contains(github.event_name, 'release')
+        run: |
           set -x
-          mkdir -p _build/html/versions
+          cd docs
+          # Extract version from tag (remove 'v' prefix if present)
+          TAG_VERSION="${GITHUB_REF#refs/tags/}"
+          TAG_VERSION="${TAG_VERSION#v}"
+          echo "Building documentation for version: $TAG_VERSION"
+          
+          # Build two copies: one for stable and one for the specific version
+          # First, build the stable version
+          export SWITCHER_SUFFIX=" (stable)"
+          export VERSION="v${TAG_VERSION}"
+          make clean
+          make html
+          
+          # Update switcher.json to include the new version
+          python ../tools/update_switcher.py \
+            --switcher-path build/html/_static/switcher.json \
+            --version "${TAG_VERSION}"
+          
+          # Delete everything under _gh-pages/ that is from the primary deployment
+          # but preserve dev/ and versions/ directories
+          find ../_gh-pages/ -mindepth 1 ! -path '../_gh-pages/dev*' ! -path '../_gh-pages/versions*' -delete
+          cp -r build/html/* ../_gh-pages/
+          
+          # Now build the versioned copy
+          export SWITCHER_SUFFIX=""
+          export VERSION="v${TAG_VERSION}"
+          make clean
+          make html
+          mkdir -p ../_gh-pages/versions/${TAG_VERSION}
+          cp -r build/html/* ../_gh-pages/versions/${TAG_VERSION}/
 
-          # create two copies of the documentation
-          # 1. the frozen version, represented as vX.X in the version switcher
-          docker build -t music_box -f docker/Dockerfile.docs .
-          id=$(docker create music_box)
-          docker cp $id:/music-box/docs/build/html  tmpdocs
-          docker rm -v $id
-          version=$(sed -nr "s/^release = f'v(.+)\{suffix\}'.*$/\1/p" docs/source/conf.py)
-          mv tmpdocs _build/html/versions/${version}
-
-          # 2. stable, represented as vX.X (stable) in the version switcher
-          # edit conf.py to produce a version string that looks like vX.X (stable)
-          docker build -t music_box -f docker/Dockerfile.docs --build-arg SUFFIX=" (stable)" .
-          id=$(docker create music_box)
-          docker cp $id:/music-box/docs/build/html  tmpdocs
-          docker rm -v $id
-          mv tmpdocs _build/html/versions/stable
-          # Delete everything under _gh-pages/ that is from the
-          # primary branch deployment.  Excludes the other branches
-          # _gh-pages/branch-* paths, and not including
-          # _gh-pages itself.
-          find _gh-pages/ -mindepth 1 ! -path '_gh-pages/branch*' ! -path '_gh-pages/versions*' -delete
-          rsync -a _build/html/versions/stable/* _gh-pages/
-          mkdir -p _gh-pages/versions
-          rsync -a _build/html/versions/* _gh-pages/versions
-          # mv docs/switcher.json _gh-pages
-
-      # If a push and not on default branch, then copy the build to
-      # _gh-pages/branch/$brname (transforming '/' into '--')
-      - name: Build and copy documentation (branch)
+      # If a push and not on default branch, build dev documentation for testing
+      - name: Build documentation (pull request)
         if: |
-          (contains(github.event_name, 'push') ||
-          contains(github.event_name, 'pull_request')) &&
+          contains(github.event_name, 'push') &&
           !contains(github.ref, env.DEFAULT_BRANCH)
         run: |
           set -x
-          docker build -t music_box -f docker/Dockerfile.docs .
-          id=$(docker create music_box)
-          docker cp $id:/music-box/docs/build/html tmpdocs
-          docker rm -v $id
-          # Determine branch name for deployment directory
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            brname="${{ github.head_ref }}"
-          else
-            brname="${{ github.ref }}"
-            brname="${brname##refs/heads/}"
-          fi
-          brdir=${brname//\//--}   # replace '/' with '--'
-          rm -rf   _gh-pages/branch/${brdir}
-          mkdir -p _gh-pages/branch/${brdir}
-          rsync -a tmpdocs/ _gh-pages/branch/${brdir}
-
-      # Go through each branch in _gh-pages/branch/, if it's not a
-      # ref, then delete it.
-      - name: Delete old feature branches
-        if: ${{ github.event_name == 'push' }}
-        run: |
-          set -x
-          for brdir in `ls _gh-pages/branch/` ; do
-              brname=${brdir//--/\/}   # replace '--' with '/'
-              if ! git show-ref remotes/origin/$brname ; then
-                  echo "Removing $brdir"
-                  rm -r _gh-pages/branch/$brdir/
-              fi
-          done
+          cd docs
+          make html
 
       # Add the .nojekyll file
       - name: nojekyll
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' || github.event_name == 'release' }}
         run: |
           touch _gh-pages/.nojekyll
+
+      - name: Debugging information
+        if: ${{ github.event_name == 'push' || github.event_name == 'release' }}
+        run: |
+          ls -la _gh-pages/
+          if [ -d "_gh-pages/dev" ]; then ls -la _gh-pages/dev/; fi
+          if [ -d "_gh-pages/versions" ]; then ls -la _gh-pages/versions/; fi
 
       # Deploy
       # https://github.com/peaceiris/actions-gh-pages
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.event_name == 'push' }}
+        uses: peaceiris/actions-gh-pages@v4
+        if: ${{ github.event_name == 'push' || github.event_name == 'release' }}
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: _gh-pages/
           force_orphan: true
-
-  comment-doc-link:
-    name: Comment documentation link on PR
-    if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Post documentation link
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const branchName = context.payload.pull_request.head.ref;
-            const docLink = `https://ncar.github.io/music-box/branch/${branchName}/`;
-            const commentBody = `📄 Documentation for this branch is available at: [${docLink}](${docLink})`;
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-              body: commentBody
-            });
