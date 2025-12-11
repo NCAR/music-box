@@ -14,11 +14,10 @@ sys.path.insert(0, os.path.abspath('..'))
 
 version = acom_music_box.__version__
 project = f'Music Box ({version})'
-copyright = f'2024-{datetime.datetime.now().year}, NSF-NCAR/UCAR'
-author = 'NSF-NCAR/UCAR'
+copyright = f'2024-{datetime.datetime.now().year}, NSF-NCAR/ACOM'
+author = 'NSF-NCAR/ACOM'
 
-suffix = os.getenv("SWITCHER_SUFFIX", "")
-release = f'{version}{suffix}'
+release = f'{version}'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -58,14 +57,10 @@ html_static_path = ['_static']
 html_theme = 'pydata_sphinx_theme'
 
 html_theme_options = {
-    "navbar_start": ["navbar-logo", "version-switcher"],
+    "navbar_start": ["navbar-logo"],
     "external_links": [],
     "github_url": "https://github.com/NCAR/music-box",
     "navbar_end": ["theme-switcher", "navbar-icon-links"],
-    "switcher": {
-        "json_url": "https://ncar.github.io/music-box/_static/switcher.json",
-        "version_match": release,  # assumes `release` is defined
-    },
     "pygment_light_style": "tango",
     "pygment_dark_style": "monokai"
 }
