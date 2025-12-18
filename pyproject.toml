@@ -4,6 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "acom_music_box"
+requires-python = ">=3.10"
 authors = [
   { name = "Matthew Dawson", email = "mattdawson@ucar.edu" },
   { name = "Kyle Shores", email = "kshores@ucar.edu" },
@@ -28,13 +29,14 @@ dependencies = [
   "colorlog>=6.7.0",
   "matplotlib>=3.6.0",
   "mplcursors>=0.3",
-  "musica>=0.13.0",
+  "musica>=0.14.0",
   "netcdf4>=1.6.0",
   "numpy>=2.0.0",
   "pandas>=2.2.0",
   "tqdm>=4.64.0",
   "typing_extensions>=4.4.0",
   "xarray>=2022.3.0",
+  "pathvalidate>=3.3.0",
 ]
 
 [project.urls]
@@ -51,5 +53,5 @@ dev = [
   "pytest-cov>=7.0.0"
 ]
 gpu = [
-  "musica[gpu]==0.13.0"
+  "musica[gpu]==0.14.0"
 ]

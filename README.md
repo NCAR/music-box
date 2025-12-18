@@ -189,3 +189,21 @@ pip install -e '.[dev]'
 ```
 pytest
 ```
+
+## Tool: waccmToMusicBox
+
+The python script waccmToMusicBox will extract concentrations of chemical species from WACCM and WRF-Chem, and write those values to initial conditions for MusicBox. Here are several examples of its use:
+
+```
+waccmToMusicBox --waccmDir "./sample_waccm_data" --date "20240904" --time "07:00" --latitude 3.1 --longitude 101.7
+waccmToMusicBox --wrfchemDir "./sample_waccm_data" --date "20250820" --time "08:00" --latitude 47.0,49.0 --longitude "'-123.0,-121.0'"
+
+waccmToMusicBox --waccmDir ~/MusicBox/WACCM/model-output --musicaDir ~/MusicBox/WACCM/csvJsonDir --date 20240301 --time 07:00 --latitude "'-4.0,-2.0'" --longitude 101.0,103.0 --template ~/MusicBox/WACCM/templates/TS1 --output CSV,JSON --verbose
+waccmToMusicBox --wrfchemDir ~/MusicBox/WRF-Chem/model-output --musicaDir ~/MusicBox/WRF-Chem/csvJsonDir --date 20250820 --time 08:00 --latitude 47.6 --longitude -122.325 --template ~/MusicBox/WRF-Chem/templates/TS1 --output CSV,JSON --verbose
+```
+
+Use the built-in help function to obtain a list of command-line parameters.
+```
+waccmToMusicBox --help
+```
+
