@@ -21,6 +21,7 @@ import tempfile
 import zipfile
 from acom_music_box import Examples, __version__
 from acom_music_box.utils import calculate_air_density
+import wrf
 
 import logging
 logger = logging.getLogger(__name__)
@@ -85,6 +86,13 @@ def parse_arguments():
         type=str,
         help=("Longitude of grid cell(s) to extract: 101.7"
               + "\nIf two longitudes supplied, then average over that range.")
+    )
+    parser.add_argument(
+        '--altitude',
+        type=str,
+        help=("Height of extraction(s) above sea level, in meters."
+              + "\nIf two altitudes supplied, then average over that height range."
+              + "\nIf no altitude supplied, then extract surface level of model output.")
     )
     parser.add_argument(
         '--template',
@@ -696,6 +704,8 @@ def main():
     logger.info(f"{__file__}")
     logger.info(f"Start time: {datetime.datetime.now()}")
 
+    logger.info(f"wrf-python version is {wrf.__version__}")
+
     # retrieve and parse the command-line arguments
     myArgs = parse_arguments()
     setup_logging(myArgs.verbose)
@@ -735,22 +745,31 @@ def main():
         for lonString in lonStrings:
             lons.append(safeFloat(lonString))
 
+    alts = []
+    if (myArgs.altitude is not None):
+        altString = myArgs.altitude.replace("'", "").replace('"', '')
+        altStrings = altString.split(",")
+        for altString in altStrings:
+            alts.append(safeFloat(altString))
+
     # fix common lat-lon errors
     if (len(lats) > 1):
         if (lats[0] > lats[1]):
             # swap latitudes
             lats = [lats[1], lats[0]]
 
-    # always use two lat-lon bounds
+    # always use two lat-lon and altitude bounds
     if (len(lats) < 2):
         lats.append(lats[0])
     if (len(lons) < 2):
         lons.append(lons[0])
+    if (len(alts) < 2):
+        alts.append(alts[0])
 
     # For longitude, we assume the user knows the model's
     # longitude conventions regarding 0:360 or -180:180.
 
-    logger.info(f"lats = {lats}   lons = {lons}")
+    logger.info(f"lats = {lats}   lons = {lons}   alts = {alts}")
 
     # get the requested (diagnostic) output
     outputCSV = False
