@@ -763,7 +763,7 @@ def main():
         lats.append(lats[0])
     if (len(lons) < 2):
         lons.append(lons[0])
-    if (len(alts) < 2):
+    if (len(alts) == 1):
         alts.append(alts[0])
 
     # For longitude, we assume the user knows the model's
