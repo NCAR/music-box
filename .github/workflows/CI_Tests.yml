@@ -41,7 +41,10 @@ jobs:
         cache: 'pip' 
 
     - name: Install this package
-      run: pip install -e '.[dev]'
+      run: |
+        echo "Installing this package..."
+        date
+        pip install -e '.[dev]'
       env: 
         FC: gfortran-14
 
