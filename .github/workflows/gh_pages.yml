@@ -88,8 +88,12 @@ jobs:
           contains(github.event_name, 'pull_request')) &&
           !contains(github.ref, env.DEFAULT_BRANCH)
         run: |
+          echo "Installling and building . . ."
+          date
           set -x
           docker build -t music_box -f docker/Dockerfile.docs .
+          echo "Done buillding . . ."
+          date
           id=$(docker create music_box)
           docker cp $id:/music-box/docs/build/html tmpdocs
           docker rm -v $id
