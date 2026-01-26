@@ -91,6 +91,10 @@ jobs:
           echo "Installling and building . . ."
           date
           set -x
+          echo "Atttempting to retrieve wrf-python 1.4.2 with conda . . ."
+          conda install -c conda-forge wrf-python==1.4.2
+          echo "Now dockker build . . ."
+          date
           docker build -t music_box -f docker/Dockerfile.docs .
           echo "Done buillding . . ."
           date
