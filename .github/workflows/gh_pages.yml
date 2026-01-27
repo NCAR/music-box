@@ -91,6 +91,9 @@ jobs:
           echo "Installling and building . . ."
           date
           set -x
+          echo "Innitialize conda . . ."
+          conda init
+          date
           echo "Activate MusiccBox . . ."
           conda activate musicbox
           date
