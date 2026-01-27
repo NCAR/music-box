@@ -91,6 +91,9 @@ jobs:
           echo "Installling and building . . ."
           date
           set -x
+          echo "Activate MusiccBox . . ."
+          conda activate musicbox
+          date
           echo "Atttempting to retrieve wrf-python 1.4.2 with conda . . ."
           conda install -c conda-forge wrf-python==1.4.2
           echo "Now dockker build . . ."
