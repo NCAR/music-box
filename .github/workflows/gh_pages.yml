@@ -88,22 +88,11 @@ jobs:
           contains(github.event_name, 'pull_request')) &&
           !contains(github.ref, env.DEFAULT_BRANCH)
         run: |
-          echo "Installling and building . . ."
+          echo "Installing and building . . ."
           date
           set -x
-          echo "Innitialize conda . . ."
-          conda init
-          source ~/.bashrc
-          date
-          echo "Activate MusiccBox . . ."
-          conda activate musicbox
-          date
-          echo "Atttempting to retrieve wrf-python 1.4.2 with conda . . ."
-          conda install -c conda-forge wrf-python==1.4.2
-          echo "Now dockker build . . ."
-          date
           docker build -t music_box -f docker/Dockerfile.docs .
-          echo "Done buillding . . ."
+          echo "Done building with docker . . ."
           date
           id=$(docker create music_box)
           docker cp $id:/music-box/docs/build/html tmpdocs
