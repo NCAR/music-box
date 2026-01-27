@@ -93,6 +93,7 @@ jobs:
           set -x
           echo "Innitialize conda . . ."
           conda init
+          source ~/.bashrc
           date
           echo "Activate MusiccBox . . ."
           conda activate musicbox
