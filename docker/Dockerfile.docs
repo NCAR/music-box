@@ -19,6 +19,7 @@ COPY . /music-box/
 WORKDIR /music-box
 
 
+RUN conda install -c conda-forge wrf-python==1.4.2
 RUN pip3 install -e .
 
 ARG SUFFIX=""
