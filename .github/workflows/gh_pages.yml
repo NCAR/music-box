@@ -91,9 +91,6 @@ jobs:
           echo "Installing and building . . ."
           date
           set -x
-          pip install git+https://github.com/NCAR/wrf-python@develop
-          echo "Now for docker . . ."
-          date
           docker build -t music_box -f docker/Dockerfile.docs .
           echo "Done building with docker . . ."
           date

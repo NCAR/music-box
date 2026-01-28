@@ -19,7 +19,8 @@ COPY . /music-box/
 WORKDIR /music-box
 
 
-RUN pip3 install git+https://github.com/NCAR/wrf-python@develop
+RUN date
+RUN pip3 install git+https://github.com/NCAR/wrf-python@v1.4.2
 RUN pip3 install -e .
 
 ARG SUFFIX=""
