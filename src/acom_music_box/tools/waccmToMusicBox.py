@@ -378,7 +378,9 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
 # gridDataset = model output from WACCM or WRF-Chem
 # when = desired date-time frame of gridDataset
 # latPair, lonPair = coordinates of a single point, or bounding box (SW to NE)
-def meanStraightGrid(gridDataset, when, latPair, lonPair):
+# altPair = altitude bounds over which to average
+# return the mean value of single point or the bounding box
+def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
     # find the time index
     whenStr = when.strftime("%Y-%m-%d %H:%M:%S")
     logger.info(f"whenStr = {whenStr}")
@@ -401,7 +403,7 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair):
     logger.info(f"lonTicks = {lonTicks}")
 
     gridBox = gridDataset.sel(lat=latTicks, lon=lonTicks,
-                              lev=1000.0, time=whenStr, method="nearest")
+                              lev=1000.0, time=whenStr, method="nearest")   # surface
 
     # cannot take the mean() of strings, so remove them
     stringVars = []
@@ -426,7 +428,9 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair):
 # gridDataset = model output from WACCM or WRF-Chem
 # when = desired date-time frame of gridDataset
 # latPair, lonPair = coordinates of a single point, or bounding box (SW to NE)
-def meanCurvedGrid(gridDataset, when, latPair, lonPair):
+# altPair = altitude bounds over which to average
+# return the mean value of single point or the bounding box
+def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair):
     # find the time index
     whenStr = when.strftime("%Y-%m-%d_%H:%M:%S")
     logger.info(f"whenStr = {whenStr}")
@@ -464,7 +468,7 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair):
                                            latFloat, lonFloat, iLat, iLon)
             logger.debug(f"iLat = {iLat}   iLon = {iLon}")
             singlePoint = gridDataset.isel(Time=timeIndex,
-                                           west_east=iLon, south_north=iLat, bottom_top=0)
+                                           west_east=iLon, south_north=iLat, bottom_top=0)  # surface
             singlePoints.append(singlePoint)
 
     logger.info(f"Combining {len(singlePoints)} points into a single set...")
@@ -482,12 +486,13 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair):
 # waccmMusicaDict = mapping from WACCM names to MusicBox
 # latitudes, longitudes = geo-coordinates of retrieval point(s)
 #   Could be a single point or corners of a selection rectangle.
+# altitudes = height bounds across which to average
 # when = date and time to extract
 # modelDir = directory containing model output
 # waccmFilename = name of the model output file
 # modelType = WACCM_OUT or WRFCHEM_OUT
 # return dictionary of MUSICA variable names, values, and units
-def readWACCM(waccmMusicaDict, latitudes, longitudes,
+def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
               when, modelDir, waccmFilename, modelType):
 
     waccmFilepath = os.path.join(modelDir, waccmFilename)
@@ -502,11 +507,11 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
     meanPoint = None
     if (modelType == WACCM_OUT):            # straight grid
         meanPoint = meanStraightGrid(waccmDataSet, when,
-                                     latitudes, longitudes)
+                                     latitudes, longitudes, altitudes)
 
     elif (modelType == WRFCHEM_OUT):        # curved grid
         meanPoint = meanCurvedGrid(waccmDataSet, when,
-                                   latitudes, longitudes)
+                                   latitudes, longitudes, altitudes)
 
     # diagnostic to look at single point structure
     logger.info(f"WACCM / WRF-Chem meanPoint = {meanPoint}")
@@ -822,8 +827,8 @@ def main():
 
         # Read named variables from WACCM model output.
         logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
-        varValues = readWACCM(commonDict, lats, lons, when,
-                              modelDir, waccmFilename, modelType)
+        varValues = readWACCM(commonDict, lats, lons, alts,
+                              when, modelDir, waccmFilename, modelType)
         logger.info(f"Original WACCM varValues = {varValues}")
 
         # add molecular Nitrogen, Oxygen, and Argon
