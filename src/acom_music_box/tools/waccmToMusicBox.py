@@ -252,7 +252,7 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
 # waccmMusicaDict = mapping from WACCM names to MusicBox
 # latitudes, longitudes = geo-coordinates of retrieval point(s)
 #   Could be a single point or corners of a selection rectangle.
-# altitudes = height bounds across which to average
+# altitudes = height bounds across which to average (meters)
 # when = date and time to extract
 # modelDir = directory containing model output
 # waccmFilename = name of the model output file
@@ -524,6 +524,8 @@ def main():
         altStrings = altString.split(",")
         for altString in altStrings:
             alts.append(safeFloat(altString))
+    else:
+        alts = [gridUtils.kSurfaceKeyword]
 
     # fix common lat-lon errors
     if (len(lats) > 1):

@@ -6,11 +6,39 @@
 # Copyright 2026 by Atmospheric Chemistry Observations & Modeling (UCAR/ACOM)
 
 import math
+import numbers
 import numpy
 import xarray
 
 import logging
 logger = logging.getLogger(__name__)
+
+import sys      # bogus, for crashing out early
+
+
+kSurfaceKeyword = "surface"       # request is for the surface layer
+
+# Convert altitude in meters to pressure in hPa (hectopascals).
+# altMeters = height above sea level (meters)
+# return the pressure level in hPa
+def altitudeToPressure(altMeters):
+    P0 = 1013.25
+    temp = math.exp(-altMeters / 8431.0)
+    pressure = P0 * temp
+    return pressure
+
+
+# Find the nearest value in an array.
+# Return nearest value and index where it was found
+def findNearest(array, value):
+    index = (numpy.abs(array - value)).argmin()
+    return [array[index], index]
+
+
+# Return true if variable is int or float, false if not.
+def isNumber(myVar):
+    return (isinstance(myVar, numbers.Number)
+        and not isinstance(myVar, bool))
 
 
 # Calcuate the squared distance between points.
@@ -165,9 +193,28 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
     logger.info(f"latTicks = {latTicks}")
     logger.info(f"lonTicks = {lonTicks}")
 
+    # determine the pressure levels
+    pressPair = [None, None]
+    for pi in range(0, 2):
+        if isNumber(altPair[pi]):
+            pressPair[pi] = altitudeToPressure(altPair[pi])
+        elif (altPair[pi] == kSurfaceKeyword):
+            pressPair[pi] = altitudeToPressure(0.0)
+    logger.info(f"Requesting pressure range {pressPair[0]} to {pressPair[1]} hPa")
+
+    pressLevels = gridDataset["lev"].data
+    logger.debug(f"pressLevels = {pressLevels}")
+    pressIndexPair = [0,0]
+    for pi in range(0, 2):
+        # WACCM uses pressure coordinates from top of atmosphere down to surface,
+        # and the user probably specifies from lower altitude to higher.
+        dummy, pressIndexPair[1 - pi] = findNearest(pressLevels, pressPair[pi])     # reverse the index bounds
+        logger.debug(f"nearest = {dummy} at index {pressIndexPair[1-pi]}")
+    logger.info(f"Pressure indexes are {pressIndexPair[0]} through {pressIndexPair[1]}")
+
     gridBox = gridDataset.sel(lat=latTicks, lon=lonTicks,
-    #                          lev=1000.0, time=whenStr, method="nearest")   # surface
-                              lev=[1000.0, 900, 800, 700, 450], time=whenStr, method="nearest")   # surface
+                              lev=pressLevels[pressIndexPair[0]: pressIndexPair[1] + 1],
+                              time=whenStr, method="nearest")   # surface
     logger.debug(f"gridBox = {gridBox}")
 
     # cannot take the mean() of strings, so remove them
