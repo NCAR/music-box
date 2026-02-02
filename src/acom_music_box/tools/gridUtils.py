@@ -212,6 +212,11 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
         logger.debug(f"nearest = {dummy} at index {pressIndexPair[1-pi]}")
     logger.info(f"Pressure indexes are {pressIndexPair[0]} through {pressIndexPair[1]}")
 
+    # check for reversed altitude bounds
+    if (pressIndexPair[0] > pressIndexPair[1]):
+        logger.error("Altitude bounds are reversed. Please specify lower,upper instead.")
+        return None
+
     gridBox = gridDataset.sel(lat=latTicks, lon=lonTicks,
                               lev=pressLevels[pressIndexPair[0]: pressIndexPair[1] + 1],
                               time=whenStr, method="nearest")   # surface

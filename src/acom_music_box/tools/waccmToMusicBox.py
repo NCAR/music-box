@@ -292,10 +292,10 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
             continue
 
         chemSinglePoint = meanPoint[waccmKey]
-        logger.info(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
+        logger.debug(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
         # this next line takes the mean along any remaining vertical axis/dimension
         musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)   # from 0-dim array
-        logger.info(f"musicaTuple = {musicaTuple}")
+        logger.debug(f"musicaTuple = {musicaTuple}")
         musicaDict[musicaName] = musicaTuple
 
     # close the NetCDF file
