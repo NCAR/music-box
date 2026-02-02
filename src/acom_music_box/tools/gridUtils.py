@@ -6,6 +6,8 @@
 # Copyright 2026 by Atmospheric Chemistry Observations & Modeling (UCAR/ACOM)
 
 import math
+import numpy
+import xarray
 
 import logging
 logger = logging.getLogger(__name__)
@@ -35,7 +37,6 @@ kWest = 4
 # latsVarname, lonsVarname = coordinate variables in the dataset
 # latitude, longitude = want to retrieve data at this location
 # initLatIndex, initLonIndex = caller's suggestion where to start the search
-
 
 def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
                       latitude, longitude, initLatIndex=None, initLonIndex=None):
@@ -132,4 +133,119 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
 
     logger.debug(f"Closest vertex reached in {numSteps} steps.")
     return (latIndex, lonIndex)
+
+
+# Extract mean values from a lat-lon rectangle within model output.
+# As of October 2025, WACCM uses a straight grid (Mercator)
+# and WRF-Chem is curved (Lambert Conformal).
+# gridDataset = model output from WACCM or WRF-Chem
+# when = desired date-time frame of gridDataset
+# latPair, lonPair = coordinates of a single point, or bounding box (SW to NE)
+# altPair = altitude bounds over which to average
+# return the mean value of single point or the bounding box
+def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
+    # find the time index
+    whenStr = when.strftime("%Y-%m-%d %H:%M:%S")
+    logger.info(f"whenStr = {whenStr}")
+
+    # determine the grid spacing
+    latVar = gridDataset["lat"].data
+    latStride = latVar[1] - latVar[0]
+    lonVar = gridDataset["lon"].data
+    lonStride = lonVar[1] - lonVar[0]
+    logger.info(f"latStride = {latStride}   lonStride = {lonStride}")
+
+    # use xarray to select sub-grid and then take average
+    numGridLats = math.ceil((latPair[1] - latPair[0]) / latStride) + 1      # include the endpoint
+    numGridLons = math.ceil((lonPair[1] - lonPair[0]) / lonStride) + 1
+    logger.info(f"Requested sub-grid will be {numGridLats} lats x {numGridLons} lons.")
+
+    latTicks = numpy.linspace(latPair[0], latPair[1], numGridLats)
+    lonTicks = numpy.linspace(lonPair[0], lonPair[1], numGridLons)
+    logger.info(f"latTicks = {latTicks}")
+    logger.info(f"lonTicks = {lonTicks}")
+
+    gridBox = gridDataset.sel(lat=latTicks, lon=lonTicks,
+    #                          lev=1000.0, time=whenStr, method="nearest")   # surface
+                              lev=[1000.0, 900, 800, 700, 450], time=whenStr, method="nearest")   # surface
+    logger.debug(f"gridBox = {gridBox}")
+
+    # cannot take the mean() of strings, so remove them
+    stringVars = []
+    for varName, varDataArray in gridBox.data_vars.items():
+        if not (numpy.issubdtype(varDataArray.dtype, numpy.number)
+                or numpy.issubdtype(varDataArray.dtype, numpy.datetime64)
+                or numpy.issubdtype(varDataArray.dtype, numpy.timedelta64)
+                ):
+            stringVars.append(varName)
+    logger.info(f"removing stringVars = {stringVars}")
+    gridBox = gridBox.drop_vars(stringVars)
+
+    logger.info(f"WACCM gridBox = {gridBox}")
+    meanPoint = gridBox.mean(dim=["lat", "lon"], keep_attrs=True)
+    logger.debug(f"meanPoint = {meanPoint}")
+
+    return meanPoint
+
+
+# Extract mean values from a lat-lon rectangle within model output.
+# As of October 2025, WACCM uses a straight grid (Mercator)
+# and WRF-Chem is curved (Lambert Conformal).
+# gridDataset = model output from WACCM or WRF-Chem
+# when = desired date-time frame of gridDataset
+# latPair, lonPair = coordinates of a single point, or bounding box (SW to NE)
+# altPair = altitude bounds over which to average
+# return the mean value of single point or the bounding box
+def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair):
+    # find the time index
+    whenStr = when.strftime("%Y-%m-%d_%H:%M:%S")
+    logger.info(f"whenStr = {whenStr}")
+    timesVar = gridDataset["Times"]
+    timesVarStrings = timesVar.str.decode("utf-8")
+    stringMatches = numpy.where(timesVarStrings == whenStr)
+    timeIndex = stringMatches[0][0]
+    logger.info(f"timeIndex = {timeIndex}")
+
+    # estimate the grid spacing
+    latVar = gridDataset["XLAT"].data
+    latStride = latVar[timeIndex, 1, 0] - latVar[timeIndex, 0, 0]
+    lonVar = gridDataset["XLONG"].data
+    lonStride = lonVar[timeIndex, 0, 1] - lonVar[timeIndex, 0, 0]
+    logger.info(f"latStride = {latStride}   lonStride = {lonStride}")
+
+    # loop through the sub-grid and extract points
+    numGridLats = math.ceil((latPair[1] - latPair[0]) / latStride) + 1      # include the endpoint
+    numGridLons = math.ceil((lonPair[1] - lonPair[0]) / lonStride) + 1
+    logger.info(f"Requested sub-grid will be {numGridLats} lats x {numGridLons} lons.")
+
+    latTicks = numpy.linspace(latPair[0], latPair[1], numGridLats)
+    lonTicks = numpy.linspace(lonPair[0], lonPair[1], numGridLons)
+    logger.info(f"latTicks = {latTicks}")
+    logger.info(f"lonTicks = {lonTicks}")
+
+    iLat, iLon = None, None
+    singlePoints = []
+    for latFloat in latTicks:
+        for lonFloat in lonTicks:
+            logger.debug(f"latFloat = {latFloat}   lonFloat = {lonFloat}")
+
+            # select data from the nearest grid point
+            iLat, iLon = findClosestVertex(gridDataset,
+                "XLAT", "XLONG", latFloat, lonFloat, iLat, iLon)
+            logger.debug(f"iLat = {iLat}   iLon = {iLon}")
+            singlePoint = gridDataset.isel(Time=timeIndex,
+            #                               west_east=iLon, south_north=iLat, bottom_top=0)  # surface
+                                           west_east=iLon, south_north=iLat, bottom_top=[0,17, 23, 33, 41])  # surface
+            singlePoints.append(singlePoint)
+            logger.debug(f"singlePoint = {singlePoint}")
+
+    logger.info(f"Combining {len(singlePoints)} points into a single set...")
+    pointDimension = "point_index"
+    pointSet = xarray.concat(singlePoints, pointDimension)
+    logger.debug(f"WACCM / WRF-Chem pointSet = {pointSet}")
+
+    logger.info(f"Calculating mean value of the set...")
+    meanPoint = pointSet.mean(dim=[pointDimension], keep_attrs=True)
+
+    return meanPoint
 
