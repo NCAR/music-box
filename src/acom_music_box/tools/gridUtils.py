@@ -9,6 +9,8 @@ import math
 import numbers
 import numpy
 import xarray
+import netCDF4
+import wrf
 
 import logging
 logger = logging.getLogger(__name__)
@@ -28,17 +30,30 @@ def altitudeToPressure(altMeters):
     return pressure
 
 
-# Find the nearest value in an array.
-# Return nearest value and index where it was found
-def findNearest(array, value):
-    index = (numpy.abs(array - value)).argmin()
-    return [array[index], index]
-
-
 # Return true if variable is int or float, false if not.
 def isNumber(myVar):
     return (isinstance(myVar, numbers.Number)
         and not isinstance(myVar, bool))
+
+
+# Find the nearest value in an array of altitude values.
+# reversed = values are listed from top of atmosphere to surface (WACCM)
+# Return nearest height value and index where it was found
+def findNearestAltitude(array, value, reversed=False):
+    isNum = isNumber(value)
+    logger.debug(f"value = {value}   isNum = {isNum}")
+    if not isNumber(value):
+        if (value.lower() == kSurfaceKeyword):
+            if (not reversed):
+                return [0.0, 0]    # only WRF-Chem
+            else:
+                return [0.0, len(array) - 1]
+
+        # TODO: add handler for variable names like PBLH
+
+    # locate the closest height
+    index = (numpy.abs(array - value)).argmin()
+    return [array[index], index]
 
 
 # Calcuate the squared distance between points.
@@ -163,6 +178,23 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
     return (latIndex, lonIndex)
 
 
+# Python cannot take the mean() of strings, so remove them.
+# myDataset = contains data variables, some of type string.
+# return myDataset with string variables removed
+def removeStringVars(myDataset):
+    stringVars = []
+    for varName, varDataArray in myDataset.data_vars.items():
+        if not (numpy.issubdtype(varDataArray.dtype, numpy.number)
+                or numpy.issubdtype(varDataArray.dtype, numpy.datetime64)
+                or numpy.issubdtype(varDataArray.dtype, numpy.timedelta64)
+                ):
+            stringVars.append(varName)
+
+    logger.debug(f"removing stringVars = {stringVars}")
+    numericDataset = myDataset.drop_vars(stringVars)
+    return numericDataset
+
+
 # Extract mean values from a lat-lon rectangle within model output.
 # As of October 2025, WACCM uses a straight grid (Mercator)
 # and WRF-Chem is curved (Lambert Conformal).
@@ -208,7 +240,8 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
     for pi in range(0, 2):
         # WACCM uses pressure coordinates from top of atmosphere down to surface,
         # and the user probably specifies from lower altitude to higher.
-        dummy, pressIndexPair[1 - pi] = findNearest(pressLevels, pressPair[pi])     # reverse the index bounds
+        dummy, pressIndexPair[1 - pi] = findNearestAltitude(
+            pressLevels, pressPair[pi], reversed=True)     # reverse the index bounds
         logger.debug(f"nearest = {dummy} at index {pressIndexPair[1-pi]}")
     logger.info(f"Pressure indexes are {pressIndexPair[0]} through {pressIndexPair[1]}")
 
@@ -219,25 +252,30 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
 
     gridBox = gridDataset.sel(lat=latTicks, lon=lonTicks,
                               lev=pressLevels[pressIndexPair[0]: pressIndexPair[1] + 1],
-                              time=whenStr, method="nearest")   # surface
+                              time=whenStr, method="nearest")
     logger.debug(f"gridBox = {gridBox}")
 
     # cannot take the mean() of strings, so remove them
-    stringVars = []
-    for varName, varDataArray in gridBox.data_vars.items():
-        if not (numpy.issubdtype(varDataArray.dtype, numpy.number)
-                or numpy.issubdtype(varDataArray.dtype, numpy.datetime64)
-                or numpy.issubdtype(varDataArray.dtype, numpy.timedelta64)
-                ):
-            stringVars.append(varName)
-    logger.info(f"removing stringVars = {stringVars}")
-    gridBox = gridBox.drop_vars(stringVars)
+    gridBox = removeStringVars(gridBox)
 
     logger.info(f"WACCM gridBox = {gridBox}")
     meanPoint = gridBox.mean(dim=["lat", "lon"], keep_attrs=True)
     logger.debug(f"meanPoint = {meanPoint}")
 
     return meanPoint
+
+
+# Calculate indexes of levels to retrieve in a whole column.
+# wholeColumn = altitudes from surface to top of atmosphere
+# altitudes[] = lower and upper values to select
+# return indexes like [23, 24, 25, 26, 27]
+def getSubColumn(wholeColumn, altitudes):
+    logger.debug(f"wholeColumn = {wholeColumn} meters")
+    dummy, lower = findNearestAltitude(wholeColumn, altitudes[0])
+    dummy, upper = findNearestAltitude(wholeColumn, altitudes[1])
+    #logger.debug(f"lower = {lower}   upper = {upper} meters")
+    indexes = list(range(lower, upper+1))
+    return indexes
 
 
 # Extract mean values from a lat-lon rectangle within model output.
@@ -247,8 +285,10 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
 # when = desired date-time frame of gridDataset
 # latPair, lonPair = coordinates of a single point, or bounding box (SW to NE)
 # altPair = altitude bounds over which to average
+# wrfDataset = WRF-Chem file opened as netCDF4 Dataset
 # return the mean value of single point or the bounding box
-def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair):
+def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
+    wrfDataset):
     # find the time index
     whenStr = when.strftime("%Y-%m-%d_%H:%M:%S")
     logger.info(f"whenStr = {whenStr}")
@@ -275,21 +315,34 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair):
     logger.info(f"latTicks = {latTicks}")
     logger.info(f"lonTicks = {lonTicks}")
 
+    # use wrf-python to obtain the z-level grid for this time frame
+    zLevels = wrf.getvar(wrfDataset, "z")   # meters
+    logger.debug(f"zLevels = {zLevels}")
+
     iLat, iLon = None, None
     singlePoints = []
     for latFloat in latTicks:
         for lonFloat in lonTicks:
-            logger.debug(f"latFloat = {latFloat}   lonFloat = {lonFloat}")
+            logger.info(f"latFloat = {latFloat}   lonFloat = {lonFloat}")
 
             # select data from the nearest grid point
             iLat, iLon = findClosestVertex(gridDataset,
                 "XLAT", "XLONG", latFloat, lonFloat, iLat, iLon)
             logger.debug(f"iLat = {iLat}   iLon = {iLon}")
+
+            # retrieve the sub-column between the altitude bounds
+            verticalIndexes = getSubColumn(zLevels.values[:, iLat, iLon], altPair)
+            logger.debug(f"verticalIndexes = {verticalIndexes}")
             singlePoint = gridDataset.isel(Time=timeIndex,
             #                               west_east=iLon, south_north=iLat, bottom_top=0)  # surface
-                                           west_east=iLon, south_north=iLat, bottom_top=[0,17, 23, 33, 41])  # surface
+                                           west_east=iLon, south_north=iLat, bottom_top=verticalIndexes)  # surface
+            logger.debug(f"Sub-column singlePoint = {singlePoint}")
+
+            singlePoint = removeStringVars(singlePoint)
+            logger.debug(f"Numeric singlePoint = {singlePoint}")
+            singlePoint = singlePoint.mean(skipna=True, keep_attrs=True)   # take mean within sub-column
+            logger.debug(f"Mean singlePoint = {singlePoint}")
             singlePoints.append(singlePoint)
-            logger.debug(f"singlePoint = {singlePoint}")
 
     logger.info(f"Combining {len(singlePoints)} points into a single set...")
     pointDimension = "point_index"

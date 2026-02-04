@@ -19,6 +19,7 @@ import tempfile
 import zipfile
 from acom_music_box import Examples, __version__
 from acom_music_box.utils import calculate_air_density
+import netCDF4
 import wrf
 from acom_music_box.tools import gridUtils
 
@@ -276,11 +277,14 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
                                      latitudes, longitudes, altitudes)
 
     elif (modelType == WRFCHEM_OUT):        # curved grid
+        wrfDataSet = netCDF4.Dataset(waccmFilepath)     # needed for the z-levels
         meanPoint = gridUtils.meanCurvedGrid(waccmDataSet, when,
-                                   latitudes, longitudes, altitudes)
+                                   latitudes, longitudes, altitudes,
+                                   wrfDataSet)
+        wrfDataSet.close()
 
     # diagnostic to look at single point structure
-    logger.info(f"WACCM / WRF-Chem meanPoint = {meanPoint}")
+    logger.debug(f"WACCM / WRF-Chem meanPoint = {meanPoint}")
 
     # loop through vars and build another dictionary
     musicaDict = {}
@@ -292,7 +296,7 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
             continue
 
         chemSinglePoint = meanPoint[waccmKey]
-        logger.debug(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
+        logger.info(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
         # this next line takes the mean along any remaining vertical axis/dimension
         musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)   # from 0-dim array
         logger.debug(f"musicaTuple = {musicaTuple}")
