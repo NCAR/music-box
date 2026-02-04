@@ -322,8 +322,9 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
     iLat, iLon = None, None
     singlePoints = []
     for latFloat in latTicks:
+        logger.info(f"latFloat = {latFloat}")
         for lonFloat in lonTicks:
-            logger.info(f"latFloat = {latFloat}   lonFloat = {lonFloat}")
+            logger.debug(f"\tlatFloat = {latFloat}   lonFloat = {lonFloat}")
 
             # select data from the nearest grid point
             iLat, iLon = findClosestVertex(gridDataset,
@@ -332,7 +333,7 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
 
             # retrieve the sub-column between the altitude bounds
             verticalIndexes = getSubColumn(zLevels.values[:, iLat, iLon], altPair)
-            logger.debug(f"verticalIndexes = {verticalIndexes}")
+            logger.info(f"verticalIndexes = {verticalIndexes}")
             singlePoint = gridDataset.isel(Time=timeIndex,
             #                               west_east=iLon, south_north=iLat, bottom_top=0)  # surface
                                            west_east=iLon, south_north=iLat, bottom_top=verticalIndexes)  # surface

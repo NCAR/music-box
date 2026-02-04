@@ -202,7 +202,7 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
         # build a simple species map
         varMap = {
             "T": "temperature",
-            "PS": "pressure",
+            "lev": "pressure",      # WACCM sigma pressure coordinates
             "N2O": "N2O",
             "H2O2": "H2O2",
             "O3": "O3",
@@ -231,13 +231,13 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     if (modelType == WACCM_OUT):
         varMap = {
             "T": "temperature",
-            "PS": "pressure"
+            "lev": "pressure"       # sigma pressure coordinates
         }
     elif (modelType == WRFCHEM_OUT):
         varMap = {
             # WRF-Chem: MusicBox
             "T2": "temperature",
-            "P": "pressure",
+            "PB": "pressure",
             "isopr": "ISOPB02",
             "o3": "O3"
         }
