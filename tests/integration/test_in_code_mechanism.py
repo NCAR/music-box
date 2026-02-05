@@ -1,4 +1,4 @@
-from acom_music_box import MusicBox, Conditions
+from acom_music_box import MusicBox
 import musica.mechanism_configuration as mc
 
 import math
@@ -30,36 +30,37 @@ class TestInCodeMechanism:
         box_model = MusicBox()
         box_model.load_mechanism(mechanism)
 
-        # Set the initial conditions
-        box_model.initial_conditions = Conditions(
-            temperature=298.15,
-            pressure=101325.0,
-            species_concentrations={
-                "A": 1.0,
-                "B": 0.0,
-                "C": 0.0,
-                "D": 10.0,
-                "E": 0.0,
-                "F": 0.0,
-            })
-
-        # Set the evolving conditions
-        box_model.add_evolving_condition(
-            300.0,
-            Conditions(
-                temperature=310.0,
-                pressure=100100.0,
-                species_concentrations={
-                    "D": 1.0,
+        # Set the initial conditions using new API
+        (box_model
+            .set_condition(
+                time=0,
+                temperature=298.15,
+                pressure=101325.0,
+                concentrations={
+                    "A": 1.0,
+                    "B": 0.0,
+                    "C": 0.0,
+                    "D": 10.0,
                     "E": 0.0,
                     "F": 0.0,
                 }))
-        box_model.add_evolving_condition(
-            450.0,
-            Conditions(
+
+        # Set the evolving conditions using new API
+        (box_model
+            .set_condition(
+                time=300.0,
+                temperature=310.0,
+                pressure=100100.0,
+                concentrations={
+                    "D": 1.0,
+                    "E": 0.0,
+                    "F": 0.0,
+                })
+            .set_condition(
+                time=450.0,
                 temperature=280.0,
                 pressure=90500.0,
-                species_concentrations={
+                concentrations={
                     "A": 100.0,
                     "B": 0.0,
                     "C": 0.0,
