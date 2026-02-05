@@ -208,22 +208,24 @@ class MusicBox:
         chem_step_time = self.box_model_options.chem_step_time
 
         # Get concentration events (times where concentrations are explicitly set)
-        concentration_events = self._conditions_manager.concentration_events
+        # Normalize event times to floats to avoid type mismatches (e.g., 0 vs 0.0 or numpy floats)
+        raw_concentration_events = self._conditions_manager.concentration_events
+        concentration_events = {float(t): v for t, v in raw_concentration_events.items()}
 
         # Get species names for output formatting
         species_names = list(self.state.get_concentrations().keys())
 
         # Get initial conditions and set them on the state
-        curr_conds = self._conditions_manager.get_conditions_at_time(0)
+        curr_conds = self._conditions_manager.get_conditions_at_time(0.0)
         self.state.set_conditions(curr_conds["temperature"], curr_conds["pressure"])
-        if 0 in concentration_events:
-            self.state.set_concentrations(concentration_events[0])
+        if 0.0 in concentration_events:
+            self.state.set_concentrations(concentration_events[0.0])
         self.state.set_user_defined_rate_parameters(
             self._normalize_rate_params(curr_conds["rate_parameters"])
         )
 
         # Track which concentration event times we've processed
-        processed_conc_times = {0}
+        processed_conc_times = {0.0}
 
         # Run the simulation, collecting raw output
         curr_time = 0.0
