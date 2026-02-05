@@ -212,6 +212,10 @@ class MusicBox:
         raw_concentration_events = self._conditions_manager.concentration_events
         concentration_events = {float(t): v for t, v in raw_concentration_events.items()}
 
+        # Sort concentration event times once for efficient lookup
+        sorted_event_times = sorted(concentration_events.keys())
+        next_event_idx = 0  # Track index of next event to process
+
         # Get species names for output formatting
         species_names = list(self.state.get_concentrations().keys())
 
@@ -220,12 +224,12 @@ class MusicBox:
         self.state.set_conditions(curr_conds["temperature"], curr_conds["pressure"])
         if 0.0 in concentration_events:
             self.state.set_concentrations(concentration_events[0.0])
+            # Skip the initial event since we've already processed it
+            if sorted_event_times and sorted_event_times[0] == 0.0:
+                next_event_idx = 1
         self.state.set_user_defined_rate_parameters(
             self._normalize_rate_params(curr_conds["rate_parameters"])
         )
-
-        # Track which concentration event times we've processed
-        processed_conc_times = {0.0}
 
         # Run the simulation, collecting raw output
         curr_time = 0.0
@@ -245,10 +249,15 @@ class MusicBox:
                         break
 
                 # Apply any concentration events we've crossed
-                for event_time in concentration_events:
-                    if event_time <= curr_time and event_time not in processed_conc_times:
-                        self.state.set_concentrations(concentration_events[event_time])
-                        processed_conc_times.add(event_time)
+                # Process events using index tracking (O(1) amortized per timestep)
+                # When multiple events occur at same time, processes all of them (O(k) where k is events at that time)
+                while next_event_idx < len(sorted_event_times):
+                    next_event_time = sorted_event_times[next_event_idx]
+                    if next_event_time <= curr_time:
+                        self.state.set_concentrations(concentration_events[next_event_time])
+                        next_event_idx += 1
+                    else:
+                        break  # No more events to process at this time
 
                 # Look up conditions at current time (step interpolation for env/rate params)
                 curr_conds = self._conditions_manager.get_conditions_at_time(curr_time)
