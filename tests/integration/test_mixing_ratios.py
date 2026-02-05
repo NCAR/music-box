@@ -34,7 +34,7 @@ class TestAnalyticalWithMixingRatios:
 
         # Get species concentrations from concentration_events
         conc_events = box_model.concentration_events
-        initial_concs = conc_events.get(0, conc_events.get(0.0, {}))
+        initial_concs = conc_events.get(0.0, {})
         initial_A = initial_concs.get("A", 0.0)
         initial_B = initial_concs.get("B", 0.0)
         initial_C = initial_concs.get("C", 0.0)

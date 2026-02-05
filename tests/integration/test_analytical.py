@@ -33,7 +33,7 @@ class TestAnalytical:
         raw_conds = box_model.conditions_raw
         time_zero_row = raw_conds[raw_conds["time.s"] == 0].iloc[0]
         conc_events = box_model.concentration_events
-        initial_concs = conc_events.get(0, conc_events.get(0.0, {}))
+        initial_concs = conc_events.get(0.0, {})
         initial_A = initial_concs.get("A", 0.8)
         initial_B = initial_concs.get("B", 0.0)
         initial_C = initial_concs.get("C", 0.0)

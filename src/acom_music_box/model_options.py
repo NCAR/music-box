@@ -17,7 +17,8 @@ class BoxModelOptions:
             chem_step_time=None,
             output_step_time=None,
             simulation_length=None,
-            grid="box"):
+            grid="box",
+            max_iterations=1000):
         """
         Initializes a new instance of the BoxModelOptions class.
 
@@ -26,17 +27,37 @@ class BoxModelOptions:
             output_step_time (float): Time step for output data in the simulation in hours.
             simulation_length (float): Length of the simulation in hours.
             grid (str): The type of grid. Default is "box".
+            max_iterations (int): Maximum iterations for solver substeps. Default is 1000.
         """
         self.chem_step_time = chem_step_time
         self.output_step_time = output_step_time
         self.simulation_length = simulation_length
         self.grid = grid
+        self.max_iterations = max_iterations
 
     def __repr__(self):
-        return f"BoxModelOptions(chem_step_time={self.chem_step_time}, output_step_time={self.output_step_time}, simulation_length={self.simulation_length}, grid={self.grid})"
+        return (
+            "BoxModelOptions(chem_step_time={0}, output_step_time={1}, "
+            "simulation_length={2}, grid={3}, max_iterations={4})"
+        ).format(
+            self.chem_step_time,
+            self.output_step_time,
+            self.simulation_length,
+            self.grid,
+            self.max_iterations
+        )
 
     def __str__(self):
-        return f"BoxModelOptions Time step: {self.chem_step_time}, Output time step: {self.output_step_time}, Simulation length: {self.simulation_length}, Grid: {self.grid}"
+        return (
+            "BoxModelOptions Time step: {0}, Output time step: {1}, "
+            "Simulation length: {2}, Grid: {3}, Max iterations: {4}"
+        ).format(
+            self.chem_step_time,
+            self.output_step_time,
+            self.simulation_length,
+            self.grid,
+            self.max_iterations
+        )
 
     @classmethod
     def from_config(cls, config_JSON):
@@ -61,5 +82,6 @@ class BoxModelOptions:
             'simulation length')
 
         grid = config_JSON['box model options']['grid']
+        max_iterations = config_JSON['box model options'].get('max iterations', 1000)
 
-        return cls(chem_step_time, output_step_time, simulation_length, grid)
+        return cls(chem_step_time, output_step_time, simulation_length, grid, max_iterations)

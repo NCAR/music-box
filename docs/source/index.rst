@@ -53,6 +53,7 @@ Welcome to Music Box's documentation!
    :caption: Contents:
 
    getting_started
+   changelog
    user_guide/index
    tutorials/index
    api/index

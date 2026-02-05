@@ -257,7 +257,7 @@ class ConditionsManager:
         self._concentration_events = {}
         if conc_cols:
             for _, row in df.iterrows():
-                time = row[self.TIME_COLUMN]
+                time = float(row[self.TIME_COLUMN])
                 concs = {}
                 for col in conc_cols:
                     if pd.notna(row[col]):
@@ -295,7 +295,7 @@ class ConditionsManager:
 
         # Merge non-concentration columns into _df
         for _, row in df.iterrows():
-            time = row[self.TIME_COLUMN]
+            time = float(row[self.TIME_COLUMN])
             time_mask = self._df[self.TIME_COLUMN] == time
 
             if time_mask.any():
@@ -317,6 +317,7 @@ class ConditionsManager:
                         species = col.split(".")[1]
                         concs[species] = row[col]
                 if concs:
+                    # time is already converted to float above
                     if time not in self._concentration_events:
                         self._concentration_events[time] = {}
                     self._concentration_events[time].update(concs)
@@ -426,12 +427,9 @@ class ConditionsManager:
             logger.warning(f"No initial pressure. Defaulting to {self.DEFAULT_PRESSURE} Pa")
             self._df.loc[row_idx, self.PRESSURE_COLUMN] = self.DEFAULT_PRESSURE
 
-        # Check concentrations
-        for col in self._df.columns:
-            if col.startswith("CONC.") and pd.isna(self._df.loc[row_idx, col]):
-                species = col.split(".")[1]
-                logger.warning(f"No initial concentration for {species}. Defaulting to 0")
-                self._df.loc[row_idx, col] = self.DEFAULT_CONCENTRATION
+        # Check concentrations in _concentration_events
+        # Note: We don't warn for missing concentrations since they default to 0
+        # in the solver. Users may intentionally start with zero concentrations.
 
     def get_template(self) -> pd.DataFrame:
         """

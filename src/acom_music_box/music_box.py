@@ -206,11 +206,10 @@ class MusicBox:
         simulation_length = self.box_model_options.simulation_length
         output_step_time = self.box_model_options.output_step_time
         chem_step_time = self.box_model_options.chem_step_time
+        max_iterations = self.box_model_options.max_iterations
 
         # Get concentration events (times where concentrations are explicitly set)
-        # Normalize event times to floats to avoid type mismatches (e.g., 0 vs 0.0 or numpy floats)
-        raw_concentration_events = self._conditions_manager.concentration_events
-        concentration_events = {float(t): v for t, v in raw_concentration_events.items()}
+        concentration_events = self._conditions_manager.concentration_events
 
         # Sort concentration event times once for efficient lookup
         sorted_event_times = sorted(concentration_events.keys())
@@ -249,8 +248,6 @@ class MusicBox:
                         break
 
                 # Apply any concentration events we've crossed
-                # Process events using index tracking (O(1) amortized per timestep)
-                # When multiple events occur at same time, processes all of them (O(k) where k is events at that time)
                 while next_event_idx < len(sorted_event_times):
                     next_event_time = sorted_event_times[next_event_idx]
                     if next_event_time <= curr_time:
@@ -268,15 +265,29 @@ class MusicBox:
 
                 # Solve for one chemistry step
                 elapsed = 0
+                iteration_count = 0
                 while elapsed < chem_step_time:
+                    iteration_count += 1
+                    if max_iterations is not None and iteration_count > max_iterations:
+                        msg = (
+                            "Solver exceeded maximum substep iterations "
+                            f"({max_iterations}) at time {curr_time:.2f} s. "
+                            "This may indicate non-convergence or overly small steps. "
+                            f"Check the conditions at this time step: {curr_conds}"
+                        )
+                        raise Exception(msg)
                     remaining_time = chem_step_time - elapsed
                     result = self.solver.solve(self.state, remaining_time)
                     elapsed += result.stats.final_time
                     curr_time += result.stats.final_time
                     if result.state != SolverState.Converged:
-                        print(f"Solver state: {result.state}, time: {curr_time}")
+                        msg = f"Solver failed to converge at time {curr_time:.2f} s with state {result.state}."
+                        msg += "Often this can be caused by reaction rates that are set to zero or are extremely large."
+                        msg += f"Check the conditions at this time step: {curr_conds}"
+                        msg += "Solver stats: " + str(result.stats)
+                        raise Exception(msg)
 
-                pbar.update(chem_step_time)
+                pbar.update(elapsed)
 
         return self._format_output(output_array, species_names)
 
