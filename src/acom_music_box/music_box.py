@@ -209,7 +209,6 @@ class MusicBox:
         max_iterations = self.box_model_options.max_iterations
 
         # Get concentration events (times where concentrations are explicitly set)
-        # Normalize event times to floats to avoid type mismatches (e.g., 0 vs 0.0 or numpy floats)
         raw_concentration_events = self._conditions_manager.concentration_events
         concentration_events = {float(t): v for t, v in raw_concentration_events.items()}
 
@@ -250,8 +249,6 @@ class MusicBox:
                         break
 
                 # Apply any concentration events we've crossed
-                # Process events using index tracking (O(1) amortized per timestep)
-                # When multiple events occur at same time, processes all of them (O(k) where k is events at that time)
                 while next_event_idx < len(sorted_event_times):
                     next_event_time = sorted_event_times[next_event_idx]
                     if next_event_time <= curr_time:
