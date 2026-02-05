@@ -3,7 +3,6 @@ Unit tests for the ConditionsManager class.
 """
 import pytest
 import pandas as pd
-import numpy as np
 import tempfile
 import os
 import json
@@ -218,51 +217,6 @@ class TestConditionsManager:
         raw_df = manager.raw
         assert len(raw_df) == 2
         assert list(raw_df["time.s"]) == [0, 3600]
-
-    def test_normalize_legacy_column_bracket_format(self):
-        """Test normalizing legacy bracket format columns."""
-        manager = ConditionsManager()
-
-        # Test bracket format conversion
-        assert manager._normalize_legacy_column("ENV.temperature [K]") == "ENV.temperature.K"
-        assert manager._normalize_legacy_column("CONC.A [mol m-3]") == "CONC.A.mol m-3"
-        assert manager._normalize_legacy_column("PHOTO.O3 [s-1]") == "PHOTO.O3.s-1"
-
-    def test_normalize_legacy_column_already_new_format(self):
-        """Test that already normalized columns pass through."""
-        manager = ConditionsManager()
-
-        assert manager._normalize_legacy_column("ENV.temperature.K") == "ENV.temperature.K"
-        assert manager._normalize_legacy_column("CONC.A.mol m-3") == "CONC.A.mol m-3"
-
-    def test_load_from_json_config_legacy_format(self):
-        """Test loading from legacy JSON config format."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Create a test config file
-            config = {
-                "environmental conditions": {
-                    "temperature": {"initial value [K]": 300},
-                    "pressure": {"initial value [Pa]": 101325}
-                },
-                "initial conditions": {
-                    "data": [
-                        ["CONC.A [mol m-3]", "CONC.B [mol m-3]"],
-                        [1.0, 0.5]
-                    ]
-                }
-            }
-
-            config_path = os.path.join(tmpdir, "config.json")
-            with open(config_path, 'w') as f:
-                json.dump(config, f)
-
-            manager = ConditionsManager.from_config(config_path, config)
-
-            conds = manager.get_conditions_at_time(0)
-            assert conds["temperature"] == 300
-            assert conds["pressure"] == 101325
-            assert conds["species_concentrations"]["A"] == 1.0
-            assert conds["species_concentrations"]["B"] == 0.5
 
     def test_load_from_json_config_new_format(self):
         """Test loading from new unified JSON config format."""

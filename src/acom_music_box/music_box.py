@@ -178,25 +178,14 @@ class MusicBox:
         """
         return self._conditions_manager.get_template()
 
-    # -------------------------------------------------------------------------
-    # Solver Methods
-    # -------------------------------------------------------------------------
-
-    def solve(self, callback=None):
+    def solve(self) -> pd.DataFrame:
         """
-        Solves the box model simulation and optionally writes the output to a file.
-
-        This function runs the box model simulation using the current settings and
-        conditions. If a path is provided, it writes the output of the simulation to
-        the specified file.
-
-        Args:
-            callback (function, optional): A callback function that is called after each time step.
-                The callback will take the most recent results, the current time, conditions,
-                and the total simulation time as arguments.
+        Solve the box model simulation.
 
         Returns:
-            pd.DataFrame: A DataFrame with the simulation results at each output timestep.
+            pd.DataFrame: Results with columns time.s, ENV.temperature.K,
+            ENV.pressure.Pa, ENV.air number density.mol m-3, and
+            CONC.<species>.mol m-3 for each species.
         """
         if self.solver is None:
             raise Exception(f"Error: MusicBox object {self} has no solver.")
@@ -220,10 +209,8 @@ class MusicBox:
         # Get concentration events (times where concentrations are explicitly set)
         concentration_events = self._conditions_manager.concentration_events
 
-        # Build output header
-        header = ["time.s", "ENV.temperature.K", "ENV.pressure.Pa", "ENV.air number density.mol m-3"]
-        for species, _ in self.state.get_concentrations().items():
-            header.append("CONC." + species + ".mol m-3")
+        # Get species names for output formatting
+        species_names = list(self.state.get_concentrations().keys())
 
         # Get initial conditions and set them on the state
         curr_conds = self._conditions_manager.get_conditions_at_time(0)
@@ -237,7 +224,7 @@ class MusicBox:
         # Track which concentration event times we've processed
         processed_conc_times = {0}
 
-        # Run the simulation
+        # Run the simulation, collecting raw output
         curr_time = 0.0
         next_output_time = curr_time
         output_array = []
@@ -245,30 +232,10 @@ class MusicBox:
         with tqdm(total=simulation_length, desc="Simulation Progress", unit=f" [model integration steps ({chem_step_time} s)]", leave=False) as pbar:
             while curr_time <= simulation_length:
 
-                # Output to output_array if enough time has elapsed
+                # Collect output if enough time has elapsed
                 if next_output_time <= curr_time:
-                    row = []
-                    row.append(curr_time)
-                    state_conditions = self.state.get_conditions()
-                    row.append(state_conditions["temperature"][0])
-                    row.append(state_conditions["pressure"][0])
-                    row.append(state_conditions["air_density"][0])
-                    for _, concentration in self.state.get_concentrations().items():
-                        row.append(concentration[0])
-                    output_array.append(row)
-
+                    output_array.append(self._collect_output_row(curr_time))
                     next_output_time += output_step_time
-
-                    # Call callback function if present
-                    if callback is not None:
-                        df = pd.DataFrame(output_array[:-1], columns=header)
-                        callback_conditions = type('Conditions', (), {
-                            'temperature': curr_conds["temperature"],
-                            'pressure': curr_conds["pressure"],
-                            'species_concentrations': concentration_events.get(curr_time, {}),
-                            'rate_parameters': curr_conds["rate_parameters"]
-                        })()
-                        callback(df, curr_time, callback_conditions, simulation_length)
 
                     # Bail out mid-loop if we completed the final output step
                     if next_output_time > simulation_length:
@@ -291,6 +258,50 @@ class MusicBox:
                 self.solver.solve(self.state, chem_step_time)
                 curr_time += chem_step_time
                 pbar.update(chem_step_time)
+
+        return self._format_output(output_array, species_names)
+
+    def _collect_output_row(self, curr_time: float) -> list:
+        """
+        Collect a single row of output data from the current state.
+
+        Args:
+            curr_time: Current simulation time in seconds.
+
+        Returns:
+            List of [time, temperature, pressure, air_density, conc1, conc2, ...]
+        """
+        state_conditions = self.state.get_conditions()
+        row = [
+            curr_time,
+            state_conditions["temperature"][0],
+            state_conditions["pressure"][0],
+            state_conditions["air_density"][0]
+        ]
+        for _, concentration in self.state.get_concentrations().items():
+            row.append(concentration[0])
+        return row
+
+    def _format_output(self, output_array: list, species_names: list) -> pd.DataFrame:
+        """
+        Format raw output array into a DataFrame with proper column names.
+
+        Args:
+            output_array: List of rows, each containing
+                          [time, temp, pressure, air_density, conc1, conc2, ...]
+            species_names: List of species names in the same order as concentrations.
+
+        Returns:
+            DataFrame with properly named columns.
+        """
+        header = [
+            "time.s",
+            "ENV.temperature.K",
+            "ENV.pressure.Pa",
+            "ENV.air number density.mol m-3"
+        ]
+        for species in species_names:
+            header.append(f"CONC.{species}.mol m-3")
 
         return pd.DataFrame(output_array, columns=header)
 

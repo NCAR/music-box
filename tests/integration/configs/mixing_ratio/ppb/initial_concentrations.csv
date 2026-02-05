@@ -1,2 +1,2 @@
-CONC.A [ppb], CONC.B [mol m-3], CONC.C [mol m-3]
-22376466.38131061, 0.0, 0.0
+time.s,CONC.A.ppb, CONC.B.mol m-3, CONC.C.mol m-3
+0.0,22376466.38131061, 0.0, 0.0

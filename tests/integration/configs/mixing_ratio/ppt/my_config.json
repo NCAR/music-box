@@ -1,4 +1,3 @@
-
 {
   "box model options": {
     "grid": "box",
@@ -6,17 +5,13 @@
     "output time step [sec]": 1,
     "simulation length [sec]": 100
   },
-  "environmental conditions": {
-    "pressure": {
-      "initial value [Pa]": 101253.3
-    },
-    "temperature": {
-      "initial value [K]": 272.5
-    }
-  },
-  "evolving conditions": {
-  },
-  "initial conditions": {
+  "conditions": {
+    "data": [
+      {
+        "headers": ["time.s", "ENV.temperature.K", "ENV.pressure.Pa"],
+        "rows": [[0.0, 272.5, 101253.3]]
+      }
+    ],
     "filepaths": ["initial_concentrations.csv"]
   },
   "model components": [

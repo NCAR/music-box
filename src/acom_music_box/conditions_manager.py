@@ -475,27 +475,32 @@ class ConditionsManager:
         """
         Load conditions from JSON configuration.
 
+        Requires a "conditions" section in the config with the new unified format.
+
         Args:
             path_to_json: Path to the JSON configuration file.
             config: The configuration dictionary.
 
         Returns:
             A ConditionsManager instance with loaded conditions.
+
+        Raises:
+            ValueError: If the config doesn't have a "conditions" section.
         """
         manager = cls()
 
-        # Check for new unified "conditions" section
-        if "conditions" in config:
-            manager._load_from_conditions_section(path_to_json, config["conditions"])
-        else:
-            # Legacy format support
-            manager._load_legacy_format(path_to_json, config)
+        if "conditions" not in config:
+            raise ValueError(
+                "Configuration must have a 'conditions' section. "
+                "See documentation for the expected format."
+            )
 
+        manager._load_from_conditions_section(path_to_json, config["conditions"])
         return manager
 
     def _load_from_conditions_section(self, path_to_json: str, conditions_config: dict):
         """
-        Load conditions from the new unified "conditions" section.
+        Load conditions from the "conditions" section.
 
         Args:
             path_to_json: Path to the JSON configuration file.
@@ -514,200 +519,19 @@ class ConditionsManager:
             for data_block in conditions_config["data"]:
                 self._load_inline_data(data_block)
 
-    def _load_legacy_format(self, path_to_json: str, config: dict):
-        """
-        Load conditions from legacy format (separate sections).
-
-        Args:
-            path_to_json: Path to the JSON configuration file.
-            config: The configuration dictionary.
-        """
-        base_dir = os.path.dirname(path_to_json)
-
-        # Load environmental conditions
-        if "environmental conditions" in config:
-            env_config = config["environmental conditions"]
-            temperature = self._parse_environmental_value(env_config.get("temperature", {}))
-            pressure = self._parse_environmental_value(env_config.get("pressure", {}))
-            if temperature is not None or pressure is not None:
-                self.set_condition(time=0, temperature=temperature, pressure=pressure)
-
-        # Load initial conditions
-        if "initial conditions" in config:
-            init_config = config["initial conditions"]
-
-            # Load from filepaths
-            if "filepaths" in init_config:
-                for filepath in init_config["filepaths"]:
-                    full_path = os.path.join(base_dir, filepath)
-                    self._read_initial_csv(full_path)
-
-            # Load from inline data
-            if "data" in init_config:
-                self._load_legacy_inline_data(init_config["data"])
-
-        # Load evolving conditions
-        if "evolving conditions" in config:
-            evolve_config = config["evolving conditions"]
-
-            if "filepaths" in evolve_config:
-                for filepath in evolve_config["filepaths"]:
-                    full_path = os.path.join(base_dir, filepath)
-                    self._read_evolving_csv(full_path)
-
-    def _parse_environmental_value(self, env_dict: dict) -> float:
-        """
-        Parse an environmental value from a config dict.
-
-        Args:
-            env_dict: Dictionary with 'initial value [unit]' key.
-
-        Returns:
-            The parsed value, or None if not found.
-        """
-        for key, value in env_dict.items():
-            if key.startswith("initial value"):
-                return float(value)
-        return None
-
     def _read_csv(self, file_path: str):
         """
-        Load conditions from a CSV file (new format).
+        Load conditions from a CSV file.
 
         Args:
             file_path: Path to the CSV file.
         """
         df = pd.read_csv(file_path, skipinitialspace=True)
-        df = self._normalize_csv_columns(df)
         self.add_from_dataframe(df)
-
-    def _read_initial_csv(self, file_path: str):
-        """
-        Load initial conditions from a CSV file (legacy format).
-
-        Args:
-            file_path: Path to the CSV file.
-        """
-        df = pd.read_csv(file_path, skipinitialspace=True)
-
-        if len(df) > 1:
-            raise ValueError(
-                f"Initial conditions file ({file_path}) may only have one row of data. "
-                f"There are {len(df)} rows present."
-            )
-
-        # Convert legacy format columns to new format
-        row = df.iloc[0]
-        temperature = None
-        pressure = None
-        concentrations = {}
-        rate_parameters = {}
-
-        for col in df.columns:
-            value = row[col]
-            if pd.isna(value):
-                continue
-
-            col_normalized = self._normalize_legacy_column(col)
-
-            if col_normalized == self.TIME_COLUMN:
-                # Skip time column - it's handled separately
-                continue
-            elif col_normalized == self.TEMPERATURE_COLUMN:
-                temperature = value
-            elif col_normalized == self.PRESSURE_COLUMN:
-                pressure = value
-            elif col_normalized.startswith("CONC."):
-                species = col_normalized.split(".")[1]
-                concentrations[species] = value
-            elif col_normalized.startswith("ENV."):
-                # Skip unrecognized ENV columns (e.g., air_density) - these are derived values
-                logger.debug(f"Skipping unrecognized ENV column: {col_normalized}")
-                continue
-            else:
-                rate_parameters[col_normalized] = value
-
-        self.set_condition(
-            time=0,
-            temperature=temperature,
-            pressure=pressure,
-            concentrations=concentrations if concentrations else None,
-            rate_parameters=rate_parameters if rate_parameters else None
-        )
-
-    def _read_evolving_csv(self, file_path: str):
-        """
-        Load evolving conditions from a CSV file.
-
-        Args:
-            file_path: Path to the CSV file.
-        """
-        df = pd.read_csv(file_path, skipinitialspace=True)
-        df = self._normalize_csv_columns(df)
-        self.add_from_dataframe(df)
-
-    def _normalize_csv_columns(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Normalize CSV column names to the new format.
-
-        Args:
-            df: DataFrame with possibly legacy column names.
-
-        Returns:
-            DataFrame with normalized column names.
-        """
-        rename_map = {}
-        for col in df.columns:
-            new_col = self._normalize_legacy_column(col)
-            if new_col != col:
-                rename_map[col] = new_col
-        return df.rename(columns=rename_map)
-
-    def _normalize_legacy_column(self, col: str) -> str:
-        """
-        Normalize a legacy column name to the new format.
-
-        Handles formats like:
-        - "ENV.temperature [K]" -> "ENV.temperature.K"
-        - "CONC.A [mol m-3]" -> "CONC.A.mol m-3"
-        - "ENV.temperature.K" (already new format)
-
-        Args:
-            col: Column name to normalize.
-
-        Returns:
-            Normalized column name.
-        """
-        # Check if already in new format (has at least 2 dots for most columns)
-        parts = col.split(".")
-        if len(parts) >= 3:
-            # Likely already in new format or needs minor adjustment
-            return col
-
-        # Handle bracket format: "PREFIX.name [unit]"
-        if "[" in col and "]" in col:
-            # Split on bracket
-            base = col.split("[")[0].strip()
-            unit = col.split("[")[1].rstrip("]").strip()
-            return f"{base}.{unit}"
-
-        # Handle special ENV columns
-        if col.startswith("ENV."):
-            name = parts[1] if len(parts) > 1 else ""
-            if "temperature" in name.lower():
-                return self.TEMPERATURE_COLUMN
-            elif "pressure" in name.lower():
-                return self.PRESSURE_COLUMN
-
-        # Handle CONC columns without units
-        if col.startswith("CONC.") and len(parts) == 2:
-            return f"{col}.mol m-3"
-
-        return col
 
     def _load_inline_data(self, data_block: dict):
         """
-        Load conditions from inline data block (new format).
+        Load conditions from inline data block.
 
         Expected format:
         {
@@ -722,57 +546,7 @@ class ConditionsManager:
         rows = data_block["rows"]
 
         df = pd.DataFrame(rows, columns=headers)
-        df = self._normalize_csv_columns(df)
         self.add_from_dataframe(df)
-
-    def _load_legacy_inline_data(self, data_list: list):
-        """
-        Load conditions from legacy inline data format.
-
-        Expected format:
-        [
-            ["ENV.temperature [K]", "CONC.A [mol m-3]", ...],
-            [200, 0.67, ...]
-        ]
-
-        Args:
-            data_list: List with headers as first element, values as second.
-        """
-        if len(data_list) != 2:
-            raise ValueError(
-                f"Initial conditions data should have only header and value rows. "
-                f"There are {len(data_list)} rows present."
-            )
-
-        headers = data_list[0]
-        values = data_list[1]
-
-        # Parse values
-        temperature = None
-        pressure = None
-        concentrations = {}
-        rate_parameters = {}
-
-        for header, value in zip(headers, values):
-            col_normalized = self._normalize_legacy_column(header)
-
-            if col_normalized == self.TEMPERATURE_COLUMN:
-                temperature = float(value)
-            elif col_normalized == self.PRESSURE_COLUMN:
-                pressure = float(value)
-            elif col_normalized.startswith("CONC."):
-                species = col_normalized.split(".")[1]
-                concentrations[species] = float(value)
-            elif col_normalized.startswith(tuple(self.VALID_PREFIXES)):
-                rate_parameters[col_normalized] = float(value)
-
-        self.set_condition(
-            time=0,
-            temperature=temperature,
-            pressure=pressure,
-            concentrations=concentrations if concentrations else None,
-            rate_parameters=rate_parameters if rate_parameters else None
-        )
 
     def get_conditions_at_time(self, time: float) -> dict:
         """
@@ -830,6 +604,11 @@ class ConditionsManager:
 
                 # Skip any CONC columns that might still be in _df (legacy)
                 if col.startswith("CONC."):
+                    continue
+
+                # Skip ENV columns that aren't temperature or pressure
+                # (e.g., ENV.air_density.kg which is computed, not input)
+                if col.startswith("ENV."):
                     continue
 
                 rate_parameters[col] = value

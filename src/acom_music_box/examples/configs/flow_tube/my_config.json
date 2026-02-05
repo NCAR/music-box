@@ -5,16 +5,13 @@
         "output time step [sec]": 1.0,
         "simulation length [hr]": 1.0
     },
-    "environmental conditions": {
-        "temperature": {
-            "initial value [K]": 298.15
-        },
-        "pressure": {
-            "initial value [Pa]": 101325.0
-        }
-    },
-    "evolving conditions": {},
-    "initial conditions": {
+    "conditions": {
+        "data": [
+            {
+                "headers": ["time.s", "ENV.temperature.K", "ENV.pressure.Pa"],
+                "rows": [[0.0, 298.15, 101325.0]]
+            }
+        ],
         "filepaths": [
             "initial_concentrations.csv",
             "initial_reaction_rates.csv"
