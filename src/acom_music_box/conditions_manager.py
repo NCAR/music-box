@@ -427,12 +427,9 @@ class ConditionsManager:
             logger.warning(f"No initial pressure. Defaulting to {self.DEFAULT_PRESSURE} Pa")
             self._df.loc[row_idx, self.PRESSURE_COLUMN] = self.DEFAULT_PRESSURE
 
-        # Check concentrations
-        for col in self._df.columns:
-            if col.startswith("CONC.") and pd.isna(self._df.loc[row_idx, col]):
-                species = col.split(".")[1]
-                logger.warning(f"No initial concentration for {species}. Defaulting to 0")
-                self._df.loc[row_idx, col] = self.DEFAULT_CONCENTRATION
+        # Check concentrations in _concentration_events
+        # Note: We don't warn for missing concentrations since they default to 0
+        # in the solver. Users may intentionally start with zero concentrations.
 
     def get_template(self) -> pd.DataFrame:
         """
