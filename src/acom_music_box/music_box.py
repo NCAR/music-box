@@ -1,4 +1,5 @@
 import musica
+from musica.micm.solver_result import SolverState
 from .conditions_manager import ConditionsManager
 from .model_options import BoxModelOptions
 import json
@@ -207,22 +208,28 @@ class MusicBox:
         chem_step_time = self.box_model_options.chem_step_time
 
         # Get concentration events (times where concentrations are explicitly set)
-        concentration_events = self._conditions_manager.concentration_events
+        # Normalize event times to floats to avoid type mismatches (e.g., 0 vs 0.0 or numpy floats)
+        raw_concentration_events = self._conditions_manager.concentration_events
+        concentration_events = {float(t): v for t, v in raw_concentration_events.items()}
+
+        # Sort concentration event times once for efficient lookup
+        sorted_event_times = sorted(concentration_events.keys())
+        next_event_idx = 0  # Track index of next event to process
 
         # Get species names for output formatting
         species_names = list(self.state.get_concentrations().keys())
 
         # Get initial conditions and set them on the state
-        curr_conds = self._conditions_manager.get_conditions_at_time(0)
+        curr_conds = self._conditions_manager.get_conditions_at_time(0.0)
         self.state.set_conditions(curr_conds["temperature"], curr_conds["pressure"])
-        if 0 in concentration_events:
-            self.state.set_concentrations(concentration_events[0])
+        if 0.0 in concentration_events:
+            self.state.set_concentrations(concentration_events[0.0])
+            # Skip the initial event since we've already processed it
+            if sorted_event_times and sorted_event_times[0] == 0.0:
+                next_event_idx = 1
         self.state.set_user_defined_rate_parameters(
             self._normalize_rate_params(curr_conds["rate_parameters"])
         )
-
-        # Track which concentration event times we've processed
-        processed_conc_times = {0}
 
         # Run the simulation, collecting raw output
         curr_time = 0.0
@@ -242,10 +249,15 @@ class MusicBox:
                         break
 
                 # Apply any concentration events we've crossed
-                for event_time in concentration_events:
-                    if event_time <= curr_time and event_time not in processed_conc_times:
-                        self.state.set_concentrations(concentration_events[event_time])
-                        processed_conc_times.add(event_time)
+                # Process events using index tracking (O(1) amortized per timestep)
+                # When multiple events occur at same time, processes all of them (O(k) where k is events at that time)
+                while next_event_idx < len(sorted_event_times):
+                    next_event_time = sorted_event_times[next_event_idx]
+                    if next_event_time <= curr_time:
+                        self.state.set_concentrations(concentration_events[next_event_time])
+                        next_event_idx += 1
+                    else:
+                        break  # No more events to process at this time
 
                 # Look up conditions at current time (step interpolation for env/rate params)
                 curr_conds = self._conditions_manager.get_conditions_at_time(curr_time)
@@ -255,8 +267,15 @@ class MusicBox:
                 )
 
                 # Solve for one chemistry step
-                self.solver.solve(self.state, chem_step_time)
-                curr_time += chem_step_time
+                elapsed = 0
+                while elapsed < chem_step_time:
+                    remaining_time = chem_step_time - elapsed
+                    result = self.solver.solve(self.state, remaining_time)
+                    elapsed += result.stats.final_time
+                    curr_time += result.stats.final_time
+                    if result.state != SolverState.Converged:
+                        print(f"Solver state: {result.state}, time: {curr_time}")
+
                 pbar.update(chem_step_time)
 
         return self._format_output(output_array, species_names)
