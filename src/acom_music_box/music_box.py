@@ -1,4 +1,5 @@
 import musica
+from musica.micm.solver_result import SolverState
 from .conditions_manager import ConditionsManager
 from .model_options import BoxModelOptions
 import json
@@ -255,8 +256,15 @@ class MusicBox:
                 )
 
                 # Solve for one chemistry step
-                self.solver.solve(self.state, chem_step_time)
-                curr_time += chem_step_time
+                elapsed = 0
+                while elapsed < chem_step_time:
+                    remaining_time = chem_step_time - elapsed
+                    result = self.solver.solve(self.state, remaining_time)
+                    elapsed += result.stats.final_time
+                    curr_time += result.stats.final_time
+                    if result.state != SolverState.Converged:
+                        print(f"Solver state: {result.state}, time: {curr_time}")
+
                 pbar.update(chem_step_time)
 
         return self._format_output(output_array, species_names)
