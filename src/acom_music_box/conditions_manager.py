@@ -257,7 +257,7 @@ class ConditionsManager:
         self._concentration_events = {}
         if conc_cols:
             for _, row in df.iterrows():
-                time = row[self.TIME_COLUMN]
+                time = float(row[self.TIME_COLUMN])
                 concs = {}
                 for col in conc_cols:
                     if pd.notna(row[col]):
@@ -295,7 +295,7 @@ class ConditionsManager:
 
         # Merge non-concentration columns into _df
         for _, row in df.iterrows():
-            time = row[self.TIME_COLUMN]
+            time = float(row[self.TIME_COLUMN])
             time_mask = self._df[self.TIME_COLUMN] == time
 
             if time_mask.any():
@@ -317,6 +317,7 @@ class ConditionsManager:
                         species = col.split(".")[1]
                         concs[species] = row[col]
                 if concs:
+                    # time is already converted to float above
                     if time not in self._concentration_events:
                         self._concentration_events[time] = {}
                     self._concentration_events[time].update(concs)
