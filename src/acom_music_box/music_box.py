@@ -224,7 +224,7 @@ class MusicBox:
         self.state.set_conditions(curr_conds["temperature"], curr_conds["pressure"])
         if 0.0 in concentration_events:
             self.state.set_concentrations(concentration_events[0.0])
-            # Skip the initial event (at time 0.0) if it exists
+            # Skip the initial event since we've already processed it
             if sorted_event_times and sorted_event_times[0] == 0.0:
                 next_event_idx = 1
         self.state.set_user_defined_rate_parameters(
@@ -249,8 +249,8 @@ class MusicBox:
                         break
 
                 # Apply any concentration events we've crossed
-                # Only check the next upcoming event time (O(1) per timestep instead of O(m))
-                # Process all events that have been crossed (handles multiple events at same time)
+                # Process events using index tracking (O(1) amortized per timestep)
+                # When multiple events occur at same time, processes all of them (O(k) where k is events at that time)
                 while next_event_idx < len(sorted_event_times):
                     next_event_time = sorted_event_times[next_event_idx]
                     if next_event_time <= curr_time:
