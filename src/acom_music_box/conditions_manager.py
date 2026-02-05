@@ -462,8 +462,12 @@ class ConditionsManager:
                         elif reaction_type == "SURFACE":
                             columns.append(f"SURF.{name}.particle number concentration.# m-3")
                             columns.append(f"SURF.{name}.effective radius.m")
-            except (AttributeError, TypeError):
-                pass
+            except (AttributeError, TypeError) as exc:
+                # Failed to introspect mechanism species/reactions; fall back to basic columns only.
+                logger.debug(
+                    "Unable to derive condition columns from mechanism in get_template: %s",
+                    exc,
+                )
 
         # Create empty DataFrame with NaN values
         df = pd.DataFrame(columns=columns)
