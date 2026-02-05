@@ -250,11 +250,14 @@ class MusicBox:
 
                 # Apply any concentration events we've crossed
                 # Only check the next upcoming event time (O(1) per timestep instead of O(m))
-                if next_event_idx < len(sorted_event_times):
+                # Process all events that have been crossed (handles multiple events at same time)
+                while next_event_idx < len(sorted_event_times):
                     next_event_time = sorted_event_times[next_event_idx]
                     if next_event_time <= curr_time:
                         self.state.set_concentrations(concentration_events[next_event_time])
                         next_event_idx += 1
+                    else:
+                        break  # No more events to process at this time
 
                 # Look up conditions at current time (step interpolation for env/rate params)
                 curr_conds = self._conditions_manager.get_conditions_at_time(curr_time)
