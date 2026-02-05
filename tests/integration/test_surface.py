@@ -1,5 +1,5 @@
 import musica.mechanism_configuration as mc
-from acom_music_box import MusicBox, Conditions
+from acom_music_box import MusicBox
 import numpy as np
 import os
 import pytest
@@ -14,18 +14,22 @@ def in_code_surface_reaction():
     mechanism = mc.Mechanism(name="test_mechanism", species=list(species.values()), phases=[gas], reactions=[surface])
     box_model = MusicBox()
     box_model.load_mechanism(mechanism)
-    box_model.initial_conditions = Conditions(
-        temperature=300,
-        pressure=101325,
-        species_concentrations={
-            "A": 1.0,
-            "B": 0
-        },
-        rate_parameters={
-            "SURF.surface.particle number concentration [# m-3]": 1e12,
-            "SURF.surface.effective radius [m]": 1e-7
-        }
-    )
+
+    # Set conditions using new API
+    (box_model
+        .set_condition(
+            time=0,
+            temperature=300,
+            pressure=101325,
+            concentrations={
+                "A": 1.0,
+                "B": 0
+            },
+            rate_parameters={
+                "SURF.surface.particle number concentration.# m-3": 1e12,
+                "SURF.surface.effective radius.m": 1e-7
+            }))
+
     box_model.box_model_options.simulation_length = 10
     box_model.box_model_options.chem_step_time = 1
     box_model.box_model_options.output_step_time = 1
