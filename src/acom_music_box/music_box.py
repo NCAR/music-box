@@ -209,8 +209,7 @@ class MusicBox:
         max_iterations = self.box_model_options.max_iterations
 
         # Get concentration events (times where concentrations are explicitly set)
-        raw_concentration_events = self._conditions_manager.concentration_events
-        concentration_events = {float(t): v for t, v in raw_concentration_events.items()}
+        concentration_events = self._conditions_manager.concentration_events
 
         # Sort concentration event times once for efficient lookup
         sorted_event_times = sorted(concentration_events.keys())
