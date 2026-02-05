@@ -561,8 +561,8 @@ class ConditionsManager:
             time: The time point in seconds.
 
         Returns:
-            Dictionary with temperature, pressure, concentrations, and rate_parameters.
-            concentrations is only populated if there's an exact time match.
+            Dictionary with temperature, pressure, species_concentrations, and rate_parameters.
+            species_concentrations is only populated if there's an exact time match.
         """
         # Filter to times <= given time for step interpolation
         valid_df = self._df[self._df[self.TIME_COLUMN] <= time].copy()
@@ -616,12 +616,12 @@ class ConditionsManager:
                 rate_parameters[col] = value
 
         # Concentrations: only return if there's an exact time match
-        concentrations = self._concentration_events.get(time, {})
+        species_concentrations = self._concentration_events.get(time, {})
 
         return {
             "temperature": temperature,
             "pressure": pressure,
-            "concentrations": concentrations,
+            "species_concentrations": species_concentrations,
             "rate_parameters": rate_parameters
         }
 
@@ -640,21 +640,3 @@ class ConditionsManager:
     def __len__(self) -> int:
         """Return number of time points with conditions."""
         return len(self._df[self.TIME_COLUMN].dropna())
-
-    def format_reaction_var_units(name, units=None, prefix=None, particle=None) -> str:
-        """Return formatted title for column of a CSV file."""
-        title = name
-
-        # Build the column title by adding the optional parts;
-        # discard None and zero-length strings.
-        if (prefix is not None):
-            if prefix:
-                title = f"{prefix}.{title}"
-        if (particle is not None):
-            if particle:
-                title = f"{title}.{particle}"
-        if (units is not None):
-            if units:
-                title = f"{title}.{units}"
-
-        return title
