@@ -37,9 +37,11 @@ def isNumber(myVar):
 
 
 # Find the nearest value in an array of altitude values.
+# value = surface, or a value in meters.
+#   Meteorological variables like PBLH are specified in meters before this function is called.
 # reversed = values are listed from top of atmosphere to surface (WACCM)
 # Return nearest height value and index where it was found
-def findNearestAltitude(array, value, reversed=False):
+def findNearestAltitude(altitudes, value, reversed=False):
     isNum = isNumber(value)
     logger.debug(f"value = {value}   isNum = {isNum}")
     if not isNumber(value):
@@ -47,13 +49,11 @@ def findNearestAltitude(array, value, reversed=False):
             if (not reversed):
                 return [0.0, 0]    # only WRF-Chem
             else:
-                return [0.0, len(array) - 1]
-
-        # TODO: add handler for variable names like PBLH
+                return [0.0, len(altitudes) - 1]
 
     # locate the closest height
-    index = (numpy.abs(array - value)).argmin()
-    return [array[index], index]
+    index = (numpy.abs(altitudes - value)).argmin()
+    return [altitudes[index], index]
 
 
 # Calcuate the squared distance between points.
@@ -230,8 +230,12 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
     for pi in range(0, 2):
         if isNumber(altPair[pi]):
             pressPair[pi] = altitudeToPressure(altPair[pi])
-        elif (altPair[pi] == kSurfaceKeyword):
-            pressPair[pi] = altitudeToPressure(0.0)
+        elif (altPair[pi].lower() == kSurfaceKeyword):
+            pressPair[pi] = kSurfaceKeyword
+        else:
+            # handle PBLH here
+            pass
+
     logger.info(f"Requesting pressure range {pressPair[0]} to {pressPair[1]} hPa")
 
     pressLevels = gridDataset["lev"].data
@@ -319,8 +323,27 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
     zLevels = wrf.getvar(wrfDataset, "z")   # meters
     logger.debug(f"zLevels = {zLevels}")
 
+    # load PBLH here if requested
+    # Some model variable (Planetary Boundary Layer Height) can serve
+    # as the lower or upper bound of the average. Those variables
+    # do not have a height dimension.
+    heightVars = [None, None]
+    for hi in range(0, 2):
+        if isNumber(altPair[hi]):
+            continue
+        if (altPair[hi].lower() == kSurfaceKeyword):
+            continue
+
+        # get a pointer to that variable
+        heightVars[hi] = gridDataset[altPair[hi]]
+    logger.debug(f"heightVars = {heightVars}")
+
+    heightPair = altPair.copy()      # we will replace PBLH with the numerical value at each grid cell
+    logger.debug(f"Starting heightPair = {heightPair}")
+
     iLat, iLon = None, None
     singlePoints = []
+    timeIndex = 0
     for latFloat in latTicks:
         logger.info(f"latFloat = {latFloat}")
         for lonFloat in lonTicks:
@@ -331,12 +354,20 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
                 "XLAT", "XLONG", latFloat, lonFloat, iLat, iLon)
             logger.debug(f"iLat = {iLat}   iLon = {iLon}")
 
+            # set up the column bounds for this grid cell
+            for pi in range(0, 2):
+                if (heightVars[pi] is not None):
+                    heightPair[pi] = float(heightVars[pi].data[timeIndex, iLat, iLon])
+            logger.debug(f"heightPair at {iLat}, {iLon} = {heightPair}")
+
             # retrieve the sub-column between the altitude bounds
-            verticalIndexes = getSubColumn(zLevels.values[:, iLat, iLon], altPair)
+            verticalIndexes = getSubColumn(zLevels.values[:, iLat, iLon], heightPair)
             logger.info(f"verticalIndexes = {verticalIndexes}")
+            if (len(verticalIndexes) == 0):
+                logger.debug("\tNo level within those height bounds.")
+                continue        # there is no level here within the height range
             singlePoint = gridDataset.isel(Time=timeIndex,
-            #                               west_east=iLon, south_north=iLat, bottom_top=0)  # surface
-                                           west_east=iLon, south_north=iLat, bottom_top=verticalIndexes)  # surface
+                                           west_east=iLon, south_north=iLat, bottom_top=verticalIndexes)
             logger.debug(f"Sub-column singlePoint = {singlePoint}")
 
             singlePoint = removeStringVars(singlePoint)

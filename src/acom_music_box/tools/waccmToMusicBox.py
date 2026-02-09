@@ -92,7 +92,9 @@ def parse_arguments():
         type=str,
         help=("Height of extraction(s) above sea level, in meters."
               + "\nIf two altitudes supplied, then average over that height range."
-              + "\nIf no altitude supplied, then extract surface level of model output.")
+              + "\nIf no altitude supplied, then extract surface level of model output."
+              + "\nUse the keyword 'surface' to extract the surface layer."
+              + "\nUse a lat-lon variable name to represent that height: PBLH.")
     )
     parser.add_argument(
         '--template',
@@ -139,6 +141,19 @@ def safeFloat(numString):
         result = 0.0
 
     return result
+
+
+# Checks if a string can be converted safely to a float.
+# numString = string that might be a float or a varname like PBLH
+def isFloat(numString):
+    try:
+        float(numString)
+        return True
+    except ValueError:
+        return False
+    except TypeError:
+        # Handles cases like None or non-string inputs
+        return False
 
 
 # Create and return list of WACCM chemical species
@@ -527,7 +542,10 @@ def main():
         altString = myArgs.altitude.replace("'", "").replace('"', '')
         altStrings = altString.split(",")
         for altString in altStrings:
-            alts.append(safeFloat(altString))
+            if isFloat(altString):
+                alts.append(safeFloat(altString))
+            else:
+                alts.append(altString)
     else:
         alts = [gridUtils.kSurfaceKeyword]
 
