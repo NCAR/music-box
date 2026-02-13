@@ -312,6 +312,7 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
 
         chemSinglePoint = meanPoint[waccmKey]
         logger.info(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
+
         # this next line takes the mean along any remaining vertical axis/dimension
         musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)   # from 0-dim array
         logger.debug(f"musicaTuple = {musicaTuple}")

@@ -18,16 +18,25 @@ logger = logging.getLogger(__name__)
 import sys      # bogus, for crashing out early
 
 
-kSurfaceKeyword = "surface"       # request is for the surface layer
+kSurfaceKeyword = "surface"     # request is for the surface layer
+P0 = 1013.25                    # standard surface pressure in hPa
 
 # Convert altitude in meters to pressure in hPa (hectopascals).
 # altMeters = height above sea level (meters)
 # return the pressure level in hPa
 def altitudeToPressure(altMeters):
-    P0 = 1013.25
     temp = math.exp(-altMeters / 8431.0)
     pressure = P0 * temp
     return pressure
+
+
+# Convert pressure in hPa (hectopascals) to altitude in meters.
+# pressure = atmospheric pressure (hPa)
+# return the altitude in meters
+def pressureToAltitude(pressure):
+    temp = math.log(pressure / P0)
+    altitude = -8431.0 * temp
+    return altitude
 
 
 # Return true if variable is int or float, false if not.
@@ -43,7 +52,7 @@ def isNumber(myVar):
 # Return nearest height value and index where it was found
 def findNearestAltitude(altitudes, value, reversed=False):
     isNum = isNumber(value)
-    logger.debug(f"value = {value}   isNum = {isNum}")
+    #logger.debug(f"value = {value}   isNum = {isNum}")
     if not isNumber(value):
         if (value.lower() == kSurfaceKeyword):
             if (not reversed):
@@ -195,6 +204,105 @@ def removeStringVars(myDataset):
     return numericDataset
 
 
+# Load PBLH and other 2D vars if requested.
+# Some model variables (Planetary Boundary Layer Height) can serve
+# as the lower or upper bound of the average. Those variables
+# do not have a height dimension.
+# altParams = pair of command-line args like [surface, PBLH]
+# myDataset = WACCM or WRF-Chem data loaded from disk file
+# return pointers to height vars in myDataset
+def loadHeightVars(altParams, myDataset):
+    heightVars = [None, None]
+    for hi in range(0, 2):
+        if isNumber(altParams[hi]):
+            continue
+        if (altParams[hi].lower() == kSurfaceKeyword):
+            continue
+
+        # get a pointer to that variable
+        heightVars[hi] = myDataset[altParams[hi]]
+
+    return heightVars
+
+
+# Truncate columns in the grid at variable levels like PBLH.
+# The truncation could happen at both ends of the column.
+# mySubGrid = dataset already selected for time and lat-lon bounds
+# altitudePair = altitude bounds in which to select, in meters
+# return grid dataset with same lat-lon size but columns are shorter
+def cutOffColumns(mySubGrid, altitudePair):
+    kPressureKey = "lev"
+    mySubPressure = mySubGrid[kPressureKey].data                   # units are hPa
+    mySubHeights = numpy.zeros(len(mySubPressure))
+    for pi in range(len(mySubPressure)): 
+        mySubHeights[pi] = pressureToAltitude(mySubPressure[pi])      # units are meters
+    logger.debug(f"mySubHeights = {mySubHeights} meters")
+
+    # load PBLH here if requested as some altitude bound
+    heightVars = loadHeightVars(altitudePair, mySubGrid)    # meters
+    logger.debug(f"Original heightVars = {heightVars}")
+
+    heightPair = altitudePair.copy()      # we will replace PBLH with the numerical value at each grid cell
+    logger.debug(f"Starting heightPair = {heightPair} meters")
+
+    # step through the cells of the grid
+    singlePoints = []
+    for lati in range(mySubGrid.sizes["lat"]):
+        for loni in range(mySubGrid.sizes["lon"]):
+
+            # retrieve the PBLH at this grid cell
+            for pi in range(0, 2):
+                if (heightVars[pi] is not None):
+                    heightPair[pi] = float(heightVars[pi].data[lati, loni])
+            logger.debug(f"heightPair at {lati}, {loni} = {heightPair}")
+
+            # set up the height bounds for this column
+            heightIndexPair = [0,0]
+            for pi in range(0, 2):
+                # WACCM uses pressure coordinates from top of atmosphere down to surface,
+                # and the user probably specifies from lower altitude to higher.
+                dummy, heightIndexPair[1 - pi] = findNearestAltitude(
+                    mySubHeights, heightPair[pi], reversed=True)     # reverse the index bounds
+            logger.info(f"Height indexes are {heightIndexPair[0]} through {heightIndexPair[1]}")
+
+            # check for variable surfaces that are locally inverted at this grid point
+            if (heightPair[0] > heightPair[1]):
+                # since lower bound > upper bound at this point, don't include anything
+                logger.info("Local surface inversion;, skipping this grid point.")
+                continue
+
+            # select only the sub-column
+            singlePoint = mySubGrid.isel(
+                lev=range(heightIndexPair[0], heightIndexPair[1] + 1),
+                lat=lati, lon=loni)
+            logger.debug(f"cutOff singlePoint = {singlePoint}")
+
+            # remove string variables for numeric calculation
+            singlePoint = removeStringVars(singlePoint)
+            logger.debug(f"Numeric singlePoint = {singlePoint}")
+
+            # capture the pressure because vertical coordinate will get removed
+            myLev = singlePoint[kPressureKey]
+            logger.debug(f"Captured myLev = {myLev}")
+
+            # calculate variable means for the column
+            singlePoint = singlePoint.mean(skipna=True, keep_attrs=True)   # take mean within sub-column
+            logger.debug(f"Mean singlePoint = {singlePoint}")
+
+            # restore the pressure
+            singlePoint[kPressureKey] = myLev.mean()    # mean() preserves the attributes
+            logger.debug(f"Mean singlePoint with pressure restored = {singlePoint}")
+
+            singlePoints.append(singlePoint)
+
+    logger.info(f"Combining {len(singlePoints)} cutoff points into a single set...")
+    pointDimension = "point_index"
+    pointSet = xarray.concat(singlePoints, pointDimension, coords="all")
+    logger.debug(f"Cutoff pointSet = {pointSet}")
+
+    return pointSet
+
+
 # Extract mean values from a lat-lon rectangle within model output.
 # As of October 2025, WACCM uses a straight grid (Mercator)
 # and WRF-Chem is curved (Lambert Conformal).
@@ -227,17 +335,23 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
 
     # determine the pressure levels
     pressPair = [None, None]
+    fixedHeight = True
     for pi in range(0, 2):
         if isNumber(altPair[pi]):
             pressPair[pi] = altitudeToPressure(altPair[pi])
         elif (altPair[pi].lower() == kSurfaceKeyword):
             pressPair[pi] = kSurfaceKeyword
         else:
-            # handle PBLH here
-            pass
+            # handle PBLH here; cut off the columns later
+            if (pi == 0):
+                pressPair[pi] = kSurfaceKeyword
+            else:
+                pressPair[pi] = 0.0     # pressure at top of atmosphere
+            fixedHeight = False
 
     logger.info(f"Requesting pressure range {pressPair[0]} to {pressPair[1]} hPa")
 
+    # look up pressure levels to get the pressure indexes
     pressLevels = gridDataset["lev"].data
     logger.debug(f"pressLevels = {pressLevels}")
     pressIndexPair = [0,0]
@@ -254,16 +368,26 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
         logger.error("Altitude bounds are reversed. Please specify lower,upper instead.")
         return None
 
+    # select the entire rectanglar region
+    cutPressLevels = pressLevels[pressIndexPair[0]: pressIndexPair[1] + 1]
+    logger.debug(f"Selecting lev = {cutPressLevels}")
     gridBox = gridDataset.sel(lat=latTicks, lon=lonTicks,
-                              lev=pressLevels[pressIndexPair[0]: pressIndexPair[1] + 1],
+                              lev=cutPressLevels,
                               time=whenStr, method="nearest")
+    gridDims = ["lat", "lon"]
     logger.debug(f"gridBox = {gridBox}")
 
     # cannot take the mean() of strings, so remove them
     gridBox = removeStringVars(gridBox)
 
+    if not fixedHeight:
+        # if height bounds are not fixed, then cut off individual columns
+        logger.info("Cutting off columns at PBLH.")
+        gridBox = cutOffColumns(gridBox, altPair)
+        gridDims = ["point_index"]
+
     logger.info(f"WACCM gridBox = {gridBox}")
-    meanPoint = gridBox.mean(dim=["lat", "lon"], keep_attrs=True)
+    meanPoint = gridBox.mean(dim=gridDims, keep_attrs=True)
     logger.debug(f"meanPoint = {meanPoint}")
 
     return meanPoint
@@ -277,7 +401,7 @@ def getSubColumn(wholeColumn, altitudes):
     logger.debug(f"wholeColumn = {wholeColumn} meters")
     dummy, lower = findNearestAltitude(wholeColumn, altitudes[0])
     dummy, upper = findNearestAltitude(wholeColumn, altitudes[1])
-    #logger.debug(f"lower = {lower}   upper = {upper} meters")
+    logger.debug(f"lower index = {lower}   upper index = {upper}")
     indexes = list(range(lower, upper+1))
     return indexes
 
@@ -323,19 +447,8 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
     zLevels = wrf.getvar(wrfDataset, "z")   # meters
     logger.debug(f"zLevels = {zLevels}")
 
-    # load PBLH here if requested
-    # Some model variable (Planetary Boundary Layer Height) can serve
-    # as the lower or upper bound of the average. Those variables
-    # do not have a height dimension.
-    heightVars = [None, None]
-    for hi in range(0, 2):
-        if isNumber(altPair[hi]):
-            continue
-        if (altPair[hi].lower() == kSurfaceKeyword):
-            continue
-
-        # get a pointer to that variable
-        heightVars[hi] = gridDataset[altPair[hi]]
+    # load PBLH here if requested as some altitude bound
+    heightVars = loadHeightVars(altPair, gridDataset)
     logger.debug(f"heightVars = {heightVars}")
 
     heightPair = altPair.copy()      # we will replace PBLH with the numerical value at each grid cell
@@ -366,10 +479,12 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
             if (len(verticalIndexes) == 0):
                 logger.debug("\tNo level within those height bounds.")
                 continue        # there is no level here within the height range
+
             singlePoint = gridDataset.isel(Time=timeIndex,
                                            west_east=iLon, south_north=iLat, bottom_top=verticalIndexes)
             logger.debug(f"Sub-column singlePoint = {singlePoint}")
 
+            # calculate variable means for the column
             singlePoint = removeStringVars(singlePoint)
             logger.debug(f"Numeric singlePoint = {singlePoint}")
             singlePoint = singlePoint.mean(skipna=True, keep_attrs=True)   # take mean within sub-column

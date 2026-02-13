@@ -35,8 +35,8 @@ def test_waccm_to_music_box_conversion(temp_dir):
     # Set up arguments for the WACCM conversion
     args = [
         "--waccmDir", f"{sample_data_dir}",
-        "--date", "20240904",
-        "--time", "07:00",
+        "--date", "20260208",
+        "--time", "12:00",
         "--latitude", "3.1",
         "--longitude", "101.7",
         "--output", "csv,json"
