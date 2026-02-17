@@ -1,0 +1,915 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Getting started &#8212; Music Box (2.10.0) 2.10.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=9cf20cd0" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=67920a36"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'getting_started';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://ncar.github.io/music-box/_static/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2.10.0';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
+        </script>
+    <link rel="icon" href="_static/favicon.png"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="User Guide" href="user_guide/index.html" />
+    <link rel="prev" title="Welcome to Music Box’s documentation!" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/MusicBox.svg" class="logo__image only-light" alt="Music Box (2.10.0) 2.10.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/MusicBox.svg" class="logo__image only-dark" alt="Music Box (2.10.0) 2.10.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+      <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="contributing/index.html">
+    Contributing
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="citing/index.html">
+    Citing MusicBox
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/NCAR/music-box" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="contributing/index.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="citing/index.html">
+    Citing MusicBox
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/NCAR/music-box" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Getting started</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="getting-started">
+<h1>Getting started<a class="headerlink" href="#getting-started" title="Link to this heading">#</a></h1>
+<p>Hello, and welcome to MusicBox! Here, we will be covering some basic usages of the MusicBox library.</p>
+<section id="what-is-musicbox">
+<h2>What is MusicBox?<a class="headerlink" href="#what-is-musicbox" title="Link to this heading">#</a></h2>
+<p>MusicBox is a library with a Python API for box modeling that builds on top of MUSICA, a collection of modeling software that allows for robust modeling of chemistry in Earth’s atmosphere.
+Boxes refer to a set of adjacent grid cells that represent the exchange of information.</p>
+<section id="downloading-musicbox">
+<h3>1. Downloading MusicBox<a class="headerlink" href="#downloading-musicbox" title="Link to this heading">#</a></h3>
+<p>To install MusicBox onto your device, run</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>acom_music_box
+</pre></div>
+</div>
+<p><strong>Note:</strong> Installing MusicBox will automatically install MUSICA, a required dependency of MusicBox that is used throughout this tutorial.</p>
+</section>
+<section id="importing-musicbox">
+<h3>2. Importing MusicBox<a class="headerlink" href="#importing-musicbox" title="Link to this heading">#</a></h3>
+<p>To import your newly-downloaded MusicBox into a Python file, as well as some other libraries so that this demo can run:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">acom_music_box</span><span class="w"> </span><span class="kn">import</span> <span class="n">MusicBox</span><span class="p">,</span> <span class="n">Conditions</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">musica.mechanism_configuration</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+</pre></div>
+</div>
+</section>
+<section id="defining-a-system">
+<h3>3. Defining a System<a class="headerlink" href="#defining-a-system" title="Link to this heading">#</a></h3>
+<p>In MusicBox, a system is defined by a mechanism that includes:</p>
+<ul class="simple">
+<li><p>a set of species and their respective phases, and</p></li>
+<li><p>a set of reactions that the species participate in.</p></li>
+</ul>
+<p>The system is the fundamental building block of MusicBox and is your main concern when using this library.
+The following steps will walk you through:</p>
+<ul class="simple">
+<li><p>creating your own system,</p></li>
+<li><p>solving your system, and</p></li>
+<li><p>viewing and visualizing your results.</p></li>
+</ul>
+<section id="a-defining-species">
+<h4>3a. Defining Species<a class="headerlink" href="#a-defining-species" title="Link to this heading">#</a></h4>
+<p>A species is simply a reactant or product in a chemical reaction.
+You have the freedom to name a species anything in MusicBox, just make sure that it is logical to you.
+For extended documentation about the Species class, go <a class="reference external" href="https://ncar.github.io/musica/api/python.html#musica.mechanism_configuration.Species">here</a>.
+Here is a snippet that defines three chemical species:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create each of the species that will be simulated</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Species</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Species</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">)</span>
+<span class="n">Z</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Species</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Z&quot;</span><span class="p">)</span>
+<span class="n">species</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;X&quot;</span><span class="p">:</span> <span class="n">X</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">:</span> <span class="n">Y</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">:</span> <span class="n">Z</span><span class="p">}</span>
+<span class="n">gas</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Phase</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;gas&quot;</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+</pre></div>
+</div>
+<p>This code block creates 3 species called X, Y, and Z and adds them to a dictionary called species.
+The variable name and the name of the species are not required to be the same, but it is strongly recommended so that your code is more organized.
+Next, a phase is created named “gas”. In MusicBox, phases are essentially collections of species that are assumed to be well-mixed.
+<strong>Note:</strong> Creating the species dictionary and the phase is mandatory, as subsequent code relies on the data being bundled in specific object types.</p>
+</section>
+<section id="b-defining-reactions">
+<h4>3b. Defining Reactions<a class="headerlink" href="#b-defining-reactions" title="Link to this heading">#</a></h4>
+<p>A chemical reaction is a process in which a set of reactants transforms into a set of products.
+To define a reaction in MusicBox:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create the reactions that the species undergo in the</span>
+<span class="n">arr1</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Arrhenius</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;X-&gt;Y&quot;</span><span class="p">,</span> <span class="n">A</span><span class="o">=</span><span class="mf">4.0e-3</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">reactants</span><span class="o">=</span><span class="p">[</span><span class="n">species</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">]],</span> <span class="n">products</span><span class="o">=</span><span class="p">[</span><span class="n">species</span><span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">]],</span> <span class="n">gas_phase</span><span class="o">=</span><span class="n">gas</span><span class="p">)</span>
+<span class="n">arr2</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Arrhenius</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Y-&gt;Z&quot;</span><span class="p">,</span> <span class="n">A</span><span class="o">=</span><span class="mf">4.0e-3</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">reactants</span><span class="o">=</span><span class="p">[</span><span class="n">species</span><span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">]],</span> <span class="n">products</span><span class="o">=</span><span class="p">[</span><span class="n">species</span><span class="p">[</span><span class="s2">&quot;Z&quot;</span><span class="p">]],</span> <span class="n">gas_phase</span><span class="o">=</span><span class="n">gas</span><span class="p">)</span>
+<span class="n">rxns</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;X-&gt;Y&quot;</span><span class="p">:</span> <span class="n">arr1</span><span class="p">,</span> <span class="s2">&quot;Y-&gt;Z&quot;</span><span class="p">:</span> <span class="n">arr2</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>This code block uses the gas and species variables from the previous code block.
+Using the species and gas variables, it creates two reactions: arr1 and arr2.
+The arr1 variable represents the conversion of X (reactant) into Y (product) and defines Arrhenius rate constant parameters A and C.
+The arr2 variable is just like arr1, but instead it represents the conversion of Y (reactant) into Z (product).
+These reactions are then bundled into a dictionary called rxns just like the species before.
+More information on the Arrhenius reaction can be found <a class="reference external" href="https://ncar.github.io/musica/api/python.html#musica.mechanism_configuration.Arrhenius">here</a>.
+<strong>Note:</strong> MusicBox allows for users to experiment with an array of reaction types.
+Go <a class="reference external" href="https://ncar.github.io/musica/api/python.html#module-musica.mechanism_configuration">here</a> to view a list of supported reactions and their parameters.</p>
+</section>
+<section id="c-defining-mechanisms">
+<h4>3c. Defining Mechanisms<a class="headerlink" href="#c-defining-mechanisms" title="Link to this heading">#</a></h4>
+<p>A mechanism represents a set of species with their respective phases and reactions.
+For extended documentation about the Mechanism class, go <a class="reference external" href="https://ncar.github.io/musica/api/python.html#musica.mechanism_configuration.Mechanism">here</a>.
+To create a mechanism in MusicBox:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create the mechanism that is defined by the species, phases, and reactions</span>
+<span class="n">mechanism</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Mechanism</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tutorial_mechanism&quot;</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">phases</span><span class="o">=</span><span class="p">[</span><span class="n">gas</span><span class="p">],</span> <span class="n">reactions</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">rxns</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+</pre></div>
+</div>
+<p>This code block builds upon the previous two functions, using the previously-created species, phases, and reactions as arguments.
+It simply creates a mechanism variable that represents an instance of the Mechanism class.
+The mechanism is first given a name, then the species, phase, and reactions are passed into their respective arguments.</p>
+</section>
+</section>
+<section id="creating-a-box-model">
+<h3>4. Creating a Box Model<a class="headerlink" href="#creating-a-box-model" title="Link to this heading">#</a></h3>
+<p>Box models allow you to solve your previously-created mechanism under conditions that can change the reactions’ rates over time.
+Each instance of the MusicBox class acts as an independent box model.
+You can also define the length of the simulations and the time steps.
+To initialize a new box model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create the box model that contains the mechanism</span>
+<span class="n">box_model</span> <span class="o">=</span> <span class="n">MusicBox</span><span class="p">()</span>
+<span class="n">box_model</span><span class="o">.</span><span class="n">load_mechanism</span><span class="p">(</span><span class="n">mechanism</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This code block is straightforward, simply creating an instance of the MusicBox class and then loading the mechanism as an argument for the box model.</p>
+<section id="a-adding-initial-conditions-to-your-box-model">
+<h4>4a. Adding Initial Conditions to Your Box Model<a class="headerlink" href="#a-adding-initial-conditions-to-your-box-model" title="Link to this heading">#</a></h4>
+<p>The initial conditions of the model define the environment the mechanism takes place in at the start of the simulation.
+Some conditions that are recommended to define for your system include:</p>
+<ul class="simple">
+<li><p>the temperature, measured in Kelvin (K),</p></li>
+<li><p>the pressure, measured in Pascals (Pa), and</p></li>
+<li><p>the concentration of each of the species, measured in mol/m&lt;sup&gt;3&lt;/sup&gt;.</p></li>
+</ul>
+<p>For extended documentation about the Conditions class, go <a class="reference external" href="https://ncar.github.io/musica/api/python.html#musica.types.Conditions">here</a>.
+To set the initial conditions of your box model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the conditions of the box model at time = 0 s</span>
+<span class="n">box_model</span><span class="o">.</span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="n">Conditions</span><span class="p">(</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="mf">298.15</span><span class="p">,</span> <span class="c1"># Units: Kelvin (K)</span>
+    <span class="n">pressure</span><span class="o">=</span><span class="mf">101325.0</span><span class="p">,</span> <span class="c1"># Units: Pascals (Pa)</span>
+    <span class="n">species_concentrations</span><span class="o">=</span><span class="p">{</span> <span class="c1"># Units: mol/m^3</span>
+        <span class="s2">&quot;X&quot;</span><span class="p">:</span> <span class="mf">3.75</span><span class="p">,</span>
+        <span class="s2">&quot;Y&quot;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>
+        <span class="s2">&quot;Z&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This code block sets the box model’s initial_conditons attribute.
+In the condition class, you should provide a temperature, pressure, air density (unless you just want it based on the Ideal Gas Law, which is the default), and each of the species’ concentrations as arguments.</p>
+</section>
+<section id="b-adding-evolving-conditions-to-your-box-model">
+<h4>4b. Adding Evolving Conditions to Your Box Model<a class="headerlink" href="#b-adding-evolving-conditions-to-your-box-model" title="Link to this heading">#</a></h4>
+<p>An evolving condition will change the environment of the mechanism at the defined time value.
+These changes can include species concentration, temperature, pressure, et cetera.
+To create an evolving condition for your box model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the box model conditions at the defined time</span>
+<span class="n">box_model</span><span class="o">.</span><span class="n">add_evolving_condition</span><span class="p">(</span>
+    <span class="mf">100.0</span><span class="p">,</span> <span class="c1"># Units: Seconds (s)</span>
+    <span class="n">Conditions</span><span class="p">(</span>
+        <span class="n">temperature</span><span class="o">=</span><span class="mf">310.0</span><span class="p">,</span> <span class="c1"># Units: Kelvin (K)</span>
+        <span class="n">pressure</span><span class="o">=</span><span class="mf">100100.0</span> <span class="c1"># Units: Pascals (Pa)</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This code block is similar to the previous one for setting the initial conditions.
+Just like in the previous code block, a Conditions object is created as an argument for the box model’s <em>add_evolving_condition()</em> function.
+However, there is now a new value put at the very beginning of the function that represents the time at which the evolving conditions takes place at.</p>
+</section>
+<section id="c-additional-box-model-configuration">
+<h4>4c. Additional Box Model Configuration<a class="headerlink" href="#c-additional-box-model-configuration" title="Link to this heading">#</a></h4>
+<p>Box models contain some additional configuration options that need to be defined.
+These include:</p>
+<ul class="simple">
+<li><p>the simulation length,</p></li>
+<li><p>the chemistry step time, and</p></li>
+<li><p>the output step time.</p></li>
+</ul>
+<p>To set these configurations for your box model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the additional configuration options for the box model</span>
+<span class="n">box_model</span><span class="o">.</span><span class="n">box_model_options</span><span class="o">.</span><span class="n">simulation_length</span> <span class="o">=</span> <span class="mi">200</span> <span class="c1"># Units: Seconds (s)</span>
+<span class="n">box_model</span><span class="o">.</span><span class="n">box_model_options</span><span class="o">.</span><span class="n">chem_step_time</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># Units: Seconds (s)</span>
+<span class="n">box_model</span><span class="o">.</span><span class="n">box_model_options</span><span class="o">.</span><span class="n">output_step_time</span> <span class="o">=</span> <span class="mi">20</span> <span class="c1"># Units: Seconds (s)</span>
+</pre></div>
+</div>
+<p>This code block sets some of the attributes of the box model’s options, including:</p>
+<ul class="simple">
+<li><p><strong>simulation_length:</strong> the number of time steps that the simulation lasts for,</p></li>
+<li><p><strong>chem_step_time:</strong> the number of time steps between each simulation calculation, and</p></li>
+<li><p><strong>output_step_time:</strong> the number of time steps between each output of the model.</p></li>
+</ul>
+<p>All three of these have seconds as their unit.</p>
+</section>
+</section>
+<section id="running-and-solving-your-box-model">
+<h3>5. Running and Solving Your Box Model<a class="headerlink" href="#running-and-solving-your-box-model" title="Link to this heading">#</a></h3>
+<p>Now, you are able to run and solve your newly-created box model.
+To solve your box model, simply call its <em>solve()</em> function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">box_model</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="view-outputs-and-visualizations">
+<h3>6. View Outputs and Visualizations<a class="headerlink" href="#view-outputs-and-visualizations" title="Link to this heading">#</a></h3>
+<p>MusicBox supports viewing your simulation’s outputs as well as visualizing them.
+To view your solved model and a basic visualization of it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;time.s&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CONC.X.mol m-3&#39;</span><span class="p">,</span> <span class="s1">&#39;CONC.Y.mol m-3&#39;</span><span class="p">,</span> <span class="s1">&#39;CONC.Z.mol m-3&#39;</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Concentration over time&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Concentration (mol m-3)&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>time.s</p></th>
+<th class="head"><p>ENV.temperature.K</p></th>
+<th class="head"><p>ENV.pressure.Pa</p></th>
+<th class="head"><p>ENV.air number density.mol m-3</p></th>
+<th class="head"><p>CONC.X.mol m-3</p></th>
+<th class="head"><p>CONC.Y.mol m-3</p></th>
+<th class="head"><p>CONC.Z.mol m-3</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>298.15</p></td>
+<td><p>101325</p></td>
+<td><p>40.874</p></td>
+<td><p>3.75</p></td>
+<td><p>5</p></td>
+<td><p>2.5</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>20</p></td>
+<td><p>298.15</p></td>
+<td><p>101325</p></td>
+<td><p>40.874</p></td>
+<td><p>3.41149</p></td>
+<td><p>4.8714</p></td>
+<td><p>2.96711</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>40</p></td>
+<td><p>298.15</p></td>
+<td><p>101325</p></td>
+<td><p>40.874</p></td>
+<td><p>3.10354</p></td>
+<td><p>4.72528</p></td>
+<td><p>3.42118</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>60</p></td>
+<td><p>298.15</p></td>
+<td><p>101325</p></td>
+<td><p>40.874</p></td>
+<td><p>2.82338</p></td>
+<td><p>4.56584</p></td>
+<td><p>3.86077</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>80</p></td>
+<td><p>298.15</p></td>
+<td><p>101325</p></td>
+<td><p>40.874</p></td>
+<td><p>2.56852</p></td>
+<td><p>4.39669</p></td>
+<td><p>4.28479</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>100</p></td>
+<td><p>298.15</p></td>
+<td><p>101325</p></td>
+<td><p>40.874</p></td>
+<td><p>2.33666</p></td>
+<td><p>4.22086</p></td>
+<td><p>4.69247</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>120</p></td>
+<td><p>310</p></td>
+<td><p>100100</p></td>
+<td><p>38.8363</p></td>
+<td><p>2.12702</p></td>
+<td><p>4.04212</p></td>
+<td><p>5.08087</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>140</p></td>
+<td><p>310</p></td>
+<td><p>100100</p></td>
+<td><p>38.8363</p></td>
+<td><p>1.93618</p></td>
+<td><p>3.86147</p></td>
+<td><p>5.45235</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>160</p></td>
+<td><p>310</p></td>
+<td><p>100100</p></td>
+<td><p>38.8363</p></td>
+<td><p>1.76247</p></td>
+<td><p>3.6807</p></td>
+<td><p>5.80683</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+<td><p>180</p></td>
+<td><p>310</p></td>
+<td><p>100100</p></td>
+<td><p>38.8363</p></td>
+<td><p>1.60434</p></td>
+<td><p>3.50128</p></td>
+<td><p>6.14438</p></td>
+</tr>
+<tr class="row-even"><td><p>10</p></td>
+<td><p>200</p></td>
+<td><p>310</p></td>
+<td><p>100100</p></td>
+<td><p>38.8363</p></td>
+<td><p>1.4604</p></td>
+<td><p>3.32443</p></td>
+<td><p>6.46517</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<img alt="_images/getting_started_output.png" src="_images/getting_started_output.png" />
+<p>This code block prints out the output of the simulation that was just ran as well as it utilizing Python’s matplotlib library to visualize it.
+To do so, the <em>plot()</em> function is called, with the desired independent variable (time) and dependent variables (concentration of each species) being passed in.
+The plot is also given a title as well as a label for both the x-axis and the y-axis.
+Lastly, the <em>show()</em> function is called so that you can see the plot directly above this text.</p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Welcome to Music Box’s documentation!</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="user_guide/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">User Guide</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-musicbox">What is MusicBox?</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-musicbox">1. Downloading MusicBox</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#importing-musicbox">2. Importing MusicBox</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-a-system">3. Defining a System</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#a-defining-species">3a. Defining Species</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#b-defining-reactions">3b. Defining Reactions</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#c-defining-mechanisms">3c. Defining Mechanisms</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-a-box-model">4. Creating a Box Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#a-adding-initial-conditions-to-your-box-model">4a. Adding Initial Conditions to Your Box Model</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#b-adding-evolving-conditions-to-your-box-model">4b. Adding Evolving Conditions to Your Box Model</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#c-additional-box-model-configuration">4c. Additional Box Model Configuration</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-and-solving-your-box-model">5. Running and Solving Your Box Model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#view-outputs-and-visualizations">6. View Outputs and Visualizations</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/getting_started.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024-2026, NSF-NCAR/UCAR.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

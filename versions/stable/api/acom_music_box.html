@@ -1,0 +1,1093 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>MusicBox &#8212; Music Box (2.9.1) 2.9.1 (stable) documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=9cf20cd0" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=115306df"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/acom_music_box';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://ncar.github.io/music-box/_static/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2.9.1 (stable)';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
+        </script>
+    <link rel="icon" href="../_static/favicon.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Contributing" href="../contributing/index.html" />
+    <link rel="prev" title="API Reference" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/MusicBox.svg" class="logo__image only-light" alt="Music Box (2.9.1) 2.9.1 (stable) documentation - Home"/>
+    <script>document.write(`<img src="../_static/MusicBox.svg" class="logo__image only-dark" alt="Music Box (2.9.1) 2.9.1 (stable) documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+      <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../contributing/index.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../citing/index.html">
+    Citing MusicBox
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/NCAR/music-box" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../contributing/index.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../citing/index.html">
+    Citing MusicBox
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/NCAR/music-box" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">MusicBox</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">API Reference</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">MusicBox</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-acom_music_box">
+<span id="musicbox"></span><h1>MusicBox<a class="headerlink" href="#module-acom_music_box" title="Link to this heading">#</a></h1>
+<p>An atmospheric chemistry box model. Powered by MUSICA.</p>
+<p>This package contains modules for handling various aspects of a music box,
+including species, products, reactants, reactions, and more.</p>
+<section id="module-acom_music_box.music_box">
+<span id="acom-music-box-music-box-module"></span><h2>acom_music_box.music_box module<a class="headerlink" href="#module-acom_music_box.music_box" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="acom_music_box.music_box.MusicBox">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">acom_music_box.music_box.</span></span><span class="sig-name descname"><span class="pre">MusicBox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box_model_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evolving_conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.music_box.MusicBox" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a box model with attributes such as box model options, species list, reaction list,
+initial conditions, evolving conditions, solver, and state.</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><p>box_model_options (BoxModelOptions): Options for the box model simulation.
+initial_conditions (Conditions): Initial conditions for the simulation.
+evolving_conditions (List[EvolvingConditions]): List of evolving conditions over time.
+solver: The solver used for the box model simulation.
+state: The current state of the box model simulation.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="acom_music_box.music_box.MusicBox.add_evolving_condition">
+<span class="sig-name descname"><span class="pre">add_evolving_condition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conditions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.music_box.MusicBox.add_evolving_condition" title="Link to this definition">#</a></dt>
+<dd><p>Add an evolving condition at a specific time point.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>time_point (float): The time point for the evolving condition [s].
+conditions (Conditions): The associated conditions at the given time point.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acom_music_box.music_box.MusicBox.loadJson">
+<span class="sig-name descname"><span class="pre">loadJson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_json</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.music_box.MusicBox.loadJson" title="Link to this definition">#</a></dt>
+<dd><p>Reads and parses a JSON file and create a solver</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>path_to_json (str): The JSON path to the JSON file.</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+<dt>Raises:</dt><dd><p>ValueError: If the JSON string cannot be parsed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acom_music_box.music_box.MusicBox.load_mechanism">
+<span class="sig-name descname"><span class="pre">load_mechanism</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mechanism</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_type=&lt;_SolverType.rosenbrock_standard_order:</span> <span class="pre">2&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.music_box.MusicBox.load_mechanism" title="Link to this definition">#</a></dt>
+<dd><p>Creates a solver for the specified mechanism.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>mechanism (Mechanism): The mechanism to be used for the solver.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acom_music_box.music_box.MusicBox.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.music_box.MusicBox.solve" title="Link to this definition">#</a></dt>
+<dd><p>Solves the box model simulation and optionally writes the output to a file.</p>
+<p>This function runs the box model simulation using the current settings and
+conditions. If a path is provided, it writes the output of the simulation to
+the specified file.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>callback (function, optional): A callback function that is called after each time step. Defaults to None.
+The callback will take the most recent results, the current time, conditions, and the total simulation time as arguments.</p>
+</dd>
+<dt>Returns:</dt><dd><p>list: A 2D list where each inner list represents the results of the simulation
+at a specific time step.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-acom_music_box.conditions">
+<span id="acom-music-box-conditions-module"></span><h2>acom_music_box.conditions module<a class="headerlink" href="#module-acom_music_box.conditions" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="acom_music_box.conditions.Conditions">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">acom_music_box.conditions.</span></span><span class="sig-name descname"><span class="pre">Conditions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pressure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_concentrations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rate_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.conditions.Conditions" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents conditions for a simulation with attributes such as pressure, temperature, species concentrations,
+and reaction rates.</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><p>pressure (float): The pressure of the conditions in atmospheres.
+temperature (float): The temperature of the conditions in Kelvin.
+species_concentrations (dict[str, float]): A dictionary of species concentrations.
+rate_parameters (dict[str, float]): A dictionary of user-specified reaction rate parameters.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="acom_music_box.conditions.Conditions.from_config">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_json</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_object</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.conditions.Conditions.from_config" title="Link to this definition">#</a></dt>
+<dd><p>Creates an instance of the class from a configuration JSON object.</p>
+<p>This class method takes a path to a JSON file, a configuration JSON object, a species list,
+and a reaction list, and uses them to create a new instance of the class.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>path_to_json (str): The path to the JSON file containing the initial conditions and settings.
+json_object (dict): The configuration JSON object containing the initial conditions and settings.</p>
+</dd>
+<dt>Returns:</dt><dd><p>object: An instance of the Conditions class with the settings from the configuration JSON object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acom_music_box.conditions.Conditions.read_data_values_from_table">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_data_values_from_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_json</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">react_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.conditions.Conditions.read_data_values_from_table" title="Link to this definition">#</a></dt>
+<dd><p>Reads data values from a CSV-type table expressed in JSON.</p>
+<p>This class method takes a JSON element, reads two rows, and
+sets variable names and values to the header and value rows.</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">[</span><span class="s2">&quot;ENV.temperature [K]&quot;</span><span class="p">,</span> <span class="s2">&quot;ENV.pressure [Pa]&quot;</span><span class="p">,</span> <span class="s2">&quot;CONC.A [mol m-3]&quot;</span><span class="p">,</span> <span class="s2">&quot;CONC.B [mol m-3]&quot;</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">70000</span><span class="p">,</span> <span class="mf">0.67</span><span class="p">,</span> <span class="mf">2.3e-9</span><span class="p">]</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Args:</dt><dd><p>data_json (object): JSON list of two lists.
+react_types = set of reaction types only to include, or None to include all.</p>
+</dd>
+<dt>Returns:</dt><dd><p>dict: A dictionary of initial data values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acom_music_box.conditions.Conditions.read_initial_conditions_from_file">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_initial_conditions_from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">react_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.conditions.Conditions.read_initial_conditions_from_file" title="Link to this definition">#</a></dt>
+<dd><p>Reads initial user-defined rate parameters from a file.</p>
+<p>This class method takes a file path and a ReactionList, reads the file, and
+sets the initial rate parameters based on the contents of the file.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>file_path (str): The path to the file containing the initial rate parameters.
+react_types = set of reaction types only to include, or None to include all.</p>
+</dd>
+<dt>Returns:</dt><dd><p>dict: A dictionary of initial user-defined rate parameters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acom_music_box.conditions.Conditions.retrieve_initial_conditions_from_JSON">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">retrieve_initial_conditions_from_JSON</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_json</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reaction_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.conditions.Conditions.retrieve_initial_conditions_from_JSON" title="Link to this definition">#</a></dt>
+<dd><p>Retrieves initial conditions from CSV file and JSON structures.
+If both are present, JSON values will override the CSV values.</p>
+<p>This class method takes a path to a JSON file, a configuration JSON object,
+and a list of desired reaction types.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>path_to_json (str): The path to the JSON file containing the initial conditions and settings.
+json_object (dict): The configuration JSON object containing the initial conditions and settings.
+reaction_types: Use set like {“ENV”} for environmental conditions {“CONC”} for species concentrations, {“EMIS”, “PHOTO”} for reaction rates.
+preserve_type: If True, keep the reaction type in the key name. If False, remove the reaction type from the key name.</p>
+</dd>
+<dt>Returns:</dt><dd><p>object: A dictionary of name:value pairs.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-acom_music_box.evolving_conditions">
+<span id="acom-music-box-evolving-conditions-module"></span><h2>acom_music_box.evolving_conditions module<a class="headerlink" href="#module-acom_music_box.evolving_conditions" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="acom_music_box.evolving_conditions.EvolvingConditions">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">acom_music_box.evolving_conditions.</span></span><span class="sig-name descname"><span class="pre">EvolvingConditions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">headers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.evolving_conditions.EvolvingConditions" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents evolving conditions with attributes such as time and associated conditions.</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><p>time (List[float]): A list of time points.
+conditions (List[Conditions]): A list of associated conditions.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="acom_music_box.evolving_conditions.EvolvingConditions.add_condition">
+<span class="sig-name descname"><span class="pre">add_condition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conditions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.evolving_conditions.EvolvingConditions.add_condition" title="Link to this definition">#</a></dt>
+<dd><p>Add an evolving condition at a specific time point.
+Keep the two lists sorted in order by time.
+New arrivals will probably come at the end of the list.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>time_point (float): The time point for the evolving condition.
+conditions (Conditions): The associated conditions at the given time point.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acom_music_box.evolving_conditions.EvolvingConditions.from_config">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_json</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_JSON</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.evolving_conditions.EvolvingConditions.from_config" title="Link to this definition">#</a></dt>
+<dd><p>Creates an instance of the EvolvingConditions class from a configuration JSON object.</p>
+<p>This class method takes a path to a JSON file, a configuration JSON object, a SpeciesList,
+and a ReactionList, and uses them to create a new instance of the EvolvingConditions class.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>path_to_json (str): The path to the JSON file containing the initial conditions and settings.
+config_JSON (dict): The configuration JSON object containing the initial conditions and settings.
+species_list (SpeciesList): A SpeciesList containing the species involved in the simulation.
+reaction_list (ReactionList): A ReactionList containing the reactions involved in the simulation.</p>
+</dd>
+<dt>Returns:</dt><dd><p>EvolvingConditions: An instance of the EvolvingConditions class with the settings from the configuration JSON object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acom_music_box.evolving_conditions.EvolvingConditions.read_conditions_from_file">
+<span class="sig-name descname"><span class="pre">read_conditions_from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.evolving_conditions.EvolvingConditions.read_conditions_from_file" title="Link to this definition">#</a></dt>
+<dd><p>Read conditions from a file and update the evolving conditions.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>file_path (str): The path to the file containing conditions UI_JSON.</p>
+</dd>
+<dt>Returns:</dt><dd><dl class="simple">
+<dt>set: the headers read from the CSV file;</dt><dd><p>used for warning about condition overrides</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-acom_music_box.data_output">
+<span id="acom-music-box-data-output-module"></span><h2>acom_music_box.data_output module<a class="headerlink" href="#module-acom_music_box.data_output" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="acom_music_box.data_output.DataOutput">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">acom_music_box.data_output.</span></span><span class="sig-name descname"><span class="pre">DataOutput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.data_output.DataOutput" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to handle data output operations for a DataFrame, including converting to CSV
+or NetCDF formats with appended units for columns. Designed for environmental data
+with specific units and formats.</p>
+<p>This class manages file paths, unit mappings, and data output formats based on
+the provided arguments, ensuring valid paths and creating necessary directories.</p>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>df<span class="classifier">pandas.DataFrame</span></dt><dd><p>The DataFrame to be output.</p>
+</dd>
+<dt>args<span class="classifier">argparse.Namespace</span></dt><dd><p>Command-line arguments or configurations specifying output options.</p>
+</dd>
+<dt>unit_mapping<span class="classifier">dict</span></dt><dd><p>A dictionary mapping specific columns to their respective units.</p>
+</dd>
+</dl>
+</section>
+<section id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">argparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">Namespace</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>    <span class="s1">&#39;ENV.temperature&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">290</span><span class="p">,</span> <span class="mi">295</span><span class="p">,</span> <span class="mi">300</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;ENV.pressure&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">101325</span><span class="p">,</span> <span class="mi">100000</span><span class="p">,</span> <span class="mi">98500</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;ENV.number_density_air&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">102</span><span class="p">,</span> <span class="mi">5096</span><span class="p">,</span> <span class="mi">850960</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">args</span> <span class="o">=</span> <span class="n">Namespace</span><span class="p">(</span><span class="n">output</span><span class="o">=</span><span class="s1">&#39;output.nc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_output</span> <span class="o">=</span> <span class="n">DataOutput</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_output</span><span class="o">.</span><span class="n">output</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="acom_music_box.data_output.DataOutput.output">
+<span class="sig-name descname"><span class="pre">output</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.data_output.DataOutput.output" title="Link to this definition">#</a></dt>
+<dd><p>Main method to handle output based on the provided arguments.</p>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+<section id="module-acom_music_box.plot_output">
+<span id="acom-music-box-plot-output-module"></span><h2>acom_music_box.plot_output module<a class="headerlink" href="#module-acom_music_box.plot_output" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="acom_music_box.plot_output.PlotOutput">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">acom_music_box.plot_output.</span></span><span class="sig-name descname"><span class="pre">PlotOutput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.plot_output.PlotOutput" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to handle plotting operations for a DataFrame, including plotting species
+concentrations over time using gnuplot or matplotlib.</p>
+<p>This class manages the plotting tool, species list, and data output formats based on
+the provided arguments, ensuring valid paths and creating necessary directories.</p>
+<section id="id1">
+<h3>Attributes<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>df<span class="classifier">pandas.DataFrame</span></dt><dd><p>The DataFrame to be plotted.</p>
+</dd>
+<dt>args<span class="classifier">argparse.Namespace</span></dt><dd><p>Command-line arguments or configurations specifying plot options.</p>
+</dd>
+<dt>species_list<span class="classifier">list of lists</span></dt><dd><p>A list of lists, where each sublist contains species to be plotted in a separate window.</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h3>Examples<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">argparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">Namespace</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>    <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;CONC.A.mol m-3&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;CONC.B.mol m-3&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;CONC.C.mol m-3&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">args</span> <span class="o">=</span> <span class="n">Namespace</span><span class="p">(</span><span class="n">plot</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CONC.A,CONC.B&#39;</span><span class="p">],</span> <span class="n">plot_tool</span><span class="o">=</span><span class="s1">&#39;matplotlib&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot_output</span> <span class="o">=</span> <span class="n">PlotOutput</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot_output</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="acom_music_box.plot_output.PlotOutput.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.plot_output.PlotOutput.plot" title="Link to this definition">#</a></dt>
+<dd><p>Plot the specified species using the selected plotting tool.</p>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+<section id="module-acom_music_box.model_options">
+<span id="acom-music-box-model-options-module"></span><h2>acom_music_box.model_options module<a class="headerlink" href="#module-acom_music_box.model_options" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="acom_music_box.model_options.BoxModelOptions">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">acom_music_box.model_options.</span></span><span class="sig-name descname"><span class="pre">BoxModelOptions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chem_step_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_step_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simulation_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'box'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.model_options.BoxModelOptions" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents options for a box model simulation.</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><p>grid (str): The type of grid. Default is “box”.
+chemStepTime (float): Time step for chemical reactions in the simulation in seconds.
+outputStepTime (float): Time step for output data in the simulation in hours.
+simulationLength (float): Length of the simulation in hours.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="acom_music_box.model_options.BoxModelOptions.from_config">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_JSON</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.model_options.BoxModelOptions.from_config" title="Link to this definition">#</a></dt>
+<dd><p>Create a new instance of the BoxModelOptions class from a JSON object from a configuration JSON.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>UI_JSON (dict): A JSON object representing box model options.</p>
+</dd>
+<dt>Returns:</dt><dd><p>BoxModelOptions: A new instance of the BoxModelOptions class.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-acom_music_box.utils">
+<span id="acom-music-box-utils-module"></span><h2>acom_music_box.utils module<a class="headerlink" href="#module-acom_music_box.utils" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="acom_music_box.utils.calculate_air_density">
+<span class="sig-prename descclassname"><span class="pre">acom_music_box.utils.</span></span><span class="sig-name descname"><span class="pre">calculate_air_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.utils.calculate_air_density" title="Link to this definition">#</a></dt>
+<dd><p>Calculate the air density in moles m-3</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>temperature (float): The temperature in Kelvin.
+pressure (float): The pressure in Pascals.</p>
+</dd>
+<dt>Returns:</dt><dd><p>float: The air density in moles m-3</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acom_music_box.utils.convert_concentration">
+<span class="sig-prename descclassname"><span class="pre">acom_music_box.utils.</span></span><span class="sig-name descname"><span class="pre">convert_concentration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.utils.convert_concentration" title="Link to this definition">#</a></dt>
+<dd><p>Convert the concentration from the input data to moles per cubic meter.
+This function assumes you are passing data from a music box configuration.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>data (dict): The input data.
+key (str): The key for the concentration in the input data.
+temperature (float): The temperature in Kelvin.
+pressure (float): The pressure in Pascals.</p>
+</dd>
+<dt>Returns:</dt><dd><p>float: The concentration in moles per cubic meter.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acom_music_box.utils.convert_from_number_density">
+<span class="sig-prename descclassname"><span class="pre">acom_music_box.utils.</span></span><span class="sig-name descname"><span class="pre">convert_from_number_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_unit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.utils.convert_from_number_density" title="Link to this definition">#</a></dt>
+<dd><p>Convert from mol m-3 to some other units</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>data (float): The data to convert in mol m-3.
+output_unit (str): The output units
+temperature (float): The temperature in Kelvin.
+pressure (float): The pressure in Pascals.</p>
+</dd>
+<dt>Returns:</dt><dd><p>float: The data in the output unit.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acom_music_box.utils.convert_pressure">
+<span class="sig-prename descclassname"><span class="pre">acom_music_box.utils.</span></span><span class="sig-name descname"><span class="pre">convert_pressure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.utils.convert_pressure" title="Link to this definition">#</a></dt>
+<dd><p>Convert the pressure from the input data to Pascals.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>data (dict): The input data.
+key (str): The key for the pressure in the input data.</p>
+</dd>
+<dt>Returns:</dt><dd><p>float: The pressure in Pascals.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acom_music_box.utils.convert_temperature">
+<span class="sig-prename descclassname"><span class="pre">acom_music_box.utils.</span></span><span class="sig-name descname"><span class="pre">convert_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.utils.convert_temperature" title="Link to this definition">#</a></dt>
+<dd><p>Convert the temperature from the input data to Kelvin.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>data (dict): The input data.
+key (str): The key for the temperature in the input data.</p>
+</dd>
+<dt>Returns:</dt><dd><p>float: The temperature in Kelvin.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acom_music_box.utils.convert_time">
+<span class="sig-prename descclassname"><span class="pre">acom_music_box.utils.</span></span><span class="sig-name descname"><span class="pre">convert_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.utils.convert_time" title="Link to this definition">#</a></dt>
+<dd><p>Convert the time from the input data to seconds.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>data (dict): The input data.
+key (str): The key for the time in the input data.</p>
+</dd>
+<dt>Returns:</dt><dd><p>float: The time in seconds.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acom_music_box.utils.convert_to_number_density">
+<span class="sig-prename descclassname"><span class="pre">acom_music_box.utils.</span></span><span class="sig-name descname"><span class="pre">convert_to_number_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_unit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.utils.convert_to_number_density" title="Link to this definition">#</a></dt>
+<dd><p>Convert from some other units to mol m-3</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>data (float): The data to convert in the input unit.
+input_unit (str): The input units
+temperature (float): The temperature in Kelvin.
+pressure (float): The pressure in Pascals.</p>
+</dd>
+<dt>Returns:</dt><dd><p>float: The data in the output unit.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acom_music_box.utils.extract_unit">
+<span class="sig-prename descclassname"><span class="pre">acom_music_box.utils.</span></span><span class="sig-name descname"><span class="pre">extract_unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.utils.extract_unit" title="Link to this definition">#</a></dt>
+<dd><p>Extract the value and unit from the key in data.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acom_music_box.utils.get_available_units">
+<span class="sig-prename descclassname"><span class="pre">acom_music_box.utils.</span></span><span class="sig-name descname"><span class="pre">get_available_units</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#acom_music_box.utils.get_available_units" title="Link to this definition">#</a></dt>
+<dd><p>Get the list of available units for conversion.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>list: The list of available units.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">API Reference</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../contributing/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Contributing</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-acom_music_box.music_box">acom_music_box.music_box module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.music_box.MusicBox"><code class="docutils literal notranslate"><span class="pre">MusicBox</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.music_box.MusicBox.add_evolving_condition"><code class="docutils literal notranslate"><span class="pre">MusicBox.add_evolving_condition()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.music_box.MusicBox.loadJson"><code class="docutils literal notranslate"><span class="pre">MusicBox.loadJson()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.music_box.MusicBox.load_mechanism"><code class="docutils literal notranslate"><span class="pre">MusicBox.load_mechanism()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.music_box.MusicBox.solve"><code class="docutils literal notranslate"><span class="pre">MusicBox.solve()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-acom_music_box.conditions">acom_music_box.conditions module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.conditions.Conditions"><code class="docutils literal notranslate"><span class="pre">Conditions</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.conditions.Conditions.from_config"><code class="docutils literal notranslate"><span class="pre">Conditions.from_config()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.conditions.Conditions.read_data_values_from_table"><code class="docutils literal notranslate"><span class="pre">Conditions.read_data_values_from_table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.conditions.Conditions.read_initial_conditions_from_file"><code class="docutils literal notranslate"><span class="pre">Conditions.read_initial_conditions_from_file()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.conditions.Conditions.retrieve_initial_conditions_from_JSON"><code class="docutils literal notranslate"><span class="pre">Conditions.retrieve_initial_conditions_from_JSON()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-acom_music_box.evolving_conditions">acom_music_box.evolving_conditions module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.evolving_conditions.EvolvingConditions"><code class="docutils literal notranslate"><span class="pre">EvolvingConditions</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.evolving_conditions.EvolvingConditions.add_condition"><code class="docutils literal notranslate"><span class="pre">EvolvingConditions.add_condition()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.evolving_conditions.EvolvingConditions.from_config"><code class="docutils literal notranslate"><span class="pre">EvolvingConditions.from_config()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.evolving_conditions.EvolvingConditions.read_conditions_from_file"><code class="docutils literal notranslate"><span class="pre">EvolvingConditions.read_conditions_from_file()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-acom_music_box.data_output">acom_music_box.data_output module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.data_output.DataOutput"><code class="docutils literal notranslate"><span class="pre">DataOutput</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.data_output.DataOutput.output"><code class="docutils literal notranslate"><span class="pre">DataOutput.output()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-acom_music_box.plot_output">acom_music_box.plot_output module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.plot_output.PlotOutput"><code class="docutils literal notranslate"><span class="pre">PlotOutput</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.plot_output.PlotOutput.plot"><code class="docutils literal notranslate"><span class="pre">PlotOutput.plot()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-acom_music_box.model_options">acom_music_box.model_options module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.model_options.BoxModelOptions"><code class="docutils literal notranslate"><span class="pre">BoxModelOptions</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.model_options.BoxModelOptions.from_config"><code class="docutils literal notranslate"><span class="pre">BoxModelOptions.from_config()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-acom_music_box.utils">acom_music_box.utils module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.utils.calculate_air_density"><code class="docutils literal notranslate"><span class="pre">calculate_air_density()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.utils.convert_concentration"><code class="docutils literal notranslate"><span class="pre">convert_concentration()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.utils.convert_from_number_density"><code class="docutils literal notranslate"><span class="pre">convert_from_number_density()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.utils.convert_pressure"><code class="docutils literal notranslate"><span class="pre">convert_pressure()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.utils.convert_temperature"><code class="docutils literal notranslate"><span class="pre">convert_temperature()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.utils.convert_time"><code class="docutils literal notranslate"><span class="pre">convert_time()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.utils.convert_to_number_density"><code class="docutils literal notranslate"><span class="pre">convert_to_number_density()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.utils.extract_unit"><code class="docutils literal notranslate"><span class="pre">extract_unit()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acom_music_box.utils.get_available_units"><code class="docutils literal notranslate"><span class="pre">get_available_units()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/api/acom_music_box.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024-2025, NSF-NCAR/UCAR.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
