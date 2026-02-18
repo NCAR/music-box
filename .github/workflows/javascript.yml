@@ -2,6 +2,8 @@ name: Javascript Tests
 
 on:
   push:
+    branches:
+      - main
 
   pull_request:
   workflow_dispatch:
@@ -40,7 +42,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'release' && github.event.action == 'published') || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: (github.event_name == 'release' && github.event.action == 'published') || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout
@@ -68,4 +70,4 @@ jobs:
           npm config list -l
 
       - name: Publish to npm
-        run: NODE_AUTH_TOKEN="" npm publish --access public --provenance --tag rc
+        run: NODE_AUTH_TOKEN="" npm publish --access public --provenance
