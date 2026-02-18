@@ -58,82 +58,84 @@ export class MusicBox {
     const mechanism = parseMechanism(this._config.mechanism);
     const micm = MICM.fromMechanism(mechanism);
     const state = micm.createState(1);
-    const condsMgr = new ConditionsManager(parseConditions(this._config.conditions));
 
-    // Build sorted list of concentration event times (mirrors Python's sorted_event_times)
-    const concentrationEvents = condsMgr.concentrationEvents;
-    const sortedEventTimes = Object.keys(concentrationEvents)
-      .map(Number)
-      .sort((a, b) => a - b);
-    let nextEventIdx = 0;
+    try {
+      const condsMgr = new ConditionsManager(parseConditions(this._config.conditions));
 
-    // Set initial conditions
-    const t0 = condsMgr.getConditionsAtTime(0);
-    state.setConditions({ temperatures: t0.temperature, pressures: t0.pressure });
+      // Build sorted list of concentration event times (mirrors Python's sorted_event_times)
+      const concentrationEvents = condsMgr.concentrationEvents;
+      const sortedEventTimes = Object.keys(concentrationEvents)
+        .map(Number)
+        .sort((a, b) => a - b);
+      let nextEventIdx = 0;
 
-    // Apply concentration event at t=0 if present
-    if (nextEventIdx < sortedEventTimes.length && sortedEventTimes[nextEventIdx] === 0) {
-      state.setConcentrations(concentrationEvents[0]);
-      nextEventIdx++;
-    }
+      // Set initial conditions
+      const t0 = condsMgr.getConditionsAtTime(0);
+      state.setConditions({ temperatures: t0.temperature, pressures: t0.pressure });
 
-    if (Object.keys(t0.rateParams).length > 0) {
-      state.setUserDefinedRateParameters(t0.rateParams);
-    }
-
-    const results = [collectOutput(0, state)];
-    let currTime = 0;
-    let nextOutputTime = outputTimeStep;
-
-    while (currTime < simulationLength) {
-      // Apply any concentration events at or before current time
-      while (
-        nextEventIdx < sortedEventTimes.length &&
-        sortedEventTimes[nextEventIdx] <= currTime
-      ) {
-        state.setConcentrations(concentrationEvents[sortedEventTimes[nextEventIdx]]);
+      // Apply concentration event at t=0 if present
+      if (nextEventIdx < sortedEventTimes.length && sortedEventTimes[nextEventIdx] === 0) {
+        state.setConcentrations(concentrationEvents[0]);
         nextEventIdx++;
       }
 
-      // Update environment and rate parameters at current time
-      const conds = condsMgr.getConditionsAtTime(currTime);
-      state.setConditions({ temperatures: conds.temperature, pressures: conds.pressure });
-      if (Object.keys(conds.rateParams).length > 0) {
-        state.setUserDefinedRateParameters(conds.rateParams);
+      if (Object.keys(t0.rateParams).length > 0) {
+        state.setUserDefinedRateParameters(t0.rateParams);
       }
 
-      // Integrate one chemistry step (may require multiple sub-steps)
-      let elapsed = 0;
-      let iters = 0;
-      while (elapsed < chemTimeStep) {
-        if (maxIterations !== null && ++iters > maxIterations) {
-          state.delete();
-          throw new Error(
-            `Solver exceeded maximum substep iterations (${maxIterations}) at time ${currTime.toFixed(2)} s`
-          );
+      const results = [collectOutput(0, state)];
+      let currTime = 0;
+      let nextOutputTime = outputTimeStep;
+
+      while (currTime < simulationLength) {
+        // Apply any concentration events at or before current time
+        while (
+          nextEventIdx < sortedEventTimes.length &&
+          sortedEventTimes[nextEventIdx] <= currTime
+        ) {
+          state.setConcentrations(concentrationEvents[sortedEventTimes[nextEventIdx]]);
+          nextEventIdx++;
         }
 
-        const result = micm.solve(state, chemTimeStep - elapsed);
-
-        if (result.state !== SolverState.Converged) {
-          state.delete();
-          throw new Error(
-            `Solver failed to converge at time ${currTime.toFixed(2)} s with state ${result.state}`
-          );
+        // Update environment and rate parameters at current time
+        const conds = condsMgr.getConditionsAtTime(currTime);
+        state.setConditions({ temperatures: conds.temperature, pressures: conds.pressure });
+        if (Object.keys(conds.rateParams).length > 0) {
+          state.setUserDefinedRateParameters(conds.rateParams);
         }
 
-        elapsed += result.stats.final_time;
-        currTime += result.stats.final_time;
+        // Integrate one chemistry step (may require multiple sub-steps)
+        let elapsed = 0;
+        let iters = 0;
+        while (elapsed < chemTimeStep) {
+          if (maxIterations !== null && ++iters > maxIterations) {
+            throw new Error(
+              `Solver exceeded maximum substep iterations (${maxIterations}) at time ${currTime.toFixed(2)} s`
+            );
+          }
 
-        if (currTime >= nextOutputTime && nextOutputTime <= simulationLength) {
-          results.push(collectOutput(currTime, state));
-          nextOutputTime += outputTimeStep;
+          const result = micm.solve(state, chemTimeStep - elapsed);
+
+          if (result.state !== SolverState.Converged) {
+            throw new Error(
+              `Solver failed to converge at time ${currTime.toFixed(2)} s with state ${result.state}`
+            );
+          }
+
+          elapsed += result.stats.final_time;
+          currTime += result.stats.final_time;
+
+          if (currTime >= nextOutputTime && nextOutputTime <= simulationLength) {
+            results.push(collectOutput(currTime, state));
+            nextOutputTime += outputTimeStep;
+          }
         }
       }
+
+      return results;
+    } finally {
+      state.delete();
     }
-
-    state.delete();
-    return results;
   }
 }
 
