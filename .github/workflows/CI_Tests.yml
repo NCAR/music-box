@@ -41,7 +41,9 @@ jobs:
         cache: 'pip' 
 
     - name: Install this package
-      run: pip install -e '.[dev]'
+      run: |
+        pip3 install git+https://github.com/NCAR/wrf-python@v1.4.2
+        pip install -e '.[dev]'
       env: 
         FC: gfortran-14
 
