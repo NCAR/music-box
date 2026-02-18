@@ -144,7 +144,7 @@ export class MusicBox {
  * Collect a single output row from the current solver state.
  *
  * @param {number} time - Current simulation time in seconds
- * @param {import('@ncar/musica').State} state - MICM state object
+ * @param {Object} state - MICM state object
  * @returns {Object} Row with time.s and CONC.<species>.mol m-3 keys
  */
 function collectOutput(time, state) {

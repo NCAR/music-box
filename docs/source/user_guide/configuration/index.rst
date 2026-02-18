@@ -90,31 +90,28 @@ Conditions
 ----------
 
 The ``"conditions"`` key provides environmental data (temperature, pressure, photolysis rates,
-etc.) and species concentrations over time. The column naming convention is the same regardless
-of implementation; what differs is *how* the data is supplied.
+etc.) and species concentrations over time. Two formats are supported for supplying this data;
+both keys may appear together in the same config and their rows are merged.
 
-Python: CSV files
-~~~~~~~~~~~~~~~~~
+.. list-table::
+   :header-rows: 1
+   :widths: 20 20 60
 
-In Python, conditions are provided as one or more CSV files referenced by filepath:
+   * - Key
+     - Supported by
+     - Description
+   * - ``data``
+     - Python and JavaScript
+     - Inline array of ``{headers, rows}`` blocks
+   * - ``filepaths``
+     - Python only
+     - List of CSV file paths, resolved relative to the config file
 
-.. code-block:: json
+Inline data (``data``)
+~~~~~~~~~~~~~~~~~~~~~~
 
-    {
-      "conditions": {
-        "filepaths": ["initial_concentrations.csv", "conditions.csv"]
-      }
-    }
-
-Each CSV file has a header row and one or more data rows, with column names following the
-convention described in :ref:`column-naming` below.
-
-JavaScript: Inline data
-~~~~~~~~~~~~~~~~~~~~~~~
-
-In JavaScript, conditions may be provided inline as an array of ``{headers, rows}`` blocks —
-one block per logical data source, equivalent to one CSV file. This works in both Node.js and
-browser environments where file I/O is unavailable.
+An array of ``{headers, rows}`` blocks — one block per logical data source, equivalent to one
+CSV file. This is the only conditions format supported in JavaScript, and also works in Python.
 
 .. code-block:: json
 
@@ -135,6 +132,22 @@ browser environments where file I/O is unavailable.
         ]
       }
     }
+
+CSV filepaths (``filepaths``) — Python only
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A list of CSV file paths, resolved relative to the config JSON file. Each CSV file has a header
+row and one or more data rows.
+
+.. code-block:: json
+
+    {
+      "conditions": {
+        "filepaths": ["initial_concentrations.csv", "conditions.csv"]
+      }
+    }
+
+Both keys may be used together; Python merges rows from all sources in the order they appear.
 
 .. _column-naming:
 

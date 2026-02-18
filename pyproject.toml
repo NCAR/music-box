@@ -55,3 +55,15 @@ dev = [
 gpu = [
   "musica[gpu]==0.14.0"
 ]
+doc = [
+  "ipython",
+  "ipykernel",
+  "sphinx",
+  "sphinx-book-theme",
+  "sphinx-copybutton",
+  "sphinx-design",
+  "sphinxcontrib-bibtex",
+  "pydata-sphinx-theme",
+  "nbsphinx",
+  "sphinx-js",
+]
