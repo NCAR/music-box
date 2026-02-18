@@ -4,6 +4,11 @@
   "type": "module",
   "description": "JavaScript implementation of music-box atmospheric chemistry box model",
   "main": "./javascript/src/index.js",
+  "files": [
+    "javascript/src",
+    "javascript/README.md",
+    "webpack.config.js"
+  ],
   "scripts": {
     "build": "webpack",
     "test": "node --test 'javascript/tests/unit/*.test.js' 'javascript/tests/integration/*.test.js'",
