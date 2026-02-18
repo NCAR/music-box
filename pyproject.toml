@@ -20,7 +20,7 @@ authors = [
   { name = "Angela Pak"}
 ]
 maintainers = [{ name = "ACOM MUSICA Developers", email = "musica-support@ucar.edu" }]
-readme = "README.md"
+readme = "src/README.md"
 license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: Apache Software License"]
 dynamic = ["version", "description"]

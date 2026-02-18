@@ -1,34 +1,11 @@
 # @ncar/music-box (JavaScript)
 
-JavaScript implementation of the [music-box](https://github.com/NCAR/music-box) atmospheric chemistry box model, powered by the [MUSICA](https://github.com/NCAR/musica) WebAssembly chemistry solver.
+[![JavaScript Tests](https://github.com/NCAR/music-box/actions/workflows/javascript.yml/badge.svg)](https://github.com/NCAR/music-box/actions/workflows/javascript.yml)
+[![npm version](https://img.shields.io/npm/v/%40ncar%2Fmusic-box)](https://www.npmjs.com/package/@ncar/music-box)
 
-## Features
+JavaScript implementation of the [MusicBox](https://github.com/NCAR/music-box) atmospheric chemistry box model, powered by the [MUSICA](https://github.com/NCAR/musica) WebAssembly chemistry solver.
 
-- Accepts the same music-box v1 JSON config format as the Python implementation
-- Supports inline conditions via `conditions.data` — no file I/O required, works in browser environments
-- Powered by `@ncar/musica` WASM for cross-platform chemistry integration
-
-## Repository Layout
-
-Build files (`package.json`, `package-lock.json`, `webpack.config.js`) live at the repository root. Source and tests are under `javascript/`:
-
-```
-music-box/
-├── package.json           # npm package metadata and scripts
-├── package-lock.json
-├── webpack.config.js      # browser bundle configuration
-├── javascript/
-│   ├── src/
-│   │   ├── index.js
-│   │   ├── music_box.js
-│   │   ├── config_parser.js
-│   │   ├── conditions_manager.js
-│   │   └── utils.js
-│   └── tests/
-│       ├── unit/
-│       └── integration/
-└── src/acom_music_box/    # Python implementation (unchanged)
-```
+Works in both Node.js and browser environments. Accepts the same music-box v1 JSON config format as the Python package — no file I/O required when conditions are supplied inline.
 
 ## Installation
 
@@ -38,7 +15,7 @@ npm install @ncar/music-box
 
 ## Quick Start
 
-### Node.js (from file)
+### Node.js — load from a file
 
 ```javascript
 import { MusicBox } from '@ncar/music-box';
@@ -46,9 +23,10 @@ import { MusicBox } from '@ncar/music-box';
 const box = await MusicBox.fromJsonFile('./configs/chapman.v1.config.json');
 const results = await box.solve();
 console.log(results);
+// [{ 'time.s': 0, 'CONC.O3.mol m-3': 6.43e-6, ... }, ...]
 ```
 
-### Node.js or Browser (from object)
+### Node.js or Browser — inline config object
 
 ```javascript
 import { MusicBox } from '@ncar/music-box';
@@ -57,13 +35,14 @@ const config = {
   'box model options': {
     'chemistry time step [min]': 1.0,
     'output time step [min]': 10.0,
-    'simulation length [min]': 60.0,
+    'simulation length [hr]': 1.0,
   },
   conditions: {
     data: [
       {
-        headers: ['time.s', 'ENV.temperature.K', 'ENV.pressure.Pa', 'CONC.O3.mol m-3'],
-        rows: [[0.0, 298.15, 101325.0, 1e-9]],
+        headers: ['time.s', 'ENV.temperature.K', 'ENV.pressure.Pa',
+                  'CONC.O3.mol m-3', 'CONC.O2.mol m-3'],
+        rows: [[0.0, 217.6, 1394.3, 6.43e-6, 0.162]],
       },
       {
         headers: ['time.s', 'PHOTO.O2_1.s-1', 'PHOTO.O3_1.s-1'],
@@ -74,30 +53,26 @@ const config = {
       },
     ],
   },
-  mechanism: { /* ... */ },
+  mechanism: {
+    // see config format docs for full mechanism structure
+  },
 };
 
 const box = MusicBox.fromJson(config);
 const results = await box.solve();
 ```
 
-## Config Format
+## Conditions Format
 
-The JavaScript implementation accepts the same music-box v1 JSON format as the Python implementation. For inline conditions, use `conditions.data` — an array of `{headers, rows}` blocks, one per logical data source (equivalent to one CSV file each):
+The `conditions.data` key accepts an array of `{headers, rows}` blocks — one block per logical data source, equivalent to one CSV file. This is identical to the format the Python implementation accepts via `conditions.data`.
 
 ```json
 {
-  "box model options": {
-    "chemistry time step [min]": 1.0,
-    "output time step [min]": 1.0,
-    "simulation length [day]": 3.0
-  },
   "conditions": {
     "data": [
       {
-        "headers": ["time.s", "ENV.temperature.K", "ENV.pressure.Pa",
-                    "CONC.O3.mol m-3", "CONC.O2.mol m-3"],
-        "rows": [[0.0, 217.6, 1394.3, 6.43e-6, 0.162]]
+        "headers": ["time.s", "ENV.temperature.K", "ENV.pressure.Pa"],
+        "rows": [[0.0, 217.6, 1394.3]]
       },
       {
         "headers": ["time.s", "PHOTO.O2_1.s-1", "PHOTO.O3_1.s-1"],
@@ -107,104 +82,126 @@ The JavaScript implementation accepts the same music-box v1 JSON format as the P
         ]
       }
     ]
-  },
-  "mechanism": { "..." : "..." }
+  }
 }
 ```
 
-This is the same format Python's `ConditionsManager` already accepts via `conditions.data`.
-
 ### Column Naming Convention
-
-Same as CSV files:
 
 | Column | Example | Description |
 |--------|---------|-------------|
-| `ENV.temperature.K` | `217.6` | Air temperature (K), step-interpolated |
-| `ENV.pressure.Pa` | `1394.3` | Air pressure (Pa), step-interpolated |
-| `CONC.<species>.mol m-3` | `6.43e-6` | Species concentration, applied at exact time |
-| `PHOTO.<name>.s-1` | `1.47e-12` | Photolysis rate, step-interpolated |
-| `EMIS.<name>.<unit>` | `0.001` | Emission rate, step-interpolated |
-| `LOSS.<name>.<unit>` | `0.001` | Loss rate, step-interpolated |
-| `USER.<name>.<unit>` | `1.0` | User-defined rate parameter, step-interpolated |
+| `ENV.temperature.K` | `217.6` | Air temperature in Kelvin. Step-interpolated. |
+| `ENV.pressure.Pa` | `1394.3` | Air pressure in Pascals. Step-interpolated. |
+| `CONC.<species>.mol m-3` | `6.43e-6` | Species concentration. Applied at exact time only. |
+| `PHOTO.<name>.s-1` | `1.47e-12` | Photolysis rate. Step-interpolated. |
+| `EMIS.<name>.<unit>` | `0.001` | Emission rate. Step-interpolated. |
+| `LOSS.<name>.<unit>` | `0.001` | Loss rate. Step-interpolated. |
+| `USER.<name>.<unit>` | `1.0` | User-defined rate parameter. Step-interpolated. |
 
-`CONC.*` columns are applied at their exact time only (concentration events); all other columns use step interpolation.
+`CONC.*` columns are treated as concentration events and applied only at their exact time. All other columns use step interpolation (hold the most recent value until the next time point).
 
 ## API Reference
 
 ### `MusicBox`
 
 ```javascript
-// Create from JSON object (Node.js and browser)
+import { MusicBox } from '@ncar/music-box';
+
+// Create from a JSON object (Node.js and browser)
 const box = MusicBox.fromJson(configObject);
 
-// Create from file (Node.js only)
+// Create from a JSON file path (Node.js only)
 const box = await MusicBox.fromJsonFile('/path/to/config.json');
 
-// Run simulation
+// Run the simulation
 const results = await box.solve();
-// Returns: Array of { 'time.s': number, 'CONC.<species>.mol m-3': number, ... }
+// Returns: Array of output rows, e.g.:
+// [{ 'time.s': 0, 'CONC.O3.mol m-3': 6.43e-6, ... }, ...]
 ```
 
-### Parser Functions
+### `parseBoxModelOptions`
+
+Extracts timing parameters from `config['box model options']`, converting all time units (`[s]`, `[min]`, `[hr]`, `[day]`) to seconds.
 
 ```javascript
-import { parseBoxModelOptions, parseMechanism, parseConditions } from '@ncar/music-box';
+import { parseBoxModelOptions } from '@ncar/music-box';
 
-// Parse time options — converts all units to seconds
 const { chemTimeStep, outputTimeStep, simulationLength, maxIterations } =
   parseBoxModelOptions(config);
+```
 
-// Parse and normalize mechanism for MICM
-// Converts Ea→C for Arrhenius reactions; normalizes phase species to objects
-const mechanism = parseMechanism(config.mechanism); // exposes .getJSON()
+### `parseMechanism`
 
-// Parse conditions.data blocks into a flat array of row objects
+Normalizes a music-box v1 mechanism object for the MUSICA WASM solver. Returns an object with a `getJSON()` method compatible with `MICM.fromMechanism()`.
+
+Normalizations applied:
+- Phase species strings → objects: `["M", "O"]` → `[{"name": "M"}, {"name": "O"}]`
+- Arrhenius `Ea` (J) → `C` (K): `C = -Ea / k_B` where k_B = 1.38064852×10⁻²³ J/K
+- Missing Arrhenius parameters default to `B = 0`, `C = 0`, `D = 300`, `E = 0`
+
+```javascript
+import { parseMechanism } from '@ncar/music-box';
+
+const mechanism = parseMechanism(config.mechanism);
+// mechanism.getJSON() returns musica v1-compatible JSON
+```
+
+### `parseConditions`
+
+Converts `conditions.data` blocks into a flat array of row objects for use by `ConditionsManager`.
+
+```javascript
+import { parseConditions } from '@ncar/music-box';
+
 const dataRows = parseConditions(config.conditions);
+// [{ 'time.s': 0, 'ENV.temperature.K': 217.6, ... }, ...]
 ```
 
 ### `ConditionsManager`
+
+Manages step interpolation of environmental conditions and collection of concentration events.
 
 ```javascript
 import { ConditionsManager, parseConditions } from '@ncar/music-box';
 
 const mgr = new ConditionsManager(parseConditions(config.conditions));
 
-// Step-interpolated temperature, pressure, and rate parameters at time t
+// Step-interpolated temperature, pressure, and rate parameters at time t (seconds)
 const { temperature, pressure, rateParams } = mgr.getConditionsAtTime(t);
 
-// Concentration events: { time: { species: value } }
+// Concentration events: { time: { speciesName: value } }
 const events = mgr.concentrationEvents;
 ```
 
 ## Development
 
-All npm commands are run from the **repository root**:
+All npm commands are run from the **repository root** (where `package.json` lives):
 
 ```bash
-# Install dependencies
-npm install
-
-# Run all tests
-npm test
-
-# Run unit tests only
-npm run test:unit
-
-# Run integration tests only
-npm run test:integration
-
-# Run tests with coverage
-npm run test:coverage
-
-# Build browser bundle (output: dist/music-box.bundle.js)
-npm run build
+npm install              # install dependencies
+npm test                 # run all tests (unit + integration)
+npm run test:unit        # unit tests only
+npm run test:integration # integration tests only
+npm run test:coverage    # tests with coverage report
+npm run build            # build browser bundle → dist/music-box.bundle.js
 ```
 
-## Mechanism Config Differences
+### Repository Layout
 
-The JavaScript implementation normalizes two differences between music-box v1 and the musica v1 format expected by the WASM solver:
-
-1. **Phase species**: `["M", "O"]` → `[{"name": "M"}, {"name": "O"}]`
-2. **Arrhenius `Ea` → `C`**: `C = -Ea / k_B` where k_B = 1.38064852×10⁻²³ J/K
-   - Missing parameters default to: `B = 0`, `C = 0`, `D = 300`, `E = 0`
+```
+music-box/
+├── package.json           ← npm metadata and scripts
+├── package-lock.json
+├── webpack.config.js      ← browser bundle config
+├── javascript/
+│   ├── src/
+│   │   ├── index.js
+│   │   ├── music_box.js
+│   │   ├── config_parser.js
+│   │   ├── conditions_manager.js
+│   │   └── utils.js
+│   └── tests/
+│       ├── unit/
+│       └── integration/
+└── src/acom_music_box/    ← Python implementation
+```
