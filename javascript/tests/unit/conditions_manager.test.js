@@ -105,6 +105,13 @@ describe('ConditionsManager.getConditionsAtTime - step interpolation', () => {
     assert.ok(!('PHOTO.O2_1.s-1' in conds.rateParams));
   });
 
+  it('throws on a malformed rate parameter key with no dot-separated name', () => {
+    assert.throws(
+      () => new ConditionsManager([{ 'time.s': 0, 'PHOTO': 1.47e-12 }]),
+      /Malformed rate parameter key "PHOTO"/
+    );
+  });
+
   it('handles empty data array', () => {
     const mgr = new ConditionsManager([]);
     assert.equal(mgr.getConditionsAtTime(9999).temperature, 298.15);

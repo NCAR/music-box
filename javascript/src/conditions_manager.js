@@ -7,6 +7,9 @@ const RATE_PARAM_PREFIXES = new Set(['PHOTO', 'EMIS', 'LOSS', 'USER', 'SURF']);
  */
 function stripUnit(key) {
   const parts = key.split('.');
+  if (parts.length < 2) {
+    throw new Error(`Malformed rate parameter key "${key}": expected at least "PREFIX.name"`);
+  }
   return parts.slice(0, 2).join('.');
 }
 

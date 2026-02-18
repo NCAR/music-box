@@ -52,7 +52,7 @@ export function parseBoxModelOptions(config) {
  *   3. Arrhenius missing parameters default: B=0, C=0, D=300, E=0
  *
  * @param {Object} mechanismJson - The value of config.mechanism
- * @returns {{ getJSON: () => Object }} Object compatible with MICM.fromMechanism
+ * @returns {Object} Object with a ``getJSON()`` method compatible with MICM.fromMechanism
  */
 export function parseMechanism(mechanismJson) {
   if (!mechanismJson) throw new Error('Missing mechanism configuration');
