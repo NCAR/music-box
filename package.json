@@ -1,6 +1,6 @@
 {
   "name": "@ncar/music-box",
-  "version": "3.0.0-rc.1",
+  "version": "3.0.0-rc.2",
   "type": "module",
   "description": "JavaScript implementation of music-box atmospheric chemistry box model",
   "main": "./javascript/src/index.js",
