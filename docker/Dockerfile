@@ -29,10 +29,10 @@ RUN git clone https://github.com/NCAR/musica.git /musica \
     && git checkout $MUSICA_TAG
 
 RUN cd /musica \
-    && pip3 install git+https://github.com/NCAR/wrf-python@v1.4.2 \
     && pip3 install .
 
 RUN cd /musica \
+    && pip3 install git+https://github.com/NCAR/wrf-python@v1.4.2 \
     && pip3 install --verbose .[test] pytest-mock
 
 RUN cd /music-box \
