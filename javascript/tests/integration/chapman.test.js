@@ -203,4 +203,91 @@ describe('Chapman mechanism integration test', () => {
     const box = MusicBox.fromJson(CHAPMAN_CONFIG);
     assert.ok(box instanceof MusicBox);
   });
+
+  it('applies concentration events at mid-simulation times', async () => {
+    // Create config with concentration event at t=1800s
+    const configWithMidEvent = {
+      ...CHAPMAN_CONFIG,
+      conditions: {
+        data: [
+          // Initial concentrations at t=0
+          {
+            headers: [
+              'time.s',
+              'ENV.temperature.K',
+              'ENV.pressure.Pa',
+              'CONC.O.mol m-3',
+              'CONC.O1D.mol m-3',
+              'CONC.O2.mol m-3',
+              'CONC.O3.mol m-3',
+              'CONC.N2.mol m-3',
+            ],
+            rows: [
+              [0.0, 217.6, 1394.3, 3.58e-11, 1.83e-17, 0.162, 6.43e-6, 0.601],
+            ],
+          },
+          // Mid-simulation concentration event at t=1800s (30 minutes)
+          {
+            headers: ['time.s', 'CONC.O3.mol m-3'],
+            rows: [
+              [1800.0, 1.0e-5], // Set O3 to a specific value mid-simulation
+            ],
+          },
+          // Environmental conditions (same as original)
+          {
+            headers: [
+              'time.s',
+              'ENV.pressure.Pa',
+              'ENV.temperature.K',
+              'PHOTO.O2_1.s-1',
+              'PHOTO.O3_1.s-1',
+              'PHOTO.O3_2.s-1',
+            ],
+            rows: [
+              [0, 1394.3, 217.6, 1.47e-12, 4.25e-5, 4.33514e-4],
+              [3600, 1394.3, 217.6, 1.12e-13, 1.33e-6, 2.92129e-4],
+            ],
+          },
+        ],
+      },
+    };
+
+    const box = MusicBox.fromJson(configWithMidEvent);
+    const results = await box.solve();
+
+    // Verify we have outputs at t=0, t=1800, and t=3600
+    assert.ok(results.length >= 3, `Expected at least 3 output rows, got ${results.length}`);
+
+    const rowAt0 = results.find((r) => Math.abs(r['time.s'] - 0) < 1);
+    const rowAt1800 = results.find((r) => Math.abs(r['time.s'] - 1800) < 1);
+    const rowAt3600 = results.find((r) => Math.abs(r['time.s'] - 3600) < 1);
+
+    assert.ok(rowAt0, 'Should have output row at t=0');
+    assert.ok(rowAt1800, 'Should have output row at t=1800s');
+    assert.ok(rowAt3600, 'Should have output row at t=3600s');
+
+    const o3At0 = rowAt0['CONC.O3.mol m-3'];
+    const o3At1800 = rowAt1800['CONC.O3.mol m-3'];
+    const o3At3600 = rowAt3600['CONC.O3.mol m-3'];
+
+    // The concentration at t=1800 should still be close to the initial value
+    // because the event is applied AFTER the output is collected
+    assert.ok(
+      Math.abs(o3At1800 - o3At0) < 1.0e-6,
+      `O3 at t=1800 (${o3At1800}) should be close to initial value (${o3At0}) since event is applied after output`
+    );
+
+    // The concentration at t=3600 should be close to the event value (1.0e-5)
+    // because the event was applied after the t=1800 output
+    assert.ok(
+      Math.abs(o3At3600 - 1.0e-5) < 1.0e-6,
+      `O3 at t=3600 (${o3At3600}) should be close to event value (1.0e-5)`
+    );
+
+    // Verify the concentration changed significantly from before to after the event
+    assert.ok(
+      Math.abs(o3At3600 - o3At1800) > 1.0e-6,
+      `O3 should change significantly from t=1800 (${o3At1800}) to t=3600 (${o3At3600})`
+    );
+  });
 });
