@@ -12,38 +12,47 @@ import assert from 'node:assert/strict';
 import { initModule } from '@ncar/musica';
 import { MusicBox } from '../../src/music_box.js';
 
-// Full Chapman config with inline conditions using the unified conditions.data format.
-// Row objects mirror the column naming of the CSV files:
-//   - Row at t=0: initial T/P + all species concentrations + initial photolysis rates
-//   - Row at t=3600: updated photolysis rates (from conditions_Boulder.csv second row)
+// Full Chapman config with inline conditions using the {headers, rows} block format
+// that Python's ConditionsManager already accepts via _load_inline_data.
 const CHAPMAN_CONFIG = {
   'box model options': {
     'chemistry time step [min]': 1.0,
     'output time step [min]': 30.0,
     'simulation length [min]': 60.0,
   },
+  // Inline conditions mirroring the two CSV files used by the Python integration test.
+  // Block 1 → initial_concentrations.csv (one row at t=0 with T, P, and all species)
+  // Block 2 → conditions_Boulder.csv (time-varying T, P, and photolysis rates)
   conditions: {
     data: [
       {
-        'time.s': 0,
-        'ENV.temperature.K': 217.6,
-        'ENV.pressure.Pa': 1394.3,
-        'CONC.O.mol m-3': 3.58e-11,
-        'CONC.O1D.mol m-3': 1.83e-17,
-        'CONC.O2.mol m-3': 0.162,
-        'CONC.O3.mol m-3': 6.43e-6,
-        'CONC.N2.mol m-3': 0.601,
-        'PHOTO.O2_1.s-1': 1.47e-12,
-        'PHOTO.O3_1.s-1': 4.25e-5,
-        'PHOTO.O3_2.s-1': 4.33514e-4,
+        headers: [
+          'time.s',
+          'ENV.temperature.K',
+          'ENV.pressure.Pa',
+          'CONC.O.mol m-3',
+          'CONC.O1D.mol m-3',
+          'CONC.O2.mol m-3',
+          'CONC.O3.mol m-3',
+          'CONC.N2.mol m-3',
+        ],
+        rows: [
+          [0.0, 217.6, 1394.3, 3.58e-11, 1.83e-17, 0.162, 6.43e-6, 0.601],
+        ],
       },
       {
-        'time.s': 3600,
-        'ENV.pressure.Pa': 1394.3,
-        'ENV.temperature.K': 217.6,
-        'PHOTO.O2_1.s-1': 1.12e-13,
-        'PHOTO.O3_1.s-1': 1.33e-6,
-        'PHOTO.O3_2.s-1': 2.92129e-4,
+        headers: [
+          'time.s',
+          'ENV.pressure.Pa',
+          'ENV.temperature.K',
+          'PHOTO.O2_1.s-1',
+          'PHOTO.O3_1.s-1',
+          'PHOTO.O3_2.s-1',
+        ],
+        rows: [
+          [0,    1394.3, 217.6, 1.47e-12, 4.25e-5,  4.33514e-4],
+          [3600, 1394.3, 217.6, 1.12e-13, 1.33e-6,  2.92129e-4],
+        ],
       },
     ],
   },

@@ -246,21 +246,48 @@ describe('parseConditions', () => {
     assert.deepEqual(parseConditions({}), []);
   });
 
-  it('returns the data array', () => {
+  it('converts a single {headers, rows} block to flat row objects', () => {
     const conditions = {
       data: [
-        { 'time.s': 0, 'ENV.temperature.K': 217.6, 'CONC.O3.mol m-3': 6.43e-6 },
-        { 'time.s': 3600, 'PHOTO.O2_1.s-1': 1.12e-13 },
+        {
+          headers: ['time.s', 'ENV.temperature.K', 'CONC.O3.mol m-3'],
+          rows: [
+            [0.0, 217.6, 6.43e-6],
+            [3600.0, 220.0, 5.0e-6],
+          ],
+        },
       ],
     };
     const result = parseConditions(conditions);
     assert.equal(result.length, 2);
+    assert.equal(result[0]['time.s'], 0.0);
     assert.equal(result[0]['ENV.temperature.K'], 217.6);
-    assert.equal(result[1]['PHOTO.O2_1.s-1'], 1.12e-13);
+    assert.equal(result[0]['CONC.O3.mol m-3'], 6.43e-6);
+    assert.equal(result[1]['time.s'], 3600.0);
+    assert.equal(result[1]['ENV.temperature.K'], 220.0);
   });
 
-  it('passes filepaths key through without error (Python only feature)', () => {
-    // filepaths is handled by Python; JS ignores it and only reads data
+  it('merges multiple blocks into a single flat array', () => {
+    const conditions = {
+      data: [
+        {
+          headers: ['time.s', 'ENV.temperature.K'],
+          rows: [[0.0, 217.6]],
+        },
+        {
+          headers: ['time.s', 'PHOTO.O2_1.s-1'],
+          rows: [[0.0, 1.47e-12], [3600.0, 1.12e-13]],
+        },
+      ],
+    };
+    const result = parseConditions(conditions);
+    assert.equal(result.length, 3);
+    assert.equal(result[0]['ENV.temperature.K'], 217.6);
+    assert.equal(result[1]['PHOTO.O2_1.s-1'], 1.47e-12);
+    assert.equal(result[2]['PHOTO.O2_1.s-1'], 1.12e-13);
+  });
+
+  it('ignores filepaths key (Python-only feature)', () => {
     const conditions = { filepaths: ['foo.csv'] };
     assert.deepEqual(parseConditions(conditions), []);
   });

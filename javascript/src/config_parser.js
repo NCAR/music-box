@@ -97,22 +97,40 @@ export function parseMechanism(mechanismJson) {
 /**
  * Parse inline conditions from a music-box v1 config.
  *
- * Supports conditions["data"]: a flat array of row objects, each with a "time.s" key
- * plus any condition columns (ENV.*, CONC.*, PHOTO.*, EMIS.*, LOSS.*, USER.*).
- * This mirrors the semantics of the CSV files used by Python:
- *   - CONC.* values are concentration events applied at their exact time
- *   - All other columns are step-interpolated
+ * Supports conditions["data"]: an array of {headers, rows} blocks, matching the
+ * format Python's ConditionsManager already accepts via _load_inline_data. Each
+ * block is equivalent to one CSV file.
  *
- * Example:
+ * Example (two blocks mirroring two CSV files):
  *   [
- *     { "time.s": 0, "ENV.temperature.K": 217.6, "CONC.O3.mol m-3": 6.43e-6 },
- *     { "time.s": 3600, "PHOTO.O2_1.s-1": 1.12e-13 }
+ *     {
+ *       "headers": ["time.s", "ENV.temperature.K", "CONC.O3.mol m-3"],
+ *       "rows": [[0.0, 217.6, 6.43e-6]]
+ *     },
+ *     {
+ *       "headers": ["time.s", "PHOTO.O2_1.s-1", "PHOTO.O3_1.s-1"],
+ *       "rows": [[0, 1.47e-12, 4.25e-5], [3600, 1.12e-13, 1.33e-6]]
+ *     }
  *   ]
  *
+ * Returns a flat array of row objects for use by ConditionsManager.
+ *
  * @param {Object} conditionsJson - The value of config.conditions
- * @returns {Array} Array of row objects (empty array if none present)
+ * @returns {Array} Flat array of row objects (empty array if none present)
  */
 export function parseConditions(conditionsJson) {
   if (!conditionsJson) return [];
-  return conditionsJson['data'] || [];
+  const blocks = conditionsJson['data'] || [];
+  const rows = [];
+  for (const block of blocks) {
+    const { headers, rows: blockRows } = block;
+    for (const values of blockRows) {
+      const obj = {};
+      for (let i = 0; i < headers.length; i++) {
+        obj[headers[i]] = values[i];
+      }
+      rows.push(obj);
+    }
+  }
+  return rows;
 }
