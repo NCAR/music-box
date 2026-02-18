@@ -68,4 +68,4 @@ jobs:
           npm config list -l
 
       - name: Publish to npm
-        run: NODE_AUTH_TOKEN="" npm publish --access public --provenance
+        run: NODE_AUTH_TOKEN="" npm publish --access public --provenance --tag rc
