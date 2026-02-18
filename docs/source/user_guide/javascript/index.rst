@@ -71,80 +71,8 @@ naming reference.
 API Reference
 =============
 
-MusicBox
---------
-
-.. code-block:: javascript
-
-    // Create from a plain JSON object (works in browser and Node.js)
-    const box = MusicBox.fromJson(configObject);
-
-    // Create from a JSON file path (Node.js only)
-    const box = await MusicBox.fromJsonFile('/path/to/config.json');
-
-    // Run the simulation
-    const results = await box.solve();
-    // Returns an array of output rows:
-    // [{ 'time.s': 0, 'CONC.O3.mol m-3': 6.43e-6, ... }, ...]
-
-parseBoxModelOptions
----------------------
-
-Extracts timing parameters from ``config['box model options']``, converting all time
-units (``[s]``, ``[min]``, ``[hr]``, ``[day]``) to seconds.
-
-.. code-block:: javascript
-
-    import { parseBoxModelOptions } from '@ncar/music-box';
-
-    const { chemTimeStep, outputTimeStep, simulationLength, maxIterations } =
-      parseBoxModelOptions(config);
-
-parseMechanism
---------------
-
-Normalizes a music-box v1 mechanism object for use with the MUSICA WASM solver.
-Returns an object with a ``getJSON()`` method compatible with ``MICM.fromMechanism()``.
-
-See :ref:`Configuration Files → Mechanism <configuration>` for a description of the
-normalizations applied.
-
-.. code-block:: javascript
-
-    import { parseMechanism } from '@ncar/music-box';
-
-    const mechanism = parseMechanism(config.mechanism);
-    // mechanism.getJSON() returns musica v1-compatible JSON
-
-parseConditions
----------------
-
-Converts ``conditions.data`` blocks into a flat array of row objects for use by
-``ConditionsManager``.
-
-.. code-block:: javascript
-
-    import { parseConditions } from '@ncar/music-box';
-
-    const dataRows = parseConditions(config.conditions);
-    // [{ 'time.s': 0, 'ENV.temperature.K': 217.6, ... }, ...]
-
-ConditionsManager
------------------
-
-Manages step interpolation of environmental conditions and collection of concentration events.
-
-.. code-block:: javascript
-
-    import { ConditionsManager, parseConditions } from '@ncar/music-box';
-
-    const mgr = new ConditionsManager(parseConditions(config.conditions));
-
-    // Step-interpolated values at time t (seconds)
-    const { temperature, pressure, rateParams } = mgr.getConditionsAtTime(t);
-
-    // Concentration events: { time: { speciesName: value } }
-    const events = mgr.concentrationEvents;
+For full API documentation — including all parameters, return types, and descriptions — see
+the :ref:`JavaScript API Reference <js-api-ref>`.
 
 Development
 ===========
@@ -159,24 +87,3 @@ All npm commands are run from the **repository root** (where ``package.json`` li
     $ npm run test:integration # integration tests only
     $ npm run test:coverage    # tests with coverage report
     $ npm run build            # build browser bundle → dist/music-box.bundle.js
-
-Repository Layout
------------------
-
-.. code-block:: text
-
-    music-box/
-    ├── package.json           ← npm metadata and scripts
-    ├── package-lock.json
-    ├── webpack.config.js      ← browser bundle config
-    ├── javascript/
-    │   ├── src/
-    │   │   ├── index.js
-    │   │   ├── music_box.js
-    │   │   ├── config_parser.js
-    │   │   ├── conditions_manager.js
-    │   │   └── utils.js
-    │   └── tests/
-    │       ├── unit/
-    │       └── integration/
-    └── src/acom_music_box/    ← Python implementation

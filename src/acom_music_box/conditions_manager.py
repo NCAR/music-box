@@ -561,8 +561,8 @@ class ConditionsManager:
             time: The time point in seconds.
 
         Returns:
-            Dictionary with temperature, pressure, species_concentrations, and rate_parameters.
-            species_concentrations is only populated if there's an exact time match.
+            Dictionary with temperature, pressure, concentrations, and rate_parameters.
+            concentrations is only populated if there's an exact time match.
         """
         # Filter to times <= given time for step interpolation
         valid_df = self._df[self._df[self.TIME_COLUMN] <= time].copy()
@@ -616,12 +616,12 @@ class ConditionsManager:
                 rate_parameters[col] = value
 
         # Concentrations: only return if there's an exact time match
-        species_concentrations = self._concentration_events.get(time, {})
+        concentrations = self._concentration_events.get(time, {})
 
         return {
             "temperature": temperature,
             "pressure": pressure,
-            "species_concentrations": species_concentrations,
+            "concentrations": concentrations,
             "rate_parameters": rate_parameters
         }
 
