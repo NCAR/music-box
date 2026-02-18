@@ -288,13 +288,13 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
     meanPoint = None
     if (modelType == WACCM_OUT):            # straight grid
         meanPoint = gridUtils.meanStraightGrid(waccmDataSet, when,
-                                     latitudes, longitudes, altitudes)
+                                               latitudes, longitudes, altitudes)
 
     elif (modelType == WRFCHEM_OUT):        # curved grid
         wrfDataSet = netCDF4.Dataset(waccmFilepath)     # needed for the z-levels
         meanPoint = gridUtils.meanCurvedGrid(waccmDataSet, when,
-                                   latitudes, longitudes, altitudes,
-                                   wrfDataSet)
+                                             latitudes, longitudes, altitudes,
+                                             wrfDataSet)
         wrfDataSet.close()
 
     # diagnostic to look at single point structure
@@ -584,7 +584,7 @@ def main():
 
         logger.info(f"Directory: {modelDir}   type {modelType}")
 
-        #for dateStr, timeStr in zip(dateStrs, timeStrs):
+        # for dateStr, timeStr in zip(dateStrs, timeStrs):
         dateStr = dateStrs[0]       # TODO: replace this with loop over time frames
         timeStr = timeStrs[0]
 
