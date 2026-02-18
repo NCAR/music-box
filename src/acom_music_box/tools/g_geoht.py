@@ -9,7 +9,7 @@
 from __future__ import (absolute_import, division, print_function)
 
 import xarray
-from destag import destagger
+from acom_music_box.tools.destag import destagger
 import logging
 logger = logging.getLogger(__name__)
 

@@ -10,7 +10,7 @@ import numbers
 import numpy
 import xarray
 import netCDF4
-import g_geoht
+from acom_music_box.tools import g_geoht
 
 import logging
 logger = logging.getLogger(__name__)
