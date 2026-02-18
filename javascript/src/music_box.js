@@ -135,6 +135,7 @@ export class MusicBox {
       return results;
     } finally {
       state.delete();
+      micm.delete();
     }
   }
 }
