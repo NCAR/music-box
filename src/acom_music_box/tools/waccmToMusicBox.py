@@ -20,7 +20,6 @@ import zipfile
 from acom_music_box import Examples, __version__
 from acom_music_box.utils import calculate_air_density
 import netCDF4
-import wrf
 from acom_music_box.tools import gridUtils
 
 import logging
@@ -497,8 +496,6 @@ def main():
     logger.info(f"{__file__}")
     logger.info(f"Start time: {datetime.datetime.now()}")
 
-    logger.info(f"wrf-python version is {wrf.__version__}")
-
     # retrieve and parse the command-line arguments
     myArgs = parse_arguments()
     setup_logging(myArgs.verbose)
@@ -588,7 +585,7 @@ def main():
         logger.info(f"Directory: {modelDir}   type {modelType}")
 
         #for dateStr, timeStr in zip(dateStrs, timeStrs):
-        dateStr = dateStrs[0]       # bogus
+        dateStr = dateStrs[0]       # TODO: replace this with loop over time frames
         timeStr = timeStrs[0]
 
         # locate the WACCM output file

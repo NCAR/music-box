@@ -10,12 +10,12 @@ import numbers
 import numpy
 import xarray
 import netCDF4
-import wrf
+import g_geoht
 
 import logging
 logger = logging.getLogger(__name__)
 
-import sys      # bogus, for crashing out early
+import sys
 
 
 kSurfaceKeyword = "surface"     # request is for the surface layer
@@ -443,8 +443,10 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
     logger.info(f"latTicks = {latTicks}")
     logger.info(f"lonTicks = {lonTicks}")
 
-    # use wrf-python to obtain the z-level grid for this time frame
-    zLevels = wrf.getvar(wrfDataset, "z")   # meters
+    # Previously used wrf-python to obtain the z-level grid for this time frame.
+    # That code replaced with stripped-down version here. Carl Drews - February 18, 2026
+    #zLevels = wrf.getvar(wrfDataset, "z")   # meters
+    zLevels = g_geoht.get_height(wrfDataset)
     logger.debug(f"zLevels = {zLevels}")
 
     # load PBLH here if requested as some altitude bound
