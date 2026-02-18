@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default {
-  entry: './src/index.js',
+  entry: './javascript/src/index.js',
   output: {
     filename: 'music-box.bundle.js',
     path: path.resolve(__dirname, 'dist'),
