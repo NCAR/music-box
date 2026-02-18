@@ -8,8 +8,6 @@
 
 # import os
 import pathvalidate
-import numpy
-import math
 import argparse
 import datetime
 import xarray
@@ -21,6 +19,8 @@ import tempfile
 import zipfile
 from acom_music_box import Examples, __version__
 from acom_music_box.utils import calculate_air_density
+import netCDF4
+from acom_music_box.tools import gridUtils
 
 import logging
 logger = logging.getLogger(__name__)
@@ -87,6 +87,15 @@ def parse_arguments():
               + "\nIf two longitudes supplied, then average over that range.")
     )
     parser.add_argument(
+        '--altitude',
+        type=str,
+        help=("Height of extraction(s) above sea level, in meters."
+              + "\nIf two altitudes supplied, then average over that height range."
+              + "\nIf no altitude supplied, then extract surface level of model output."
+              + "\nUse the keyword 'surface' to extract the surface layer."
+              + "\nUse a lat-lon variable name to represent that height: PBLH.")
+    )
+    parser.add_argument(
         '--template',
         type=str,
         help="Extract MusicBox chemical species from a configuration in this directory."
@@ -131,6 +140,19 @@ def safeFloat(numString):
         result = 0.0
 
     return result
+
+
+# Checks if a string can be converted safely to a float.
+# numString = string that might be a float or a varname like PBLH
+def isFloat(numString):
+    try:
+        float(numString)
+        return True
+    except ValueError:
+        return False
+    except TypeError:
+        # Handles cases like None or non-string inputs
+        return False
 
 
 # Create and return list of WACCM chemical species
@@ -194,7 +216,7 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
         # build a simple species map
         varMap = {
             "T": "temperature",
-            "PS": "pressure",
+            "lev": "pressure",      # WACCM sigma pressure coordinates
             "N2O": "N2O",
             "H2O2": "H2O2",
             "O3": "O3",
@@ -223,13 +245,13 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     if (modelType == WACCM_OUT):
         varMap = {
             "T": "temperature",
-            "PS": "pressure"
+            "lev": "pressure"       # sigma pressure coordinates
         }
     elif (modelType == WRFCHEM_OUT):
         varMap = {
             # WRF-Chem: MusicBox
             "T2": "temperature",
-            "P": "pressure",
+            "PB": "pressure",
             "isopr": "ISOPB02",
             "o3": "O3"
         }
@@ -241,245 +263,17 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     return (varMap)
 
 
-# Calcuate the squared distance between points.
-# x1, y1, x2, y2 = coordinates of first and second points
-# return the square of the Pythagorean hypotenuse
-#   Avoid taking square root for faster calculation
-def distSquared(x1, y1, x2, y2):
-    return ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
-
-
-# constants for marking compass directions
-kNoChange = 0
-kNorth = 1
-kSouth = 2
-kEast = 3
-kWest = 4
-
-# Search and locate the closest grid point to the specified coordinates.
-# This function is applicable for any non-orthogonal projection, not just Lambert Conformal.
-# This function will often be called repeatedly for a grid request;
-# recycle the previous return values into the init suggestions
-# in order to make the nearby searching more efficient.
-# wrfChemDataSet = already-open NetCDF file as xarray
-# latsVarname, lonsVarname = coordinate variables in the dataset
-# latitude, longitude = want to retrieve data at this location
-# initLatIndex, initLonIndex = caller's suggestion where to start the search
-
-
-def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
-                      latitude, longitude, initLatIndex=None, initLonIndex=None):
-    timeIndex = 0
-
-    latsVar = wrfChemDataSet.get(latsVarname)
-    latCoord = latsVar.coords["south_north"]
-    numLats = len(latCoord)
-
-    lonsVar = wrfChemDataSet.get(lonsVarname)
-    lonCoord = lonsVar.coords["west_east"]
-    numLons = len(lonCoord)
-
-    latIndex = initLatIndex
-    lonIndex = initLonIndex
-    if (latIndex is None):
-        # start the search in the middle of the grid
-        latIndex = math.floor(numLats / 2)
-    if (lonIndex is None):
-        lonIndex = math.floor(numLons / 2)
-
-    # make sure that supplied initial indexes are in bounds
-    if (latIndex < 0):
-        latIndex = 0
-    if (lonIndex < 0):
-        lonIndex = 0
-
-    if (latIndex >= numLats):
-        latIndex = numLats - 1
-    if (lonIndex >= numLons):
-        lonIndex = numLons - 1
-
-    lats = latsVar.data[timeIndex, :, :]
-    lons = lonsVar.data[timeIndex, :, :]
-    myLat = lats[latIndex, lonIndex]
-    myLon = lons[latIndex, lonIndex]
-    numSteps = 0
-
-    logger.debug(f"Starting vertex search at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
-
-    # try to decrease the distance by searching adjacent cells
-    while (True):
-        # calculate the change in the four compass directions
-        currentDist = distSquared(myLat, myLon, latitude, longitude)
-        logger.debug(f"currentDist = {currentDist}")
-        northChange = southChange = eastWest = westChange = 0.0
-
-        if (latIndex < numLats - 1):
-            northChange = distSquared(lats[latIndex + 1, lonIndex], lons[latIndex + 1, lonIndex], latitude, longitude) - currentDist
-        if (latIndex > 0):
-            southChange = distSquared(lats[latIndex - 1, lonIndex], lons[latIndex - 1, lonIndex], latitude, longitude) - currentDist
-        if (lonIndex < numLons - 1):
-            eastChange = distSquared(lats[latIndex, lonIndex + 1], lons[latIndex, lonIndex + 1], latitude, longitude) - currentDist
-        if (lonIndex > 0):
-            westChange = distSquared(lats[latIndex, lonIndex - 1], lons[latIndex, lonIndex - 1], latitude, longitude) - currentDist
-        logger.debug(f"Changes are north {northChange} south {southChange} east {eastChange} west {westChange}")
-
-        # which direction will produce the greatest improvement (go closer)?
-        goDirection = kNoChange
-        goDecrease = 0.0
-
-        if (northChange < goDecrease):
-            goDirection = kNorth
-            goDecrease = northChange
-        if (southChange < goDecrease):
-            goDirection = kSouth
-            goDecrease = southChange
-        if (eastChange < goDecrease):
-            goDirection = kEast
-            goDecrease = eastChange
-        if (westChange < goDecrease):
-            goDirection = kWest
-            goDecrease = westChange
-
-        logger.debug(f"goDirection = {goDirection}   goDecrease = {goDecrease}")
-        if (goDecrease >= 0.0):
-            # we can go no closer than the current position
-            break
-
-        # move in the best direction
-        if (goDirection == kNorth):
-            latIndex += 1
-        elif (goDirection == kSouth):
-            latIndex -= 1
-        elif (goDirection == kEast):
-            lonIndex += 1
-        elif (goDirection == kWest):
-            lonIndex -= 1
-        numSteps += 1
-
-        myLat = lats[latIndex, lonIndex]
-        myLon = lons[latIndex, lonIndex]
-        logger.debug(f"\tvertex search now at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
-
-    logger.debug(f"Closest vertex reached in {numSteps} steps.")
-    return (latIndex, lonIndex)
-
-
-# Extract mean values from a lat-lon rectangle within model output.
-# As of October 2025, WACCM uses a straight grid (Mercator)
-# and WRF-Chem is curved (Lambert Conformal).
-# gridDataset = model output from WACCM or WRF-Chem
-# when = desired date-time frame of gridDataset
-# latPair, lonPair = coordinates of a single point, or bounding box (SW to NE)
-def meanStraightGrid(gridDataset, when, latPair, lonPair):
-    # find the time index
-    whenStr = when.strftime("%Y-%m-%d %H:%M:%S")
-    logger.info(f"whenStr = {whenStr}")
-
-    # determine the grid spacing
-    latVar = gridDataset["lat"].data
-    latStride = latVar[1] - latVar[0]
-    lonVar = gridDataset["lon"].data
-    lonStride = lonVar[1] - lonVar[0]
-    logger.info(f"latStride = {latStride}   lonStride = {lonStride}")
-
-    # use xarray to select sub-grid and then take average
-    numGridLats = math.ceil((latPair[1] - latPair[0]) / latStride) + 1      # include the endpoint
-    numGridLons = math.ceil((lonPair[1] - lonPair[0]) / lonStride) + 1
-    logger.info(f"Requested sub-grid will be {numGridLats} lats x {numGridLons} lons.")
-
-    latTicks = numpy.linspace(latPair[0], latPair[1], numGridLats)
-    lonTicks = numpy.linspace(lonPair[0], lonPair[1], numGridLons)
-    logger.info(f"latTicks = {latTicks}")
-    logger.info(f"lonTicks = {lonTicks}")
-
-    gridBox = gridDataset.sel(lat=latTicks, lon=lonTicks,
-                              lev=1000.0, time=whenStr, method="nearest")
-
-    # cannot take the mean() of strings, so remove them
-    stringVars = []
-    for varName, varDataArray in gridBox.data_vars.items():
-        if not (numpy.issubdtype(varDataArray.dtype, numpy.number)
-                or numpy.issubdtype(varDataArray.dtype, numpy.datetime64)
-                or numpy.issubdtype(varDataArray.dtype, numpy.timedelta64)
-                ):
-            stringVars.append(varName)
-    logger.info(f"removing stringVars = {stringVars}")
-    gridBox = gridBox.drop_vars(stringVars)
-
-    logger.info(f"WACCM gridBox = {gridBox}")
-    meanPoint = gridBox.mean(dim=["lat", "lon"], keep_attrs=True)
-
-    return meanPoint
-
-
-# Extract mean values from a lat-lon rectangle within model output.
-# As of October 2025, WACCM uses a straight grid (Mercator)
-# and WRF-Chem is curved (Lambert Conformal).
-# gridDataset = model output from WACCM or WRF-Chem
-# when = desired date-time frame of gridDataset
-# latPair, lonPair = coordinates of a single point, or bounding box (SW to NE)
-def meanCurvedGrid(gridDataset, when, latPair, lonPair):
-    # find the time index
-    whenStr = when.strftime("%Y-%m-%d_%H:%M:%S")
-    logger.info(f"whenStr = {whenStr}")
-    timesVar = gridDataset["Times"]
-    timesVarStrings = timesVar.str.decode("utf-8")
-    stringMatches = numpy.where(timesVarStrings == whenStr)
-    timeIndex = stringMatches[0][0]
-    logger.info(f"timeIndex = {timeIndex}")
-
-    # estimate the grid spacing
-    latVar = gridDataset["XLAT"].data
-    latStride = latVar[timeIndex, 1, 0] - latVar[timeIndex, 0, 0]
-    lonVar = gridDataset["XLONG"].data
-    lonStride = lonVar[timeIndex, 0, 1] - lonVar[timeIndex, 0, 0]
-    logger.info(f"latStride = {latStride}   lonStride = {lonStride}")
-
-    # loop through the sub-grid and extract points
-    numGridLats = math.ceil((latPair[1] - latPair[0]) / latStride) + 1      # include the endpoint
-    numGridLons = math.ceil((lonPair[1] - lonPair[0]) / lonStride) + 1
-    logger.info(f"Requested sub-grid will be {numGridLats} lats x {numGridLons} lons.")
-
-    latTicks = numpy.linspace(latPair[0], latPair[1], numGridLats)
-    lonTicks = numpy.linspace(lonPair[0], lonPair[1], numGridLons)
-    logger.info(f"latTicks = {latTicks}")
-    logger.info(f"lonTicks = {lonTicks}")
-
-    iLat, iLon = None, None
-    singlePoints = []
-    for latFloat in latTicks:
-        for lonFloat in lonTicks:
-            logger.debug(f"latFloat = {latFloat}   lonFloat = {lonFloat}")
-
-            # select data from the nearest grid point
-            iLat, iLon = findClosestVertex(gridDataset, "XLAT", "XLONG",
-                                           latFloat, lonFloat, iLat, iLon)
-            logger.debug(f"iLat = {iLat}   iLon = {iLon}")
-            singlePoint = gridDataset.isel(Time=timeIndex,
-                                           west_east=iLon, south_north=iLat, bottom_top=0)
-            singlePoints.append(singlePoint)
-
-    logger.info(f"Combining {len(singlePoints)} points into a single set...")
-    pointDimension = "point_index"
-    pointSet = xarray.concat(singlePoints, pointDimension)
-    logger.debug(f"WACCM / WRF-Chem pointSet = {pointSet}")
-
-    logger.info(f"Calculating mean value of the set...")
-    meanPoint = pointSet.mean(dim=[pointDimension], keep_attrs=True)
-
-    return meanPoint
-
-
 # Read array values at a single lat-lon-time point.
 # waccmMusicaDict = mapping from WACCM names to MusicBox
 # latitudes, longitudes = geo-coordinates of retrieval point(s)
 #   Could be a single point or corners of a selection rectangle.
+# altitudes = height bounds across which to average (meters)
 # when = date and time to extract
 # modelDir = directory containing model output
 # waccmFilename = name of the model output file
 # modelType = WACCM_OUT or WRFCHEM_OUT
 # return dictionary of MUSICA variable names, values, and units
-def readWACCM(waccmMusicaDict, latitudes, longitudes,
+def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
               when, modelDir, waccmFilename, modelType):
 
     waccmFilepath = os.path.join(modelDir, waccmFilename)
@@ -493,15 +287,18 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
     # retrieve all vars at a single point
     meanPoint = None
     if (modelType == WACCM_OUT):            # straight grid
-        meanPoint = meanStraightGrid(waccmDataSet, when,
-                                     latitudes, longitudes)
+        meanPoint = gridUtils.meanStraightGrid(waccmDataSet, when,
+                                     latitudes, longitudes, altitudes)
 
     elif (modelType == WRFCHEM_OUT):        # curved grid
-        meanPoint = meanCurvedGrid(waccmDataSet, when,
-                                   latitudes, longitudes)
+        wrfDataSet = netCDF4.Dataset(waccmFilepath)     # needed for the z-levels
+        meanPoint = gridUtils.meanCurvedGrid(waccmDataSet, when,
+                                   latitudes, longitudes, altitudes,
+                                   wrfDataSet)
+        wrfDataSet.close()
 
     # diagnostic to look at single point structure
-    logger.info(f"WACCM / WRF-Chem meanPoint = {meanPoint}")
+    logger.debug(f"WACCM / WRF-Chem meanPoint = {meanPoint}")
 
     # loop through vars and build another dictionary
     musicaDict = {}
@@ -514,7 +311,10 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
 
         chemSinglePoint = meanPoint[waccmKey]
         logger.info(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
+
+        # this next line takes the mean along any remaining vertical axis/dimension
         musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)   # from 0-dim array
+        logger.debug(f"musicaTuple = {musicaTuple}")
         musicaDict[musicaName] = musicaTuple
 
     # close the NetCDF file
@@ -713,11 +513,11 @@ def main():
     if (myArgs.template is not None):
         template = myArgs.template
 
-    # get the date-time to retrieve
-    dateStr = myArgs.date
-    timeStr = "00:00"
+    # get the date-times to retrieve
+    dateStrs = myArgs.date.split(",")
+    timeStrs = ["00:00"]
     if (myArgs.time is not None):
-        timeStr = myArgs.time
+        timeStrs = myArgs.time.split(",")
 
     # get the geographical location(s) to retrieve
     lats = []
@@ -735,22 +535,36 @@ def main():
         for lonString in lonStrings:
             lons.append(safeFloat(lonString))
 
+    alts = []
+    if (myArgs.altitude is not None):
+        altString = myArgs.altitude.replace("'", "").replace('"', '')
+        altStrings = altString.split(",")
+        for altString in altStrings:
+            if isFloat(altString):
+                alts.append(safeFloat(altString))
+            else:
+                alts.append(altString)
+    else:
+        alts = [gridUtils.kSurfaceKeyword]
+
     # fix common lat-lon errors
     if (len(lats) > 1):
         if (lats[0] > lats[1]):
             # swap latitudes
             lats = [lats[1], lats[0]]
 
-    # always use two lat-lon bounds
+    # always use two lat-lon and altitude bounds
     if (len(lats) < 2):
         lats.append(lats[0])
     if (len(lons) < 2):
         lons.append(lons[0])
+    if (len(alts) == 1):
+        alts.append(alts[0])
 
     # For longitude, we assume the user knows the model's
     # longitude conventions regarding 0:360 or -180:180.
 
-    logger.info(f"lats = {lats}   lons = {lons}")
+    logger.info(f"lats = {lats}   lons = {lons}   alts = {alts}")
 
     # get the requested (diagnostic) output
     outputCSV = False
@@ -770,17 +584,26 @@ def main():
 
         logger.info(f"Directory: {modelDir}   type {modelType}")
 
+        #for dateStr, timeStr in zip(dateStrs, timeStrs):
+        dateStr = dateStrs[0]       # TODO: replace this with loop over time frames
+        timeStr = timeStrs[0]
+
         # locate the WACCM output file
         when = datetime.datetime.strptime(
             f"{dateStr} {timeStr}", "%Y%m%d %H:%M")
         if (modelType == WACCM_OUT):
-            waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02}-00000.nc"
+            waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02d}-00000.nc"
         elif (modelType == WRFCHEM_OUT):
-            waccmFilename = f"wrfout_hourly_d01_{when.year:4d}-{when.month:02d}-{when.day:02}_{when.hour:02d}:00:00"
+            waccmFilename = f"wrfout_hourly_d01_{when.year:4d}-{when.month:02d}-{when.day:02d}_{when.hour:02d}:00:00"
 
         # Windows does not allow colons : in filenames. Replace with hyphen -.
         if not pathvalidate.is_valid_filename(waccmFilename, platform="auto"):
             waccmFilename = waccmFilename.replace(":", "-")
+
+        if (modelType == WRFCHEM_OUT):
+            # WRF-Chem convention stores files in sub-directories by date
+            dateDir = f"{when.year:4d}{when.month:02d}{when.day:02d}"
+            waccmFilename = os.path.join(dateDir, "wrf", waccmFilename)
 
         # read and glean chemical species from WACCM and MUSICA
         waccmChems = getWaccmSpecies(modelDir, waccmFilename)
@@ -794,8 +617,8 @@ def main():
 
         # Read named variables from WACCM model output.
         logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
-        varValues = readWACCM(commonDict, lats, lons, when,
-                              modelDir, waccmFilename, modelType)
+        varValues = readWACCM(commonDict, lats, lons, alts,
+                              when, modelDir, waccmFilename, modelType)
         logger.info(f"Original WACCM varValues = {varValues}")
 
         # add molecular Nitrogen, Oxygen, and Argon

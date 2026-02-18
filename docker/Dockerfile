@@ -28,7 +28,8 @@ RUN git clone https://github.com/NCAR/musica.git /musica \
     && cd /musica \
     && git checkout $MUSICA_TAG
 
-RUN cd /musica && pip3 install .
+RUN cd /musica \
+    && pip3 install .
 
 RUN cd /musica \
     && pip3 install --verbose .[test] pytest-mock
