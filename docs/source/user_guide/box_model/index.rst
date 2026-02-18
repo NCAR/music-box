@@ -82,8 +82,9 @@ This returns the following dataframe of the conditions and Species concentration
 
 Loading premade configurations (optional)
 ------------------------------------------
-As an alternative to using the steps thus far to define a chemical configuration in code, MusicBox
-also supports definitions via a configuration file in JSON format. This example assumes you are using a file called
+As an alternative to defining a chemical configuration in code, MusicBox also supports loading
+from a JSON configuration file. See :ref:`Configuration Files <configuration>` for a full
+description of the JSON format. This example assumes you are using a file called
 "custom_box_model.json" in a "config" subfolder::
 
     import sys

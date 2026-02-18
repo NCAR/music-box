@@ -11,11 +11,22 @@ Interactive Jupyter notebooks can also be found on our `GitHub <https://github.c
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents
+   :caption: Configuration Files
+
+   configuration/index
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Python
 
    installation/index
    chemistry/index
    box_model/index
    output/index
    examples/index
+
+.. toctree::
+   :maxdepth: 2
+   :caption: JavaScript
+
    javascript/index
