@@ -5,6 +5,7 @@
 # Author: Carl Drews
 # Copyright 2026 by Atmospheric Chemistry Observations & Modeling (UCAR/ACOM)
 
+import sys
 import math
 import numbers
 import numpy
@@ -15,8 +16,6 @@ from acom_music_box.tools import g_geoht
 import logging
 logger = logging.getLogger(__name__)
 
-import sys
-
 
 kSurfaceKeyword = "surface"     # request is for the surface layer
 P0 = 1013.25                    # standard surface pressure in hPa
@@ -24,6 +23,8 @@ P0 = 1013.25                    # standard surface pressure in hPa
 # Convert altitude in meters to pressure in hPa (hectopascals).
 # altMeters = height above sea level (meters)
 # return the pressure level in hPa
+
+
 def altitudeToPressure(altMeters):
     temp = math.exp(-altMeters / 8431.0)
     pressure = P0 * temp
@@ -42,7 +43,7 @@ def pressureToAltitude(pressure):
 # Return true if variable is int or float, false if not.
 def isNumber(myVar):
     return (isinstance(myVar, numbers.Number)
-        and not isinstance(myVar, bool))
+            and not isinstance(myVar, bool))
 
 
 # Find the nearest value in an array of altitude values.
@@ -52,7 +53,7 @@ def isNumber(myVar):
 # Return nearest height value and index where it was found
 def findNearestAltitude(altitudes, value, reversed=False):
     isNum = isNumber(value)
-    #logger.debug(f"value = {value}   isNum = {isNum}")
+    # logger.debug(f"value = {value}   isNum = {isNum}")
     if not isNumber(value):
         if (value.lower() == kSurfaceKeyword):
             if (not reversed):
@@ -89,6 +90,7 @@ kWest = 4
 # latsVarname, lonsVarname = coordinate variables in the dataset
 # latitude, longitude = want to retrieve data at this location
 # initLatIndex, initLonIndex = caller's suggestion where to start the search
+
 
 def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
                       latitude, longitude, initLatIndex=None, initLonIndex=None):
@@ -234,7 +236,7 @@ def cutOffColumns(mySubGrid, altitudePair):
     kPressureKey = "lev"
     mySubPressure = mySubGrid[kPressureKey].data                   # units are hPa
     mySubHeights = numpy.zeros(len(mySubPressure))
-    for pi in range(len(mySubPressure)): 
+    for pi in range(len(mySubPressure)):
         mySubHeights[pi] = pressureToAltitude(mySubPressure[pi])      # units are meters
     logger.debug(f"mySubHeights = {mySubHeights} meters")
 
@@ -257,7 +259,7 @@ def cutOffColumns(mySubGrid, altitudePair):
             logger.debug(f"heightPair at {lati}, {loni} = {heightPair}")
 
             # set up the height bounds for this column
-            heightIndexPair = [0,0]
+            heightIndexPair = [0, 0]
             for pi in range(0, 2):
                 # WACCM uses pressure coordinates from top of atmosphere down to surface,
                 # and the user probably specifies from lower altitude to higher.
@@ -354,7 +356,7 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
     # look up pressure levels to get the pressure indexes
     pressLevels = gridDataset["lev"].data
     logger.debug(f"pressLevels = {pressLevels}")
-    pressIndexPair = [0,0]
+    pressIndexPair = [0, 0]
     for pi in range(0, 2):
         # WACCM uses pressure coordinates from top of atmosphere down to surface,
         # and the user probably specifies from lower altitude to higher.
@@ -402,7 +404,7 @@ def getSubColumn(wholeColumn, altitudes):
     dummy, lower = findNearestAltitude(wholeColumn, altitudes[0])
     dummy, upper = findNearestAltitude(wholeColumn, altitudes[1])
     logger.debug(f"lower index = {lower}   upper index = {upper}")
-    indexes = list(range(lower, upper+1))
+    indexes = list(range(lower, upper + 1))
     return indexes
 
 
@@ -416,7 +418,7 @@ def getSubColumn(wholeColumn, altitudes):
 # wrfDataset = WRF-Chem file opened as netCDF4 Dataset
 # return the mean value of single point or the bounding box
 def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
-    wrfDataset):
+                   wrfDataset):
     # find the time index
     whenStr = when.strftime("%Y-%m-%d_%H:%M:%S")
     logger.info(f"whenStr = {whenStr}")
@@ -445,7 +447,7 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
 
     # Previously used wrf-python to obtain the z-level grid for this time frame.
     # That code replaced with stripped-down version here. Carl Drews - February 18, 2026
-    #zLevels = wrf.getvar(wrfDataset, "z")   # meters
+    # zLevels = wrf.getvar(wrfDataset, "z")   # meters
     zLevels = g_geoht.get_height(wrfDataset)
     logger.debug(f"zLevels = {zLevels}")
 
@@ -466,7 +468,7 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
 
             # select data from the nearest grid point
             iLat, iLon = findClosestVertex(gridDataset,
-                "XLAT", "XLONG", latFloat, lonFloat, iLat, iLon)
+                                           "XLAT", "XLONG", latFloat, lonFloat, iLat, iLon)
             logger.debug(f"iLat = {iLat}   iLon = {iLon}")
 
             # set up the column bounds for this grid cell
@@ -502,4 +504,3 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
     meanPoint = pointSet.mean(dim=[pointDimension], keep_attrs=True)
 
     return meanPoint
-

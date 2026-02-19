@@ -19,7 +19,7 @@ kGravityG = 9.81        # m s-2
 # Convert netCDF4.Variable to xarray.DataArray
 def netcdfVariableToDataArray(netVar):
     data_array = xarray.DataArray(
-        data=netVar[:], # Load the data into a numpy array
+        data=netVar[:],  # Load the data into a numpy array
         dims=netVar.dimensions,
         attrs=netVar.__dict__
         # coordinates can be trickier to map manually
@@ -205,4 +205,3 @@ def get_height(wrfin, timeidx=0, method="cat", squeeze=True,
 
     return _get_geoht(wrfin, timeidx, method, squeeze, cache, meta, _key,
                       True, msl)
-
