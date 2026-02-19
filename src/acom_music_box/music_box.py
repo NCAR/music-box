@@ -15,6 +15,9 @@ import logging
 import tempfile
 logger = logging.getLogger(__name__)
 
+_MECHANISM_EXPORT_VERSION = "1.0.0"
+_EVOLVING_CONDITIONS_CSV_FILENAME = "evolving_conditions.csv"
+
 
 class MusicBox:
     """
@@ -301,18 +304,20 @@ class MusicBox:
 
         # Evolving conditions
         if len(self.evolving_conditions) > 0:
-            evol_csv_name = "evolving_conditions.csv"
             evol_csv_path = os.path.join(
-                os.path.dirname(os.path.abspath(path_to_json)), evol_csv_name
+                os.path.dirname(os.path.abspath(path_to_json)),
+                _EVOLVING_CONDITIONS_CSV_FILENAME,
             )
             self._write_evolving_conditions_csv(evol_csv_path)
-            config["evolving conditions"] = {"filepaths": [evol_csv_name]}
+            config["evolving conditions"] = {
+                "filepaths": [_EVOLVING_CONDITIONS_CSV_FILENAME]
+            }
         else:
             config["evolving conditions"] = {}
 
         # Mechanism (v1 format)
         mechanism_dict = self.mechanism.serialize()
-        mechanism_dict["version"] = "1.0.0"
+        mechanism_dict["version"] = _MECHANISM_EXPORT_VERSION
         config["mechanism"] = mechanism_dict
 
         with open(path_to_json, "w") as f:
