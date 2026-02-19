@@ -250,3 +250,147 @@ class MusicBox:
         if self.__mechanism is None:
             raise ValueError("Mechanism is not loaded.")
         return self.__mechanism
+
+    def export_to_json(self, path_to_json):
+        """
+        Export the MusicBox configuration to a JSON file.
+
+        The initial conditions are embedded inline in the JSON. If evolving
+        conditions are present they are written to a companion CSV file in the
+        same directory as the JSON file.
+
+        Args:
+            path_to_json (str): Path to write the JSON config file.
+
+        Raises:
+            ValueError: If no mechanism is loaded.
+        """
+        config = {}
+
+        # Box model options (all times stored internally in seconds)
+        config["box model options"] = {
+            "grid": self.box_model_options.grid,
+            "chemistry time step [sec]": self.box_model_options.chem_step_time,
+            "output time step [sec]": self.box_model_options.output_step_time,
+            "simulation length [sec]": self.box_model_options.simulation_length,
+        }
+
+        # Initial conditions – embed as inline data
+        headers = []
+        values = []
+        for species, conc in self.initial_conditions.species_concentrations.items():
+            headers.append(f"CONC.{species} [mol m-3]")
+            values.append(float(conc))
+        for key, val in self.initial_conditions.rate_parameters.items():
+            headers.append(key)
+            values.append(float(val))
+
+        config["initial conditions"] = {}
+        if headers:
+            config["initial conditions"]["data"] = [headers, values]
+
+        # Environmental conditions
+        config["environmental conditions"] = {
+            "temperature": {
+                "initial value [K]": self.initial_conditions.temperature
+            },
+            "pressure": {
+                "initial value [Pa]": self.initial_conditions.pressure
+            },
+        }
+
+        # Evolving conditions
+        if len(self.evolving_conditions) > 0:
+            evol_csv_name = "evolving_conditions.csv"
+            evol_csv_path = os.path.join(
+                os.path.dirname(os.path.abspath(path_to_json)), evol_csv_name
+            )
+            self._write_evolving_conditions_csv(evol_csv_path)
+            config["evolving conditions"] = {"filepaths": [evol_csv_name]}
+        else:
+            config["evolving conditions"] = {}
+
+        # Mechanism (v1 format)
+        mechanism_dict = self.mechanism.serialize()
+        mechanism_dict["version"] = "1.0.0"
+        config["mechanism"] = mechanism_dict
+
+        with open(path_to_json, "w") as f:
+            json.dump(config, f, indent=2)
+
+    def _write_evolving_conditions_csv(self, csv_path):
+        """
+        Write evolving conditions to a CSV file compatible with
+        EvolvingConditions.read_conditions_from_file.
+
+        Args:
+            csv_path (str): Path to write the CSV file.
+        """
+        if len(self.evolving_conditions) == 0:
+            return
+
+        # Collect all species and rate-parameter keys across all time steps
+        all_species = []
+        all_rate_params = []
+        seen_species = set()
+        seen_rate_params = set()
+        has_temperature = False
+        has_pressure = False
+
+        for cond in self.evolving_conditions.conditions:
+            if cond.temperature is not None:
+                has_temperature = True
+            if cond.pressure is not None:
+                has_pressure = True
+            for s in cond.species_concentrations:
+                if s not in seen_species:
+                    seen_species.add(s)
+                    all_species.append(s)
+            for p in cond.rate_parameters:
+                if p not in seen_rate_params:
+                    seen_rate_params.add(p)
+                    all_rate_params.append(p)
+
+        # Build ordered header
+        header = ["time.s"]
+        if has_pressure:
+            header.append("ENV.pressure.Pa")
+        if has_temperature:
+            header.append("ENV.temperature.K")
+        for species in all_species:
+            header.append(f"CONC.{species}.mol m-3")
+        for param in all_rate_params:
+            parts = param.split(".", 1)
+            condition_type = parts[0]
+            label = parts[1] if len(parts) > 1 else ""
+            if condition_type in ("PHOTO", "LOSS"):
+                header.append(f"{condition_type}.{label}.s-1")
+            elif condition_type == "EMIS":
+                header.append(f"{condition_type}.{label}.mol m-3 s-1")
+            else:
+                header.append(f"{param}.unitless")
+
+        # Build rows
+        rows = []
+        for time, cond in zip(
+            self.evolving_conditions.times, self.evolving_conditions.conditions
+        ):
+            row = [float(time)]
+            if has_pressure:
+                row.append(
+                    float(cond.pressure) if cond.pressure is not None else ""
+                )
+            if has_temperature:
+                row.append(
+                    float(cond.temperature) if cond.temperature is not None else ""
+                )
+            for species in all_species:
+                val = cond.species_concentrations.get(species)
+                row.append(float(val) if val is not None else "")
+            for param in all_rate_params:
+                val = cond.rate_parameters.get(param)
+                row.append(float(val) if val is not None else "")
+            rows.append(row)
+
+        df = pd.DataFrame(rows, columns=header)
+        df.to_csv(csv_path, index=False)
