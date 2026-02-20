@@ -27,14 +27,19 @@ class TestAnalyticalWithMixingRatios:
             for row in output[1:]
         ]
 
-        # initalizes the species concentrations
+        # initializes the species concentrations from concentration_events
         analytical_concentrations = []
-        box_spec_conc = box_model.initial_conditions.species_concentrations
-        analytical_concentrations.append([
-            box_spec_conc["A"],
-            box_spec_conc["B"],
-            box_spec_conc["C"]
-        ])
+        raw_conds = box_model.conditions_raw
+        time_zero_row = raw_conds[raw_conds["time.s"] == 0].iloc[0]
+
+        # Get species concentrations from concentration_events
+        conc_events = box_model.concentration_events
+        initial_concs = conc_events.get(0.0, {})
+        initial_A = initial_concs.get("A", 0.0)
+        initial_B = initial_concs.get("B", 0.0)
+        initial_C = initial_concs.get("C", 0.0)
+
+        analytical_concentrations.append([initial_A, initial_B, initial_C])
         logger.info(f"analytical_concentrations = {analytical_concentrations}")
 
         chem_time_step = box_model.box_model_options.chem_step_time
@@ -42,8 +47,8 @@ class TestAnalyticalWithMixingRatios:
         logger.debug(f"chem_time_step = {chem_time_step}   out_time_step = {out_time_step}")
         sim_length = box_model.box_model_options.simulation_length
 
-        temperature = box_model.initial_conditions.temperature
-        pressure = box_model.initial_conditions.pressure
+        temperature = time_zero_row.get("ENV.temperature.K", 283.6)
+        pressure = time_zero_row.get("ENV.pressure.Pa", 102364.4)
 
         k1 = 4.0e-3 * math.exp(50 / temperature)
         k2 = (
@@ -65,8 +70,6 @@ class TestAnalyticalWithMixingRatios:
         # out_time_step should be an even multiple of chem_time_step.
         while curr_time <= sim_length:
 
-            initial_A = analytical_concentrations[0][idx_A]
-            initial_B = analytical_concentrations[0][idx_B]
             C_conc = analytical_concentrations[0][idx_C]
             A_conc = initial_A * math.exp(-(k1) * curr_time)
             B_conc = (
@@ -134,5 +137,5 @@ class TestAnalyticalWithMixingRatios:
 
 
 if __name__ == "__main__":
-    test = TestAnalytical()
-    test.test_run()
+    test = TestAnalyticalWithMixingRatios()
+    test.test_mol_mol_1()

@@ -1,2 +1,2 @@
-ENV.temperature.K, ENV.pressure.Pa, CONC.A, CONC.B, SURF.surface.particle number concentration.# m-3, SURF.surface.effective radius.m
-300, 101325, 1.0, 0.0, 1e12, 1e-7
+time.s,ENV.temperature.K,ENV.pressure.Pa,CONC.A.mol m-3,CONC.B.mol m-3,SURF.surface.particle number concentration.# m-3,SURF.surface.effective radius.m
+0.0,300,101325,1.0,0.0,1e12,1e-7

@@ -5,18 +5,8 @@
     "output time step [sec]": 1.0,
     "simulation length [sec]": 10
   },
-  "initial conditions": {
+  "conditions": {
     "filepaths": ["initial_conditions.csv"]
-  },
-  "environmental conditions": {
-    "temperature": {
-      "initial value [K]": 300
-    },
-    "pressure": {
-      "initial value [Pa]": 101325
-    }
-  },
-  "evolving conditions": {
   },
   "mechanism": {
     "version": "1.0.0",

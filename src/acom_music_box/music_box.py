@@ -1,7 +1,7 @@
 import musica
-from .conditions import Conditions
+from musica.micm.solver_result import SolverState
+from .conditions_manager import ConditionsManager
 from .model_options import BoxModelOptions
-from .evolving_conditions import EvolvingConditions
 import json
 import os
 import atexit
@@ -18,69 +18,182 @@ logger = logging.getLogger(__name__)
 
 class MusicBox:
     """
-    Represents a box model with attributes such as box model options, species list, reaction list,
-    initial conditions, evolving conditions, solver, and state.
+    Represents a box model with attributes such as box model options, conditions,
+    solver, and state.
 
     Attributes:
         box_model_options (BoxModelOptions): Options for the box model simulation.
-        initial_conditions (Conditions): Initial conditions for the simulation.
-        evolving_conditions (List[EvolvingConditions]): List of evolving conditions over time.
         solver: The solver used for the box model simulation.
         state: The current state of the box model simulation.
     """
 
-    def __init__(
-            self,
-            box_model_options=None,
-            initial_conditions=None,
-            evolving_conditions=None):
+    def __init__(self, box_model_options=None):
         """
-        Initializes a new instance of the BoxModel class.
+        Initializes a new instance of the MusicBox class.
 
         Args:
             box_model_options (BoxModelOptions): Options for the box model simulation.
-            initial_conditions (Conditions): Initial conditions for the simulation.
-            evolving_conditions (List[EvolvingConditions]): List of evolving conditions over time.
         """
         self.box_model_options = box_model_options if box_model_options is not None else BoxModelOptions()
-        self.initial_conditions = initial_conditions if initial_conditions is not None else Conditions()
-        self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([], [])
+        self._conditions_manager = ConditionsManager()
         self.solver = None
         self.state = None
         self.__mechanism = None
 
-    def add_evolving_condition(self, time_point, conditions):
+    # -------------------------------------------------------------------------
+    # New Conditions API
+    # -------------------------------------------------------------------------
+
+    def set_condition(
+        self,
+        time: float,
+        *,
+        temperature: float = None,
+        pressure: float = None,
+        concentrations: dict = None,
+        rate_parameters: dict = None
+    ) -> 'MusicBox':
         """
-        Add an evolving condition at a specific time point.
+        Set conditions at a specific time. Returns self for chaining.
 
         Args:
-            time_point (float): The time point for the evolving condition [s].
-            conditions (Conditions): The associated conditions at the given time point.
-        """
-        self.evolving_conditions.add_condition(time_point, conditions)
-
-    def solve(self, callback=None):
-        """
-        Solves the box model simulation and optionally writes the output to a file.
-
-        This function runs the box model simulation using the current settings and
-        conditions. If a path is provided, it writes the output of the simulation to
-        the specified file.
-
-        Args:
-            callback (function, optional): A callback function that is called after each time step. Defaults to None.
-            The callback will take the most recent results, the current time, conditions, and the total simulation time as arguments.
+            time: The time point in seconds.
+            temperature: Temperature in Kelvin (optional).
+            pressure: Pressure in Pascals (optional).
+            concentrations: Dictionary of species name to concentration in mol m-3.
+            rate_parameters: Dictionary of rate parameter names to values.
+                             Keys should be in format: PREFIX.name.unit
 
         Returns:
-            list: A 2D list where each inner list represents the results of the simulation
-            at a specific time step.
+            self for method chaining.
+
+        Example:
+            box.set_condition(time=0, temperature=300, pressure=101325)
+            box.set_condition(time=0, concentrations={"A": 1.0, "B": 0.0})
+            box.set_condition(time=3600, temperature=310)
+        """
+        self._conditions_manager.set_condition(
+            time=time,
+            temperature=temperature,
+            pressure=pressure,
+            concentrations=concentrations,
+            rate_parameters=rate_parameters
+        )
+        return self
+
+    def set_conditions(self, df: pd.DataFrame) -> 'MusicBox':
+        """
+        Replace all conditions from DataFrame. Must have 'time.s' column.
+
+        Args:
+            df: DataFrame with conditions. Must have 'time.s' column.
+                Column naming convention:
+                - time.s: Time in seconds
+                - ENV.temperature.K: Temperature in Kelvin
+                - ENV.pressure.Pa: Pressure in Pascals
+                - CONC.<species>.mol m-3: Species concentration
+                - EMIS.<species>.mol m-3 s-1: Emission rate
+                - PHOTO.<reaction>.s-1: Photolysis rate
+                - LOSS.<species>.s-1: Loss rate
+                - USER.<param>.<unit>: User-defined parameter
+
+        Returns:
+            self for method chaining.
+
+        Example:
+            df = pd.DataFrame({
+                "time.s": [0, 3600],
+                "ENV.temperature.K": [300, 310],
+                "CONC.A.mol m-3": [1.0, None]
+            })
+            box.set_conditions(df)
+        """
+        self._conditions_manager.set_from_dataframe(df)
+        return self
+
+    def add_conditions(self, df: pd.DataFrame) -> 'MusicBox':
+        """
+        Merge DataFrame with existing conditions.
+
+        Args:
+            df: DataFrame with conditions to merge. Must have 'time.s' column.
+
+        Returns:
+            self for method chaining.
+        """
+        self._conditions_manager.add_from_dataframe(df)
+        return self
+
+    @property
+    def conditions(self) -> pd.DataFrame:
+        """
+        Returns fully interpolated DataFrame at all simulation timesteps.
+
+        Returns:
+            DataFrame with interpolated conditions using step interpolation.
+
+        Raises:
+            ValueError: If simulation options are not set.
+        """
+        if self.box_model_options.simulation_length is None:
+            raise ValueError("Simulation length must be set to access interpolated conditions")
+        if self.box_model_options.output_step_time is None:
+            raise ValueError("Output step time must be set to access interpolated conditions")
+
+        return self._conditions_manager.get_interpolated(
+            self.box_model_options.simulation_length,
+            self.box_model_options.output_step_time
+        )
+
+    @property
+    def conditions_raw(self) -> pd.DataFrame:
+        """
+        Returns the raw (sparse) conditions DataFrame with only user-specified times.
+        Contains ENV.*, PHOTO.*, EMIS.*, etc. but NOT concentrations.
+
+        Returns:
+            DataFrame with raw conditions (no interpolation).
+        """
+        return self._conditions_manager.raw
+
+    @property
+    def concentration_events(self) -> dict:
+        """
+        Returns concentration events - species concentrations set at specific times.
+
+        Concentrations are only applied at exact times specified, not interpolated.
+        They represent "reset" points where chemistry is overridden.
+
+        Returns:
+            Dictionary mapping time -> {species: concentration}
+            Example: {0.0: {"A": 1.0, "B": 0.5}, 300.0: {"D": 1.0}}
+        """
+        return self._conditions_manager.concentration_events
+
+    def get_condition_template(self) -> pd.DataFrame:
+        """
+        Returns DataFrame with all possible columns from mechanism (all NaN).
+
+        Returns:
+            DataFrame template with time.s and all mechanism columns.
+        """
+        return self._conditions_manager.get_template()
+
+    def solve(self) -> pd.DataFrame:
+        """
+        Solve the box model simulation.
+
+        Returns:
+            pd.DataFrame: Results with columns time.s, ENV.temperature.K,
+            ENV.pressure.Pa, ENV.air number density.mol m-3, and
+            CONC.<species>.mol m-3 for each species.
         """
         if self.solver is None:
             raise Exception(f"Error: MusicBox object {self} has no solver.")
         if self.state is None:
             raise Exception(f"Error: MusicBox object {self} has no state.")
-        if self.initial_conditions is None:
-            raise Exception(f"Error: MusicBox object {self} has no initial conditions.")
+        if not self._conditions_manager.has_conditions():
+            raise Exception(f"Error: MusicBox object {self} has no conditions.")
         if self.box_model_options is None:
             raise Exception(f"Error: MusicBox object {self} has no time step parameters.")
         if self.box_model_options.simulation_length is None:
@@ -90,100 +203,168 @@ class MusicBox:
         if self.box_model_options.output_step_time is None:
             raise Exception(f"Error: MusicBox object {self} has no output step time.")
 
-        # sets up initial conditions to be current conditions
-        curr_conditions = self.initial_conditions
+        simulation_length = self.box_model_options.simulation_length
+        output_step_time = self.box_model_options.output_step_time
+        chem_step_time = self.box_model_options.chem_step_time
+        max_iterations = self.box_model_options.max_iterations
 
-        # sets up next condition if evolving conditions is not empty
-        next_conditions_index = 0
-        if (len(self.evolving_conditions) != 0):
-            if (self.evolving_conditions.times[0] == 0):
-                initial_concentration = curr_conditions.species_concentrations
-                evolving_concentrations = self.evolving_conditions.conditions[0].species_concentrations
-                initial_concentration.update({k: float(v) for k, v in evolving_concentrations.items() if k in initial_concentration})
-                next_conditions_index += 1
-        if (len(self.evolving_conditions) > next_conditions_index):
-            next_conditions = self.evolving_conditions.conditions[next_conditions_index]
-            next_conditions_time = self.evolving_conditions.times[next_conditions_index]
-        else:
-            next_conditions = None
-            next_conditions_time = 0
+        # Get concentration events (times where concentrations are explicitly set)
+        concentration_events = self._conditions_manager.concentration_events
 
-        header = ["time.s", "ENV.temperature.K", "ENV.pressure.Pa", "ENV.air number density.mol m-3"]
-        for species, _ in self.state.get_concentrations().items():
-            header.append("CONC." + species + ".mol m-3")
+        # Sort concentration event times once for efficient lookup
+        sorted_event_times = sorted(concentration_events.keys())
+        next_event_idx = 0  # Track index of next event to process
 
-        # set the initial conditions in the state
-        self.state.set_conditions(curr_conditions.temperature, curr_conditions.pressure)  # air denisty will be calculated based on Ideal gas law
-        self.state.set_concentrations(curr_conditions.species_concentrations)
-        self.state.set_user_defined_rate_parameters(curr_conditions.rate_parameters)
+        # Get species names for output formatting
+        species_names = list(self.state.get_concentrations().keys())
 
-        # runs the simulation at each timestep
+        # Get initial conditions and set them on the state
+        curr_conds = self._conditions_manager.get_conditions_at_time(0.0)
+        self.state.set_conditions(curr_conds["temperature"], curr_conds["pressure"])
+        if 0.0 in concentration_events:
+            self.state.set_concentrations(concentration_events[0.0])
+            # Skip the initial event since we've already processed it
+            if sorted_event_times and sorted_event_times[0] == 0.0:
+                next_event_idx = 1
+        self.state.set_user_defined_rate_parameters(
+            self._normalize_rate_params(curr_conds["rate_parameters"])
+        )
+
+        # Run the simulation, collecting raw output
         curr_time = 0.0
         next_output_time = curr_time
-        simulation_length = self.box_model_options.simulation_length
         output_array = []
-        with tqdm(total=simulation_length, desc="Simulation Progress", unit=f" [model integration steps ({self.box_model_options.chem_step_time} s)]", leave=False) as pbar:
+
+        with tqdm(total=simulation_length, desc="Simulation Progress", unit=f" [model integration steps ({chem_step_time} s)]", leave=False) as pbar:
             while curr_time <= simulation_length:
 
-                # outputs to output_array if enough time has elapsed
-                if (next_output_time <= curr_time):
-                    row = []
-                    row.append(curr_time)
-                    conditions = self.state.get_conditions()
-                    row.append(conditions["temperature"][0])
-                    row.append(conditions["pressure"][0])
-                    row.append(conditions["air_density"][0])
-                    for _, concentration in self.state.get_concentrations().items():
-                        row.append(concentration[0])
-                    output_array.append(row)
+                # Collect output if enough time has elapsed
+                if next_output_time <= curr_time:
+                    output_array.append(self._collect_output_row(curr_time))
+                    next_output_time += output_step_time
 
-                    next_output_time += self.box_model_options.output_step_time
-
-                    # calls callback function if present
-                    if callback is not None:
-                        df = pd.DataFrame(output_array[:-1], columns=header)
-                        callback(df, curr_time, curr_conditions, self.box_model_options.simulation_length)
-
-                    # We want to output the initial state before the first solve().
-                    # But we also want to avoid solving() beyond the last output.
-                    # Solution is to bail out mid-loop if we completed the final output step.
-                    if (next_output_time > simulation_length):
+                    # Bail out mid-loop if we completed the final output step
+                    if next_output_time > simulation_length:
                         break
 
-                # iterates evolving conditions if enough time has elapsed
-                while (next_conditions is not None and next_conditions_time <= curr_time):
-                    curr_conditions = next_conditions
-                    # iterates next_conditions if there are remaining evolving
-                    # conditions
-                    if (len(self.evolving_conditions) > next_conditions_index + 1):
-                        next_conditions_index += 1
-                        next_conditions = self.evolving_conditions.conditions[next_conditions_index]
-                        next_conditions_time = self.evolving_conditions.times[next_conditions_index]
+                # Apply any concentration events we've crossed
+                while next_event_idx < len(sorted_event_times):
+                    next_event_time = sorted_event_times[next_event_idx]
+                    if next_event_time <= curr_time:
+                        self.state.set_concentrations(concentration_events[next_event_time])
+                        next_event_idx += 1
                     else:
-                        next_conditions = None
-                    # set the current conditions in the state
-                    self.state.set_conditions(curr_conditions.temperature, curr_conditions.pressure)  # air denisty will be calculated based on Ideal gas law
-                    self.state.set_concentrations(curr_conditions.species_concentrations)
-                    self.state.set_user_defined_rate_parameters(curr_conditions.rate_parameters)
+                        break  # No more events to process at this time
 
-                # ensure the time step is not greater than the next update to the
-                # evolving conditions or the next output time
-                time_step = self.box_model_options.chem_step_time
-                if (next_conditions is not None and next_conditions_time > curr_time):
-                    time_step = min(time_step, next_conditions_time - curr_time)
-                if (next_output_time > curr_time):
-                    time_step = min(time_step, next_output_time - curr_time)
+                # Look up conditions at current time (step interpolation for env/rate params)
+                curr_conds = self._conditions_manager.get_conditions_at_time(curr_time)
+                self.state.set_conditions(curr_conds["temperature"], curr_conds["pressure"])
+                self.state.set_user_defined_rate_parameters(
+                    self._normalize_rate_params(curr_conds["rate_parameters"])
+                )
 
-                self.solver.solve(self.state, time_step)
+                # Solve for one chemistry step
+                elapsed = 0
+                iteration_count = 0
+                while elapsed < chem_step_time:
+                    iteration_count += 1
+                    if max_iterations is not None and iteration_count > max_iterations:
+                        msg = (
+                            "Solver exceeded maximum substep iterations "
+                            f"({max_iterations}) at time {curr_time:.2f} s. "
+                            "This may indicate non-convergence or overly small steps. "
+                            f"Check the conditions at this time step: {curr_conds}"
+                        )
+                        raise Exception(msg)
+                    remaining_time = chem_step_time - elapsed
+                    result = self.solver.solve(self.state, remaining_time)
+                    elapsed += result.stats.final_time
+                    curr_time += result.stats.final_time
+                    if result.state != SolverState.Converged:
+                        msg = f"Solver failed to converge at time {curr_time:.2f} s with state {result.state}."
+                        msg += "Often this can be caused by reaction rates that are set to zero or are extremely large."
+                        msg += f"Check the conditions at this time step: {curr_conds}"
+                        msg += "Solver stats: " + str(result.stats)
+                        raise Exception(msg)
 
-                # increments time
-                curr_time += time_step
-                pbar.update(time_step)
+                pbar.update(elapsed)
+
+        return self._format_output(output_array, species_names)
+
+    def _collect_output_row(self, curr_time: float) -> list:
+        """
+        Collect a single row of output data from the current state.
+
+        Args:
+            curr_time: Current simulation time in seconds.
+
+        Returns:
+            List of [time, temperature, pressure, air_density, conc1, conc2, ...]
+        """
+        state_conditions = self.state.get_conditions()
+        row = [
+            curr_time,
+            state_conditions["temperature"][0],
+            state_conditions["pressure"][0],
+            state_conditions["air_density"][0]
+        ]
+        for _, concentration in self.state.get_concentrations().items():
+            row.append(concentration[0])
+        return row
+
+    def _format_output(self, output_array: list, species_names: list) -> pd.DataFrame:
+        """
+        Format raw output array into a DataFrame with proper column names.
+
+        Args:
+            output_array: List of rows, each containing
+                          [time, temp, pressure, air_density, conc1, conc2, ...]
+            species_names: List of species names in the same order as concentrations.
+
+        Returns:
+            DataFrame with properly named columns.
+        """
+        header = [
+            "time.s",
+            "ENV.temperature.K",
+            "ENV.pressure.Pa",
+            "ENV.air number density.mol m-3"
+        ]
+        for species in species_names:
+            header.append(f"CONC.{species}.mol m-3")
+
         return pd.DataFrame(output_array, columns=header)
+
+    def _normalize_rate_params(self, rate_params: dict) -> dict:
+        """
+        Normalize rate parameter keys for the solver.
+
+        Converts from new format (e.g., "PHOTO.O3_1.s-1") to solver format (e.g., "PHOTO.O3_1").
+
+        Args:
+            rate_params: Dictionary of rate parameters in new format.
+
+        Returns:
+            Dictionary with normalized keys for the solver.
+        """
+        normalized = {}
+        for key, value in rate_params.items():
+            parts = key.split(".")
+            if len(parts) >= 3:
+                # Handle SURF specially - it has 4 parts: SURF.name.property.unit
+                if parts[0] == "SURF" and len(parts) == 4:
+                    # Keep format: SURF.name.property [unit]
+                    normalized[f"{parts[0]}.{parts[1]}.{parts[2]} [{parts[3]}]"] = value
+                else:
+                    # Standard format: PREFIX.name.unit -> PREFIX.name
+                    normalized[f"{parts[0]}.{parts[1]}"] = value
+            else:
+                normalized[key] = value
+        return normalized
 
     def loadJson(self, path_to_json):
         """
-        Reads and parses a JSON file and create a solver
+        Reads and parses a JSON file and create a solver.
 
         Args:
             path_to_json (str): The JSON path to the JSON file.
@@ -218,18 +399,17 @@ class MusicBox:
                 # Save mechanism
                 parser = mc.Parser()
                 self.__mechanism = parser.parse(tmp_mech_file_path)
-                # Initalize the musica solver
+                # Initialize the musica solver
                 self.solver = musica.MICM(config_path=tmp_mech_file_path, solver_type=musica.SolverType.rosenbrock_standard_order)
                 atexit.register(os.remove, tmp_mech_file_path)
 
             # Set box model options
             self.box_model_options = BoxModelOptions.from_config(data)
 
-            # Set initial conditions
-            self.initial_conditions = Conditions.from_config(path_to_json, data)
-
-            # Set evolving conditions
-            self.evolving_conditions = EvolvingConditions.from_config(path_to_json, data)
+            # Load conditions using the new ConditionsManager
+            self._conditions_manager = ConditionsManager.from_config(path_to_json, data)
+            if self.__mechanism:
+                self._conditions_manager.set_mechanism(self.__mechanism)
 
         # Create a state for the solver
         self.state = self.solver.create_state(1)
@@ -240,8 +420,10 @@ class MusicBox:
 
         Args:
             mechanism (Mechanism): The mechanism to be used for the solver.
+            solver_type: The solver type to use.
         """
         self.__mechanism = mechanism
+        self._conditions_manager.set_mechanism(mechanism)
         self.solver = musica.MICM(mechanism=mechanism, solver_type=solver_type)
         self.state = self.solver.create_state(1)
 

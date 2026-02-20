@@ -12,3 +12,5 @@ dist
 .vscode/
 .coverage
 src/acom_music_box/examples/configs/ts1/initial_config.json*.csv
+sample_waccm_data/wrfout_hourly_d01_2025-08-20_08:00:00
+.claude

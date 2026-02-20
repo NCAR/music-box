@@ -1,2 +1,2 @@
-CONC.A [mol mol-1], CONC.B [mol m-3], CONC.C [mol m-3]
-0.02237646638131061, 0.0, 0.0
+time.s,CONC.A.mol mol-1, CONC.B.mol m-3, CONC.C.mol m-3
+0.0,0.02237646638131061, 0.0, 0.0

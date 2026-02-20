@@ -12,8 +12,7 @@ class TestAnalytical:
 
         # The analytical solution below will match the model solution
         # only when initial B=0 and C=0. A=n from the JSON config is okay.
-        box_model.initial_conditions.species_concentrations["B"] = 0.0
-        box_model.initial_conditions.species_concentrations["C"] = 0.0
+        box_model.set_condition(time=0, concentrations={"B": 0.0, "C": 0.0})
 
         # solves and saves output
         df = box_model.solve()
@@ -29,14 +28,16 @@ class TestAnalytical:
             for row in output[1:]
         ]
 
-        # initalizes the species concentrations
+        # initializes the species concentrations from concentration_events
         analytical_concentrations = []
-        box_spec_conc = box_model.initial_conditions.species_concentrations
-        analytical_concentrations.append([
-            box_spec_conc["A"],
-            box_spec_conc["B"],
-            box_spec_conc["C"]
-        ])
+        raw_conds = box_model.conditions_raw
+        time_zero_row = raw_conds[raw_conds["time.s"] == 0].iloc[0]
+        conc_events = box_model.concentration_events
+        initial_concs = conc_events.get(0.0, {})
+        initial_A = initial_concs.get("A", 0.8)
+        initial_B = initial_concs.get("B", 0.0)
+        initial_C = initial_concs.get("C", 0.0)
+        analytical_concentrations.append([initial_A, initial_B, initial_C])
         logger.info(f"Initial analytical_concentrations = {analytical_concentrations}")
 
         # set up the time steps
@@ -45,9 +46,9 @@ class TestAnalytical:
         logger.debug(f"chem_time_step = {chem_time_step}   out_time_step = {out_time_step}")
         sim_length = box_model.box_model_options.simulation_length
 
-        # set up the initial environment
-        temperature = box_model.initial_conditions.temperature
-        pressure = box_model.initial_conditions.pressure
+        # set up the initial environment from raw conditions
+        temperature = time_zero_row.get("ENV.temperature.K", 283.6)
+        pressure = time_zero_row.get("ENV.pressure.Pa", 102364.4)
 
         k1 = 4.0e-3 * math.exp(50 / temperature)
         k2 = (
@@ -67,7 +68,6 @@ class TestAnalytical:
         # gets analytical concentrations
         # For this loop to replicate the model solver accurately,
         # out_time_step should be an even multiple of chem_time_step.
-        initial_A = analytical_concentrations[0][idx_A]
         while curr_time <= sim_length:
             A_conc = initial_A * math.exp(-(k1) * curr_time)
             B_conc = (
@@ -133,12 +133,10 @@ class TestAnalytical:
                                  phases=[gas], reactions=[arr1, arr2])
         box_model.load_mechanism(mechanism)
 
-        # Set up the initial conditions
-        box_model.initial_conditions.species_concentrations["A"] = 0.9
-        box_model.initial_conditions.species_concentrations["B"] = 0.1
-        box_model.initial_conditions.species_concentrations["C"] = 0.3
-        box_model.initial_conditions.temperature = 283.6
-        box_model.initial_conditions.pressure = 102364.4
+        # Set up the initial conditions using the new API
+        (box_model
+            .set_condition(time=0, temperature=283.6, pressure=102364.4)
+            .set_condition(time=0, concentrations={"A": 0.9, "B": 0.1, "C": 0.3}))
 
         # Set up the simulation options
         box_model.box_model_options.simulation_length = 600.0

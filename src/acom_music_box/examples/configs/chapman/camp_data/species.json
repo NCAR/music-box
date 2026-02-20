@@ -7,21 +7,6 @@
       "__description": "Third-body molecule. This is any molecule present in the system."
     },
     {
-      "name": "Ar",
-      "type": "CHEM_SPEC",
-      "absolute tolerance": 1e-12
-    },
-    {
-      "name": "CO2",
-      "type": "CHEM_SPEC",
-      "absolute tolerance": 1e-12
-    },
-    {
-      "name": "H2O",
-      "type": "CHEM_SPEC",
-      "absolute tolerance": 1e-12
-    },
-    {
       "name": "O1D",
       "type": "CHEM_SPEC",
       "absolute tolerance": 1e-12

@@ -6,16 +6,13 @@
     "output time step [sec]": 60.0,
     "simulation length [hour]": 1.0
   },
-  "environmental conditions": {
-    "temperature": {
-      "initial value [K]": 299.55169
-    },
-    "pressure": {
-      "initial value [Pa]": 99255.610
-    }
-  },
-  "evolving conditions": {},
-  "initial conditions": {
+  "conditions": {
+    "data": [
+      {
+        "headers": ["time.s", "ENV.temperature.K", "ENV.pressure.Pa"],
+        "rows": [[0.0, 299.55169, 99255.610]]
+      }
+    ],
     "filepaths": ["initial_conditions.csv"]
   },
   "model components": [
