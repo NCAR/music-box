@@ -44,7 +44,7 @@ class MusicBox:
         """
         self.box_model_options = box_model_options if box_model_options is not None else BoxModelOptions()
         self.initial_conditions = initial_conditions if initial_conditions is not None else Conditions()
-        self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions([], [])
+        self.evolving_conditions = evolving_conditions if evolving_conditions is not None else EvolvingConditions()
         self.solver = None
         self.state = None
         self.__mechanism = None

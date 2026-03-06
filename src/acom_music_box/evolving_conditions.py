@@ -12,20 +12,18 @@ class EvolvingConditions:
     Represents evolving conditions with attributes such as time and associated conditions.
 
     Attributes:
-        time (List[float]): A list of time points.
+        times (List[float]): A list of time points.
         conditions (List[Conditions]): A list of associated conditions.
     """
 
-    def __init__(self, headers=None, times=None, conditions=None):
+    def __init__(self, times=None, conditions=None):
         """
         Initializes an instance of the EvolvingConditions class.
 
         Args:
-            headers (list, optional): A list of headers for the data. Defaults to None.
             times (list, optional): A list of times at which the conditions are recorded. Defaults to None.
             conditions (list, optional): A list of conditions at each time point. Defaults to None.
         """
-        self.headers = headers if headers is not None else []
         self.times = times if times is not None else []
         self.conditions = conditions if conditions is not None else []
 
@@ -42,8 +40,6 @@ class EvolvingConditions:
         Args:
             path_to_json (str): The path to the JSON file containing the initial conditions and settings.
             config_JSON (dict): The configuration JSON object containing the initial conditions and settings.
-            species_list (SpeciesList): A SpeciesList containing the species involved in the simulation.
-            reaction_list (ReactionList): A ReactionList containing the reactions involved in the simulation.
 
         Returns:
             EvolvingConditions: An instance of the EvolvingConditions class with the settings from the configuration JSON object.
@@ -53,9 +49,9 @@ class EvolvingConditions:
 
         # Check if 'evolving conditions' is a key in the JSON config
         if (not 'evolving conditions' in config_JSON):
-            return (evolving_conditions)
+            return evolving_conditions
         if (len(list(config_JSON['evolving conditions'].keys())) == 0):
-            return (evolving_conditions)
+            return evolving_conditions
 
         evolveCond = config_JSON['evolving conditions']
         logger.debug(f"evolveCond: {evolveCond}")
@@ -63,23 +59,23 @@ class EvolvingConditions:
             file_paths = evolveCond['filepaths']
 
             # loop through the CSV files
-            allReactions = set()        # provide warning for duplicates that will override
+            all_headers  = set()        # provide warning for duplicates that will override
             for file_path in file_paths:
                 # read initial conditions from CSV file
                 evolving_conditions_path = os.path.join(
                     os.path.dirname(path_to_json), file_path)
 
-                fileReactions = evolving_conditions.read_conditions_from_file(
+                file_headers = evolving_conditions.read_conditions_from_file(
                     evolving_conditions_path)
                 logger.debug(f"evolving_conditions.times = {evolving_conditions.times}")
                 logger.debug(f"evolving_conditions.conditions = {evolving_conditions.conditions}")
 
                 # any duplicate conditions?
-                overrideSet = allReactions.intersection(fileReactions)
-                if (len(overrideSet) > 0):
+                override_headers = all_headers .intersection(file_headers)
+                if (len(override_headers) > 0):
                     logger.warning("File {} will override earlier conditions {}"
-                                   .format(file_path, sorted(overrideSet)))
-                allReactions = allReactions.union(fileReactions)
+                                   .format(file_path, sorted(override_headers)))
+                all_headers  = all_headers .union(file_headers)
 
         return evolving_conditions
 
@@ -183,7 +179,7 @@ class EvolvingConditions:
                                )
                                )
 
-        return (header_set)
+        return header_set
 
     # allows len overload for this class
 
