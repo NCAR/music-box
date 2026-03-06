@@ -34,8 +34,8 @@ class EvolvingConditions:
         """
         Creates an instance of the EvolvingConditions class from a configuration JSON object.
 
-        This class method takes a path to a JSON file, a configuration JSON object, a SpeciesList,
-        and a ReactionList, and uses them to create a new instance of the EvolvingConditions class.
+        This class method creates a new EvolvingConditions instance using a JSON file path and
+        a configuration JSON object.
 
         Args:
             path_to_json (str): The path to the JSON file containing the initial conditions and settings.
@@ -59,7 +59,7 @@ class EvolvingConditions:
             file_paths = evolveCond['filepaths']
 
             # loop through the CSV files
-            all_headers  = set()        # provide warning for duplicates that will override
+            all_headers = set()        # provide warning for duplicates that will override
             for file_path in file_paths:
                 # read initial conditions from CSV file
                 evolving_conditions_path = os.path.join(
@@ -71,11 +71,11 @@ class EvolvingConditions:
                 logger.debug(f"evolving_conditions.conditions = {evolving_conditions.conditions}")
 
                 # any duplicate conditions?
-                override_headers = all_headers .intersection(file_headers)
+                override_headers = all_headers.intersection(file_headers)
                 if (len(override_headers) > 0):
                     logger.warning("File {} will override earlier conditions {}"
                                    .format(file_path, sorted(override_headers)))
-                all_headers  = all_headers .union(file_headers)
+                all_headers = all_headers.union(file_headers)
 
         return evolving_conditions
 
