@@ -37,26 +37,18 @@ class BoxModelOptions:
 
     def __repr__(self):
         return (
-            "BoxModelOptions(chem_step_time={0}, output_step_time={1}, "
-            "simulation_length={2}, grid={3}, max_iterations={4})"
-        ).format(
-            self.chem_step_time,
-            self.output_step_time,
-            self.simulation_length,
-            self.grid,
-            self.max_iterations
+            f"BoxModelOptions(chem_step_time={self.chem_step_time}, "
+            f"output_step_time={self.output_step_time}, "
+            f"simulation_length={self.simulation_length}, "
+            f"grid={self.grid}, max_iterations={self.max_iterations})"
         )
 
     def __str__(self):
         return (
-            "BoxModelOptions Time step: {0}, Output time step: {1}, "
-            "Simulation length: {2}, Grid: {3}, Max iterations: {4}"
-        ).format(
-            self.chem_step_time,
-            self.output_step_time,
-            self.simulation_length,
-            self.grid,
-            self.max_iterations
+            f"BoxModelOptions Time step: {self.chem_step_time}, "
+            f"Output time step: {self.output_step_time}, "
+            f"Simulation length: {self.simulation_length}, "
+            f"Grid: {self.grid}, Max iterations: {self.max_iterations}"
         )
 
     @classmethod
