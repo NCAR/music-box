@@ -1,0 +1,53 @@
+{
+  "name": "@ncar/music-box",
+  "version": "3.0.0-rc.2",
+  "type": "module",
+  "description": "JavaScript implementation of music-box atmospheric chemistry box model",
+  "main": "./javascript/src/index.js",
+  "readmeComments": [
+    "NPM uses the root readme to display package information, so we copy the javascript readme",
+    "to the root on publish. The below path is correct."
+  ],
+  "readme": "README.md",
+  "files": [
+    "javascript/src",
+    "javascript/README.md",
+    "webpack.config.js",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NCAR/music-box.git"
+  },
+  "keywords": [
+    "atmospheric-chemistry",
+    "chemistry",
+    "aerosols",
+    "wasm",
+    "webassembly",
+    "musica",
+    "micm"
+  ],
+  "author": "NCAR",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/NCAR/music-box/issues"
+  },
+  "homepage": "https://music-box.readthedocs.io/en/latest/",
+  "scripts": {
+    "build": "webpack",
+    "test": "node --test 'javascript/tests/unit/*.test.js' 'javascript/tests/integration/*.test.js'",
+    "test:unit": "node --test 'javascript/tests/unit/*.test.js'",
+    "test:integration": "node --test 'javascript/tests/integration/*.test.js'",
+    "test:coverage": "c8 node --test 'javascript/tests/unit/*.test.js' 'javascript/tests/integration/*.test.js'"
+  },
+  "dependencies": {
+    "@ncar/musica": "^0.14.4"
+  },
+  "devDependencies": {
+    "c8": "^10.1.3",
+    "jsdoc": "^4.0.5",
+    "webpack": "^5.99.0",
+    "webpack-cli": "^6.0.0"
+  }
+}

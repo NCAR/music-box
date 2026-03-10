@@ -20,7 +20,7 @@ authors = [
   { name = "Angela Pak"}
 ]
 maintainers = [{ name = "ACOM MUSICA Developers", email = "musica-support@ucar.edu" }]
-readme = "README.md"
+readme = "src/README.md"
 license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: Apache Software License"]
 dynamic = ["version", "description"]
@@ -54,4 +54,16 @@ dev = [
 ]
 gpu = [
   "musica[gpu]==0.14.0"
+]
+doc = [
+  "ipython",
+  "ipykernel",
+  "sphinx",
+  "sphinx-book-theme",
+  "sphinx-copybutton",
+  "sphinx-design",
+  "sphinxcontrib-bibtex",
+  "pydata-sphinx-theme",
+  "nbsphinx",
+  "sphinx-js",
 ]
