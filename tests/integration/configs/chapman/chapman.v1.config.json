@@ -5,21 +5,8 @@
     "output time step [min]": 1.0,
     "simulation length [day]": 3.0
   },
-  "initial conditions": {
-    "filepaths": [ "initial_concentrations.csv" ]
-  },
-  "environmental conditions": {
-    "temperature": {
-      "initial value [K]": 217.6
-    },
-    "pressure": {
-      "initial value [Pa]": 1394.3
-    }
-  },
-  "evolving conditions": {
-    "filepaths": [
-      "conditions_Boulder.csv"
-    ]
+  "conditions": {
+    "filepaths": ["initial_concentrations.csv", "conditions_Boulder.csv"]
   },
   "mechanism": {
     "version": "1.0.0",
@@ -29,15 +16,6 @@
         "name": "M",
         "is third body": true,
         "__description": "Third-body molecule. This is any molecule present in the system."
-      },
-      {
-        "name": "Ar"
-      },
-      {
-        "name": "CO2"
-      },
-      {
-        "name": "H2O"
       },
       {
         "name": "O1D"
@@ -60,9 +38,6 @@
         "name": "gas",
         "species": [
           "M",
-          "Ar",
-          "CO2",
-          "H2O",
           "O",
           "O2",
           "O3",

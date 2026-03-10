@@ -130,7 +130,7 @@ To set the initial conditions of your box model::
     box_model.initial_conditions = Conditions(
         temperature=298.15, # Units: Kelvin (K)
         pressure=101325.0, # Units: Pascals (Pa)
-        species_concentrations={ # Units: mol/m^3
+        concentrations={ # Units: mol/m^3
             "X": 3.75,
             "Y": 5.0,
             "Z": 2.5,

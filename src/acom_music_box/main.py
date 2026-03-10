@@ -123,7 +123,7 @@ def main():
     logger.debug(f"Configuration file = {musicBoxConfigFile}")
     myBox.loadJson(musicBoxConfigFile)
 
-    result = myBox.solve(callback=None)
+    result = myBox.solve()
 
     # Create an instance of DataOutput for multiple output formats.
     dataOutput = DataOutput(result, args)

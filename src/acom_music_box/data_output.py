@@ -93,11 +93,19 @@ class DataOutput:
 
     def _append_units_to_columns(self):
         """Append units to DataFrame column names based on unit mapping."""
-        self.df.columns = [
-            f"{col}.{self.unit_mapping[col]}" if col in self.unit_mapping else
-            f"{col}.mol m-3" if col.startswith('CONC.') else col
-            for col in self.df.columns
-        ]
+        def add_units(col):
+            if col in self.unit_mapping:
+                return f"{col}.{self.unit_mapping[col]}"
+            # For CONC columns, only add units if not already present
+            # Format is CONC.species.unit - if 3+ parts, units are already there
+            if col.startswith('CONC.'):
+                parts = col.split('.')
+                if len(parts) >= 3:
+                    return col  # Already has units
+                return f"{col}.mol m-3"
+            return col
+
+        self.df.columns = [add_units(col) for col in self.df.columns]
 
     def _convert_to_netcdf(self, toFile):
         """Convert DataFrame to xarray Dataset and save as NetCDF with attributes."""
