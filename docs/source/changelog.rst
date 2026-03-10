@@ -88,7 +88,7 @@ Old API (2.x):
 
     # Old way to set conditions
     box.initial_conditions.temperature = 298.15
-    box.initial_conditions.species_concentrations["A"] = 1.0
+    box.initial_conditions.concentrations["A"] = 1.0
     box.add_evolving_condition(3600, Conditions(temperature=310))
 
     # Old solve with callback

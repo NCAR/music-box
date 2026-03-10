@@ -112,8 +112,8 @@ class TestConditionsManager:
         manager.set_condition(time=0, concentrations={"A": 1.0, "B": 0.5})
 
         conds = manager.get_conditions_at_time(0)
-        assert conds["species_concentrations"]["A"] == 1.0
-        assert conds["species_concentrations"]["B"] == 0.5
+        assert conds["concentrations"]["A"] == 1.0
+        assert conds["concentrations"]["B"] == 0.5
 
     def test_rate_parameters(self):
         """Test setting rate parameters."""
@@ -143,11 +143,11 @@ class TestConditionsManager:
 
         conds_0 = manager.get_conditions_at_time(0)
         assert conds_0["temperature"] == 300
-        assert conds_0["species_concentrations"]["A"] == 1.0
+        assert conds_0["concentrations"]["A"] == 1.0
 
         conds_3600 = manager.get_conditions_at_time(3600)
         assert conds_3600["temperature"] == 310
-        assert conds_3600["species_concentrations"]["A"] == 0.5
+        assert conds_3600["concentrations"]["A"] == 0.5
 
     def test_add_from_dataframe_merge(self):
         """Test merging conditions from a DataFrame."""
@@ -246,7 +246,7 @@ class TestConditionsManager:
 
             conds_0 = manager.get_conditions_at_time(0)
             assert conds_0["temperature"] == 300.0
-            assert conds_0["species_concentrations"]["A"] == 1.0
+            assert conds_0["concentrations"]["A"] == 1.0
 
             conds_3600 = manager.get_conditions_at_time(3600)
             assert conds_3600["temperature"] == 310.0
@@ -298,8 +298,8 @@ class TestConditionsManager:
         manager.set_condition(time=0, concentrations={"CONC.B.mol m-3": 2.0})
 
         conds = manager.get_conditions_at_time(0)
-        assert conds["species_concentrations"]["A"] == 1.0
-        assert conds["species_concentrations"]["B"] == 2.0
+        assert conds["concentrations"]["A"] == 1.0
+        assert conds["concentrations"]["B"] == 2.0
 
     def test_surf_rate_parameter_format(self):
         """Test SURF rate parameter format handling."""

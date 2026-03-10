@@ -35,8 +35,8 @@ def test_waccm_to_music_box_conversion(temp_dir):
     # Set up arguments for the WACCM conversion
     args = [
         "--waccmDir", f"{sample_data_dir}",
-        "--date", "20240904",
-        "--time", "07:00",
+        "--date", "20260208",
+        "--time", "12:00",
         "--latitude", "3.1",
         "--longitude", "101.7",
         "--output", "csv,json"
@@ -61,8 +61,8 @@ def test_waccm_to_music_box_conversion(temp_dir):
 
     # Create symbolic link from Linux colon filename pointing to Window-safe hyphen file.
     try:
-        os.symlink(os.path.join(sample_data_dir, "wrfout_hourly_d01_2025-08-20_08-00-00"),
-                   os.path.join(sample_data_dir, "wrfout_hourly_d01_2025-08-20_08:00:00"))
+        os.symlink(os.path.join(sample_data_dir, "20250820", "wrf", "wrfout_hourly_d01_2025-08-20_08-00-00"),
+                   os.path.join(sample_data_dir, "20250820", "wrf", "wrfout_hourly_d01_2025-08-20_08:00:00"))
     except FileExistsError:
         pass
     except OSError:

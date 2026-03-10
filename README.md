@@ -9,7 +9,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14008358.svg)](https://doi.org/10.5281/zenodo.14008358)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/NCAR/music-box/96b7c7b619791bfbddafc6c8e34fb7982f26c4ca?urlpath=lab%2Ftree%2Ftutorials)
 
-Copyright (C) 2020 National Science Foundation - National Center for Atmospheric Research
+Copyright (C) 2020-2026 University Corporation for Atmospheric Research
 
 MusicBox is a box model for atmospheric chemistry simulations, built on the [MUSICA](https://github.com/NCAR/musica) framework. It provides both a Python package for scientific computing workflows and a JavaScript package for browser and Node.js environments — both driven by the same underlying MUSICA chemistry solver.
 
