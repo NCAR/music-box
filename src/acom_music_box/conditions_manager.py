@@ -640,3 +640,17 @@ class ConditionsManager:
     def __len__(self) -> int:
         """Return number of time points with conditions."""
         return len(self._df[self.TIME_COLUMN].dropna())
+
+    def format_reaction_var_units(name, units=None, prefix=None, particle=None) -> str:
+        """Return formatted title for column of a CSV file."""
+        title = name
+
+        # build the column title by adding the optional parts
+        if (prefix is not None):
+            title = f"{prefix}.{title}"
+        if (particle is not None):
+            title = f"{title}.{particle}"
+        if (units is not None):
+            title = f"{title}.{units}"
+
+        return title

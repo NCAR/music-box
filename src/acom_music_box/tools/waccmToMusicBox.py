@@ -21,6 +21,7 @@ from acom_music_box import Examples, __version__
 from acom_music_box.utils import calculate_air_density
 import netCDF4
 from acom_music_box.tools import gridUtils
+from acom_music_box import conditions_manager
 
 import logging
 logger = logging.getLogger(__name__)
@@ -395,7 +396,9 @@ def writeInitCSV(initValues, filename):
         if isEnvironment(key):
             reaction_type = "ENV"
 
-        fp.write("{}.{} [{}]".format(reaction_type, key, value[unitIndex]))
+        titleString = conditions_manager.ConditionsManager.format_reaction_var_units(
+            key, units=value[unitIndex], prefix=reaction_type)
+        fp.write(titleString)
     fp.write("\n")
 
     # write the variable values
