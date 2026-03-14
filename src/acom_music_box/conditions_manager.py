@@ -645,12 +645,16 @@ class ConditionsManager:
         """Return formatted title for column of a CSV file."""
         title = name
 
-        # build the column title by adding the optional parts
+        # Build the column title by adding the optional parts;
+        # discard None and zero-length strings.
         if (prefix is not None):
-            title = f"{prefix}.{title}"
+            if prefix:
+                title = f"{prefix}.{title}"
         if (particle is not None):
-            title = f"{title}.{particle}"
+            if particle:
+                title = f"{title}.{particle}"
         if (units is not None):
-            title = f"{title}.{units}"
+            if units:
+                title = f"{title}.{units}"
 
         return title
