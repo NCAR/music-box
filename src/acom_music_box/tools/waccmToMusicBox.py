@@ -21,6 +21,7 @@ from acom_music_box import Examples, __version__
 from acom_music_box.utils import calculate_air_density
 import netCDF4
 from acom_music_box.tools import gridUtils
+from acom_music_box import conditions_manager
 
 import logging
 logger = logging.getLogger(__name__)
@@ -369,6 +370,15 @@ def convertWaccm(varDict):
     return (varDict)
 
 
+# Determines if a chemical "name" is a system variable or not.
+# return True for time, . . .
+def isSystem(varName):
+    if (varName.lower() in {"time"}):
+        return (True)
+
+    return (False)
+
+
 # Determines if chemical "name" is an environmental variable or not.
 # return True for temperature, pressure, ...
 def isEnvironment(varName):
@@ -392,10 +402,14 @@ def writeInitCSV(initValues, filename):
             fp.write(",")
 
         reaction_type = "CONC"
+        if isSystem(key):
+            reaction_type = None
         if isEnvironment(key):
             reaction_type = "ENV"
 
-        fp.write("{}.{} [{}]".format(reaction_type, key, value[unitIndex]))
+        titleString = conditions_manager.ConditionsManager.format_reaction_var_units(
+            key, units=value[unitIndex], prefix=reaction_type)
+        fp.write(titleString)
     fp.write("\n")
 
     # write the variable values
@@ -615,11 +629,16 @@ def main():
         if (len(commonDict) == 0):
             logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
 
+        # time is the first listed variable for initial conditions
+        varValues = {}
+        varValues["time"] = ("time", 0.0, "s")
+
         # Read named variables from WACCM model output.
         logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
-        varValues = readWACCM(commonDict, lats, lons, alts,
+        waccmValues = readWACCM(commonDict, lats, lons, alts,
                               when, modelDir, waccmFilename, modelType)
-        logger.info(f"Original WACCM varValues = {varValues}")
+        logger.info(f"Original WACCM waccmValues = {waccmValues}")
+        varValues.update(waccmValues)
 
         # add molecular Nitrogen, Oxygen, and Argon
         varValues = addStandardGases(varValues)
