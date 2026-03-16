@@ -636,7 +636,7 @@ def main():
         # Read named variables from WACCM model output.
         logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
         waccmValues = readWACCM(commonDict, lats, lons, alts,
-                              when, modelDir, waccmFilename, modelType)
+                                when, modelDir, waccmFilename, modelType)
         logger.info(f"Original WACCM waccmValues = {waccmValues}")
         varValues.update(waccmValues)
 
