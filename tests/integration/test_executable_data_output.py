@@ -94,3 +94,6 @@ def test_create_directory_and_timestamped_netcdf(temp_dir):
 def test_run_configuration_file(temp_dir):
     result = subprocess.run(['music_box', '-c', Examples.Analytical.path], capture_output=True, text=True, cwd=temp_dir)
     assert result.returncode == 0
+
+if __name__ == "__main__":
+    pytest.main([__file__])

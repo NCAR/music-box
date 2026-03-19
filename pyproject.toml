@@ -67,3 +67,11 @@ doc = [
   "nbsphinx",
   "sphinx-js",
 ]
+
+
+# https://flit.pypa.io/en/stable/pyproject_toml.html#external-data-section
+# note that the files in this directory are copied to the install location
+# during development, you will need to reinstall the package after making changes to these files 
+# so just pip install -e . from the root of the repository after making changes to these files
+[tool.flit.external-data]
+directory = "examples"

@@ -26,5 +26,8 @@ export default {
       url: false,
     },
   },
+  // nodejs-polars is a native Node.js addon; keep it external so the browser
+  // bundle emits an import rather than attempting to bundle native code.
+  externals: { 'nodejs-polars': 'nodejs-polars' },
   mode: 'production',
 };

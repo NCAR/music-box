@@ -1,5 +1,5 @@
 import { initModule, MICM, SolverState } from '@ncar/musica';
-import { parseBoxModelOptions, parseMechanism, parseConditions } from './config_parser.js';
+import { parseBoxModelOptions, parseConditions, parseCsvToBlock } from './config_parser.js';
 import { ConditionsManager } from './conditions_manager.js';
 
 /**
@@ -34,10 +34,24 @@ export class MusicBox {
    * @returns {Promise<MusicBox>}
    */
   static async fromJsonFile(filePath) {
-    // webpackIgnore: fs/promises is Node.js-only; not included in browser bundles
+    // webpackIgnore: Node.js-only modules; not included in browser bundles
     const { readFile } = await import(/* webpackIgnore: true */ 'fs/promises');
+    const { resolve, dirname } = await import(/* webpackIgnore: true */ 'node:path');
     const text = await readFile(filePath, 'utf8');
-    return new MusicBox(JSON.parse(text));
+    const config = JSON.parse(text);
+
+    // Resolve conditions.filepaths (CSV files) relative to the config file's directory
+    // and merge them into conditions.data so the rest of the pipeline is uniform.
+    if (config.conditions?.filepaths?.length > 0) {
+      const configDir = dirname(resolve(filePath));
+      if (!config.conditions.data) config.conditions.data = [];
+      for (const relPath of config.conditions.filepaths) {
+        const csvText = await readFile(resolve(configDir, relPath), 'utf8');
+        config.conditions.data.push(parseCsvToBlock(csvText));
+      }
+    }
+
+    return new MusicBox(config);
   }
 
   /**
@@ -47,16 +61,16 @@ export class MusicBox {
    *   1. Apply concentration events at t=0
    *   2. Main loop: apply concentration events at current time, update env/rates, integrate
    *
-   * @returns {Promise<Array<Object>>} Array of output rows, each with time.s and
-   *   CONC.<species>.mol m-3 keys.
+   * @returns {Promise<{columns: string[], height: number, data: Object.<string, number[]>}>}
+   *   Result with a `columns` array of column names, `height` (number of rows), and
+   *   `data` object mapping each column name to its array of values.
    */
   async solve() {
     await initModule();
 
     const { chemTimeStep, outputTimeStep, simulationLength, maxIterations } =
       parseBoxModelOptions(this._config);
-    const mechanism = parseMechanism(this._config.mechanism);
-    const micm = MICM.fromMechanism(mechanism);
+    const micm = MICM.fromMechanism({ getJSON: () => this._config.mechanism });
     const state = micm.createState(1);
 
     try {
@@ -83,7 +97,20 @@ export class MusicBox {
         state.setUserDefinedRateParameters(t0.rateParams);
       }
 
-      const results = [collectOutput(0, state)];
+      // Collect output as column arrays for efficient DataFrame construction
+      const columns = { 'time.s': [] };
+
+      function appendOutput(time) {
+        const concs = state.getConcentrations();
+        columns['time.s'].push(time);
+        for (const [name, values] of Object.entries(concs)) {
+          const key = `CONC.${name}.mol m-3`;
+          if (!columns[key]) columns[key] = [];
+          columns[key].push(Array.isArray(values) ? values[0] : values);
+        }
+      }
+
+      appendOutput(0);
       let currTime = 0;
       let nextOutputTime = outputTimeStep;
 
@@ -126,32 +153,16 @@ export class MusicBox {
           currTime += result.stats.final_time;
 
           if (currTime >= nextOutputTime && nextOutputTime <= simulationLength) {
-            results.push(collectOutput(currTime, state));
+            appendOutput(currTime);
             nextOutputTime += outputTimeStep;
           }
         }
       }
 
-      return results;
+      return { columns: Object.keys(columns), height: columns['time.s'].length, data: columns };
     } finally {
       state.delete();
       micm.delete();
     }
   }
-}
-
-/**
- * Collect a single output row from the current solver state.
- *
- * @param {number} time - Current simulation time in seconds
- * @param {Object} state - MICM state object
- * @returns {Object} Row with time.s and CONC.<species>.mol m-3 keys
- */
-function collectOutput(time, state) {
-  const concs = state.getConcentrations();
-  const row = { 'time.s': time };
-  for (const [name, values] of Object.entries(concs)) {
-    row[`CONC.${name}.mol m-3`] = Array.isArray(values) ? values[0] : values;
-  }
-  return row;
 }
