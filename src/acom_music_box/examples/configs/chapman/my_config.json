@@ -8,18 +8,236 @@
   "conditions": {
     "filepaths": ["initial_concentrations.csv", "conditions_Boulder.csv"]
   },
-  "model components": [
-    {
-      "type": "CAMP",
-      "configuration file": "camp_data/config.json",
-      "override species": {
-        "M": {
-          "mixing ratio mol mol-1": 1.0
+  "mechanism": {
+    "name": "Chapman",
+    "reactions": [
+        {
+            "type": "ARRHENIUS",
+            "A": 12947602.634,
+            "B": 0.0,
+            "C": 109.94829243348597,
+            "D": 300.0,
+            "E": 0.0,
+            "reactants": [
+                {
+                    "species name": "O1D",
+                    "coefficient": 1.0
+                },
+                {
+                    "species name": "N2",
+                    "coefficient": 1.0
+                }
+            ],
+            "products": [
+                {
+                    "species name": "O",
+                    "coefficient": 1.0
+                },
+                {
+                    "species name": "N2",
+                    "coefficient": 1.0
+                }
+            ],
+            "gas phase": "gas"
+        },
+        {
+            "type": "ARRHENIUS",
+            "A": 19873064.508,
+            "B": 0.0,
+            "C": 54.97414621674299,
+            "D": 300.0,
+            "E": 0.0,
+            "reactants": [
+                {
+                    "species name": "O1D",
+                    "coefficient": 1.0
+                },
+                {
+                    "species name": "O2",
+                    "coefficient": 1.0
+                }
+            ],
+            "products": [
+                {
+                    "species name": "O",
+                    "coefficient": 1.0
+                },
+                {
+                    "species name": "O2",
+                    "coefficient": 1.0
+                }
+            ],
+            "gas phase": "gas"
+        },
+        {
+            "type": "ARRHENIUS",
+            "A": 4817712.608,
+            "B": 0.0,
+            "C": -2059.0316582998285,
+            "D": 300.0,
+            "E": 0.0,
+            "reactants": [
+                {
+                    "species name": "O",
+                    "coefficient": 1.0
+                },
+                {
+                    "species name": "O3",
+                    "coefficient": 1.0
+                }
+            ],
+            "products": [
+                {
+                    "species name": "O2",
+                    "coefficient": 2.0
+                }
+            ],
+            "gas phase": "gas"
+        },
+        {
+            "type": "ARRHENIUS",
+            "A": 217.59707599952029,
+            "B": -2.4,
+            "C": 0.0,
+            "D": 300.0,
+            "E": 0.0,
+            "reactants": [
+                {
+                    "species name": "O",
+                    "coefficient": 1.0
+                },
+                {
+                    "species name": "O2",
+                    "coefficient": 1.0
+                },
+                {
+                    "species name": "M",
+                    "coefficient": 1.0
+                }
+            ],
+            "products": [
+                {
+                    "species name": "O3",
+                    "coefficient": 1.0
+                },
+                {
+                    "species name": "M",
+                    "coefficient": 1.0
+                }
+            ],
+            "gas phase": "gas"
+        },
+        {
+            "type": "PHOTOLYSIS",
+            "name": "O2_1",
+            "scaling factor": 1.0,
+            "reactants": [
+                {
+                    "species name": "O2",
+                    "coefficient": 1.0
+                }
+            ],
+            "products": [
+                {
+                    "species name": "O",
+                    "coefficient": 2.0
+                }
+            ],
+            "gas phase": "gas"
+        },
+        {
+            "type": "PHOTOLYSIS",
+            "name": "O3_1",
+            "scaling factor": 1.0,
+            "reactants": [
+                {
+                    "species name": "O3",
+                    "coefficient": 1.0
+                }
+            ],
+            "products": [
+                {
+                    "species name": "O1D",
+                    "coefficient": 1.0
+                },
+                {
+                    "species name": "O2",
+                    "coefficient": 1.0
+                }
+            ],
+            "gas phase": "gas"
+        },
+        {
+            "type": "PHOTOLYSIS",
+            "name": "O3_2",
+            "scaling factor": 1.0,
+            "reactants": [
+                {
+                    "species name": "O3",
+                    "coefficient": 1.0
+                }
+            ],
+            "products": [
+                {
+                    "species name": "O",
+                    "coefficient": 1.0
+                },
+                {
+                    "species name": "O2",
+                    "coefficient": 1.0
+                }
+            ],
+            "gas phase": "gas"
         }
-      },
-      "suppress output": {
-        "M": {}
-      }
-    }
-  ]
+    ],
+    "species": [
+        {
+            "name": "M",
+            "is third body": true,
+            "__description": "Third-body molecule. This is any molecule present in the system."
+        },
+        {
+            "name": "O1D"
+        },
+        {
+            "name": "O"
+        },
+        {
+            "name": "O2"
+        },
+        {
+            "name": "O3"
+        },
+        {
+            "name": "N2"
+        }
+    ],
+    "phases": [
+        {
+            "name": "gas",
+            "species": [
+                {
+                    "name": "M"
+                },
+                {
+                    "name": "O1D"
+                },
+                {
+                    "name": "O"
+                },
+                {
+                    "name": "O2"
+                },
+                {
+                    "name": "O3"
+                },
+                {
+                    "name": "N2"
+                }
+            ]
+        }
+    ],
+    "version": "1.0.0"
+
+  }
 }

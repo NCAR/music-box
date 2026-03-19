@@ -14,18 +14,80 @@
       }
     ]
   },
-  "model components": [
-    {
-      "type": "CAMP",
-      "configuration file": "camp_data/config.json",
-      "override species": {
-        "M": {
-          "mixing ratio mol mol-1": 1
+  "mechanism": {
+    "name": "music box interactive configuration",
+    "reactions": [
+        {
+            "type": "ARRHENIUS",
+            "A": 0.00012,
+            "B": 7.0,
+            "C": 75.0,
+            "D": 50.0,
+            "E": 0.5,
+            "reactants": [
+                {
+                    "species name": "B",
+                    "coefficient": 1.0
+                }
+            ],
+            "products": [
+                {
+                    "species name": "C",
+                    "coefficient": 1.0
+                }
+            ],
+            "gas phase": "gas"
+        },
+        {
+            "type": "ARRHENIUS",
+            "A": 0.004,
+            "B": 0.0,
+            "C": 50.0,
+            "D": 300.0,
+            "E": 0.0,
+            "reactants": [
+                {
+                    "species name": "A",
+                    "coefficient": 1.0
+                }
+            ],
+            "products": [
+                {
+                    "species name": "B",
+                    "coefficient": 1.0
+                }
+            ],
+            "gas phase": "gas"
         }
-      },
-      "suppress output": {
-        "M": {}
-      }
-    }
-  ]
+    ],
+    "species": [
+        {
+            "name": "A"
+        },
+        {
+            "name": "B"
+        },
+        {
+            "name": "C"
+        }
+    ],
+    "phases": [
+        {
+            "name": "gas",
+            "species": [
+                {
+                    "name": "A"
+                },
+                {
+                    "name": "B"
+                },
+                {
+                    "name": "C"
+                }
+            ]
+        }
+    ],
+    "version": "1.0.0"
+
+  }
 }

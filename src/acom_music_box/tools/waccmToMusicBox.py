@@ -182,17 +182,14 @@ def getWaccmSpecies(modelDir, waccmFilename):
 
 # Create list of chemical species in MUSICA,
 # corresponding to the same chemical species in WACCM.
-# templateDir = directory containing configuration files and camp_data
+# myConfigFile = path to the configuration file
 # return list of variable names
-def getMusicaSpecies(templateDir):
-    # find the standard configuration file and parse it
-    myConfigFile = os.path.join(templateDir, "camp_data", "species.json")
+def getMusicaSpecies(myConfigFile):
     with open(myConfigFile) as jsonFile:
         myConfig = json.load(jsonFile)
 
     # locate the section for chemical species
-    chemSpeciesTag = "camp-data"
-    chemSpecies = myConfig[chemSpeciesTag]
+    chemSpecies = myConfig["mechanism"]["species"]
 
     # retrieve just the names
     musicaNames = []
@@ -509,7 +506,7 @@ def main():
     if (myArgs.musicaDir is not None):
         musicaDir = myArgs.musicaDir
 
-    template = os.path.dirname(Examples.TS1.path)
+    template = Examples.TS1.path
     if (myArgs.template is not None):
         template = myArgs.template
 
@@ -519,7 +516,7 @@ def main():
     if (myArgs.time is not None):
         timeStrs = myArgs.time.split(",")
 
-    # get the geographical location(s) to retrieve
+    # get the geographical location(s) to retrie"PHOTOLYSIS"
     lats = []
     if (myArgs.latitude is not None):
         # negative values must be specified on command line like this: --latitude "'-5.0,-2.0'"
