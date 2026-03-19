@@ -1,9 +1,9 @@
-import { BOLTZMANN_CONSTANT } from './utils.js';
-
 const TIME_UNIT_SECONDS = {
   s: 1,
+  sec: 1,
   min: 60,
   hr: 3600,
+  hour: 3600,
   day: 86400,
 };
 
@@ -44,54 +44,17 @@ export function parseBoxModelOptions(config) {
 }
 
 /**
- * Parse and normalize a music-box mechanism JSON into a musica v1-compatible object.
+ * Parse a CSV string into a {headers, rows} block compatible with conditions.data.
  *
- * Normalizations applied:
- *   1. Phase species: string array → object array (["M"] → [{name: "M"}])
- *   2. Arrhenius Ea (J) → C (K): C = -Ea / k_B
- *   3. Arrhenius missing parameters default: B=0, C=0, D=300, E=0
- *
- * @param {Object} mechanismJson - The value of config.mechanism
- * @returns {Object} Object with a ``getJSON()`` method compatible with MICM.fromMechanism
+ * @param {string} csvText - CSV file contents
+ * @returns {{ headers: string[], rows: number[][] }}
  */
-export function parseMechanism(mechanismJson) {
-  if (!mechanismJson) throw new Error('Missing mechanism configuration');
-
-  // Deep clone to avoid mutating the original config
-  const normalized = JSON.parse(JSON.stringify(mechanismJson));
-
-  // Normalize phase species: strings → {name: s} objects
-  if (Array.isArray(normalized.phases)) {
-    for (const phase of normalized.phases) {
-      if (Array.isArray(phase.species)) {
-        phase.species = phase.species.map((s) => (typeof s === 'string' ? { name: s } : s));
-      }
-    }
-  }
-
-  // Normalize Arrhenius reactions
-  if (Array.isArray(normalized.reactions)) {
-    for (const reaction of normalized.reactions) {
-      if (reaction.type === 'ARRHENIUS') {
-        // Convert Ea (J) → C (K): C = -Ea / k_B
-        if (reaction.Ea !== undefined) {
-          reaction.C = -reaction.Ea / BOLTZMANN_CONSTANT;
-          delete reaction.Ea;
-        }
-        // Fill in Arrhenius defaults for missing parameters
-        if (reaction.B === undefined) reaction.B = 0.0;
-        if (reaction.C === undefined) reaction.C = 0.0;
-        if (reaction.D === undefined) reaction.D = 300.0;
-        if (reaction.E === undefined) reaction.E = 0.0;
-      }
-    }
-  }
-
-  return {
-    getJSON() {
-      return normalized;
-    },
-  };
+export function parseCsvToBlock(csvText) {
+  const lines = csvText.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
+  if (lines.length === 0) return { headers: [], rows: [] };
+  const headers = lines[0].split(',').map((h) => h.trim());
+  const rows = lines.slice(1).map((line) => line.split(',').map((v) => Number(v.trim())));
+  return { headers, rows };
 }
 
 /**

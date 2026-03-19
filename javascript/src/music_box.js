@@ -1,5 +1,5 @@
 import { initModule, MICM, SolverState } from '@ncar/musica';
-import { parseBoxModelOptions, parseMechanism, parseConditions } from './config_parser.js';
+import { parseBoxModelOptions, parseConditions, parseCsvToBlock } from './config_parser.js';
 import { ConditionsManager } from './conditions_manager.js';
 
 /**
@@ -34,10 +34,24 @@ export class MusicBox {
    * @returns {Promise<MusicBox>}
    */
   static async fromJsonFile(filePath) {
-    // webpackIgnore: fs/promises is Node.js-only; not included in browser bundles
+    // webpackIgnore: Node.js-only modules; not included in browser bundles
     const { readFile } = await import(/* webpackIgnore: true */ 'fs/promises');
+    const { resolve, dirname } = await import(/* webpackIgnore: true */ 'node:path');
     const text = await readFile(filePath, 'utf8');
-    return new MusicBox(JSON.parse(text));
+    const config = JSON.parse(text);
+
+    // Resolve conditions.filepaths (CSV files) relative to the config file's directory
+    // and merge them into conditions.data so the rest of the pipeline is uniform.
+    if (config.conditions?.filepaths?.length > 0) {
+      const configDir = dirname(resolve(filePath));
+      if (!config.conditions.data) config.conditions.data = [];
+      for (const relPath of config.conditions.filepaths) {
+        const csvText = await readFile(resolve(configDir, relPath), 'utf8');
+        config.conditions.data.push(parseCsvToBlock(csvText));
+      }
+    }
+
+    return new MusicBox(config);
   }
 
   /**
@@ -55,8 +69,7 @@ export class MusicBox {
 
     const { chemTimeStep, outputTimeStep, simulationLength, maxIterations } =
       parseBoxModelOptions(this._config);
-    const mechanism = parseMechanism(this._config.mechanism);
-    const micm = MICM.fromMechanism(mechanism);
+    const micm = MICM.fromMechanism({ getJSON: () => this._config.mechanism });
     const state = micm.createState(1);
 
     try {
