@@ -312,7 +312,7 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
     for waccmKey, musicaName in waccmMusicaDict.items():
         if waccmKey not in meanPoint:
             logger.warning(f"Requested variable {waccmKey} not found in WACCM model output.")
-            musicaTuple = (waccmKey, None, None)
+            musicaTuple = (waccmKey, None, [None])
             musicaDict[musicaName] = musicaTuple
             continue
 
@@ -321,7 +321,9 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
 
         # this next line takes the mean along any remaining vertical axis/dimension
         verticalMean = float(chemSinglePoint.values.mean())
-        musicaTuple = (waccmKey, chemSinglePoint.units, verticalMean)
+
+        # verticalMean is placed into a list because we want to add rows later
+        musicaTuple = (waccmKey, chemSinglePoint.units, [verticalMean])
         logger.debug(f"musicaTuple = {musicaTuple}")
         musicaDict[musicaName] = musicaTuple
 
@@ -335,9 +337,9 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
 # varValues = already read from WACCM, contains (name, concentration, units)
 # return varValues with N2, O2, and Ar added
 def addStandardGases(varValues):
-    varValues["N2"] = ("N2", "mol/mol", 0.78084)    # standard fraction by volume
-    varValues["O2"] = ("O2", "mol/mol", 0.20946)
-    varValues["Ar"] = ("Ar", "mol/mol", 0.00934)
+    varValues["N2"] = ("N2", "mol/mol", [0.78084])    # standard fraction by volume
+    varValues["O2"] = ("O2", "mol/mol", [0.20946])
+    varValues["Ar"] = ("Ar", "mol/mol", [0.00934])
 
     return (varValues)
 
@@ -359,8 +361,8 @@ def convertWaccm(varDict):
     soa_density = 1770  # kg m-3
 
     # retrieve temperature and pressure from WACCM
-    temperature = varDict["temperature"][valueIndex]
-    pressure = varDict["pressure"][valueIndex]
+    temperature = varDict["temperature"][valueIndex][0]
+    pressure = varDict["pressure"][valueIndex][0]
     logger.info(f"temperature = {temperature} K   pressure = {pressure} Pa")
     air_density = calculate_air_density(temperature, pressure)
     logger.info(f"air density = {air_density} mol m-3")
@@ -369,10 +371,12 @@ def convertWaccm(varDict):
         # convert moles / mole to moles / cubic meter
         units = vTuple[unitIndex]
         if (units == "mol/mol"):
-            varDict[key] = (vTuple[0], "mol m-3", vTuple[valueIndex] * air_density)
+            varDict[key] = (vTuple[0], "mol m-3",
+                [vTuple[valueIndex][0] * air_density])
         if (units == "kg/kg"):
             # soa species only
-            varDict[key] = (vTuple[0], "mol m-3", vTuple[valueIndex] * soa_density / soa_molecular_weight)
+            varDict[key] = (vTuple[0], "mol m-3",
+                [vTuple[valueIndex][0] * soa_density / soa_molecular_weight])
 
     return (varDict)
 
@@ -477,10 +481,10 @@ def insertIntoTemplate(initValues, templateDir):
         pressure = 0.0
         key = "temperature"
         if key in initValues:
-            temperature = safeFloat(initValues[key][valueIndex])
+            temperature = safeFloat(initValues[key][valueIndex][0])
         key = "pressure"
         if key in initValues:
-            pressure = safeFloat(initValues[key][valueIndex])
+            pressure = safeFloat(initValues[key][valueIndex][0])
 
         # replace the values of temperature and pressure
         envConditionsTag = "environmental conditions"
@@ -658,7 +662,7 @@ def main():
 
             # time is the first listed variable for initial conditions
             varValues = {}
-            varValues["time"] = ("time", 0.0, "s")
+            varValues["time"] = ("time", "s", [0.0])
 
             # Read named variables from WACCM model output.
             logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
