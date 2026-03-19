@@ -75,6 +75,12 @@ def parse_arguments():
         help="Time of model output to extract, in format HH:MM"
     )
     parser.add_argument(
+        '--stride',
+        type=int,
+        help=("Number of hours between time steps."
+            + "\nDefaults to 6 hours for WACCM and 1 hour for WRF-Chem.")
+    )
+    parser.add_argument(
         '--latitude',
         type=str,
         help=("Latitude of grid cell(s) to extract: 47.0,49.0"
@@ -273,7 +279,7 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
 # modelDir = directory containing model output
 # waccmFilename = name of the model output file
 # modelType = WACCM_OUT or WRFCHEM_OUT
-# return dictionary of MUSICA variable names, values, and units
+# return dictionary of MUSICA variable names, units, and values
 def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
               when, modelDir, waccmFilename, modelType):
 
@@ -314,7 +320,8 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
         logger.info(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
 
         # this next line takes the mean along any remaining vertical axis/dimension
-        musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)   # from 0-dim array
+        verticalMean = float(chemSinglePoint.values.mean())
+        musicaTuple = (waccmKey, chemSinglePoint.units, verticalMean)
         logger.debug(f"musicaTuple = {musicaTuple}")
         musicaDict[musicaName] = musicaTuple
 
@@ -328,20 +335,20 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
 # varValues = already read from WACCM, contains (name, concentration, units)
 # return varValues with N2, O2, and Ar added
 def addStandardGases(varValues):
-    varValues["N2"] = ("N2", 0.78084, "mol/mol")    # standard fraction by volume
-    varValues["O2"] = ("O2", 0.20946, "mol/mol")
-    varValues["Ar"] = ("Ar", 0.00934, "mol/mol")
+    varValues["N2"] = ("N2", "mol/mol", 0.78084)    # standard fraction by volume
+    varValues["O2"] = ("O2", "mol/mol", 0.20946)
+    varValues["Ar"] = ("Ar", "mol/mol", 0.00934)
 
     return (varValues)
 
 
 # set up indexes for the tuple
 musicaIndex = 0
-valueIndex = 1
-unitIndex = 2
+unitIndex = 1
+valueIndex = 2
 
 # Perform any numeric conversion needed.
-# varDict = originally read from WACCM, tuples are (musicaName, value, units)
+# varDict = originally read from WACCM, tuples are (musicaName, units, value)
 # return varDict with values modified
 
 
@@ -362,10 +369,10 @@ def convertWaccm(varDict):
         # convert moles / mole to moles / cubic meter
         units = vTuple[unitIndex]
         if (units == "mol/mol"):
-            varDict[key] = (vTuple[0], vTuple[valueIndex] * air_density, "mol m-3")
+            varDict[key] = (vTuple[0], "mol m-3", vTuple[valueIndex] * air_density)
         if (units == "kg/kg"):
             # soa species only
-            varDict[key] = (vTuple[0], vTuple[valueIndex] * soa_density / soa_molecular_weight, "mol m-3")
+            varDict[key] = (vTuple[0], "mol m-3", vTuple[valueIndex] * soa_density / soa_molecular_weight)
 
     return (varDict)
 
@@ -533,6 +540,8 @@ def main():
     if (myArgs.time is not None):
         timeStrs = myArgs.time.split(",")
 
+    strideArg = myArgs.stride
+
     # get the geographical location(s) to retrieve
     lats = []
     if (myArgs.latitude is not None):
@@ -591,61 +600,79 @@ def main():
         outputCSV = "csv" in outputFormats
         outputJSON = "json" in outputFormats
 
-    for modelDir, modelType in zip(
-            [waccmDir, wrfChemDir], [WACCM_OUT, WRFCHEM_OUT]):
+    for modelDir, modelType, modelStride in zip(
+            [waccmDir, wrfChemDir], [WACCM_OUT, WRFCHEM_OUT], [6, 1]):
         if not modelDir:
             continue
 
         logger.info(f"Directory: {modelDir}   type {modelType}")
 
-        # for dateStr, timeStr in zip(dateStrs, timeStrs):
-        dateStr = dateStrs[0]       # TODO: replace this with loop over time frames
-        timeStr = timeStrs[0]
+        # determine the date-time bounds to retrieve
+        startDateTime = datetime.datetime.strptime(
+            f"{dateStrs[0]} {timeStrs[0]}", "%Y%m%d %H:%M")
+        endDateTime = datetime.datetime.strptime(
+            f"{dateStrs[1]} {timeStrs[1]}", "%Y%m%d %H:%M")
+        logger.info(f"Calculate averages from date-time {startDateTime} to {endDateTime}.")
 
-        # locate the WACCM output file
-        when = datetime.datetime.strptime(
-            f"{dateStr} {timeStr}", "%Y%m%d %H:%M")
-        if (modelType == WACCM_OUT):
-            waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02d}-00000.nc"
-        elif (modelType == WRFCHEM_OUT):
-            waccmFilename = f"wrfout_hourly_d01_{when.year:4d}-{when.month:02d}-{when.day:02d}_{when.hour:02d}:00:00"
+        # determine the interval for time frames
+        strideHours = modelStride
+        if (strideArg is not None):
+            strideHours = strideArg
+        logger.info(f"stride = {strideHours} hours")
 
-        # Windows does not allow colons : in filenames. Replace with hyphen -.
-        if not pathvalidate.is_valid_filename(waccmFilename, platform="auto"):
-            waccmFilename = waccmFilename.replace(":", "-")
+        when = startDateTime
+        while (when <= endDateTime):
+            logger.info(f"Extracting date-time {when}:")
+            when += datetime.timedelta(hours = strideHours)
 
-        if (modelType == WRFCHEM_OUT):
-            # WRF-Chem convention stores files in sub-directories by date
-            dateDir = f"{when.year:4d}{when.month:02d}{when.day:02d}"
-            waccmFilename = os.path.join(dateDir, "wrf", waccmFilename)
+            # locate the WACCM output file
+            if (modelType == WACCM_OUT):
+                waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02d}-00000.nc"
+            elif (modelType == WRFCHEM_OUT):
+                waccmFilename = f"wrfout_hourly_d01_{when.year:4d}-{when.month:02d}-{when.day:02d}_{when.hour:02d}:00:00"
 
-        # read and glean chemical species from WACCM and MUSICA
-        waccmChems = getWaccmSpecies(modelDir, waccmFilename)
-        musicaChems = getMusicaSpecies(template)
+            # Windows does not allow colons : in filenames. Replace with hyphen -.
+            if not pathvalidate.is_valid_filename(waccmFilename, platform="auto"):
+                waccmFilename = waccmFilename.replace(":", "-")
 
-        # create map of species common to both WACCM and MUSICA
-        commonDict = getMusicaDictionary(modelType, waccmChems, musicaChems)
-        logger.info(f"Species in common are = {commonDict}")
-        if (len(commonDict) == 0):
-            logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
+            if (modelType == WRFCHEM_OUT):
+                # WRF-Chem convention stores files in sub-directories by date
+                dateDir = f"{when.year:4d}{when.month:02d}{when.day:02d}"
+                waccmFilename = os.path.join(dateDir, "wrf", waccmFilename)
 
-        # time is the first listed variable for initial conditions
-        varValues = {}
-        varValues["time"] = ("time", 0.0, "s")
+            # if this frame time is not present, skip
+            waccmFullPath = os.path.join(modelDir, waccmFilename)
+            if not os.path.exists(waccmFullPath):
+                logger.warning(f"File {waccmFullPath} does not exist. Skipping...")
+                continue
 
-        # Read named variables from WACCM model output.
-        logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
-        waccmValues = readWACCM(commonDict, lats, lons, alts,
+            # read and glean chemical species from WACCM and MUSICA
+            waccmChems = getWaccmSpecies(modelDir, waccmFilename)
+            musicaChems = getMusicaSpecies(template)
+
+            # create map of species common to both WACCM and MUSICA
+            commonDict = getMusicaDictionary(modelType, waccmChems, musicaChems)
+            logger.info(f"Species in common are = {commonDict}")
+            if (len(commonDict) == 0):
+                logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
+
+            # time is the first listed variable for initial conditions
+            varValues = {}
+            varValues["time"] = ("time", 0.0, "s")
+
+            # Read named variables from WACCM model output.
+            logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
+            waccmValues = readWACCM(commonDict, lats, lons, alts,
                                 when, modelDir, waccmFilename, modelType)
-        logger.info(f"Original WACCM waccmValues = {waccmValues}")
-        varValues.update(waccmValues)
+            logger.info(f"Original WACCM waccmValues = {waccmValues}")
+            varValues.update(waccmValues)
 
-        # add molecular Nitrogen, Oxygen, and Argon
-        varValues = addStandardGases(varValues)
+            # add molecular Nitrogen, Oxygen, and Argon
+            varValues = addStandardGases(varValues)
 
-        # Perform any conversions needed, or derive variables.
-        varValues = convertWaccm(varValues)
-        logger.info(f"Converted WACCM varValues = {varValues}")
+            # Perform any conversions needed, or derive variables.
+            varValues = convertWaccm(varValues)
+            logger.info(f"Converted WACCM varValues = {varValues}")
 
         if (outputCSV):
             # Write CSV file for MusicBox initial conditions.
