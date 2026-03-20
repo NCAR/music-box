@@ -716,17 +716,22 @@ def main():
         logger.info(f"Final frameCount = {frameCount}")
         logger.debug(f"Final WACCM accumValues = {accumValues}")
 
+        # Did we just calculate a single initial condition or multiple evolving?
+        spanConditions = "initial"
+        if (frameCount > 1):
+            spanConditions = "evolving"
+
         if (outputCSV):
             # Write CSV file for MusicBox initial conditions.
             csvName = os.path.join(musicaDir,
-                                   "initial_conditions-{}.csv".format(modelNames[modelType]))
+                "{}_conditions-{}.csv".format(spanConditions, modelNames[modelType]))
             logger.info(f"csvName = {csvName}")
             writeInitCSV(accumValues, csvName)
 
         if (outputJSON):
             # Write JSON file for MusicBox initial conditions.
             jsonName = os.path.join(musicaDir,
-                                    "initial_config-{}.json".format(modelNames[modelType]))
+                "{}_config-{}.json".format(spanConditions, modelNames[modelType]))
             logger.info(f"jsonName = {jsonName}")
             writeInitJSON(accumValues, jsonName)
 
