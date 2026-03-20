@@ -238,12 +238,13 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     inCommon = sorted([species for species in waccmSpecies if species in musicaSpecies])
 
     # provide some diagnostic warnings
+    # If these messages are crucially important, change to logger.warning().
     waccmOnly = [species for species in waccmSpecies if species not in musicaSpecies]
     musicaOnly = [species for species in musicaSpecies if species not in waccmSpecies]
     if (len(waccmOnly) > 0):
-        logger.warning(f"The following chemical species are only in WACCM: {waccmOnly}")
+        logger.debug(f"The following chemical species are only in WACCM: {waccmOnly}")
     if (len(musicaOnly) > 0):
-        logger.warning(f"The following chemical species are only in MUSICA: {musicaOnly}")
+        logger.debug(f"The following chemical species are only in MUSICA: {musicaOnly}")
 
     # build the dictionary
     # To do: As of September 4, 2024 this is not much of a map,
@@ -264,7 +265,6 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
             "o3": "O3"
         }
 
-    logger.info(f"inCommon = {inCommon}")
     for varName in inCommon:
         varMap[varName] = varName
 
@@ -318,7 +318,7 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
             continue
 
         chemSinglePoint = meanPoint[waccmKey]
-        logger.info(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
+        logger.debug(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
 
         # this next line takes the mean along any remaining vertical axis/dimension
         verticalMean = float(chemSinglePoint.values.mean())
@@ -680,7 +680,7 @@ def main():
 
             # create map of species common to both WACCM and MUSICA
             commonDict = getMusicaDictionary(modelType, waccmChems, musicaChems)
-            logger.info(f"Species in common are = {commonDict}")
+            logger.debug(f"Species in common are = {commonDict}")
             if (len(commonDict) == 0):
                 logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
 
@@ -692,7 +692,7 @@ def main():
             logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
             waccmValues = readWACCM(commonDict, lats, lons, alts,
                                 when, modelDir, waccmFilename, modelType)
-            logger.info(f"Original WACCM waccmValues = {waccmValues}")
+            logger.debug(f"Original WACCM waccmValues = {waccmValues}")
             varValues.update(waccmValues)
 
             # add molecular Nitrogen, Oxygen, and Argon
@@ -700,7 +700,7 @@ def main():
 
             # Perform any conversions needed, or derive variables.
             varValues = convertWaccm(varValues)
-            logger.info(f"Converted WACCM varValues = {varValues}")
+            logger.debug(f"Converted WACCM varValues = {varValues}")
             frameCount += 1
 
             if (accumValues is None):

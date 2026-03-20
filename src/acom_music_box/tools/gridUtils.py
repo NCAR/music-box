@@ -388,7 +388,7 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
         gridBox = cutOffColumns(gridBox, altPair)
         gridDims = ["point_index"]
 
-    logger.info(f"WACCM gridBox = {gridBox}")
+    logger.debug(f"WACCM gridBox = {gridBox}")
     meanPoint = gridBox.mean(dim=gridDims, keep_attrs=True)
     logger.debug(f"meanPoint = {meanPoint}")
 
