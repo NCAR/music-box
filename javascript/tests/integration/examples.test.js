@@ -41,19 +41,16 @@ describe('Example config integration tests', () => {
     it(`${name} - loads and solves without errors`, { timeout: 300_000 }, async () => {
       const box = await MusicBox.fromJsonFile(configPath);
       const results = await box.solve();
+      console.log(results);
 
-      assert.ok(Array.isArray(results), 'solve() should return an array');
-      assert.ok(results.length > 0, 'solve() should return at least one output row');
-      assert.ok('time.s' in results[0], 'output rows should have a time.s key');
+      assert.ok(results.height > 0, 'solve() should return at least one output row');
+      assert.ok(results.columns.includes('time.s'), 'output should have a time.s column');
 
-      // Verify all CONC.* values are non-negative
-      for (const row of results) {
-        for (const [key, value] of Object.entries(row)) {
-          if (key.startsWith('CONC.')) {
-            assert.ok(
-              value >= 0,
-              `${key} should be non-negative at t=${row['time.s']}, got ${value}`
-            );
+      // Verify all CONC.* columns are non-negative
+      for (const col of results.columns) {
+        if (col.startsWith('CONC.')) {
+          for (const value of results.getColumn(col).toArray()) {
+            assert.ok(value >= 0, `${col} should be non-negative, got ${value}`);
           }
         }
       }

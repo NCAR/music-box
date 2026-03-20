@@ -1,3 +1,4 @@
+import pl from 'nodejs-polars';
 import { initModule, MICM, SolverState } from '@ncar/musica';
 import { parseBoxModelOptions, parseConditions, parseCsvToBlock } from './config_parser.js';
 import { ConditionsManager } from './conditions_manager.js';
@@ -61,8 +62,8 @@ export class MusicBox {
    *   1. Apply concentration events at t=0
    *   2. Main loop: apply concentration events at current time, update env/rates, integrate
    *
-   * @returns {Promise<Array<Object>>} Array of output rows, each with time.s and
-   *   CONC.<species>.mol m-3 keys.
+   * @returns {Promise<import('nodejs-polars').DataFrame>} DataFrame with a time.s column
+   *   and one CONC.<species>.mol m-3 column per species.
    */
   async solve() {
     await initModule();
@@ -96,7 +97,20 @@ export class MusicBox {
         state.setUserDefinedRateParameters(t0.rateParams);
       }
 
-      const results = [collectOutput(0, state)];
+      // Collect output as column arrays for efficient DataFrame construction
+      const columns = { 'time.s': [] };
+
+      function appendOutput(time) {
+        const concs = state.getConcentrations();
+        columns['time.s'].push(time);
+        for (const [name, values] of Object.entries(concs)) {
+          const key = `CONC.${name}.mol m-3`;
+          if (!columns[key]) columns[key] = [];
+          columns[key].push(Array.isArray(values) ? values[0] : values);
+        }
+      }
+
+      appendOutput(0);
       let currTime = 0;
       let nextOutputTime = outputTimeStep;
 
@@ -139,32 +153,16 @@ export class MusicBox {
           currTime += result.stats.final_time;
 
           if (currTime >= nextOutputTime && nextOutputTime <= simulationLength) {
-            results.push(collectOutput(currTime, state));
+            appendOutput(currTime);
             nextOutputTime += outputTimeStep;
           }
         }
       }
 
-      return results;
+      return pl.DataFrame(columns);
     } finally {
       state.delete();
       micm.delete();
     }
   }
-}
-
-/**
- * Collect a single output row from the current solver state.
- *
- * @param {number} time - Current simulation time in seconds
- * @param {Object} state - MICM state object
- * @returns {Object} Row with time.s and CONC.<species>.mol m-3 keys
- */
-function collectOutput(time, state) {
-  const concs = state.getConcentrations();
-  const row = { 'time.s': time };
-  for (const [name, values] of Object.entries(concs)) {
-    row[`CONC.${name}.mol m-3`] = Array.isArray(values) ? values[0] : values;
-  }
-  return row;
 }
