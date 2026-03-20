@@ -22,6 +22,7 @@ from acom_music_box.utils import calculate_air_density
 import netCDF4
 from acom_music_box.tools import gridUtils
 from acom_music_box import conditions_manager
+import copy
 
 import logging
 logger = logging.getLogger(__name__)
@@ -423,16 +424,22 @@ def writeInitCSV(initValues, filename):
         fp.write(titleString)
     fp.write("\n")
 
-    # write the variable values
-    firstColumn = True
-    for key, value in initValues.items():
-        if (firstColumn):
-            firstColumn = False
-        else:
-            fp.write(",")
+    # loop through the rows of chemical values
+    firstColumn = next(iter(initValues.items()))
+    logger.debug(f"firstColumn = {firstColumn}")
+    numDataRows = len(firstColumn[1][valueIndex])
+    logger.debug(f"numDataRows = {numDataRows}")
+    for ri in range(numDataRows):
+        # write the variable values
+        firstColumn = True
+        for key, value in initValues.items():
+            if (firstColumn):
+                firstColumn = False
+            else:
+                fp.write(",")
 
-        fp.write(f"{value[valueIndex]}")
-    fp.write("\n")
+            fp.write(f"{value[valueIndex][ri]}")
+        fp.write("\n")
 
     fp.close()
     return
@@ -506,6 +513,17 @@ def insertIntoTemplate(initValues, templateDir):
                     zipf.write(file_path, os.path.relpath(file_path, temp_dir))
 
         logger.info(f"Configuration zipped to {zip_path}")
+
+
+# Add another row at the end of a WACCM data dictionary.
+# The two dictionaries should have the same set of keys.
+# waccmData = contains columns with a title and list of numeric values
+# moreData = ignore headers and add these values to each column
+def appendRow(waccmData, moreData):
+    for colTitle in waccmData:
+        waccmData[colTitle][valueIndex].append(moreData[colTitle][valueIndex][0])
+
+    return waccmData
 
 
 # type of model output in directory
@@ -614,8 +632,11 @@ def main():
         # determine the date-time bounds to retrieve
         startDateTime = datetime.datetime.strptime(
             f"{dateStrs[0]} {timeStrs[0]}", "%Y%m%d %H:%M")
-        endDateTime = datetime.datetime.strptime(
-            f"{dateStrs[1]} {timeStrs[1]}", "%Y%m%d %H:%M")
+        if (len(dateStrs) > 1 and len(timeStrs) > 1):
+            endDateTime = datetime.datetime.strptime(
+                f"{dateStrs[1]} {timeStrs[1]}", "%Y%m%d %H:%M")
+        else:
+            endDateTime = startDateTime
         logger.info(f"Calculate averages from date-time {startDateTime} to {endDateTime}.")
 
         # determine the interval for time frames
@@ -625,9 +646,11 @@ def main():
         logger.info(f"stride = {strideHours} hours")
 
         when = startDateTime
+        accumValues = None          # accumulate the values in rows here
+        frameCount = 0
         while (when <= endDateTime):
             logger.info(f"Extracting date-time {when}:")
-            when += datetime.timedelta(hours = strideHours)
+            seconds = (when - startDateTime).total_seconds()
 
             # locate the WACCM output file
             if (modelType == WACCM_OUT):
@@ -648,6 +671,7 @@ def main():
             waccmFullPath = os.path.join(modelDir, waccmFilename)
             if not os.path.exists(waccmFullPath):
                 logger.warning(f"File {waccmFullPath} does not exist. Skipping...")
+                when += datetime.timedelta(hours = strideHours)
                 continue
 
             # read and glean chemical species from WACCM and MUSICA
@@ -662,7 +686,7 @@ def main():
 
             # time is the first listed variable for initial conditions
             varValues = {}
-            varValues["time"] = ("time", "s", [0.0])
+            varValues["time"] = ("time", "s", [seconds])
 
             # Read named variables from WACCM model output.
             logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
@@ -677,24 +701,38 @@ def main():
             # Perform any conversions needed, or derive variables.
             varValues = convertWaccm(varValues)
             logger.info(f"Converted WACCM varValues = {varValues}")
+            frameCount += 1
+
+            if (accumValues is None):
+                # first time step begins with headers and first row of values
+                accumValues = copy.deepcopy(varValues)
+            else:
+                # add another row to the dataset
+                appendRow(accumValues, varValues)
+
+            # move on to the next time step
+            when += datetime.timedelta(hours = strideHours)
+
+        logger.info(f"Final frameCount = {frameCount}")
+        logger.debug(f"Final WACCM accumValues = {accumValues}")
 
         if (outputCSV):
             # Write CSV file for MusicBox initial conditions.
             csvName = os.path.join(musicaDir,
                                    "initial_conditions-{}.csv".format(modelNames[modelType]))
             logger.info(f"csvName = {csvName}")
-            writeInitCSV(varValues, csvName)
+            writeInitCSV(accumValues, csvName)
 
         if (outputJSON):
             # Write JSON file for MusicBox initial conditions.
             jsonName = os.path.join(musicaDir,
                                     "initial_config-{}.json".format(modelNames[modelType]))
             logger.info(f"jsonName = {jsonName}")
-            writeInitJSON(varValues, jsonName)
+            writeInitJSON(accumValues, jsonName)
 
         if (insertIntoConfig):
             logger.info(f"Insert values into template {template}")
-            insertIntoTemplate(varValues, template)
+            insertIntoTemplate(accumValues, template)
 
     logger.info(f"End time: {datetime.datetime.now()}")
 
