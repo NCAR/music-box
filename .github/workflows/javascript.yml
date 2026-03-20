@@ -42,7 +42,6 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'release' && github.event.action == 'published') || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout
