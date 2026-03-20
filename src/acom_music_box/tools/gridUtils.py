@@ -479,7 +479,7 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
 
             # retrieve the sub-column between the altitude bounds
             verticalIndexes = getSubColumn(zLevels.values[:, iLat, iLon], heightPair)
-            logger.info(f"verticalIndexes = {verticalIndexes}")
+            logger.debug(f"verticalIndexes = {verticalIndexes}")
             if (len(verticalIndexes) == 0):
                 logger.debug("\tNo level within those height bounds.")
                 continue        # there is no level here within the height range
