@@ -1,4 +1,5 @@
 import os
+import sys
 
 
 class Example:
@@ -16,7 +17,7 @@ class Example:
 
     @classmethod
     def from_config(cls, display_name, folder_name, short_name, description):
-        path = os.path.join(os.path.dirname(__file__), 'configs', folder_name, 'my_config.json')
+        path = os.path.join(sys.prefix, folder_name, 'my_config.json')
         return cls(name=display_name, short_name=short_name, description=description, path=path)
 
 
