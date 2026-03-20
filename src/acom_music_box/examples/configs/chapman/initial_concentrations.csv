@@ -1,2 +1,0 @@
-time.s,ENV.temperature.K,ENV.pressure.Pa,CONC.O.mol m-3,CONC.O1D.mol m-3,CONC.O2.mol m-3,CONC.O3.mol m-3,CONC.N2.mol m-3
-0.0,217.6,1394.3,3.58e-11,1.83e-17,1.62e-1,6.43e-6,6.01e-1

@@ -1,7 +1,7 @@
 /**
  * Integration tests for all v1-format example configs.
  *
- * For each config in src/acom_music_box/examples/configs/ that uses the v1 format
+ * For each config in examples/ that uses the v1 format
  * (box model options / conditions / mechanism), verify that:
  *   1. The config loads via MusicBox.fromJsonFile (resolving any CSV filepaths)
  *   2. solve() completes without errors
@@ -18,7 +18,7 @@ import { initModule } from '@ncar/musica';
 import { MusicBox } from '../../src/music_box.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const CONFIGS_DIR = join(__dirname, '../../../src/acom_music_box/examples/configs');
+const CONFIGS_DIR = join(__dirname, '../../../examples');
 
 // v1-format configs only (waccm uses a different legacy format)
 const EXAMPLE_CONFIGS = [

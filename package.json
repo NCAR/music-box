@@ -4,6 +4,10 @@
   "type": "module",
   "description": "JavaScript implementation of music-box atmospheric chemistry box model",
   "main": "./javascript/src/index.js",
+  "exports": {
+    ".": "./javascript/src/index.js",
+    "./examples/*": "./examples/*"
+  },
   "readmeComments": [
     "NPM uses the root readme to display package information, so we copy the javascript readme",
     "to the root on publish. The below path is correct."
@@ -13,6 +17,7 @@
     "javascript/src",
     "javascript/README.md",
     "webpack.config.js",
+    "examples",
     "LICENSE"
   ],
   "repository": {

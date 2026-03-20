@@ -1,0 +1,125 @@
+{
+    "box model options": {
+        "grid": "box",
+        "chemistry time step [sec]": 1.0,
+        "output time step [sec]": 1.0,
+        "simulation length [hr]": 1.0
+    },
+    "conditions": {
+        "data": [
+            {
+                "headers": ["time.s", "ENV.temperature.K", "ENV.pressure.Pa"],
+                "rows": [[0.0, 298.15, 101325.0]]
+            }
+        ],
+        "filepaths": [
+            "initial_concentrations.csv",
+            "initial_reaction_rates.csv"
+        ]
+    },
+    "mechanism": {
+        "name": "Flow Tube",
+        "reactions": [
+            {
+                "type": "ARRHENIUS",
+                "A": 52.994838688,
+                "B": 0.0,
+                "C": 0.0,
+                "D": 300.0,
+                "E": 0.0,
+                "reactants": [
+                    {
+                        "species name": "O3",
+                        "coefficient": 1.0
+                    },
+                    {
+                        "species name": "a-pinene",
+                        "coefficient": 1.0
+                    }
+                ],
+                "products": [
+                    {
+                        "species name": "SOA1",
+                        "coefficient": 0.18
+                    },
+                    {
+                        "species name": "SOA2",
+                        "coefficient": 0.09
+                    }
+                ],
+                "gas phase": "gas"
+            },
+            {
+                "type": "USER_DEFINED",
+                "name": "SOA1 wall loss",
+                "scaling factor": 1.0,
+                "reactants": [
+                    {
+                        "species name": "SOA1",
+                        "coefficient": 1.0
+                    }
+                ],
+                "products": [],
+                "gas phase": "gas"
+            },
+            {
+                "type": "USER_DEFINED",
+                "name": "SOA2 wall loss",
+                "scaling factor": 1.0,
+                "reactants": [
+                    {
+                        "species name": "SOA2",
+                        "coefficient": 1.0
+                    }
+                ],
+                "products": [],
+                "gas phase": "gas"
+            }
+        ],
+        "species": [
+            {
+                "name": "M",
+                "is third body": true,
+                "__description": "Third-body molecule. This is any molecule present in the system."
+            },
+            {
+                "name": "a-pinene"
+            },
+            {
+                "name": "O3",
+                "__description": "ozone"
+            },
+            {
+                "name": "SOA1",
+                "__description": "moderate volatility SOA precursor from a-pinene oxidation"
+            },
+            {
+                "name": "SOA2",
+                "__description": "low volatility SOA precursor from a-pinene oxidation"
+            }
+        ],
+        "phases": [
+            {
+                "name": "gas",
+                "species": [
+                    {
+                        "name": "M"
+                    },
+                    {
+                        "name": "a-pinene"
+                    },
+                    {
+                        "name": "O3"
+                    },
+                    {
+                        "name": "SOA1"
+                    },
+                    {
+                        "name": "SOA2"
+                    }
+                ]
+            }
+        ],
+        "version": "1.0.0"
+    }
+}

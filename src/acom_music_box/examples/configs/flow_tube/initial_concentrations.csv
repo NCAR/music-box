@@ -1,2 +1,0 @@
-time.s,ENV.temperature.K,ENV.pressure.Pa,CONC.a-pinene.mol m-3,CONC.O3.mol m-3
-0.0,298.15,101325.0,8e-08,2e-05

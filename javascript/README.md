@@ -15,12 +15,28 @@ npm install @ncar/music-box
 
 ## Quick Start
 
-### Node.js — load from a file
+### Load a bundled example (Node.js or browser)
+
+Each example config is published with the package and can be imported directly as JSON:
+
+```javascript
+import { MusicBox } from '@ncar/music-box';
+import chapmanConfig from '@ncar/music-box/examples/chapman/my_config.json' with { type: 'json' };
+
+const box = MusicBox.fromJson(chapmanConfig);
+const results = await box.solve();
+console.log(results);
+// [{ 'time.s': 0, 'CONC.O3.mol m-3': 6.43e-6, ... }, ...]
+```
+
+Available examples: `analytical`, `chapman`, `flow_tube`, `carbon_bond_5`, `ts1`.
+
+### Node.js — load from a local file
 
 ```javascript
 import { MusicBox } from '@ncar/music-box';
 
-const box = await MusicBox.fromJsonFile('./configs/chapman.v1.config.json');
+const box = await MusicBox.fromJsonFile('./examples/chapman/my_config.json');
 const results = await box.solve();
 console.log(results);
 // [{ 'time.s': 0, 'CONC.O3.mol m-3': 6.43e-6, ... }, ...]
@@ -121,29 +137,13 @@ const results = await box.solve();
 
 ### `parseBoxModelOptions`
 
-Extracts timing parameters from `config['box model options']`, converting all time units (`[s]`, `[min]`, `[hr]`, `[day]`) to seconds.
+Extracts timing parameters from `config['box model options']`, converting all time units (`[s]`, `[sec]`, `[min]`, `[hr]`, `[hour]`, `[day]`) to seconds.
 
 ```javascript
 import { parseBoxModelOptions } from '@ncar/music-box';
 
 const { chemTimeStep, outputTimeStep, simulationLength, maxIterations } =
   parseBoxModelOptions(config);
-```
-
-### `parseMechanism`
-
-Normalizes a music-box v1 mechanism object for the MUSICA WASM solver. Returns an object with a `getJSON()` method compatible with `MICM.fromMechanism()`.
-
-Normalizations applied:
-- Phase species strings → objects: `["M", "O"]` → `[{"name": "M"}, {"name": "O"}]`
-- Arrhenius `Ea` (J) → `C` (K): `C = -Ea / k_B` where k_B = 1.38064852×10⁻²³ J/K
-- Missing Arrhenius parameters default to `B = 0`, `C = 0`, `D = 300`, `E = 0`
-
-```javascript
-import { parseMechanism } from '@ncar/music-box';
-
-const mechanism = parseMechanism(config.mechanism);
-// mechanism.getJSON() returns musica v1-compatible JSON
 ```
 
 ### `parseConditions`
@@ -193,6 +193,15 @@ music-box/
 ├── package.json           ← npm metadata and scripts
 ├── package-lock.json
 ├── webpack.config.js      ← browser bundle config
+├── examples/              ← example configs (analytical, chapman, flow_tube, …)
+│   ├── analytical/
+│   │   ├── my_config.json
+│   │   └── initial_conditions.csv
+│   ├── chapman/
+│   │   ├── my_config.json
+│   │   ├── initial_concentrations.csv
+│   │   └── conditions_Boulder.csv
+│   └── …
 ├── javascript/
 │   ├── src/
 │   │   ├── index.js
