@@ -1,6 +1,6 @@
 FROM fedora:latest
 
-ARG MUSICA_TAG=v0.13.0
+ARG MUSICA_TAG=v0.14.5
 
 RUN dnf -y update \
     && dnf -y install \
@@ -18,8 +18,6 @@ RUN dnf -y update \
         python3-setuptools \
     && dnf clean all
 
-COPY . /music-box/
-
 ENV CXX=g++
 ENV CC=gcc
 ENV FC=gfortran
@@ -31,11 +29,10 @@ RUN git clone https://github.com/NCAR/musica.git /musica \
 RUN cd /musica \
     && pip3 install .
 
-RUN cd /musica \
-    && pip3 install --verbose .[test] pytest-mock
+COPY . /music-box/
 
 RUN cd /music-box \
-    && pip3 install --verbose .[test] pytest-mock
+    && pip3 install --verbose .[dev]
 
 WORKDIR /music-box
 CMD ["pytest"]
