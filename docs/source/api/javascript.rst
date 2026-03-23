@@ -14,11 +14,6 @@ parseBoxModelOptions
 
 .. js:autofunction:: parseBoxModelOptions
 
-parseMechanism
---------------
-
-.. js:autofunction:: parseMechanism
-
 parseConditions
 ---------------
 
