@@ -99,7 +99,7 @@ def parse_arguments():
     parser.add_argument(
         '--template',
         type=str,
-        help="Extract MusicBox chemical species from a configuration in this directory."
+        help="Path to a MusicBox config file (my_config.json) or its parent directory."
     )
     parser.add_argument(
         '-v', '--verbose',
@@ -183,17 +183,14 @@ def getWaccmSpecies(modelDir, waccmFilename):
 
 # Create list of chemical species in MUSICA,
 # corresponding to the same chemical species in WACCM.
-# templateDir = directory containing configuration files and camp_data
+# myConfigFile = path to the configuration file
 # return list of variable names
-def getMusicaSpecies(templateDir):
-    # find the standard configuration file and parse it
-    myConfigFile = os.path.join(templateDir, "camp_data", "species.json")
+def getMusicaSpecies(myConfigFile):
     with open(myConfigFile) as jsonFile:
         myConfig = json.load(jsonFile)
 
     # locate the section for chemical species
-    chemSpeciesTag = "camp-data"
-    chemSpecies = myConfig[chemSpeciesTag]
+    chemSpecies = myConfig["mechanism"]["species"]
 
     # retrieve just the names
     musicaNames = []
@@ -523,9 +520,16 @@ def main():
     if (myArgs.musicaDir is not None):
         musicaDir = myArgs.musicaDir
 
-    template = os.path.dirname(Examples.TS1.path)
+    template = Examples.TS1.path
     if (myArgs.template is not None):
         template = myArgs.template
+
+    # Normalize: accept either a config file path or its parent directory
+    if os.path.isdir(template):
+        templateFile = os.path.join(template, 'my_config.json')
+    else:
+        templateFile = template
+    templateDir = os.path.dirname(templateFile)
 
     # get the date-times to retrieve
     dateStrs = myArgs.date.split(",")
@@ -621,7 +625,7 @@ def main():
 
         # read and glean chemical species from WACCM and MUSICA
         waccmChems = getWaccmSpecies(modelDir, waccmFilename)
-        musicaChems = getMusicaSpecies(template)
+        musicaChems = getMusicaSpecies(templateFile)
 
         # create map of species common to both WACCM and MUSICA
         commonDict = getMusicaDictionary(modelType, waccmChems, musicaChems)
@@ -662,8 +666,8 @@ def main():
             writeInitJSON(varValues, jsonName)
 
         if (insertIntoConfig):
-            logger.info(f"Insert values into template {template}")
-            insertIntoTemplate(varValues, template)
+            logger.info(f"Insert values into template {templateDir}")
+            insertIntoTemplate(varValues, templateDir)
 
     logger.info(f"End time: {datetime.datetime.now()}")
 

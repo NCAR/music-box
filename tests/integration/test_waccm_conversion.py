@@ -60,11 +60,14 @@ def test_waccm_to_music_box_conversion(temp_dir):
     ]
 
     # Create symbolic link from Linux colon filename pointing to Window-safe hyphen file.
+    colon_path = os.path.join(sample_data_dir, "20250820", "wrf", "wrfout_hourly_d01_2025-08-20_08:00:00")
     try:
-        os.symlink(os.path.join(sample_data_dir, "20250820", "wrf", "wrfout_hourly_d01_2025-08-20_08-00-00"),
-                   os.path.join(sample_data_dir, "20250820", "wrf", "wrfout_hourly_d01_2025-08-20_08:00:00"))
+        os.symlink("wrfout_hourly_d01_2025-08-20_08-00-00", colon_path)
     except FileExistsError:
-        pass
+        # Remove broken symlink (e.g. absolute path copied from another machine) and recreate
+        if os.path.islink(colon_path) and not os.path.exists(colon_path):
+            os.remove(colon_path)
+            os.symlink("wrfout_hourly_d01_2025-08-20_08-00-00", colon_path)
     except OSError:
         # the colon link is not allowed under Windows
         pass
