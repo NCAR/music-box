@@ -3,13 +3,35 @@ const RATE_PARAM_PREFIXES = new Set(['PHOTO', 'EMIS', 'LOSS', 'USER', 'SURF']);
 
 /**
  * Normalize a column name by stripping the trailing unit segment.
- * "PHOTO.O2_1.s-1" → "PHOTO.O2_1"
+ *
+ * For simple rate parameters:
+ *   "PHOTO.O2_1.s-1" → "PHOTO.O2_1"
+ *
+ * For SURF parameters, preserve the property segment and express the unit
+ * in brackets to mirror the Python solver normalization:
+ *   "SURF.usr_NO2_aer.effective radius.m" → "SURF.usr_NO2_aer.effective radius [m]"
  */
 function stripUnit(key) {
   const parts = key.split('.');
   if (parts.length < 2) {
     throw new Error(`Malformed rate parameter key "${key}": expected at least "PREFIX.name"`);
   }
+
+  const prefix = parts[0];
+
+  if (prefix === 'SURF') {
+    // SURF keys: SURF.<name>.<property>.<unit>
+    // Normalize to: SURF.<name>.<property> [unit]
+    if (parts.length < 4) {
+      return parts.slice(0, 2).join('.');
+    }
+    const name = parts[1];
+    const unit = parts[parts.length - 1];
+    const property = parts.slice(2, parts.length - 1).join('.');
+    return `${prefix}.${name}.${property} [${unit}]`;
+  }
+
+  // Default: keep "PREFIX.name", drop the trailing ".<unit>" segment
   return parts.slice(0, 2).join('.');
 }
 

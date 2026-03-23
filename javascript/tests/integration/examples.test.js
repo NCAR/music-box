@@ -41,7 +41,6 @@ describe('Example config integration tests', () => {
     it(`${name} - loads and solves without errors`, { timeout: 300_000 }, async () => {
       const box = await MusicBox.fromJsonFile(configPath);
       const results = await box.solve();
-      console.log(results)
 
       assert.ok(results.height > 0, 'solve() should return at least one output row');
       assert.ok(results.columns.includes('time.s'), 'output should have a time.s column');

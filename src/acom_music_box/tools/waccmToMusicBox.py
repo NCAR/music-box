@@ -99,7 +99,7 @@ def parse_arguments():
     parser.add_argument(
         '--template',
         type=str,
-        help="Extract MusicBox chemical species from a configuration in this directory."
+        help="Path to a MusicBox config file (my_config.json) or its parent directory."
     )
     parser.add_argument(
         '-v', '--verbose',
@@ -524,13 +524,20 @@ def main():
     if (myArgs.template is not None):
         template = myArgs.template
 
+    # Normalize: accept either a config file path or its parent directory
+    if os.path.isdir(template):
+        templateFile = os.path.join(template, 'my_config.json')
+    else:
+        templateFile = template
+    templateDir = os.path.dirname(templateFile)
+
     # get the date-times to retrieve
     dateStrs = myArgs.date.split(",")
     timeStrs = ["00:00"]
     if (myArgs.time is not None):
         timeStrs = myArgs.time.split(",")
 
-    # get the geographical location(s) to retrie"PHOTOLYSIS"
+    # get the geographical location(s) to retrieve
     lats = []
     if (myArgs.latitude is not None):
         # negative values must be specified on command line like this: --latitude "'-5.0,-2.0'"
@@ -618,7 +625,7 @@ def main():
 
         # read and glean chemical species from WACCM and MUSICA
         waccmChems = getWaccmSpecies(modelDir, waccmFilename)
-        musicaChems = getMusicaSpecies(template)
+        musicaChems = getMusicaSpecies(templateFile)
 
         # create map of species common to both WACCM and MUSICA
         commonDict = getMusicaDictionary(modelType, waccmChems, musicaChems)
@@ -659,8 +666,8 @@ def main():
             writeInitJSON(varValues, jsonName)
 
         if (insertIntoConfig):
-            logger.info(f"Insert values into template {template}")
-            insertIntoTemplate(varValues, template)
+            logger.info(f"Insert values into template {templateDir}")
+            insertIntoTemplate(varValues, templateDir)
 
     logger.info(f"End time: {datetime.datetime.now()}")
 

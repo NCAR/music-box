@@ -41,10 +41,10 @@
   "homepage": "https://music-box.readthedocs.io/en/latest/",
   "scripts": {
     "build": "webpack",
-    "test": "node --test 'javascript/tests/unit/*.test.js' 'javascript/tests/integration/*.test.js'",
-    "test:unit": "node --test 'javascript/tests/unit/*.test.js'",
-    "test:integration": "node --test 'javascript/tests/integration/*.test.js'",
-    "test:coverage": "c8 node --test 'javascript/tests/unit/*.test.js' 'javascript/tests/integration/*.test.js'"
+    "test": "node --test javascript/tests/unit/*.test.js javascript/tests/integration/*.test.js",
+    "test:unit": "node --test javascript/tests/unit/*.test.js",
+    "test:integration": "node --test javascript/tests/integration/*.test.js",
+    "test:coverage": "c8 node --test javascript/tests/unit/*.test.js javascript/tests/integration/*.test.js"
   },
   "dependencies": {
     "@ncar/musica": "^0.14.4"

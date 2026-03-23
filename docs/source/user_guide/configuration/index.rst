@@ -77,15 +77,6 @@ The ``"mechanism"`` key defines the chemical system following the
 Supported reaction types include ``ARRHENIUS``, ``PHOTOLYSIS``, ``TROE``, and others. See the
 :ref:`mc:reactions` page for the full list of types and their parameters.
 
-.. note::
-
-   **JavaScript only:** The JavaScript parser automatically normalizes the following fields
-   before passing them to the MUSICA WASM solver:
-
-   - Phase species strings are converted to objects: ``["M", "O"]`` → ``[{"name": "M"}, {"name": "O"}]``
-   - Arrhenius ``Ea`` (Joules) is converted to ``C`` (Kelvin): ``C = -Ea / k_B``
-   - Missing Arrhenius parameters default to ``B = 0``, ``C = 0``, ``D = 300``, ``E = 0``
-
 Conditions
 ----------
 
@@ -104,14 +95,14 @@ both keys may appear together in the same config and their rows are merged.
      - Python and JavaScript
      - Inline array of ``{headers, rows}`` blocks
    * - ``filepaths``
-     - Python only
+     - Python and Node.js
      - List of CSV file paths, resolved relative to the config file
 
 Inline data (``data``)
 ~~~~~~~~~~~~~~~~~~~~~~
 
 An array of ``{headers, rows}`` blocks — one block per logical data source, equivalent to one
-CSV file. This is the only conditions format supported in JavaScript, and also works in Python.
+CSV file. This format works in both Python and JavaScript (including browser environments).
 
 .. code-block:: json
 
@@ -133,11 +124,11 @@ CSV file. This is the only conditions format supported in JavaScript, and also w
       }
     }
 
-CSV filepaths (``filepaths``) — Python only
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CSV filepaths (``filepaths``) — Python and Node.js
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A list of CSV file paths, resolved relative to the config JSON file. Each CSV file has a header
-row and one or more data rows.
+row and one or more data rows. This format is not available in browser JavaScript environments.
 
 .. code-block:: json
 
@@ -147,7 +138,7 @@ row and one or more data rows.
       }
     }
 
-Both keys may be used together; Python merges rows from all sources in the order they appear.
+Both keys may be used together; rows from all sources are merged in the order they appear.
 
 .. _column-naming:
 
