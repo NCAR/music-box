@@ -42,7 +42,6 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'release' && github.event.action == 'published') || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout
@@ -70,4 +69,4 @@ jobs:
           npm config list -l
 
       - name: Publish to npm
-        run: NODE_AUTH_TOKEN="" npm publish --access public --provenance
+        run: NODE_AUTH_TOKEN="" npm publish --access public --provenance --tag rc

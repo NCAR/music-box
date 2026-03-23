@@ -5,7 +5,7 @@
  * (box model options / conditions / mechanism), verify that:
  *   1. The config loads via MusicBox.fromJsonFile (resolving any CSV filepaths)
  *   2. solve() completes without errors
- *   3. The result is a non-empty array of rows with time.s and CONC.* keys
+ *   3. The result has a non-empty time.s column and CONC.* columns with non-negative values
  *
  * The waccm configs use the old (non-v1) format and are excluded.
  */
@@ -41,7 +41,6 @@ describe('Example config integration tests', () => {
     it(`${name} - loads and solves without errors`, { timeout: 300_000 }, async () => {
       const box = await MusicBox.fromJsonFile(configPath);
       const results = await box.solve();
-      console.log(results);
 
       assert.ok(results.height > 0, 'solve() should return at least one output row');
       assert.ok(results.columns.includes('time.s'), 'output should have a time.s column');
@@ -49,7 +48,7 @@ describe('Example config integration tests', () => {
       // Verify all CONC.* columns are non-negative
       for (const col of results.columns) {
         if (col.startsWith('CONC.')) {
-          for (const value of results.getColumn(col).toArray()) {
+          for (const value of results.data[col]) {
             assert.ok(value >= 0, `${col} should be non-negative, got ${value}`);
           }
         }

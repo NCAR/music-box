@@ -1,4 +1,3 @@
-import pl from 'nodejs-polars';
 import { initModule, MICM, SolverState } from '@ncar/musica';
 import { parseBoxModelOptions, parseConditions, parseCsvToBlock } from './config_parser.js';
 import { ConditionsManager } from './conditions_manager.js';
@@ -62,8 +61,9 @@ export class MusicBox {
    *   1. Apply concentration events at t=0
    *   2. Main loop: apply concentration events at current time, update env/rates, integrate
    *
-   * @returns {Promise<import('nodejs-polars').DataFrame>} DataFrame with a time.s column
-   *   and one CONC.<species>.mol m-3 column per species.
+   * @returns {Promise<{columns: string[], height: number, data: Object.<string, number[]>}>}
+   *   Result with a `columns` array of column names, `height` (number of rows), and
+   *   `data` object mapping each column name to its array of values.
    */
   async solve() {
     await initModule();
@@ -159,7 +159,7 @@ export class MusicBox {
         }
       }
 
-      return pl.DataFrame(columns);
+      return { columns: Object.keys(columns), height: columns['time.s'].length, data: columns };
     } finally {
       state.delete();
       micm.delete();
