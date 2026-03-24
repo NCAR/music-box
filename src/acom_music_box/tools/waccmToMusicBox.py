@@ -22,6 +22,7 @@ from acom_music_box.utils import calculate_air_density
 import netCDF4
 from acom_music_box.tools import gridUtils
 from acom_music_box import conditions_manager
+import copy
 
 import logging
 logger = logging.getLogger(__name__)
@@ -73,6 +74,12 @@ def parse_arguments():
         '--time',
         type=str,
         help="Time of model output to extract, in format HH:MM"
+    )
+    parser.add_argument(
+        '--stride',
+        type=int,
+        help=("Number of hours between time steps."
+            + "\nDefaults to 6 hours for WACCM and 1 hour for WRF-Chem.")
     )
     parser.add_argument(
         '--latitude',
@@ -228,12 +235,13 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     inCommon = sorted([species for species in waccmSpecies if species in musicaSpecies])
 
     # provide some diagnostic warnings
+    # If these messages are crucially important, change to logger.warning().
     waccmOnly = [species for species in waccmSpecies if species not in musicaSpecies]
     musicaOnly = [species for species in musicaSpecies if species not in waccmSpecies]
     if (len(waccmOnly) > 0):
-        logger.warning(f"The following chemical species are only in WACCM: {waccmOnly}")
+        logger.debug(f"The following chemical species are only in WACCM: {waccmOnly}")
     if (len(musicaOnly) > 0):
-        logger.warning(f"The following chemical species are only in MUSICA: {musicaOnly}")
+        logger.debug(f"The following chemical species are only in MUSICA: {musicaOnly}")
 
     # build the dictionary
     # To do: As of September 4, 2024 this is not much of a map,
@@ -254,7 +262,6 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
             "o3": "O3"
         }
 
-    logger.info(f"inCommon = {inCommon}")
     for varName in inCommon:
         varMap[varName] = varName
 
@@ -270,7 +277,7 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
 # modelDir = directory containing model output
 # waccmFilename = name of the model output file
 # modelType = WACCM_OUT or WRFCHEM_OUT
-# return dictionary of MUSICA variable names, values, and units
+# return dictionary of MUSICA variable names, units, and values
 def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
               when, modelDir, waccmFilename, modelType):
 
@@ -303,15 +310,18 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
     for waccmKey, musicaName in waccmMusicaDict.items():
         if waccmKey not in meanPoint:
             logger.warning(f"Requested variable {waccmKey} not found in WACCM model output.")
-            musicaTuple = (waccmKey, None, None)
+            musicaTuple = (waccmKey, None, [None])
             musicaDict[musicaName] = musicaTuple
             continue
 
         chemSinglePoint = meanPoint[waccmKey]
-        logger.info(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
+        logger.debug(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
 
         # this next line takes the mean along any remaining vertical axis/dimension
-        musicaTuple = (waccmKey, float(chemSinglePoint.values.mean()), chemSinglePoint.units)   # from 0-dim array
+        verticalMean = float(chemSinglePoint.values.mean())
+
+        # verticalMean is placed into a list because we want to add rows later
+        musicaTuple = (waccmKey, chemSinglePoint.units, [verticalMean])
         logger.debug(f"musicaTuple = {musicaTuple}")
         musicaDict[musicaName] = musicaTuple
 
@@ -325,20 +335,20 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
 # varValues = already read from WACCM, contains (name, concentration, units)
 # return varValues with N2, O2, and Ar added
 def addStandardGases(varValues):
-    varValues["N2"] = ("N2", 0.78084, "mol/mol")    # standard fraction by volume
-    varValues["O2"] = ("O2", 0.20946, "mol/mol")
-    varValues["Ar"] = ("Ar", 0.00934, "mol/mol")
+    varValues["N2"] = ("N2", "mol/mol", [0.78084])    # standard fraction by volume
+    varValues["O2"] = ("O2", "mol/mol", [0.20946])
+    varValues["Ar"] = ("Ar", "mol/mol", [0.00934])
 
     return (varValues)
 
 
 # set up indexes for the tuple
 musicaIndex = 0
-valueIndex = 1
-unitIndex = 2
+unitIndex = 1
+valueIndex = 2
 
 # Perform any numeric conversion needed.
-# varDict = originally read from WACCM, tuples are (musicaName, value, units)
+# varDict = originally read from WACCM, tuples are (musicaName, units, value)
 # return varDict with values modified
 
 
@@ -349,8 +359,8 @@ def convertWaccm(varDict):
     soa_density = 1770  # kg m-3
 
     # retrieve temperature and pressure from WACCM
-    temperature = varDict["temperature"][valueIndex]
-    pressure = varDict["pressure"][valueIndex]
+    temperature = varDict["temperature"][valueIndex][0]
+    pressure = varDict["pressure"][valueIndex][0]
     logger.info(f"temperature = {temperature} K   pressure = {pressure} Pa")
     air_density = calculate_air_density(temperature, pressure)
     logger.info(f"air density = {air_density} mol m-3")
@@ -359,10 +369,12 @@ def convertWaccm(varDict):
         # convert moles / mole to moles / cubic meter
         units = vTuple[unitIndex]
         if (units == "mol/mol"):
-            varDict[key] = (vTuple[0], vTuple[valueIndex] * air_density, "mol m-3")
+            varDict[key] = (vTuple[0], "mol m-3",
+                [vTuple[valueIndex][0] * air_density])
         if (units == "kg/kg"):
             # soa species only
-            varDict[key] = (vTuple[0], vTuple[valueIndex] * soa_density / soa_molecular_weight, "mol m-3")
+            varDict[key] = (vTuple[0], "mol m-3",
+                [vTuple[valueIndex][0] * soa_density / soa_molecular_weight])
 
     return (varDict)
 
@@ -409,16 +421,22 @@ def writeInitCSV(initValues, filename):
         fp.write(titleString)
     fp.write("\n")
 
-    # write the variable values
-    firstColumn = True
-    for key, value in initValues.items():
-        if (firstColumn):
-            firstColumn = False
-        else:
-            fp.write(",")
+    # loop through the rows of chemical values
+    firstColumn = next(iter(initValues.items()))
+    logger.debug(f"firstColumn = {firstColumn}")
+    numDataRows = len(firstColumn[1][valueIndex])
+    logger.debug(f"numDataRows = {numDataRows}")
+    for ri in range(numDataRows):
+        # write the variable values
+        firstColumn = True
+        for key, value in initValues.items():
+            if (firstColumn):
+                firstColumn = False
+            else:
+                fp.write(",")
 
-        fp.write(f"{value[valueIndex]}")
-    fp.write("\n")
+            fp.write(f"{value[valueIndex][ri]}")
+        fp.write("\n")
 
     fp.close()
     return
@@ -467,10 +485,10 @@ def insertIntoTemplate(initValues, templateDir):
         pressure = 0.0
         key = "temperature"
         if key in initValues:
-            temperature = safeFloat(initValues[key][valueIndex])
+            temperature = safeFloat(initValues[key][valueIndex][0])
         key = "pressure"
         if key in initValues:
-            pressure = safeFloat(initValues[key][valueIndex])
+            pressure = safeFloat(initValues[key][valueIndex][0])
 
         # replace the values of temperature and pressure
         envConditionsTag = "environmental conditions"
@@ -492,6 +510,17 @@ def insertIntoTemplate(initValues, templateDir):
                     zipf.write(file_path, os.path.relpath(file_path, temp_dir))
 
         logger.info(f"Configuration zipped to {zip_path}")
+
+
+# Add another row at the end of a WACCM data dictionary.
+# The two dictionaries should have the same set of keys.
+# waccmData = contains columns with a title and list of numeric values
+# moreData = ignore headers and add these values to each column
+def appendRow(waccmData, moreData):
+    for colTitle in waccmData:
+        waccmData[colTitle][valueIndex].append(moreData[colTitle][valueIndex][0])
+
+    return waccmData
 
 
 # type of model output in directory
@@ -536,6 +565,8 @@ def main():
     timeStrs = ["00:00"]
     if (myArgs.time is not None):
         timeStrs = myArgs.time.split(",")
+
+    strideArg = myArgs.stride
 
     # get the geographical location(s) to retrieve
     lats = []
@@ -595,79 +626,122 @@ def main():
         outputCSV = "csv" in outputFormats
         outputJSON = "json" in outputFormats
 
-    for modelDir, modelType in zip(
-            [waccmDir, wrfChemDir], [WACCM_OUT, WRFCHEM_OUT]):
+    for modelDir, modelType, modelStride in zip(
+            [waccmDir, wrfChemDir], [WACCM_OUT, WRFCHEM_OUT], [6, 1]):
         if not modelDir:
             continue
 
         logger.info(f"Directory: {modelDir}   type {modelType}")
 
-        # for dateStr, timeStr in zip(dateStrs, timeStrs):
-        dateStr = dateStrs[0]       # TODO: replace this with loop over time frames
-        timeStr = timeStrs[0]
+        # determine the date-time bounds to retrieve
+        startDateTime = datetime.datetime.strptime(
+            f"{dateStrs[0]} {timeStrs[0]}", "%Y%m%d %H:%M")
+        if (len(dateStrs) > 1 and len(timeStrs) > 1):
+            endDateTime = datetime.datetime.strptime(
+                f"{dateStrs[1]} {timeStrs[1]}", "%Y%m%d %H:%M")
+        else:
+            endDateTime = startDateTime
+        logger.info(f"Calculate averages from date-time {startDateTime} to {endDateTime}.")
 
-        # locate the WACCM output file
-        when = datetime.datetime.strptime(
-            f"{dateStr} {timeStr}", "%Y%m%d %H:%M")
-        if (modelType == WACCM_OUT):
-            waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02d}-00000.nc"
-        elif (modelType == WRFCHEM_OUT):
-            waccmFilename = f"wrfout_hourly_d01_{when.year:4d}-{when.month:02d}-{when.day:02d}_{when.hour:02d}:00:00"
+        # determine the interval for time frames
+        strideHours = modelStride
+        if (strideArg is not None):
+            strideHours = strideArg
+        logger.info(f"stride = {strideHours} hours")
 
-        # Windows does not allow colons : in filenames. Replace with hyphen -.
-        if not pathvalidate.is_valid_filename(waccmFilename, platform="auto"):
-            waccmFilename = waccmFilename.replace(":", "-")
+        when = startDateTime
+        accumValues = None          # accumulate the values in rows here
+        frameCount = 0
+        while (when <= endDateTime):
+            logger.info(f"Extracting date-time {when}:")
+            seconds = (when - startDateTime).total_seconds()
 
-        if (modelType == WRFCHEM_OUT):
-            # WRF-Chem convention stores files in sub-directories by date
-            dateDir = f"{when.year:4d}{when.month:02d}{when.day:02d}"
-            waccmFilename = os.path.join(dateDir, "wrf", waccmFilename)
+            # locate the WACCM output file
+            if (modelType == WACCM_OUT):
+                waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02d}-00000.nc"
+            elif (modelType == WRFCHEM_OUT):
+                waccmFilename = f"wrfout_hourly_d01_{when.year:4d}-{when.month:02d}-{when.day:02d}_{when.hour:02d}:00:00"
 
-        # read and glean chemical species from WACCM and MUSICA
-        waccmChems = getWaccmSpecies(modelDir, waccmFilename)
-        musicaChems = getMusicaSpecies(templateFile)
+            # Windows does not allow colons : in filenames. Replace with hyphen -.
+            if not pathvalidate.is_valid_filename(waccmFilename, platform="auto"):
+                waccmFilename = waccmFilename.replace(":", "-")
 
-        # create map of species common to both WACCM and MUSICA
-        commonDict = getMusicaDictionary(modelType, waccmChems, musicaChems)
-        logger.info(f"Species in common are = {commonDict}")
-        if (len(commonDict) == 0):
-            logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
+            if (modelType == WRFCHEM_OUT):
+                # WRF-Chem convention stores files in sub-directories by date
+                dateDir = f"{when.year:4d}{when.month:02d}{when.day:02d}"
+                waccmFilename = os.path.join(dateDir, "wrf", waccmFilename)
 
-        # time is the first listed variable for initial conditions
-        varValues = {}
-        varValues["time"] = ("time", 0.0, "s")
+            # if this frame time is not present, skip
+            waccmFullPath = os.path.join(modelDir, waccmFilename)
+            if not os.path.exists(waccmFullPath):
+                logger.warning(f"File {waccmFullPath} does not exist. Skipping...")
+                when += datetime.timedelta(hours = strideHours)
+                continue
 
-        # Read named variables from WACCM model output.
-        logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
-        waccmValues = readWACCM(commonDict, lats, lons, alts,
+            # read and glean chemical species from WACCM and MUSICA
+            waccmChems = getWaccmSpecies(modelDir, waccmFilename)
+            musicaChems = getMusicaSpecies(template)
+
+            # create map of species common to both WACCM and MUSICA
+            commonDict = getMusicaDictionary(modelType, waccmChems, musicaChems)
+            logger.debug(f"Species in common are = {commonDict}")
+            if (len(commonDict) == 0):
+                logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
+
+            # time is the first listed variable for initial conditions
+            varValues = {}
+            varValues["time"] = ("time", "s", [seconds])
+
+            # Read named variables from WACCM model output.
+            logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
+            waccmValues = readWACCM(commonDict, lats, lons, alts,
                                 when, modelDir, waccmFilename, modelType)
-        logger.info(f"Original WACCM waccmValues = {waccmValues}")
-        varValues.update(waccmValues)
+            logger.debug(f"Original WACCM waccmValues = {waccmValues}")
+            varValues.update(waccmValues)
 
-        # add molecular Nitrogen, Oxygen, and Argon
-        varValues = addStandardGases(varValues)
+            # add molecular Nitrogen, Oxygen, and Argon
+            varValues = addStandardGases(varValues)
 
-        # Perform any conversions needed, or derive variables.
-        varValues = convertWaccm(varValues)
-        logger.info(f"Converted WACCM varValues = {varValues}")
+            # Perform any conversions needed, or derive variables.
+            varValues = convertWaccm(varValues)
+            logger.debug(f"Converted WACCM varValues = {varValues}")
+            frameCount += 1
+
+            if (accumValues is None):
+                # first time step begins with headers and first row of values
+                accumValues = copy.deepcopy(varValues)
+            else:
+                # add another row to the dataset
+                appendRow(accumValues, varValues)
+
+            # move on to the next time step
+            when += datetime.timedelta(hours = strideHours)
+
+        logger.info(f"Final frameCount = {frameCount}")
+        logger.debug(f"Final WACCM accumValues = {accumValues}")
+
+        # Did we just calculate a single initial condition or multiple evolving?
+        spanConditions = "initial"
+        if (frameCount > 1):
+            spanConditions = "evolving"
 
         if (outputCSV):
             # Write CSV file for MusicBox initial conditions.
             csvName = os.path.join(musicaDir,
-                                   "initial_conditions-{}.csv".format(modelNames[modelType]))
+                "{}_conditions-{}.csv".format(spanConditions, modelNames[modelType]))
             logger.info(f"csvName = {csvName}")
-            writeInitCSV(varValues, csvName)
+            writeInitCSV(accumValues, csvName)
 
         if (outputJSON):
             # Write JSON file for MusicBox initial conditions.
             jsonName = os.path.join(musicaDir,
-                                    "initial_config-{}.json".format(modelNames[modelType]))
+                "{}_config-{}.json".format(spanConditions, modelNames[modelType]))
             logger.info(f"jsonName = {jsonName}")
-            writeInitJSON(varValues, jsonName)
+            writeInitJSON(accumValues, jsonName)
 
         if (insertIntoConfig):
             logger.info(f"Insert values into template {templateDir}")
-            insertIntoTemplate(varValues, templateDir)
+            insertIntoTemplate(accumValues, templateDir)
 
     logger.info(f"End time: {datetime.datetime.now()}")
 
