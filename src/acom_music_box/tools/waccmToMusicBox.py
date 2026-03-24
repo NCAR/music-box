@@ -556,6 +556,13 @@ def main():
     if (myArgs.template is not None):
         template = myArgs.template
 
+    # Normalize: accept either a config file path or its parent directory
+    if os.path.isdir(template):
+        templateFile = os.path.join(template, 'my_config.json')
+    else:
+        templateFile = template
+    templateDir = os.path.dirname(templateFile)
+
     # get the date-times to retrieve
     dateStrs = myArgs.date.split(",")
     timeStrs = ["00:00"]
@@ -736,8 +743,8 @@ def main():
             writeInitJSON(accumValues, jsonName)
 
         if (insertIntoConfig):
-            logger.info(f"Insert values into template {template}")
-            insertIntoTemplate(accumValues, template)
+            logger.info(f"Insert values into template {templateDir}")
+            insertIntoTemplate(accumValues, templateDir)
 
     logger.info(f"End time: {datetime.datetime.now()}")
 
