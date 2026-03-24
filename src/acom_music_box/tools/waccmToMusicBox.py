@@ -79,7 +79,7 @@ def parse_arguments():
         '--stride',
         type=int,
         help=("Number of hours between time steps."
-            + "\nDefaults to 6 hours for WACCM and 1 hour for WRF-Chem.")
+              + "\nDefaults to 6 hours for WACCM and 1 hour for WRF-Chem.")
     )
     parser.add_argument(
         '--latitude',
@@ -370,11 +370,11 @@ def convertWaccm(varDict):
         units = vTuple[unitIndex]
         if (units == "mol/mol"):
             varDict[key] = (vTuple[0], "mol m-3",
-                [vTuple[valueIndex][0] * air_density])
+                            [vTuple[valueIndex][0] * air_density])
         if (units == "kg/kg"):
             # soa species only
             varDict[key] = (vTuple[0], "mol m-3",
-                [vTuple[valueIndex][0] * soa_density / soa_molecular_weight])
+                            [vTuple[valueIndex][0] * soa_density / soa_molecular_weight])
 
     return (varDict)
 
@@ -675,7 +675,7 @@ def main():
             waccmFullPath = os.path.join(modelDir, waccmFilename)
             if not os.path.exists(waccmFullPath):
                 logger.warning(f"File {waccmFullPath} does not exist. Skipping...")
-                when += datetime.timedelta(hours = strideHours)
+                when += datetime.timedelta(hours=strideHours)
                 continue
 
             # read and glean chemical species from WACCM and MUSICA
@@ -695,7 +695,7 @@ def main():
             # Read named variables from WACCM model output.
             logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
             waccmValues = readWACCM(commonDict, lats, lons, alts,
-                                when, modelDir, waccmFilename, modelType)
+                                    when, modelDir, waccmFilename, modelType)
             logger.debug(f"Original WACCM waccmValues = {waccmValues}")
             varValues.update(waccmValues)
 
@@ -715,7 +715,7 @@ def main():
                 appendRow(accumValues, varValues)
 
             # move on to the next time step
-            when += datetime.timedelta(hours = strideHours)
+            when += datetime.timedelta(hours=strideHours)
 
         logger.info(f"Final frameCount = {frameCount}")
         logger.debug(f"Final WACCM accumValues = {accumValues}")
@@ -728,14 +728,14 @@ def main():
         if (outputCSV):
             # Write CSV file for MusicBox initial conditions.
             csvName = os.path.join(musicaDir,
-                "{}_conditions-{}.csv".format(spanConditions, modelNames[modelType]))
+                                   "{}_conditions-{}.csv".format(spanConditions, modelNames[modelType]))
             logger.info(f"csvName = {csvName}")
             writeInitCSV(accumValues, csvName)
 
         if (outputJSON):
             # Write JSON file for MusicBox initial conditions.
             jsonName = os.path.join(musicaDir,
-                "{}_config-{}.json".format(spanConditions, modelNames[modelType]))
+                                    "{}_config-{}.json".format(spanConditions, modelNames[modelType]))
             logger.info(f"jsonName = {jsonName}")
             writeInitJSON(accumValues, jsonName)
 
