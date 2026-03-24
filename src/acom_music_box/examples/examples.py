@@ -1,6 +1,35 @@
 import os
 
 
+def _find_example_path(folder_name, filename='my_config.json'):
+    """
+    Find the path to the example config file for a given example folder name.
+
+    args:
+        folder_name (str): The name of the example folder (e.g., 'carbon_bond_5').
+        filename (str): The name of the config file to look for (default: 'my_config.json').
+    """
+    package_dir = os.path.dirname(__file__)
+
+    # Wheel install: examples are bundled inside the package directory
+    installed_path = os.path.join(package_dir, folder_name, filename)
+    if os.path.exists(installed_path):
+        return installed_path
+
+    # Editable install: examples live in the top-level examples/ directory
+    source_path = os.path.abspath(
+        os.path.join(package_dir, '..', '..', '..', 'examples', folder_name, filename)
+    )
+    if os.path.exists(source_path):
+        return source_path
+
+    raise FileNotFoundError(
+        f"Example config not found for '{folder_name}'.\n"
+        f"Tried: {installed_path}\n"
+        f"Tried: {source_path}"
+    )
+
+
 class Example:
     def __init__(self, name, short_name, description, path):
         self.name = name
@@ -15,8 +44,8 @@ class Example:
         return f'{self.name}: {self.description}'
 
     @classmethod
-    def from_config(cls, display_name, folder_name, short_name, description):
-        path = os.path.join(os.path.dirname(__file__), 'configs', folder_name, 'my_config.json')
+    def from_config(cls, display_name, folder_name, short_name, description, filename='my_config.json'):
+        path = _find_example_path(folder_name, filename)
         return cls(name=display_name, short_name=short_name, description=description, path=path)
 
 
@@ -50,7 +79,8 @@ class _Examples:
         display_name='Whole Atmosphere Community Climate Model',
         short_name='WACCM',
         folder_name='waccm',
-        description='Convert model output to MusicBox initial conditions.')
+        description='Convert model output to MusicBox initial conditions.',
+        filename='')
 
     @classmethod
     def get_all(self):
