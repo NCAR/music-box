@@ -376,6 +376,9 @@ class MusicBox:
             ValueError: If the JSON string cannot be parsed.
         """
 
+        self.state = None
+        self.solver = None
+
         with open(path_to_json, 'r') as json_file:
             data = json.load(json_file)
 
@@ -424,6 +427,8 @@ class MusicBox:
         """
         self.__mechanism = mechanism
         self._conditions_manager.set_mechanism(mechanism)
+        self.state = None
+        self.solver = None
         self.solver = musica.MICM(mechanism=mechanism, solver_type=solver_type)
         self.state = self.solver.create_state(1)
 
