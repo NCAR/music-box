@@ -21,18 +21,10 @@ import sys
 
 import pandas as pd
 
-from acom_music_box import MusicBox
+from acom_music_box import MusicBox, Examples
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 JS_RUNNER = os.path.join(PROJECT_ROOT, 'javascript', 'bin', 'run.js')
-
-EXAMPLE_CONFIGS = [
-    'analytical/my_config.json',
-    'chapman/my_config.json',
-    'flow_tube/my_config.json',
-    'carbon_bond_5/my_config.json',
-    'ts1/my_config.json',
-]
 
 
 def run_python(config_path):
@@ -54,12 +46,9 @@ def run_javascript(config_path):
     return pd.read_csv(io.StringIO(result.stdout))
 
 
-def check_parity(config_rel_path):
-    config_path = os.path.join(PROJECT_ROOT, 'examples', config_rel_path)
-    name = config_rel_path.split('/')[0]
-
-    py_df = run_python(config_path)
-    js_df = run_javascript(config_path)
+def check_parity(example):
+    py_df = run_python(example.path)
+    js_df = run_javascript(example.path)
 
     conc_columns = [col for col in py_df.columns if col.startswith('CONC.')]
 
@@ -82,22 +71,22 @@ def check_parity(config_rel_path):
 
 
 def main():
+    examples = Examples.get_all()
     failures = []
-    for config_rel_path in EXAMPLE_CONFIGS:
-        name = config_rel_path.split('/')[0]
+    for example in examples:
         try:
-            check_parity(config_rel_path)
-            print(f'  PASS  {name}')
+            check_parity(example)
+            print(f'  PASS  {example.short_name}')
         except Exception as e:
-            print(f'  FAIL  {name}: {e}')
-            failures.append(name)
+            print(f'  FAIL  {example.short_name}: {e}')
+            failures.append(example.short_name)
 
     print()
     if failures:
-        print(f'FAILED: {len(failures)}/{len(EXAMPLE_CONFIGS)} examples did not match')
+        print(f'FAILED: {len(failures)}/{len(examples)} examples did not match')
         sys.exit(1)
     else:
-        print(f'All {len(EXAMPLE_CONFIGS)} examples match.')
+        print(f'All {len(examples)} examples match.')
 
 
 if __name__ == '__main__':
