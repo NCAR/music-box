@@ -303,6 +303,12 @@ class ConditionsManager:
                 row_idx = self._df.index[time_mask][0]
                 for col in other_cols:
                     if col != self.TIME_COLUMN and pd.notna(row[col]):
+                        if col in self._df.columns and pd.notna(self._df.loc[row_idx, col]):
+                            logger.warning(
+                                "Duplicate condition: '%s' at time=%ss already set to %s; "
+                                "overwriting with %s. Inline data takes precedence over CSV.",
+                                col, time, self._df.loc[row_idx, col], row[col]
+                            )
                         self._df.loc[row_idx, col] = row[col]
             else:
                 # Add new row (only non-CONC columns)
@@ -320,7 +326,14 @@ class ConditionsManager:
                     # time is already converted to float above
                     if time not in self._concentration_events:
                         self._concentration_events[time] = {}
-                    self._concentration_events[time].update(concs)
+                    for species, value in concs.items():
+                        if species in self._concentration_events[time]:
+                            logger.warning(
+                                "Duplicate condition: CONC.%s at time=%ss already set to %s; "
+                                "overwriting with %s. Inline data takes precedence over CSV.",
+                                species, time, self._concentration_events[time][species], value
+                            )
+                        self._concentration_events[time][species] = value
 
         self._df = self._df.sort_values(self.TIME_COLUMN).reset_index(drop=True)
         return self

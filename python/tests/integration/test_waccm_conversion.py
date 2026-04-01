@@ -13,7 +13,7 @@ def temp_dir():
 
 
 def get_repo_root():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
 
 
 def run_waccm_to_music_box_with_args(args, cwd):
