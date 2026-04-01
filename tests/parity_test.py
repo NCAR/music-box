@@ -34,7 +34,7 @@ def run_python(config_path):
 
 def run_javascript(config_path):
     result = subprocess.run(
-        ['npm', '--silent', 'run', 'runner', config_path],
+        ['npm', '--silent', 'run', 'runner', '--', config_path],
         capture_output=True,
         text=True,
         cwd=PROJECT_ROOT,
