@@ -6,13 +6,7 @@
     "simulation length [sec]": 600
   },
   "conditions": {
-    "filepaths": ["initial_conditions.csv"],
-    "data": [
-      {
-        "headers": ["time.s", "ENV.temperature.K", "ENV.pressure.Pa"],
-        "rows": [[0.0, 272.5, 101253.3]]
-      }
-    ]
+    "filepaths": ["initial_conditions.csv"]
   },
   "mechanism": {
     "version": "1.0.0",
