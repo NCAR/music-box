@@ -44,11 +44,14 @@ export class MusicBox {
     // and merge them into conditions.data so the rest of the pipeline is uniform.
     if (config.conditions?.filepaths?.length > 0) {
       const configDir = dirname(resolve(filePath));
-      if (!config.conditions.data) config.conditions.data = [];
+      // CSV blocks are prepended so that inline data (appended after) takes precedence
+      // when both specify the same time point.
+      const csvBlocks = [];
       for (const relPath of config.conditions.filepaths) {
         const csvText = await readFile(resolve(configDir, relPath), 'utf8');
-        config.conditions.data.push(parseCsvToBlock(csvText));
+        csvBlocks.push(parseCsvToBlock(csvText));
       }
+      config.conditions.data = [...csvBlocks, ...(config.conditions.data ?? [])];
     }
 
     return new MusicBox(config);

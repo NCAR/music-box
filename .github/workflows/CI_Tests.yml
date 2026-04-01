@@ -35,10 +35,17 @@ jobs:
       run: |
         brew install netcdf netcdf-fortran lapack
 
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 'lts/*'
+
+    - name: Install JS dependencies
+      run: npm ci
+
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip' 
+        cache: 'pip'
 
     - name: Install this package
       run: pip install -e '.[dev]'

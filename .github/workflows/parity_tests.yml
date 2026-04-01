@@ -1,0 +1,40 @@
+name: JS/Python Parity Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnetcdf-dev netcdf-bin libnetcdff-dev liblapack-dev
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "v22"
+
+      - name: Install Python package
+        run: pip install -e '.[dev]'
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Run parity tests
+        run: pytest tests/integration/test_js_python_parity.py -v
