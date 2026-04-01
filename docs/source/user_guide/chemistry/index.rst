@@ -23,7 +23,7 @@ Chemical species are the fundamental units that participate in reactions, they c
    Y = mc.Species(name="Y")
    Z = mc.Species(name="Z")
 
-   species = {"X":X,"Y":Y,"Z":Z}
+   species = {"X": X, "Y": Y, "Z": Z}
 
 Species can be initialized with various chemistry-related paramaters (e.g., molecular weight, density, etc.). See the :class:`musica.mechanism_configuration.Species`
 documentation for further details.
@@ -33,7 +33,7 @@ Phases
 Species can be grouped into a phase. At present MUSICA and therefore MusicBox can only support a single gas phase,
 but support for more phases is coming in the future::
    
-   gas = mc.Phase(name="gas",species=list(species.values()))
+   gas = mc.Phase(name="gas", species=list(species.values()))
 
 Reactions
 ----------
@@ -45,7 +45,7 @@ Each class takes a unique set of rate parameters and the participating species::
    
 For passing later on into a Mechanism (see :class:`musica:musica.mechanism_configuration.Mechanism`), it is helpful to store your selected reactions into a dictionary::
 
-   rxns = {r.name: r for r in [arr1, arr2]}
+   rxns = {"X->Y": arr1, "Y->Z": arr2}
 
 .. note::
 
