@@ -24,7 +24,6 @@ import pandas as pd
 from acom_music_box import MusicBox, Examples
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-JS_RUNNER = os.path.join(PROJECT_ROOT, 'javascript', 'bin', 'run.js')
 
 
 def run_python(config_path):
@@ -35,7 +34,7 @@ def run_python(config_path):
 
 def run_javascript(config_path):
     result = subprocess.run(
-        ['node', JS_RUNNER, config_path],
+        ['npm', '--silent', 'run', 'runner', config_path],
         capture_output=True,
         text=True,
         cwd=PROJECT_ROOT,
