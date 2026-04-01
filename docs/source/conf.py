@@ -35,7 +35,7 @@ extensions = [
 # -- Binder links ------------------------------------------------------------
 # Update BINDER_REF to change all tutorial binder links at once.
 
-BINDER_REF = "review_tutorials"
+BINDER_REF = "main"
 
 extlinks = {
     'binder': (
