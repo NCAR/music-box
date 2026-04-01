@@ -27,9 +27,23 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_design',
     'sphinx.ext.intersphinx',
+    'sphinx.ext.extlinks',
     'nbsphinx',
     'sphinx_js',
 ]
+
+# -- Binder links ------------------------------------------------------------
+# Update BINDER_REF to change all tutorial binder links at once.
+
+BINDER_REF = "review_tutorials"
+
+extlinks = {
+    'binder': (
+        f'https://mybinder.org/v2/gh/NCAR/music-box/{BINDER_REF}'
+        '?urlpath=lab%%2Ftree%%2Ftutorials%%2F%s',
+        '%s'
+    ),
+}
 
 templates_path = ['_templates']
 exclude_patterns = []

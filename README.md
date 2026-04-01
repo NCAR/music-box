@@ -7,7 +7,7 @@
 [![PyPI version](https://badge.fury.io/py/acom-music-box.svg)](https://pypi.org/project/acom-music-box)
 [![npm version](https://img.shields.io/npm/v/%40ncar%2Fmusic-box)](https://www.npmjs.com/package/@ncar/music-box)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14008358.svg)](https://doi.org/10.5281/zenodo.14008358)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/NCAR/music-box/96b7c7b619791bfbddafc6c8e34fb7982f26c4ca?urlpath=lab%2Ftree%2Ftutorials)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/NCAR/music-box/review_tutorials?urlpath=lab%2Ftree%2Ftutorials)
 
 Copyright (C) 2020-2026 University Corporation for Atmospheric Research
 
@@ -94,7 +94,7 @@ console.log(results);
 # Documentation
 
 - [Full Documentation](https://ncar.github.io/music-box/branch/main/index.html) — API reference, tutorials, and guides
-- [Interactive Tutorials](https://mybinder.org/v2/gh/NCAR/music-box/96b7c7b619791bfbddafc6c8e34fb7982f26c4ca?urlpath=lab%2Ftree%2Ftutorials) — Run tutorials in your browser via Binder
+- [Interactive Tutorials](https://mybinder.org/v2/gh/NCAR/music-box/review_tutorials?urlpath=lab%2Ftree%2Ftutorials) — Run tutorials in your browser via Binder
 
 # Contributing
 
