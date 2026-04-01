@@ -180,6 +180,6 @@ pytest
 Run only unit or integration tests:
 
 ```bash
-pytest tests/unit/
-pytest tests/integration/
+pytest python/tests/unit/
+pytest python/tests/integration/
 ```

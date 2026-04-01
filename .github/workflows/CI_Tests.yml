@@ -35,13 +35,6 @@ jobs:
       run: |
         brew install netcdf netcdf-fortran lapack
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 'lts/*'
-
-    - name: Install JS dependencies
-      run: npm ci
-
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
@@ -53,7 +46,7 @@ jobs:
         FC: gfortran-14
 
     - name: Run tests and generate coverage reports
-      run: pytest --cov src/
+      run: pytest --cov python/
     
     - name: Upload coverage reports to codecov
       if: runner.os == 'Linux'
@@ -64,7 +57,7 @@ jobs:
         
     - name: Run the smoke tests
       run: |
-        music_box -c src/acom_music_box/examples/configs/analytical/my_config.json -o output.csv
+        music_box -c python/acom_music_box/examples/configs/analytical/my_config.json -o output.csv
         music_box -e Analytical -o output.csv
         music_box -e Analytical -o output.csv -vv --color-output
         waccmToMusicBox --waccmDir "./sample_waccm_data" --date "20240904" --time "07:00" --latitude 3.1 --longitude 101.7

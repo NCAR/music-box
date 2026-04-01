@@ -37,4 +37,4 @@ jobs:
         run: npm ci
 
       - name: Run parity tests
-        run: pytest tests/integration/test_js_python_parity.py -v
+        run: python tests/parity_test.py
