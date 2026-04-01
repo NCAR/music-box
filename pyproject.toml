@@ -20,7 +20,7 @@ authors = [
   { name = "Angela Pak"}
 ]
 maintainers = [{ name = "ACOM MUSICA Developers", email = "musica-support@ucar.edu" }]
-readme = "src/README.md"
+readme = "python/README.md"
 license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: Apache Software License"]
 description = "An atmospheric chemistry box model. Powered by MUSICA."
@@ -71,13 +71,16 @@ doc = [
 
 
 [tool.hatch.version]
-path = "src/acom_music_box/__init__.py"
+path = "python/acom_music_box/__init__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/acom_music_box"]
+packages = ["python/acom_music_box"]
 
 # Include the shared examples directory inside the installed package so that
 # __file__-relative paths work regardless of where pip installs data files.
 # JavaScript can still reference the same files via the top-level examples/ directory.
 [tool.hatch.build.targets.wheel.force-include]
 "examples" = "acom_music_box/examples"
+
+[tool.pytest.ini_options]
+testpaths = ["python/tests"]

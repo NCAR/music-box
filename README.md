@@ -28,7 +28,7 @@ pip install nvidia-pyindex
 pip install acom_music_box[gpu]
 ```
 
-For detailed Python usage, examples, and development information, see the [Python README](src/README.md).
+For detailed Python usage, examples, and development information, see the [Python README](python/README.md).
 
 ## JavaScript
 
