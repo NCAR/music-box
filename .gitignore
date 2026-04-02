@@ -16,3 +16,4 @@ sample_waccm_data/**/wrfout_hourly_d01_*:*
 .claude
 
 node_modules
+package-lock.json
