@@ -68,6 +68,12 @@ doc = [
   "nbsphinx",
   "sphinx-js",
 ]
+tutorial = [
+  "scikit-learn",
+  "seaborn",
+  "scipy",
+  "dask"
+]
 
 
 [tool.hatch.version]
