@@ -40,7 +40,7 @@ describe('MusicBox lambda reactions', () => {
             type: 'LAMBDA_RATE_CONSTANT',
             name: 'A_to_B',
             'gas phase': 'gas',
-            'lambda function': '[](double T, double P, double airDensity) { return 1.0e-3; }',
+            'lambda function': '(T, P, airDensity) => 1.0e-3',
             reactants: [{ 'species name': 'A', coefficient: 1 }],
             products: [{ 'species name': 'B', coefficient: 1 }],
           },

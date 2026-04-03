@@ -2,65 +2,29 @@ import { initModule, MICM, SolverState } from '@ncar/musica';
 import { parseBoxModelOptions, parseConditions, parseCsvToBlock } from './config_parser.js';
 import { ConditionsManager } from './conditions_manager.js';
 
-function normalizeMathInLambdaBody(body) {
-  return body
-    .replace(/std::/g, '')
-    .replace(/\bexp\s*\(/g, 'Math.exp(')
-    .replace(/\blog\s*\(/g, 'Math.log(')
-    .replace(/\blog10\s*\(/g, 'Math.log10(')
-    .replace(/\bsqrt\s*\(/g, 'Math.sqrt(')
-    .replace(/\bpow\s*\(/g, 'Math.pow(')
-    .replace(/\bsin\s*\(/g, 'Math.sin(')
-    .replace(/\bcos\s*\(/g, 'Math.cos(')
-    .replace(/\btan\s*\(/g, 'Math.tan(')
-    .replace(/\babs\s*\(/g, 'Math.abs(')
-    .replace(/\bfloor\s*\(/g, 'Math.floor(')
-    .replace(/\bceil\s*\(/g, 'Math.ceil(');
-}
-
-function compileCppLambda(source, reactionName) {
+function evaluateJsLambda(source, reactionName) {
   const trimmed = (source || '').trim();
   if (!trimmed) {
     throw new Error(`Lambda reaction "${reactionName}" is missing a \"lambda function\" value`);
   }
 
-  const lambdaMatch = trimmed.match(/^\[\]\s*\(([^)]*?)\)\s*\{([\s\S]*)\}$/);
-  if (!lambdaMatch) {
+  let fn;
+  try {
+    fn = new Function(`return (${trimmed});`)();
+  } catch {
     throw new Error(
-      `Lambda reaction "${reactionName}" must use C++ lambda syntax, e.g. [](double T, double P) { return 1.0e-12; }`
+      `Lambda reaction "${reactionName}" must be a valid JavaScript function, e.g. (T, P, airDensity) => 1.0e-12`
     );
   }
 
-  const rawParamList = lambdaMatch[1].trim();
-  const body = normalizeMathInLambdaBody(lambdaMatch[2].trim());
-  const params = rawParamList.length === 0
-    ? []
-    : rawParamList
-        .split(',')
-        .map((param) => param.trim())
-        .filter(Boolean)
-        .map((param) => {
-          const typed = param.match(/^double\s+([A-Za-z_][A-Za-z0-9_]*)$/);
-          if (!typed) {
-            throw new Error(
-              `Lambda reaction "${reactionName}" has invalid parameter declaration "${param}"`
-            );
-          }
-          return typed[1];
-        });
-
-  const evaluator = new Function(...params, `'use strict'; ${body}`);
+  if (typeof fn !== 'function') {
+    throw new Error(
+      `Lambda reaction "${reactionName}" must evaluate to a function, e.g. (T, P, airDensity) => 1.0e-12`
+    );
+  }
 
   return (T, P, airDensity) => {
-    const args = params.map((name) => {
-      if (name === 'T') return T;
-      if (name === 'P') return P;
-      if (name === 'airDensity') return airDensity;
-      throw new Error(
-        `Lambda reaction "${reactionName}" uses unsupported parameter "${name}". Allowed: T, P, airDensity`
-      );
-    });
-    const value = evaluator(...args);
+    const value = fn(T, P, airDensity);
     if (typeof value !== 'number' || Number.isNaN(value)) {
       throw new Error(`Lambda reaction "${reactionName}" returned a non-numeric value`);
     }
@@ -96,7 +60,7 @@ function registerLambdaCallbacks(micm, mechanism) {
   for (const [index, reaction] of lambdaReactions.entries()) {
     const reactionName = (reaction.name || '').trim() || defaultLambdaReactionName(reaction, index);
     reaction.name = reactionName;
-    const callback = compileCppLambda(reaction['lambda function'], reactionName);
+    const callback = evaluateJsLambda(reaction['lambda function'], reactionName);
     micm.setReactionRateCallback(`Lambda.${reactionName}`, callback);
   }
 }
