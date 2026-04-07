@@ -2,10 +2,8 @@
 Unit tests for the MusicBox class.
 """
 import gc
-import os
 import musica.mechanism_configuration as mc
-
-from acom_music_box import MusicBox
+from acom_music_box import MusicBox, Examples
 
 
 class TrackingWrapper:
@@ -71,9 +69,7 @@ class TestMusicBoxSolverDeletion:
     def test_loadJson_deletes_old_solver(self):
         """Verify __del__ is called on the old solver when loadJson is called twice."""
         # Use the bundled analytical example config
-        config_path = os.path.join(
-            os.path.dirname(__file__), '..', '..', 'examples', 'analytical', 'my_config.json'
-        )
+        config_path = Examples.Analytical.path
 
         box_model = MusicBox()
         box_model.loadJson(str(config_path))
