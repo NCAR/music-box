@@ -30,7 +30,7 @@ dependencies = [
   "colorlog>=6.7.0",
   "matplotlib>=3.6.0",
   "mplcursors>=0.3",
-  "musica>=0.14.0",
+  "musica>=0.15.0",
   "netcdf4>=1.6.0",
   "numpy>=2.0.0",
   "pandas>=2.2.0",
@@ -54,7 +54,7 @@ dev = [
   "pytest-cov>=7.0.0"
 ]
 gpu = [
-  "musica[gpu]==0.14.0"
+  "musica[gpu]==0.15.0"
 ]
 doc = [
   "ipython",
