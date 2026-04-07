@@ -18,7 +18,9 @@ assignees: ''
 
 ## Deployment and release steps
 
-- [ ] Update the music box version in `python/acom_music_box/__init__.py` on a new branch (call it anything but `release`)
+- [ ] on a new branch (call it anything but `release`)
+  - [ ] Update the music box version in `python/acom_music_box/__init__.py` 
+  - [ ] Update the music box version in `package.json`
 - [ ] Update the `CITATION.cff` file
   - [ ] Update version number
   - [ ] Ensure all contributors are listed as authors
