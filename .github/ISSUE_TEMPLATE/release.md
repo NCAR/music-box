@@ -26,4 +26,15 @@ assignees: ''
   - Alternatively, merge locally and push: `git checkout release && git merge main && git push`
 - [ ] Make a tag and add release notes on GitHub
   - Be sure to choose the `release` branch for the target
-- [ ] By updating the music box version number and doing a release as described above, the new version of MusicBox should be published to PyPi. If there are any problems, notes on publishing manually are here: https://docs.google.com/document/d/1rLGsKMN9pI7SJAddrvwz-1xqUJkXrOAc1E0JOSbeS4Y/edit
+## Python (automatic)
+PyPI publishing happens automatically via the release action when a tag and release are created.
+
+- [ ] Verify the PyPI release was published successfully
+
+---
+
+## JavaScript (automatic)
+
+npm publishing happens automatically via the release action when a tag and release are created.
+
+- [ ] Verify the npm release was published successfully
