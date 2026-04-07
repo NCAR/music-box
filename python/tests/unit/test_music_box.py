@@ -8,6 +8,7 @@ from acom_music_box import MusicBox, Examples
 
 class TrackingWrapper:
     """Wraps an object and records when __del__ is called."""
+
     def __init__(self, obj, del_called):
         self._obj = obj
         self._del_called = del_called
