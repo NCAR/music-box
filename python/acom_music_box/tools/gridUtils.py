@@ -388,7 +388,7 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
         gridBox = cutOffColumns(gridBox, altPair)
         gridDims = ["point_index"]
 
-    logger.info(f"WACCM gridBox = {gridBox}")
+    logger.debug(f"WACCM gridBox = {gridBox}")
     meanPoint = gridBox.mean(dim=gridDims, keep_attrs=True)
     logger.debug(f"meanPoint = {meanPoint}")
 
@@ -479,7 +479,7 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
 
             # retrieve the sub-column between the altitude bounds
             verticalIndexes = getSubColumn(zLevels.values[:, iLat, iLon], heightPair)
-            logger.info(f"verticalIndexes = {verticalIndexes}")
+            logger.debug(f"verticalIndexes = {verticalIndexes}")
             if (len(verticalIndexes) == 0):
                 logger.debug("\tNo level within those height bounds.")
                 continue        # there is no level here within the height range

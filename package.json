@@ -42,6 +42,7 @@
   "scripts": {
     "build": "webpack",
     "test": "node --test javascript/tests/unit/*.test.js javascript/tests/integration/*.test.js",
+    "runner": "node javascript/bin/run.js",
     "test:unit": "node --test javascript/tests/unit/*.test.js",
     "test:integration": "node --test javascript/tests/integration/*.test.js",
     "test:coverage": "c8 node --test javascript/tests/unit/*.test.js javascript/tests/integration/*.test.js"
