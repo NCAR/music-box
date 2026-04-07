@@ -9,6 +9,8 @@ RUN dnf -y update \
         lapack-devel \
         make \
         netcdf-fortran-devel \
+        nodejs \
+        npm \
         pandoc \
         python3-devel \
         python3-pip \
@@ -18,9 +20,9 @@ COPY . /music-box/
 
 WORKDIR /music-box
 
-RUN pip3 install -e .
+RUN npm install
 
-RUN cd docs \
-    && pip install -r requirements.txt \
-    && make html
+RUN pip3 install -e .[doc]
+
+RUN cd docs && make html
 

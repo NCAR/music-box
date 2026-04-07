@@ -27,7 +27,8 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_design',
     'sphinx.ext.intersphinx',
-    'nbsphinx'
+    'nbsphinx',
+    'sphinx_js',
 ]
 
 templates_path = ['_templates']
@@ -42,12 +43,20 @@ highlight_language = 'python'
 
 nbsphinx_allow_errors = True
 
+# -- sphinx-js (JavaScript API reference) ---
+
+js_source_path = '../../javascript/src'
+# Use the locally-installed jsdoc from npm (node_modules populated by `npm install`)
+jsdoc_path = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), '..', '..', 'node_modules', '.bin', 'jsdoc')
+)
+
 # -- link to MUSICA documentation ---
 
 intersphinx_mapping = {
-    'musica': ('https://ncar.github.io/musica/', None),
-    'micm': ('https://ncar.github.io/micm/', None),
-    'mc': ('https://ncar.github.io/MechanismConfiguration/', None)
+    'musica': ('https://musica.readthedocs.io/en/latest/', None),
+    'micm': ('https://micm.readthedocs.io/en/latest/', None),
+    'mc': ('https://mechanismconfiguration.readthedocs.io/en/latest/', None)
 }
 
 # -- Options for HTML output -------------------------------------------------

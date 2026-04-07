@@ -1,6 +1,6 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "acom_music_box"
@@ -20,23 +20,24 @@ authors = [
   { name = "Angela Pak"}
 ]
 maintainers = [{ name = "ACOM MUSICA Developers", email = "musica-support@ucar.edu" }]
-readme = "README.md"
+readme = "python/README.md"
 license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: Apache Software License"]
-dynamic = ["version", "description"]
+description = "An atmospheric chemistry box model. Powered by MUSICA."
+dynamic = ["version"]
 
 dependencies = [
   "colorlog>=6.7.0",
   "matplotlib>=3.6.0",
   "mplcursors>=0.3",
-  "musica>=0.14.0",
+  "musica>=0.15.0",
   "netcdf4>=1.6.0",
   "numpy>=2.0.0",
   "pandas>=2.2.0",
   "tqdm>=4.64.0",
   "typing_extensions>=4.4.0",
   "xarray>=2022.3.0",
-  "pathvalidate>=3.3.0",
+  "pathvalidate>=3.3.0"
 ]
 
 [project.urls]
@@ -53,5 +54,39 @@ dev = [
   "pytest-cov>=7.0.0"
 ]
 gpu = [
-  "musica[gpu]==0.14.0"
+  "musica[gpu]==0.15.0"
 ]
+doc = [
+  "ipython",
+  "ipykernel",
+  "sphinx",
+  "sphinx-book-theme",
+  "sphinx-copybutton",
+  "sphinx-design",
+  "sphinxcontrib-bibtex",
+  "pydata-sphinx-theme",
+  "nbsphinx",
+  "sphinx-js",
+]
+tutorial = [
+  "scikit-learn",
+  "seaborn",
+  "scipy",
+  "dask"
+]
+
+
+[tool.hatch.version]
+path = "python/acom_music_box/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["python/acom_music_box"]
+
+# Include the shared examples directory inside the installed package so that
+# __file__-relative paths work regardless of where pip installs data files.
+# JavaScript can still reference the same files via the top-level examples/ directory.
+[tool.hatch.build.targets.wheel.force-include]
+"examples" = "acom_music_box/examples"
+
+[tool.pytest.ini_options]
+testpaths = ["python/tests"]

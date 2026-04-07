@@ -1,0 +1,31 @@
+{
+  "box model options": {
+    "grid": "box",
+    "chemistry time step [sec]": 1,
+    "output time step [sec]": 1,
+    "simulation length [sec]": 100
+  },
+  "conditions": {
+    "data": [
+      {
+        "headers": ["time.s", "ENV.temperature.K", "ENV.pressure.Pa"],
+        "rows": [[0.0, 272.5, 101253.3]]
+      }
+    ],
+    "filepaths": ["initial_concentrations.csv"]
+  },
+  "model components": [
+    {
+      "type": "CAMP",
+      "configuration file": "../mol mol-1/camp_data/config.json",
+      "override species": {
+        "M": {
+          "mixing ratio mol mol-1": 1
+        }
+      },
+      "suppress output": {
+        "M": {}
+      }
+    }
+  ]
+}
