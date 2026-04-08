@@ -1,6 +1,6 @@
 {
   "name": "@ncar/music-box",
-  "version": "3.0.0-rc.4",
+  "version": "3.0.1",
   "type": "module",
   "description": "JavaScript implementation of music-box atmospheric chemistry box model",
   "main": "./javascript/src/index.js",
@@ -42,6 +42,7 @@
   "scripts": {
     "build": "webpack",
     "test": "node --test javascript/tests/unit/*.test.js javascript/tests/integration/*.test.js",
+    "runner": "node javascript/bin/run.js",
     "test:unit": "node --test javascript/tests/unit/*.test.js",
     "test:integration": "node --test javascript/tests/integration/*.test.js",
     "test:coverage": "c8 node --test javascript/tests/unit/*.test.js javascript/tests/integration/*.test.js"

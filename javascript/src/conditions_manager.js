@@ -66,6 +66,10 @@ export class ConditionsManager {
     // {t: {species: value}} — applied at exact time only (mirrors Python concentration_events)
     this._concentrationEvents = {};
 
+    // Track the most recently seen env/rate values per time for duplicate detection.
+    // Maps t -> { temp, pressure, ...rateParamKeys }
+    const seenEnvAt = new Map();
+
     for (const row of (dataRows || [])) {
       const t = row['time.s'];
       if (t === undefined) continue;
@@ -82,6 +86,13 @@ export class ConditionsManager {
         if (prefix === 'CONC') {
           // Concentration event: stored separately, applied at exact time
           const species = parts[1];
+          if (this._concentrationEvents[t]?.[species] !== undefined) {
+            console.warn(
+              `Duplicate condition: CONC.${species} at time=${t}s already set to ` +
+              `${this._concentrationEvents[t][species]}; overwriting with ${value}. ` +
+              `Inline data takes precedence over CSV.`
+            );
+          }
           if (!this._concentrationEvents[t]) this._concentrationEvents[t] = {};
           this._concentrationEvents[t][species] = value;
         } else if (RATE_PARAM_PREFIXES.has(prefix)) {
@@ -89,6 +100,33 @@ export class ConditionsManager {
         }
         // ENV.temperature / ENV.pressure handled above; other ENV.* ignored
       }
+
+      // Warn on duplicate env/rate values at the same time
+      const prev = seenEnvAt.get(t);
+      if (prev !== undefined) {
+        if (temp !== null && prev.temp !== null) {
+          console.warn(
+            `Duplicate condition: ENV.temperature.K at time=${t}s already set to ` +
+            `${prev.temp}; overwriting with ${temp}. Inline data takes precedence over CSV.`
+          );
+        }
+        if (pressure !== null && prev.pressure !== null) {
+          console.warn(
+            `Duplicate condition: ENV.pressure.Pa at time=${t}s already set to ` +
+            `${prev.pressure}; overwriting with ${pressure}. Inline data takes precedence over CSV.`
+          );
+        }
+        for (const key of Object.keys(rateParams)) {
+          if (prev.rateParams[key] !== undefined) {
+            console.warn(
+              `Duplicate condition: ${key} at time=${t}s already set to ` +
+              `${prev.rateParams[key]}; overwriting with ${rateParams[key]}. ` +
+              `Inline data takes precedence over CSV.`
+            );
+          }
+        }
+      }
+      seenEnvAt.set(t, { temp, pressure, rateParams });
 
       this._timePoints.push({ t, temp, pressure, rateParams });
     }
