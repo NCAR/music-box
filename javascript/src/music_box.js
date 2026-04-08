@@ -65,6 +65,106 @@ function registerLambdaCallbacks(micm, mechanism) {
   }
 }
 
+function buildPhotolysisAliasMap(mechanism) {
+  const aliasMap = new Map();
+  const reactions = Array.isArray(mechanism?.reactions) ? mechanism.reactions : [];
+  const perReactantCounts = new Map();
+
+  const formatComponent = (component) => {
+    const species = component?.['species name'] || component?.name;
+    if (!species) return null;
+    const factor = component?.yield ?? component?.coefficient;
+    if (factor === undefined || factor === null || factor === 1) {
+      return species;
+    }
+    return `${factor}${species}`;
+  };
+
+  const formatSide = (components) =>
+    (Array.isArray(components) ? components : [])
+      .map(formatComponent)
+      .filter(Boolean)
+      .join(' + ');
+
+  for (const reaction of reactions) {
+    if (reaction?.type !== 'PHOTOLYSIS') continue;
+
+    const reactants = Array.isArray(reaction.reactants) ? reaction.reactants : [];
+    const primaryReactant = reactants[0]?.['species name'] || reactants[0]?.name;
+    if (!primaryReactant || !reaction.name) continue;
+
+    const solverKey = `PHOTO.${reaction.name}`;
+
+    const nextCount = (perReactantCounts.get(primaryReactant) || 0) + 1;
+    perReactantCounts.set(primaryReactant, nextCount);
+
+    // Legacy conditions files use PHOTO.<reactant>_<index> keys.
+    aliasMap.set(`PHOTO.${primaryReactant}_${nextCount}`, solverKey);
+
+    // Also accept equation-style keys (e.g., PHOTO.O3 -> O + O2) so
+    // conditions can target either indexed names or descriptive names.
+    const lhs = formatSide(reaction.reactants);
+    const rhs = formatSide(reaction.products);
+    if (lhs && rhs) {
+      const equationKey = `PHOTO.${lhs} -> ${rhs}`;
+      aliasMap.set(equationKey, solverKey);
+      aliasMap.set(equationKey.replace(/\s+/g, ''), solverKey);
+    }
+  }
+
+  return aliasMap;
+}
+
+function remapPhotolysisRateParams(rateParams, photolysisAliasMap) {
+  const normalized = { ...(rateParams || {}) };
+
+  for (const [legacyKey, solverKey] of photolysisAliasMap.entries()) {
+    if (normalized[legacyKey] !== undefined && normalized[solverKey] === undefined) {
+      normalized[solverKey] = normalized[legacyKey];
+    }
+    if (normalized[legacyKey] !== undefined && legacyKey !== solverKey) {
+      delete normalized[legacyKey];
+    }
+  }
+
+  return normalized;
+}
+
+function pruneUnknownRateParams(normalizedRateParams, acceptedRateParamKeys, warnedUnknownRateParams) {
+  const filtered = { ...(normalizedRateParams || {}) };
+
+  if (!(acceptedRateParamKeys && acceptedRateParamKeys.size > 0)) {
+    return filtered;
+  }
+
+  for (const key of Object.keys(filtered)) {
+    if (!acceptedRateParamKeys.has(key)) {
+      if (!warnedUnknownRateParams.has(key)) {
+        warnedUnknownRateParams.add(key);
+        console.warn(
+          `Ignoring unknown rate parameter key "${key}". ` +
+            'Verify condition headers match mechanism-defined user parameters.'
+        );
+      }
+      delete filtered[key];
+    }
+  }
+
+  return filtered;
+}
+
+function normalizeRateParamsForSolver(rateParams, normalizerState) {
+  if (!rateParams || typeof rateParams !== 'object') return {};
+
+  const withPhotolysisAliases = remapPhotolysisRateParams(rateParams, normalizerState.photolysisAliasMap);
+
+  return pruneUnknownRateParams(
+    withPhotolysisAliases,
+    normalizerState.acceptedRateParamKeys,
+    normalizerState.warnedUnknownRateParams
+  );
+}
+
 /**
  * JavaScript implementation of the music-box atmospheric chemistry box model.
  *
@@ -138,12 +238,16 @@ export class MusicBox {
       parseBoxModelOptions(this._config);
     const micm = MICM.fromMechanism({ getJSON: () => this._config.mechanism });
     const state = micm.createState(1);
+    const normalizerState = {
+      photolysisAliasMap: buildPhotolysisAliasMap(this._config.mechanism),
+      acceptedRateParamKeys: new Set(Object.keys(state.getUserDefinedRateParameters())),
+      warnedUnknownRateParams: new Set(),
+    };
 
     try {
       registerLambdaCallbacks(micm, this._config.mechanism);
 
       const condsMgr = new ConditionsManager(parseConditions(this._config.conditions));
-
       // Build sorted list of concentration event times (mirrors Python's sorted_event_times)
       const concentrationEvents = condsMgr.concentrationEvents;
       const sortedEventTimes = Object.keys(concentrationEvents)
@@ -161,9 +265,9 @@ export class MusicBox {
         nextEventIdx++;
       }
 
-      if (Object.keys(t0.rateParams).length > 0) {
-        state.setUserDefinedRateParameters(t0.rateParams);
-      }
+      state.setUserDefinedRateParameters(
+        normalizeRateParamsForSolver(t0.rateParams || {}, normalizerState)
+      );
 
       // Collect output as column arrays for efficient DataFrame construction
       const columns = { 'time.s': [] };
@@ -178,11 +282,21 @@ export class MusicBox {
         }
       }
 
-      appendOutput(0);
       let currTime = 0;
-      let nextOutputTime = outputTimeStep;
+      let nextOutputTime = 0;
 
-      while (currTime < simulationLength) {
+      while (currTime <= simulationLength) {
+        // Collect output at configured cadence using the current state
+        if (nextOutputTime <= currTime) {
+          appendOutput(currTime);
+          nextOutputTime += outputTimeStep;
+
+          // Bail out once we've emitted the last requested output timestamp.
+          if (nextOutputTime > simulationLength) {
+            break;
+          }
+        }
+
         // Apply any concentration events at or before current time
         while (
           nextEventIdx < sortedEventTimes.length &&
@@ -195,9 +309,9 @@ export class MusicBox {
         // Update environment and rate parameters at current time
         const conds = condsMgr.getConditionsAtTime(currTime);
         state.setConditions({ temperatures: conds.temperature, pressures: conds.pressure });
-        if (Object.keys(conds.rateParams).length > 0) {
-          state.setUserDefinedRateParameters(conds.rateParams);
-        }
+        state.setUserDefinedRateParameters(
+          normalizeRateParamsForSolver(conds.rateParams || {}, normalizerState)
+        );
 
         // Integrate one chemistry step (may require multiple sub-steps)
         let elapsed = 0;
@@ -220,10 +334,6 @@ export class MusicBox {
           elapsed += result.stats.final_time;
           currTime += result.stats.final_time;
 
-          if (currTime >= nextOutputTime && nextOutputTime <= simulationLength) {
-            appendOutput(currTime);
-            nextOutputTime += outputTimeStep;
-          }
         }
       }
 
