@@ -534,6 +534,23 @@ class ConditionsManager:
             for data_block in conditions_config["data"]:
                 self._load_inline_data(data_block)
 
+
+    def _ensure_numeric_float64(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Convert all numeric columns to float64 to handle integer values (e.g., 0).
+        Uses vectorized operation for performance with wide/large DataFrames.
+
+        Args:
+            df: DataFrame to convert.
+
+        Returns:
+            DataFrame with numeric columns as float64.
+        """
+        numeric_cols = df.select_dtypes(include=['number']).columns
+        if len(numeric_cols) > 0:
+            df[numeric_cols] = df[numeric_cols].astype(np.float64)
+        return df
+
     def _read_csv(self, file_path: str):
         """
         Load conditions from a CSV file.
@@ -542,10 +559,7 @@ class ConditionsManager:
             file_path: Path to the CSV file.
         """
         df = pd.read_csv(file_path, skipinitialspace=True)
-        # Convert all numeric columns to float64 to handle integer values like 0
-        for col in df.columns:
-            if pd.api.types.is_numeric_dtype(df[col]):
-                df[col] = df[col].astype(np.float64)
+        df = self._ensure_numeric_float64(df)
         self.add_from_dataframe(df)
 
     def _load_inline_data(self, data_block: dict):
@@ -565,10 +579,7 @@ class ConditionsManager:
         rows = data_block["rows"]
 
         df = pd.DataFrame(rows, columns=headers)
-        # Convert all numeric columns to float64 to handle integer values like 0
-        for col in df.columns:
-            if pd.api.types.is_numeric_dtype(df[col]):
-                df[col] = df[col].astype(np.float64)
+        df = self._ensure_numeric_float64(df)
         self.add_from_dataframe(df)
 
     def get_conditions_at_time(self, time: float) -> dict:
