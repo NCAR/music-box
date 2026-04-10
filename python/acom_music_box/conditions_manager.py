@@ -542,6 +542,10 @@ class ConditionsManager:
             file_path: Path to the CSV file.
         """
         df = pd.read_csv(file_path, skipinitialspace=True)
+        # Convert all numeric columns to float64 to handle integer values like 0
+        for col in df.columns:
+            if pd.api.types.is_numeric_dtype(df[col]):
+                df[col] = df[col].astype(np.float64)
         self.add_from_dataframe(df)
 
     def _load_inline_data(self, data_block: dict):
@@ -561,6 +565,10 @@ class ConditionsManager:
         rows = data_block["rows"]
 
         df = pd.DataFrame(rows, columns=headers)
+        # Convert all numeric columns to float64 to handle integer values like 0
+        for col in df.columns:
+            if pd.api.types.is_numeric_dtype(df[col]):
+                df[col] = df[col].astype(np.float64)
         self.add_from_dataframe(df)
 
     def get_conditions_at_time(self, time: float) -> dict:
