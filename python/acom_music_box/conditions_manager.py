@@ -534,7 +534,6 @@ class ConditionsManager:
             for data_block in conditions_config["data"]:
                 self._load_inline_data(data_block)
 
-
     def _ensure_numeric_float64(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Convert all numeric columns to float64 to handle integer values (e.g., 0).

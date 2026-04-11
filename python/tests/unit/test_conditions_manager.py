@@ -316,22 +316,22 @@ class TestConditionsManager:
     def test_integer_values_converted_to_float64(self):
         """Test that integer values (like 0) are converted to np.float64."""
         import numpy as np
-        
+
         manager = ConditionsManager()
-        
+
         # Test with inline data containing integer 0
         data_block = {
             "headers": ["time.s", "ENV.temperature.K", "PHOTO.rate1.s-1"],
             "rows": [[0, 300.0, 0]]  # Integer 0 values
         }
         manager._load_inline_data(data_block)
-        
+
         # Check that values are stored as float64
         df = manager._df
         assert df["time.s"].dtype == np.float64
         assert df["ENV.temperature.K"].dtype == np.float64
         assert df["PHOTO.rate1.s-1"].dtype == np.float64
-        
+
         # Test with CSV-like data
         with tempfile.TemporaryDirectory() as tmpdir:
             csv_content = """time.s,ENV.temperature.K,PHOTO.rate2.s-1
@@ -341,15 +341,15 @@ class TestConditionsManager:
             csv_path = os.path.join(tmpdir, "test.csv")
             with open(csv_path, 'w') as f:
                 f.write(csv_content)
-            
+
             manager2 = ConditionsManager()
             manager2._read_csv(csv_path)
-            
+
             df2 = manager2._df
             assert df2["time.s"].dtype == np.float64
             assert df2["ENV.temperature.K"].dtype == np.float64
             assert df2["PHOTO.rate2.s-1"].dtype == np.float64
-            
+
             # Verify the values are correct
             assert df2.loc[0, "time.s"] == 0.0
             assert df2.loc[0, "PHOTO.rate2.s-1"] == 0.0
