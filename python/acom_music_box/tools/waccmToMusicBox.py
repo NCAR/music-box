@@ -680,7 +680,7 @@ def main():
 
             # read and glean chemical species from WACCM and MUSICA
             waccmChems = getWaccmSpecies(modelDir, waccmFilename)
-            musicaChems = getMusicaSpecies(template)
+            musicaChems = getMusicaSpecies(templateFile)
 
             # create map of species common to both WACCM and MUSICA
             commonDict = getMusicaDictionary(modelType, waccmChems, musicaChems)
