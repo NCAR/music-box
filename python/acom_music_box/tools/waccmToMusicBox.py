@@ -122,6 +122,7 @@ def parse_arguments():
     parser.add_argument(
         '--output',
         type=str,
+        default="CSV",
         help="Format(s) for writing the initial conditions: CSV,JSON"
     )
     return parser.parse_args()

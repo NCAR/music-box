@@ -152,7 +152,7 @@ music_box -e TS1 --plot O3 --plot-output-unit ppb
 Extract chemical species concentrations from WACCM or WRF-Chem output and write them as MusicBox initial conditions:
 
 ```bash
-waccmToMusicBox --waccmDir "./sample_waccm_data" --date "20240904" --time "07:00" --latitude 3.1 --longitude 101.7
+waccmToMusicBox --waccmDir "./sample_waccm_data" --date "20260208" --time "07:00" --latitude 3.1 --longitude 101.7
 
 waccmToMusicBox --wrfchemDir "./sample_waccm_data" --date "20250820" --time "08:00" --latitude 47.0,49.0 --longitude "'-123.0,-121.0'"
 ```
