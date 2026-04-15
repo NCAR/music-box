@@ -10,10 +10,15 @@ function evaluateJsLambda(source, reactionName) {
 
   let fn;
   try {
+    // NOTE: new Function() executes a string from the mechanism config.
+    // Treat any mechanism config loaded from an untrusted source (e.g. browser uploads)
+    // as equivalent to executing arbitrary code.
     fn = new Function(`return (${trimmed});`)();
-  } catch {
+  } catch (err) {
+    const details = err instanceof Error ? err.message : String(err);
     throw new Error(
-      `Lambda reaction "${reactionName}" must be a valid JavaScript function, e.g. (T, P, airDensity) => 1.0e-12`
+      `Lambda reaction "${reactionName}" must be a valid JavaScript function, e.g. (T, P, airDensity) => 1.0e-12. ${details}`,
+      { cause: err }
     );
   }
 
@@ -217,15 +222,15 @@ export class MusicBox {
       let currTime = 0;
       let nextOutputTime = 0;
 
-      while (currTime <= simulationLength) {
-        // Collect output at configured cadence using the current state
-        if (nextOutputTime <= currTime) {
+      outer: while (currTime <= simulationLength) {
+        // Collect output at all configured output times that have been reached
+        while (nextOutputTime <= currTime) {
           appendOutput(currTime);
           nextOutputTime += outputTimeStep;
 
           // Bail out once we've emitted the last requested output timestamp.
           if (nextOutputTime > simulationLength) {
-            break;
+            break outer;
           }
         }
 
