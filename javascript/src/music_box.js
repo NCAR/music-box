@@ -65,71 +65,6 @@ function registerLambdaCallbacks(micm, mechanism) {
   }
 }
 
-function buildPhotolysisAliasMap(mechanism) {
-  const aliasMap = new Map();
-  const reactions = Array.isArray(mechanism?.reactions) ? mechanism.reactions : [];
-  const perReactantCounts = new Map();
-
-  const formatComponent = (component) => {
-    const species = component?.['species name'] || component?.name;
-    if (!species) return null;
-    const factor = component?.yield ?? component?.coefficient;
-    if (factor === undefined || factor === null || factor === 1) {
-      return species;
-    }
-    return `${factor}${species}`;
-  };
-
-  const formatSide = (components) =>
-    (Array.isArray(components) ? components : [])
-      .map(formatComponent)
-      .filter(Boolean)
-      .join(' + ');
-
-  for (const reaction of reactions) {
-    if (reaction?.type !== 'PHOTOLYSIS') continue;
-
-    const reactants = Array.isArray(reaction.reactants) ? reaction.reactants : [];
-    const primaryReactant = reactants[0]?.['species name'] || reactants[0]?.name;
-    if (!primaryReactant || !reaction.name) continue;
-
-    const solverKey = `PHOTO.${reaction.name}`;
-
-    const nextCount = (perReactantCounts.get(primaryReactant) || 0) + 1;
-    perReactantCounts.set(primaryReactant, nextCount);
-
-    // Legacy conditions files use PHOTO.<reactant>_<index> keys.
-    aliasMap.set(`PHOTO.${primaryReactant}_${nextCount}`, solverKey);
-
-    // Also accept equation-style keys (e.g., PHOTO.O3 -> O + O2) so
-    // conditions can target either indexed names or descriptive names.
-    const lhs = formatSide(reaction.reactants);
-    const rhs = formatSide(reaction.products);
-    if (lhs && rhs) {
-      const equationKey = `PHOTO.${lhs} -> ${rhs}`;
-      aliasMap.set(equationKey, solverKey);
-      aliasMap.set(equationKey.replace(/\s+/g, ''), solverKey);
-    }
-  }
-
-  return aliasMap;
-}
-
-function remapPhotolysisRateParams(rateParams, photolysisAliasMap) {
-  const normalized = { ...(rateParams || {}) };
-
-  for (const [legacyKey, solverKey] of photolysisAliasMap.entries()) {
-    if (normalized[legacyKey] !== undefined && normalized[solverKey] === undefined) {
-      normalized[solverKey] = normalized[legacyKey];
-    }
-    if (normalized[legacyKey] !== undefined && legacyKey !== solverKey) {
-      delete normalized[legacyKey];
-    }
-  }
-
-  return normalized;
-}
-
 function pruneUnknownRateParams(normalizedRateParams, acceptedRateParamKeys, warnedUnknownRateParams) {
   const filtered = { ...(normalizedRateParams || {}) };
 
@@ -156,10 +91,8 @@ function pruneUnknownRateParams(normalizedRateParams, acceptedRateParamKeys, war
 function normalizeRateParamsForSolver(rateParams, normalizerState) {
   if (!rateParams || typeof rateParams !== 'object') return {};
 
-  const withPhotolysisAliases = remapPhotolysisRateParams(rateParams, normalizerState.photolysisAliasMap);
-
   return pruneUnknownRateParams(
-    withPhotolysisAliases,
+    rateParams,
     normalizerState.acceptedRateParamKeys,
     normalizerState.warnedUnknownRateParams
   );
@@ -239,7 +172,6 @@ export class MusicBox {
     const micm = MICM.fromMechanism({ getJSON: () => this._config.mechanism });
     const state = micm.createState(1);
     const normalizerState = {
-      photolysisAliasMap: buildPhotolysisAliasMap(this._config.mechanism),
       acceptedRateParamKeys: new Set(Object.keys(state.getUserDefinedRateParameters())),
       warnedUnknownRateParams: new Set(),
     };
