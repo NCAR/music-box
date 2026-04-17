@@ -122,6 +122,7 @@ def parse_arguments():
     parser.add_argument(
         '--output',
         type=str,
+        default="CSV",
         help="Format(s) for writing the initial conditions: CSV,JSON"
     )
     return parser.parse_args()
@@ -680,7 +681,7 @@ def main():
 
             # read and glean chemical species from WACCM and MUSICA
             waccmChems = getWaccmSpecies(modelDir, waccmFilename)
-            musicaChems = getMusicaSpecies(template)
+            musicaChems = getMusicaSpecies(templateFile)
 
             # create map of species common to both WACCM and MUSICA
             commonDict = getMusicaDictionary(modelType, waccmChems, musicaChems)
