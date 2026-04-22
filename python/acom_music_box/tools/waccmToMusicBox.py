@@ -47,7 +47,7 @@ def setup_logging(verbosity):
 # Parse the command-line arguments in this form: --parameter value
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description='Extraction of WACCM model output for input to MusicBox.',
+        description='Extraction of WACCM or WRF-Chem model output for input to MusicBox.',
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument(
@@ -567,12 +567,13 @@ modelNames = [None, "waccm", "wrf-chem"]
 def main():
     # start with basic logging until args are parsed
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-    logger.info(f"{__file__}")
-    logger.info(f"Start time: {datetime.datetime.now()}")
 
     # retrieve and parse the command-line arguments
     myArgs = parse_arguments()
     setup_logging(myArgs.verbose)
+
+    logger.info(f"{__file__}")
+    logger.info(f"Start time: {datetime.datetime.now()}")
     logger.info(f"Command line = {myArgs}")
 
     # set up the directories
