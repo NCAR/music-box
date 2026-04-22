@@ -1,17 +1,25 @@
 """
-Round-trip export test: build a MusicBox entirely in code with every possible
+Round-trip export test: build a MusicBox entirely in code with every supported
 option, run it, export to a v1 JSON file via export(), reload with loadJson(),
 run again, and assert the two result DataFrames are exactly equal.
 
-"Every possible option" covers:
-  - All five BoxModelOptions fields (grid, chem_step_time, output_step_time,
-    simulation_length, max_iterations)
-  - Four reaction types: Arrhenius (all A/B/C/D/E params), Photolysis, Emission,
-    FirstOrderLoss
-  - Initial conditions at t=0: temperature, pressure, concentrations for all
-    species, and all rate-parameter types (PHOTO, EMIS, LOSS)
-  - Evolving conditions at t=30: temperature, pressure, concentration reset,
-    and updated rate parameters
+Covers all five BoxModelOptions fields and one of each supported reaction type:
+  - Arrhenius       (all A/B/C/D/E params)
+  - Troe            (k0_A/B/C, kinf_A/B/C, Fc, N)
+  - Branched        (X, Y, a0, n)
+  - TernaryChemicalActivation (same params as Troe)
+  - Tunneling       (A, B, C)
+  - Photolysis      (scaling_factor) — requires PHOTO rate parameter
+  - Emission        (scaling_factor) — requires EMIS rate parameter
+  - FirstOrderLoss  (scaling_factor) — requires LOSS rate parameter
+  - UserDefined     (scaling_factor) — requires USER rate parameter
+  - Surface         (reaction_probability) — requires SURF particle concentration
+                                             and effective radius rate parameters
+
+Initial conditions at t=0 set temperature, pressure, concentrations for every
+species, and all user-defined rate-parameter types (PHOTO, EMIS, LOSS, USER, SURF).
+Evolving conditions at t=30 reset temperature, pressure, one species concentration,
+and all rate parameters to new values.
 """
 
 import json
@@ -24,44 +32,96 @@ from acom_music_box import MusicBox
 
 def _build_model():
     """Return a fully-configured MusicBox using only the in-code API."""
+    # Surface-reactive species requires molecular weight and a diffusion
+    # coefficient on the gas-phase entry.
+    srf = mc.Species(name="Srf", molecular_weight_kg_mol=0.029)
     A = mc.Species(name="A")
     B = mc.Species(name="B")
     C = mc.Species(name="C")
     D = mc.Species(name="D")
     E = mc.Species(name="E")
-    species_list = [A, B, C, D, E]
-    gas = mc.Phase(name="gas", species=species_list)
+    F = mc.Species(name="F")
+    G = mc.Species(name="G")
+    H = mc.Species(name="H")
+    I = mc.Species(name="I")
+    J = mc.Species(name="J")
+    all_species = [srf, A, B, C, D, E, F, G, H, I, J]
 
-    # Arrhenius: all five parameters set
-    arr1 = mc.Arrhenius(
-        name="A->B", A=4.0e-3, B=0.0, C=50.0, D=300.0, E=0.0,
-        reactants=[A], products=[B], gas_phase=gas,
+    gas = mc.Phase(
+        name="gas",
+        species=[
+            mc.PhaseSpecies(srf.name, diffusion_coefficient_m2_s=1e-5),
+            A, B, C, D, E, F, G, H, I, J,
+        ],
     )
-    arr2 = mc.Arrhenius(
-        name="B->C", A=1.2e-4, B=2.5, C=75.0, D=50.0, E=0.5,
-        reactants=[B], products=[C], gas_phase=gas,
-    )
-    # Photolysis: requires PHOTO rate parameter
-    photo = mc.Photolysis(
-        name="photo_D", scaling_factor=1.0,
-        reactants=[D], products=[E], gas_phase=gas,
-    )
-    # Emission: requires EMIS rate parameter
-    emis = mc.Emission(
-        name="emis_A", scaling_factor=1.0,
-        products=[A], gas_phase=gas,
-    )
-    # FirstOrderLoss: requires LOSS rate parameter
-    loss = mc.FirstOrderLoss(
-        name="loss_E", scaling_factor=1.0,
-        reactants=[E], gas_phase=gas,
-    )
+
+    reactions = [
+        # Arrhenius: all five kinetic parameters
+        mc.Arrhenius(
+            name="arr1", A=4.0e-3, B=0.5, C=50.0, D=300.0, E=0.1,
+            reactants=[A], products=[B], gas_phase=gas,
+        ),
+        # Troe: pressure-dependent falloff
+        mc.Troe(
+            name="troe1",
+            k0_A=1.0e-28, k0_B=-3.0, k0_C=0.0,
+            kinf_A=1.0e-11, kinf_B=0.0, kinf_C=0.0,
+            Fc=0.45, N=1.0,
+            reactants=[B], products=[C], gas_phase=gas,
+        ),
+        # Branched: two product channels; n must be an integer
+        mc.Branched(
+            name="branched1", X=1.2e-3, Y=1.0, a0=0.15, n=9,
+            reactants=[C],
+            nitrate_products=[D],
+            alkoxy_products=[E],
+            gas_phase=gas,
+        ),
+        # TernaryChemicalActivation: three-body activation
+        mc.TernaryChemicalActivation(
+            name="tca1",
+            k0_A=1.0e-28, k0_B=-3.0, k0_C=0.0,
+            kinf_A=1.0e-11, kinf_B=0.0, kinf_C=0.0,
+            Fc=0.45, N=1.0,
+            reactants=[D], products=[F], gas_phase=gas,
+        ),
+        # Tunneling: quantum tunneling correction
+        mc.Tunneling(
+            name="tunnel1", A=1.0e-3, B=100.0, C=200.0,
+            reactants=[E], products=[G], gas_phase=gas,
+        ),
+        # Photolysis: rate set by PHOTO.photo1 condition
+        mc.Photolysis(
+            name="photo1", scaling_factor=1.0,
+            reactants=[F], products=[H], gas_phase=gas,
+        ),
+        # Emission: rate set by EMIS.emis1 condition
+        mc.Emission(
+            name="emis1", scaling_factor=1.0,
+            products=[I], gas_phase=gas,
+        ),
+        # FirstOrderLoss: rate set by LOSS.loss1 condition
+        mc.FirstOrderLoss(
+            name="loss1", scaling_factor=1.0,
+            reactants=[H], gas_phase=gas,
+        ),
+        # UserDefined: rate set by USER.ud1 condition
+        mc.UserDefined(
+            name="ud1", scaling_factor=1.0,
+            reactants=[I], products=[J], gas_phase=gas,
+        ),
+        # Surface: heterogeneous reaction; rates set by SURF.surf1 conditions
+        mc.Surface(
+            name="surf1", reaction_probability=0.1,
+            gas_phase_species=srf, gas_phase_products=[A], gas_phase=gas,
+        ),
+    ]
 
     mechanism = mc.Mechanism(
         name="all_options_test",
-        species=species_list,
+        species=all_species,
         phases=[gas],
-        reactions=[arr1, arr2, photo, emis, loss],
+        reactions=reactions,
     )
 
     box = MusicBox()
@@ -74,51 +134,66 @@ def _build_model():
     box.box_model_options.simulation_length = 60.0
     box.box_model_options.max_iterations = 100
 
-    # Initial conditions (t=0): temperature, pressure, all species,
-    # and all rate-parameter types
+    # Initial conditions (t=0): temperature, pressure, all species
+    # concentrations, and every user-defined rate-parameter type
     (box
         .set_condition(
             time=0.0,
             temperature=298.15,
             pressure=101325.0,
-            concentrations={"A": 1.0, "B": 0.0, "C": 0.0, "D": 0.5, "E": 0.0},
+            concentrations={
+                "Srf": 1.0,
+                "A": 1.0, "B": 0.0, "C": 0.0, "D": 0.0,
+                "E": 0.0, "F": 0.5, "G": 0.0, "H": 0.0,
+                "I": 0.5, "J": 0.0,
+            },
             rate_parameters={
-                "PHOTO.photo_D.s-1": 1.0e-4,
-                "EMIS.emis_A.mol m-3 s-1": 1.0e-8,
-                "LOSS.loss_E.s-1": 1.0e-3,
+                "PHOTO.photo1.s-1": 1.0e-4,
+                "EMIS.emis1.mol m-3 s-1": 1.0e-8,
+                "LOSS.loss1.s-1": 1.0e-3,
+                "USER.ud1.s-1": 1.0e-5,
+                "SURF.surf1.particle number concentration.# m-3": 1.0e12,
+                "SURF.surf1.effective radius.m": 1.0e-7,
             },
         )
-        # Evolving conditions (t=30): temperature, pressure, concentration reset,
-        # and updated rate parameters
+        # Evolving conditions (t=30): updated temperature, pressure,
+        # concentration reset, and all rate parameters changed
         .set_condition(
             time=30.0,
             temperature=300.0,
             pressure=101000.0,
-            concentrations={"D": 0.3},
+            concentrations={"A": 0.5},
             rate_parameters={
-                "PHOTO.photo_D.s-1": 2.0e-4,
-                "EMIS.emis_A.mol m-3 s-1": 5.0e-9,
-                "LOSS.loss_E.s-1": 2.0e-3,
+                "PHOTO.photo1.s-1": 2.0e-4,
+                "EMIS.emis1.mol m-3 s-1": 5.0e-9,
+                "LOSS.loss1.s-1": 2.0e-3,
+                "USER.ud1.s-1": 2.0e-5,
+                "SURF.surf1.particle number concentration.# m-3": 5.0e11,
+                "SURF.surf1.effective radius.m": 2.0e-7,
             },
         ))
 
     return box
 
 
+EXPECTED_REACTION_TYPES = {
+    "ARRHENIUS", "TROE", "BRANCHED_NO_RO2", "TERNARY_CHEMICAL_ACTIVATION",
+    "TUNNELING", "PHOTOLYSIS", "EMISSION", "FIRST_ORDER_LOSS",
+    "USER_DEFINED", "SURFACE",
+}
+
+
 class TestExportRoundTrip:
 
     def test_export_file_structure(self, tmp_path):
-        """export() writes a well-formed v1 JSON file."""
+        """export() writes a well-formed v1 JSON file with every option."""
         box = _build_model()
         config_file = tmp_path / "config.json"
         box.export(str(config_file))
         with open(config_file) as f:
             config = json.load(f)
 
-        assert "box model options" in config
-        assert "mechanism" in config
-        assert "conditions" in config
-
+        # Box model options
         opts = config["box model options"]
         assert opts["grid"] == "box"
         assert opts["chemistry time step [sec]"] == 2.0
@@ -126,31 +201,38 @@ class TestExportRoundTrip:
         assert opts["simulation length [sec]"] == 60.0
         assert opts["max iterations"] == 100
 
-        mech = config["mechanism"]
-        assert mech["version"] == "1.0.0"
-        reaction_types = {r["type"] for r in mech["reactions"]}
-        assert reaction_types == {"ARRHENIUS", "PHOTOLYSIS", "EMISSION", "FIRST_ORDER_LOSS"}
+        # Mechanism contains every reaction type
+        assert config["mechanism"]["version"] == "1.0.0"
+        exported_types = {r["type"] for r in config["mechanism"]["reactions"]}
+        assert exported_types == EXPECTED_REACTION_TYPES
 
-        conds = config["conditions"]
-        assert "data" in conds
-        # Two time points → two data blocks
-        assert len(conds["data"]) == 2
+        # Conditions: two time-point blocks
+        blocks = config["conditions"]["data"]
+        assert len(blocks) == 2
 
-        # t=0 block must contain all condition types
-        t0_block = conds["data"][0]
-        assert "CONC.A.mol m-3" in t0_block["headers"]
-        assert "CONC.D.mol m-3" in t0_block["headers"]
-        assert "ENV.temperature.K" in t0_block["headers"]
-        assert "ENV.pressure.Pa" in t0_block["headers"]
-        assert "PHOTO.photo_D.s-1" in t0_block["headers"]
-        assert "EMIS.emis_A.mol m-3 s-1" in t0_block["headers"]
-        assert "LOSS.loss_E.s-1" in t0_block["headers"]
+        # t=0 block: all condition types present
+        t0_headers = set(blocks[0]["headers"])
+        assert "ENV.temperature.K" in t0_headers
+        assert "ENV.pressure.Pa" in t0_headers
+        assert "CONC.Srf.mol m-3" in t0_headers
+        assert "CONC.A.mol m-3" in t0_headers
+        assert "PHOTO.photo1.s-1" in t0_headers
+        assert "EMIS.emis1.mol m-3 s-1" in t0_headers
+        assert "LOSS.loss1.s-1" in t0_headers
+        assert "USER.ud1.s-1" in t0_headers
+        assert "SURF.surf1.particle number concentration.# m-3" in t0_headers
+        assert "SURF.surf1.effective radius.m" in t0_headers
 
-        # t=30 block must contain updated evolving conditions
-        t30_block = conds["data"][1]
-        assert "ENV.temperature.K" in t30_block["headers"]
-        assert "CONC.D.mol m-3" in t30_block["headers"]
-        assert "PHOTO.photo_D.s-1" in t30_block["headers"]
+        # t=30 block: all rate-parameter types updated
+        t30_headers = set(blocks[1]["headers"])
+        assert "ENV.temperature.K" in t30_headers
+        assert "CONC.A.mol m-3" in t30_headers
+        assert "PHOTO.photo1.s-1" in t30_headers
+        assert "EMIS.emis1.mol m-3 s-1" in t30_headers
+        assert "LOSS.loss1.s-1" in t30_headers
+        assert "USER.ud1.s-1" in t30_headers
+        assert "SURF.surf1.particle number concentration.# m-3" in t30_headers
+        assert "SURF.surf1.effective radius.m" in t30_headers
 
     def test_round_trip_results_exactly_equal(self, tmp_path):
         """
@@ -175,7 +257,7 @@ class TestExportRoundTrip:
             f"Result shapes differ: {df1.shape} vs {df2.shape}"
         )
 
-        # Sort columns so ordering differences don't cause false failures
+        # Sort columns to handle any ordering differences
         df1_sorted = df1.reindex(sorted(df1.columns), axis=1)
         df2_sorted = df2.reindex(sorted(df2.columns), axis=1)
 
