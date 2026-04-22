@@ -163,7 +163,7 @@ Use a lat-lon variable (PBLH) to bound the vertical dimension at a specific heig
 If you request two date-time pairs, the tool will create evolving conditions over time rather than initial conditions.
 
 ```bash
-waccmToMusicBox --waccmDir "./sample_waccm_data" --date "20260208" --time "07:00" --latitude 3.1 --longitude 101.7 -verbose
+waccmToMusicBox --waccmDir "./sample_waccm_data" --date "20260208" --time "07:00" --latitude 3.1 --longitude 101.7 --verbose
 
 waccmToMusicBox --wrfchemDir "./sample_waccm_data" --date "20250820" --time "08:00" --latitude 47.0,49.0 --longitude "'-123.0,-121.0'"
 ```
