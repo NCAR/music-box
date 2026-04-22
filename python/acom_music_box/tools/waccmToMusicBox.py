@@ -447,12 +447,45 @@ def writeInitCSV(initValues, filename):
 # initValues = dictionary of Musica varnames and (WACCM name, value, units)
 def writeInitJSON(initValues, filename):
 
-    # set up dictionary of vars and initial values
-    dictName = "chemical species"
+    # set up dictionary of CSV files and JSON initial values
+    dictName = "conditions"
     initConfig = {dictName: {}}
 
+    # two sections of conditions
+    dataName = "data"
+    pathsName = "filepaths"
+    initConfig[dictName][dataName] = []
+    initConfig[dictName][pathsName] = []
+
+    # build the column headers
+    headerList = []
     for key, value in initValues.items():
-        initConfig[dictName][key] = {f"initial value [{value[unitIndex]}]": value[valueIndex]}
+        reaction_type = "CONC"
+        if isSystem(key):
+            reaction_type = None
+        if isEnvironment(key):
+            reaction_type = "ENV"
+
+        titleString = conditions_manager.ConditionsManager.format_reaction_var_units(
+            key, units=value[unitIndex], prefix=reaction_type)
+        headerList.append(titleString)
+
+    # build the rows of chemical concentrations
+    concArray = []
+    firstColumn = next(iter(initValues.items()))
+    numDataRows = len(firstColumn[1][valueIndex])
+    logger.debug(f"numDataRows = {numDataRows}")
+    for ri in range(numDataRows):
+        # write the variable values
+        oneRow = []
+        for key, value in initValues.items():
+            oneRow.append(value[valueIndex][ri])
+        concArray.append(oneRow)
+
+    # create row of variables and units
+    headersName = "headers"
+    rowsName = "rows"
+    initConfig[dictName][dataName].append({headersName: headerList, rowsName: concArray})
 
     # write JSON content to the file
     fpJson = open(filename, "w")
