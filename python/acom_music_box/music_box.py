@@ -437,3 +437,68 @@ class MusicBox:
         if self.__mechanism is None:
             raise ValueError("Mechanism is not loaded.")
         return self.__mechanism
+
+    def export(self, path_to_json: str):
+        """
+        Export the current box model state to a v1 JSON file.
+
+        The exported file is self-contained: conditions are written as inline
+        data blocks (one per time point) so no external CSV files are needed.
+        The file can be reloaded with loadJson() to reproduce identical results.
+
+        Args:
+            path_to_json: Path to write the JSON file.
+
+        Raises:
+            ValueError: If the mechanism has not been loaded.
+        """
+        config = {}
+
+        # Box model options (all times in seconds for unambiguous round-trip)
+        config['box model options'] = {
+            'grid': self.box_model_options.grid,
+            'chemistry time step [sec]': self.box_model_options.chem_step_time,
+            'output time step [sec]': self.box_model_options.output_step_time,
+            'simulation length [sec]': self.box_model_options.simulation_length,
+            'max iterations': self.box_model_options.max_iterations,
+        }
+
+        # Mechanism — musica serialize() returns a v1-compatible dict
+        mech_dict = self.mechanism.serialize()
+        mech_dict['version'] = '1.0.0'
+        config['mechanism'] = mech_dict
+
+        # Conditions — one data block per time point avoids null/sparse issues
+        raw_df = self._conditions_manager.raw
+        conc_events = self._conditions_manager.concentration_events
+        all_times = self._conditions_manager.get_times()
+
+        data_blocks = []
+        for t in all_times:
+            headers = ['time.s']
+            values = [float(t)]
+
+            # ENV and rate parameters from the sparse DataFrame
+            time_mask = raw_df['time.s'] == t
+            if time_mask.any():
+                row = raw_df[time_mask].iloc[0]
+                for col in raw_df.columns:
+                    if col == 'time.s':
+                        continue
+                    val = row[col]
+                    if pd.notna(val):
+                        headers.append(col)
+                        values.append(float(val))
+
+            # Concentration events (applied at exact time, not interpolated)
+            if t in conc_events:
+                for species, value in sorted(conc_events[t].items()):
+                    headers.append(f'CONC.{species}.mol m-3')
+                    values.append(float(value))
+
+            data_blocks.append({'headers': headers, 'rows': [values]})
+
+        config['conditions'] = {'data': data_blocks}
+
+        with open(path_to_json, 'w') as f:
+            json.dump(config, f, indent=2)
