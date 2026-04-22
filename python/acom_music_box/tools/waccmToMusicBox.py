@@ -61,11 +61,6 @@ def parse_arguments():
         help='Directory containing WRF-Chem model output as NetCDF files.'
     )
     parser.add_argument(
-        '--musicaDir',
-        type=str,
-        help='Write MusicBox initial conditions into this directory as CSV and/or JSON.'
-    )
-    parser.add_argument(
         '--date',
         type=str,
         help="Date of model output to extract, in format YYYYMMDD"
@@ -120,10 +115,15 @@ def parse_arguments():
         version=f'MusicBox {__version__}',
     )
     parser.add_argument(
-        '--output',
+        '-o', '--output',
         type=str,
-        default="CSV",
-        help="Format(s) for writing the initial conditions: CSV,JSON"
+        action="append",
+        default=[],
+        help=("Path to save the initial/evolving conditions, including the file name."
+              + "\nIf not provided, result will be printed to the console."
+              + "\nUse the file extension to specify the output format: .csv or .json"
+              + "\nRepeat this argument to write output in multiple formats."
+        )
     )
     return parser.parse_args()
 
@@ -401,7 +401,12 @@ def isEnvironment(varName):
 # Write CSV file suitable for initial_conditions.csv in MusicBox.
 # initValues = dictionary of Musica varnames and (WACCM name, value, units)
 def writeInitCSV(initValues, filename):
-    fp = open(filename, "w")
+    console = False
+    if (filename == sys.stdout.name):
+        fp = sys.stdout
+        console = True
+    else:
+        fp = open(filename, "w")
 
     # write the column titles
     firstColumn = True
@@ -439,7 +444,8 @@ def writeInitCSV(initValues, filename):
             fp.write(f"{value[valueIndex][ri]}")
         fp.write("\n")
 
-    fp.close()
+    if not console:
+        fp.close()
     return
 
 
@@ -491,7 +497,6 @@ def writeInitJSON(initValues, filename):
     fpJson = open(filename, "w")
 
     json.dump(initConfig, fpJson, indent=2)
-    fpJson.close()
 
     fpJson.close()
     return
@@ -580,10 +585,6 @@ def main():
     waccmDir = myArgs.waccmDir
     wrfChemDir = myArgs.wrfchemDir
 
-    musicaDir = os.path.dirname(Examples.WACCM.path)
-    if (myArgs.musicaDir is not None):
-        musicaDir = myArgs.musicaDir
-
     template = Examples.TS1.path
     if (myArgs.template is not None):
         template = myArgs.template
@@ -650,16 +651,8 @@ def main():
 
     logger.info(f"lats = {lats}   lons = {lons}   alts = {alts}")
 
-    # get the requested (diagnostic) output
-    outputCSV = False
-    outputJSON = False
+    # write the requested (calculated) output
     insertIntoConfig = False
-    if (myArgs.output is not None):
-        # parameter is like: output=CSV,JSON
-        outputFormats = myArgs.output.split(",")
-        outputFormats = [lowFormat.lower() for lowFormat in outputFormats]
-        outputCSV = "csv" in outputFormats
-        outputJSON = "json" in outputFormats
 
     for modelDir, modelType, modelStride in zip(
             [waccmDir, wrfChemDir], [WACCM_OUT, WRFCHEM_OUT], [6, 1]):
@@ -755,24 +748,28 @@ def main():
         logger.info(f"Final frameCount = {frameCount}")
         logger.debug(f"Final WACCM accumValues = {accumValues}")
 
-        # Did we just calculate a single initial condition or multiple evolving?
-        spanConditions = "initial"
-        if (frameCount > 1):
-            spanConditions = "evolving"
+        # loop through the requested output files/formats
+        for output in myArgs.output:
+            logger.info(f"Writing output to {output} ...")
+            nameonly, extension = os.path.splitext(output)
+            extension = extension.replace('.', '').lower()
 
-        if (outputCSV):
-            # Write CSV file for MusicBox initial conditions.
-            csvName = os.path.join(musicaDir,
-                                   "{}_conditions-{}.csv".format(spanConditions, modelNames[modelType]))
-            logger.info(f"csvName = {csvName}")
-            writeInitCSV(accumValues, csvName)
+            if (extension in {"csv"}):
+                # Write CSV file for MusicBox initial conditions.
+                csvName = output
+                writeInitCSV(accumValues, csvName)
 
-        if (outputJSON):
-            # Write JSON file for MusicBox initial conditions.
-            jsonName = os.path.join(musicaDir,
-                                    "{}_config-{}.json".format(spanConditions, modelNames[modelType]))
-            logger.info(f"jsonName = {jsonName}")
-            writeInitJSON(accumValues, jsonName)
+            elif (extension in {"json"}):
+                # Write JSON file for MusicBox initial conditions.
+                jsonName = output
+                writeInitJSON(accumValues, jsonName)
+
+            else:
+                logger.warning(f"Skipping unrecognized file extension {output}")
+
+        if (len(myArgs.output) == 0):
+            # no output supplied; write CSV to console
+            writeInitCSV(accumValues, sys.stdout.name)
 
         if (insertIntoConfig):
             logger.info(f"Insert values into template {templateDir}")
