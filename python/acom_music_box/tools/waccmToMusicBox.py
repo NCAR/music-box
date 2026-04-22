@@ -751,6 +751,14 @@ def main():
         # loop through the requested output files/formats
         for output in myArgs.output:
             logger.info(f"Writing output to {output} ...")
+
+            # ensure that any directories already exist
+            dir_path = os.path.dirname(output)
+            if dir_path and not os.path.exists(dir_path):
+                os.makedirs(dir_path, exist_ok=True)
+                logger.info(f"Created directory: {dir_path}")
+
+            # file extension specifies the output type
             nameonly, extension = os.path.splitext(output)
             extension = extension.replace('.', '').lower()
 
