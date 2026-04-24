@@ -175,11 +175,11 @@ The default configuration file is in the ts1 example because that example has ma
 Use the --template parameter to specify your own configuration file (usually my_config.json).
 
 ```bash
-waccmToMusicBox --wrfchemDir ~/MusicBox/WRF-Chem/model-output --date 20250820,20250822 --time 18:00,05:00 --stride 3 --latitude 47.0,49.0 --longitude "'-123.0,-121.0'" --altitude surface,PBLH --template ./examples/ts1 --output evolving.csv --output evolving.json --verbose
+waccmToMusicBox --wrfchemDir ~/MusicBox/WRF-Chem/model-output --date 20250820,20250822 --time 18:00,05:00 --stride 3 --latitude 47.0,49.0 --longitude "'-123.0,-121.0'" --altitude surface,PBLH --template ./examples/ts1 --output evolving_conditions.csv --verbose
 ```
 
 ```bash
-waccmToMusicBox --waccmDir ~/MusicBox/WACCM/model-output --date 20240301,20240304 --time 17:00,04:00 --latitude "'-4.0,-2.0'" --longitude 101.0,103.0 --altitude 567.8,4567.8 --template ./examples/ts1 --output conditions/evolving.csv -o conditions/evolving.json --verbose -v
+waccmToMusicBox --waccmDir ~/MusicBox/WACCM/model-output --date 20240301,20240304 --time 17:00,04:00 --latitude "'-4.0,-2.0'" --longitude 101.0,103.0 --altitude 567.8,4567.8 --template ./examples/ts1 --output conditions/evolving_conditions.csv --verbose -v
 ```
 
 ## Development

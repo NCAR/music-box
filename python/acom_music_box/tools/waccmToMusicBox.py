@@ -121,8 +121,7 @@ def parse_arguments():
         default=[],
         help=("Path to save the initial/evolving conditions, including the file name."
               + "\nIf not provided, result will be printed to the console."
-              + "\nUse the file extension to specify the output format: .csv or .json"
-              + "\nRepeat this argument to write output in multiple formats."
+              + "\nUse the file extension to specify the output format: .csv"
         )
     )
     return parser.parse_args()
