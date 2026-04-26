@@ -357,11 +357,19 @@ def convertWaccm(varDict):
     # https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2019MS001882&file=jame21103-sup-0001-2019MS001882+Text_SI-S01.pdf
     soa_molecular_weight = 0.115  # kg mol-1
     soa_density = 1770  # kg m-3
+    hPaToPa = 100
 
     # retrieve temperature and pressure from WACCM
     temperature = varDict["temperature"][valueIndex][0]
+    tempUnits = varDict["temperature"][unitIndex]
+
     pressure = varDict["pressure"][valueIndex][0]
-    logger.info(f"temperature = {temperature} K   pressure = {pressure} Pa")
+    pressUnits = varDict["pressure"][unitIndex]
+    if (pressUnits == "hPa"):
+        pressure *= hPaToPa
+        pressUnits = "Pa"
+    logger.info(f"temperature = {temperature} {tempUnits}   pressure = {pressure} {pressUnits}")
+
     air_density = calculate_air_density(temperature, pressure)
     logger.info(f"air density = {air_density} mol m-3")
 
@@ -375,6 +383,9 @@ def convertWaccm(varDict):
             # soa species only
             varDict[key] = (vTuple[0], "mol m-3",
                             [vTuple[valueIndex][0] * soa_density / soa_molecular_weight])
+        if (units == "hPa"):
+            varDict[key] = (vTuple[0], "Pa",
+                            [vTuple[valueIndex][0] * hPaToPa])
 
     return (varDict)
 
