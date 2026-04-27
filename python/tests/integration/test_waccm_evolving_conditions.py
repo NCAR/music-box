@@ -40,7 +40,7 @@ def run_command_with_args(cmdName, args, cwd):
 
 
 def test_waccm_evolving_conditions(temp_dir):
-    print(f"temp_dir1 = {temp_dir}")
+    print(f"temp_dir = {temp_dir}")
 
     # Step 1: Create a required CSV by converting WACCM data.
     repo_root = get_repo_root()
@@ -70,7 +70,7 @@ def test_waccm_evolving_conditions(temp_dir):
 
     # Run the waccmToMusicBox script with the arguments
     run_command_with_args("waccmToMusicBox", args, temp_dir)
-    assert os.path.exists(os.path.join(temp_dir, csvOutPath))
+    assert os.path.exists(csvOutPath)
 
     # Step 2: Now run MusicBox with that CSV file containing WACCM data.
     # This portion of the test will fail if waccmToMusicBox did not run correctly.
@@ -78,7 +78,7 @@ def test_waccm_evolving_conditions(temp_dir):
     # capture the output file
     configPath = os.path.join(repo_root, "python", "tests", "integration",
         "configs", "waccm_evolving_conditions", "my_config.json")
-    outputPath = os.path.join(repo_root, "python", "tests", "integration",
+    outputPath = os.path.join(temp_dir,
         "configs", "waccm_evolving_conditions", "evolving_output.csv")
 
     # make sure to create entirely new test file
@@ -94,5 +94,5 @@ def test_waccm_evolving_conditions(temp_dir):
     # Run the waccmToMusicBox script with the arguments
     run_command_with_args("music_box", args, temp_dir)
     print(f"outputPath = {outputPath}")
-    assert os.path.exists(os.path.join(temp_dir, outputPath))
+    assert os.path.exists(outputPath)
 
