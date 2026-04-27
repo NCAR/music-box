@@ -122,7 +122,7 @@ def parse_arguments():
         help=("Path to save the initial/evolving conditions, including the file name."
               + "\nIf not provided, result will be printed to the console."
               + "\nUse the file extension to specify the output format: .csv"
-        )
+              )
     )
     return parser.parse_args()
 

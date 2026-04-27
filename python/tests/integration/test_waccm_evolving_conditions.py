@@ -48,9 +48,9 @@ def test_waccm_evolving_conditions(temp_dir):
 
     # set up the output files
     configPath = os.path.join(repo_root, "python", "tests", "integration",
-        "configs", "waccm_evolving_conditions")
+                              "configs", "waccm_evolving_conditions")
     csvOutPath = os.path.join(repo_root, "python", "tests", "integration",
-        "configs", "waccm_evolving_conditions", "evolving_conditions.csv")
+                              "configs", "waccm_evolving_conditions", "evolving_conditions.csv")
 
     # make sure to create entirely new test file
     pathlib.Path(csvOutPath).unlink(missing_ok=True)
@@ -77,9 +77,9 @@ def test_waccm_evolving_conditions(temp_dir):
 
     # capture the output file
     configPath = os.path.join(repo_root, "python", "tests", "integration",
-        "configs", "waccm_evolving_conditions", "my_config.json")
+                              "configs", "waccm_evolving_conditions", "my_config.json")
     outputPath = os.path.join(temp_dir,
-        "configs", "waccm_evolving_conditions", "evolving_output.csv")
+                              "configs", "waccm_evolving_conditions", "evolving_output.csv")
 
     # make sure to create entirely new test file
     pathlib.Path(outputPath).unlink(missing_ok=True)
@@ -95,4 +95,3 @@ def test_waccm_evolving_conditions(temp_dir):
     run_command_with_args("music_box", args, temp_dir)
     print(f"outputPath = {outputPath}")
     assert os.path.exists(outputPath)
-
