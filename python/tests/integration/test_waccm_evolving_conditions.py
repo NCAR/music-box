@@ -8,6 +8,7 @@ from acom_music_box.main import main as musicBoxMain
 from acom_music_box.tools.waccmToMusicBox import main as waccmToMusicBoxMain
 import pandas as pd
 import math
+import pathlib
 
 
 @pytest.fixture
@@ -51,6 +52,9 @@ def test_waccm_evolving_conditions(temp_dir):
     csvOutPath = os.path.join(repo_root, "python", "tests", "integration",
         "configs", "waccm_evolving_conditions", "evolving_conditions.csv")
 
+    # make sure to create entirely new test file
+    pathlib.Path(csvOutPath).unlink(missing_ok=True)
+
     # Set up arguments for the WACCM conversion
     args = [
         "--waccmDir", f"{sample_data_dir}",
@@ -76,6 +80,9 @@ def test_waccm_evolving_conditions(temp_dir):
         "configs", "waccm_evolving_conditions", "my_config.json")
     outputPath = os.path.join(repo_root, "python", "tests", "integration",
         "configs", "waccm_evolving_conditions", "evolving_output.csv")
+
+    # make sure to create entirely new test file
+    pathlib.Path(outputPath).unlink(missing_ok=True)
 
     # Set up arguments for the WACCM conversion
     args = [
