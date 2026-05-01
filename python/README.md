@@ -149,18 +149,37 @@ music_box -e TS1 --plot O3 --plot-output-unit ppb
 
 ## Tool: waccmToMusicBox
 
-Extract chemical species concentrations from WACCM or WRF-Chem output and write them as MusicBox initial conditions:
-
-```bash
-waccmToMusicBox --waccmDir "./sample_waccm_data" --date "20240904" --time "07:00" --latitude 3.1 --longitude 101.7
-
-waccmToMusicBox --wrfchemDir "./sample_waccm_data" --date "20250820" --time "08:00" --latitude 47.0,49.0 --longitude "'-123.0,-121.0'"
-```
-
-For advanced options including template configs and multiple output formats:
+This tool allows you to extract chemical species concentrations from WACCM or WRF-Chem model output and write them as MusicBox initial conditions.
+Use the built-in help to display all options including template configurations and multiple output formats:
 
 ```bash
 waccmToMusicBox --help
+```
+
+You may specify a single point in space and date-time by passing single values to date, time, latitude, and longitude.
+Altitude defaults to the surface.
+You may also specify a rectangle or cube by specifying multiple values for latitude, longitude, and altitude.
+Use a lat-lon variable (PBLH) to bound the vertical dimension at a specific height.
+If you request two date-time pairs, the tool will create evolving conditions over time rather than initial conditions.
+
+```bash
+waccmToMusicBox --waccmDir "./sample_waccm_data" --date "20260208" --time "07:00" --latitude 3.1 --longitude 101.7 --verbose
+```
+
+```bash
+waccmToMusicBox --wrfchemDir "./sample_waccm_data" --date "20250820" --time "08:00" --latitude 47.0,49.0 --longitude "'-123.0,-121.0'"
+```
+
+waccmToMusicBox uses MUSICA configuration file to create a list of common chemical species between MusicBox and WACCM or WRF-Chem.
+The default configuration file is in the ts1 example because that example has many species.
+Use the --template parameter to specify your own configuration file (usually my_config.json).
+
+```bash
+waccmToMusicBox --wrfchemDir ~/MusicBox/WRF-Chem/model-output --date 20250820,20250822 --time 18:00,05:00 --stride 3 --latitude 47.0,49.0 --longitude "'-123.0,-121.0'" --altitude surface,PBLH --template ./examples/ts1 --output evolving_conditions.csv --verbose
+```
+
+```bash
+waccmToMusicBox --waccmDir ~/MusicBox/WACCM/model-output --date 20240301,20240304 --time 17:00,04:00 --latitude "'-4.0,-2.0'" --longitude 101.0,103.0 --altitude 567.8,4567.8 --template ./examples/ts1 --output conditions/evolving_conditions.csv --verbose -v
 ```
 
 ## Development

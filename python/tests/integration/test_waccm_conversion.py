@@ -32,6 +32,10 @@ def test_waccm_to_music_box_conversion(temp_dir):
     repo_root = get_repo_root()
     sample_data_dir = os.path.join(repo_root, "sample_waccm_data")
 
+    # set up the output files
+    csvOutPath = os.path.join("waccmExtract", "initial_conditions-waccm.csv")
+    jsonOutPath = os.path.join("waccmExtract", "initial_conditions-waccm.json")
+
     # Set up arguments for the WACCM conversion
     args = [
         "--waccmDir", f"{sample_data_dir}",
@@ -39,15 +43,21 @@ def test_waccm_to_music_box_conversion(temp_dir):
         "--time", "12:00",
         "--latitude", "3.1",
         "--longitude", "101.7",
-        "--output", "csv,json"
+        "--output", csvOutPath,
+        "-o", jsonOutPath,
+        "--verbose"
     ]
 
     # Run the waccmToMusicBox script with the arguments
     run_waccm_to_music_box_with_args(args, temp_dir)
 
     # Check if the output files are created
-    assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_conditions-waccm.csv"))
-    assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_config-waccm.json"))
+    assert os.path.exists(os.path.join(temp_dir, csvOutPath))
+    assert os.path.exists(os.path.join(temp_dir, jsonOutPath))
+
+    # set up the output files
+    csvOutPath = os.path.join("wrfchemExtract", "initial_conditions-wrfchem.csv")
+    jsonOutPath = os.path.join("wrfchemExtract", "initial_conditions-wrfchem.json")
 
     # Set up arguments for the WRF-Chem conversion
     args = [
@@ -56,7 +66,8 @@ def test_waccm_to_music_box_conversion(temp_dir):
         "--time", "08:00",
         "--latitude", "47.0,49.0",
         "--longitude", "'-123.0,-121.0'",
-        "--output", "csv,json"
+        "--output", csvOutPath,
+        "-o", jsonOutPath
     ]
 
     # Create symbolic link from Linux colon filename pointing to Window-safe hyphen file.
@@ -76,5 +87,5 @@ def test_waccm_to_music_box_conversion(temp_dir):
     run_waccm_to_music_box_with_args(args, temp_dir)
 
     # Check if the output files are created
-    assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_conditions-wrf-chem.csv"))
-    assert os.path.exists(os.path.join(os.path.dirname(Examples.WACCM.path), "initial_config-wrf-chem.json"))
+    assert os.path.exists(os.path.join(temp_dir, csvOutPath))
+    assert os.path.exists(os.path.join(temp_dir, jsonOutPath))

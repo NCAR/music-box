@@ -2,6 +2,107 @@ import { initModule, MICM, SolverState } from '@ncar/musica';
 import { parseBoxModelOptions, parseConditions, parseCsvToBlock } from './config_parser.js';
 import { ConditionsManager } from './conditions_manager.js';
 
+function evaluateJsLambda(source, reactionName) {
+  const trimmed = (source || '').trim();
+  if (!trimmed) {
+    throw new Error(`Lambda reaction "${reactionName}" is missing a \"lambda function\" value`);
+  }
+
+  let fn;
+  try {
+    // NOTE: new Function() executes a string from the mechanism config.
+    // Treat any mechanism config loaded from an untrusted source (e.g. browser uploads)
+    // as equivalent to executing arbitrary code.
+    fn = new Function(`return (${trimmed});`)();
+  } catch (err) {
+    const details = err instanceof Error ? err.message : String(err);
+    throw new Error(
+      `Lambda reaction "${reactionName}" must be a valid JavaScript function, e.g. (T, P, airDensity) => 1.0e-12. ${details}`,
+      { cause: err }
+    );
+  }
+
+  if (typeof fn !== 'function') {
+    throw new Error(
+      `Lambda reaction "${reactionName}" must evaluate to a function, e.g. (T, P, airDensity) => 1.0e-12`
+    );
+  }
+
+  return (T, P, airDensity) => {
+    const value = fn(T, P, airDensity);
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      throw new Error(`Lambda reaction "${reactionName}" returned a non-numeric value`);
+    }
+    return value;
+  };
+}
+
+function defaultLambdaReactionName(reaction, index) {
+  const lhs = Array.isArray(reaction.reactants)
+    ? reaction.reactants
+        .map((component) => component?.['species name'] || component?.name)
+        .filter(Boolean)
+        .join('_')
+    : '';
+  const rhs = Array.isArray(reaction.products)
+    ? reaction.products
+        .map((component) => component?.['species name'] || component?.name)
+        .filter(Boolean)
+        .join('_')
+    : '';
+
+  if (lhs || rhs) {
+    return `${lhs || 'reactants'}_to_${rhs || 'products'}`;
+  }
+
+  return `lambda_reaction_${index + 1}`;
+}
+
+function registerLambdaCallbacks(micm, mechanism) {
+  const reactions = Array.isArray(mechanism?.reactions) ? mechanism.reactions : [];
+  const lambdaReactions = reactions.filter((reaction) => reaction?.type === 'LAMBDA_RATE_CONSTANT');
+
+  for (const [index, reaction] of lambdaReactions.entries()) {
+    const reactionName = (reaction.name || '').trim() || defaultLambdaReactionName(reaction, index);
+    reaction.name = reactionName;
+    const callback = evaluateJsLambda(reaction['lambda function'], reactionName);
+    micm.setReactionRateCallback(`Lambda.${reactionName}`, callback);
+  }
+}
+
+function pruneUnknownRateParams(normalizedRateParams, acceptedRateParamKeys, warnedUnknownRateParams) {
+  const filtered = { ...(normalizedRateParams || {}) };
+
+  if (!(acceptedRateParamKeys && acceptedRateParamKeys.size > 0)) {
+    return filtered;
+  }
+
+  for (const key of Object.keys(filtered)) {
+    if (!acceptedRateParamKeys.has(key)) {
+      if (!warnedUnknownRateParams.has(key)) {
+        warnedUnknownRateParams.add(key);
+        console.warn(
+          `Ignoring unknown rate parameter key "${key}". ` +
+            'Verify condition headers match mechanism-defined user parameters.'
+        );
+      }
+      delete filtered[key];
+    }
+  }
+
+  return filtered;
+}
+
+function normalizeRateParamsForSolver(rateParams, normalizerState) {
+  if (!rateParams || typeof rateParams !== 'object') return {};
+
+  return pruneUnknownRateParams(
+    rateParams,
+    normalizerState.acceptedRateParamKeys,
+    normalizerState.warnedUnknownRateParams
+  );
+}
+
 /**
  * JavaScript implementation of the music-box atmospheric chemistry box model.
  *
@@ -75,10 +176,15 @@ export class MusicBox {
       parseBoxModelOptions(this._config);
     const micm = MICM.fromMechanism({ getJSON: () => this._config.mechanism });
     const state = micm.createState(1);
+    const normalizerState = {
+      acceptedRateParamKeys: new Set(Object.keys(state.getUserDefinedRateParameters())),
+      warnedUnknownRateParams: new Set(),
+    };
 
     try {
-      const condsMgr = new ConditionsManager(parseConditions(this._config.conditions));
+      registerLambdaCallbacks(micm, this._config.mechanism);
 
+      const condsMgr = new ConditionsManager(parseConditions(this._config.conditions));
       // Build sorted list of concentration event times (mirrors Python's sorted_event_times)
       const concentrationEvents = condsMgr.concentrationEvents;
       const sortedEventTimes = Object.keys(concentrationEvents)
@@ -96,9 +202,9 @@ export class MusicBox {
         nextEventIdx++;
       }
 
-      if (Object.keys(t0.rateParams).length > 0) {
-        state.setUserDefinedRateParameters(t0.rateParams);
-      }
+      state.setUserDefinedRateParameters(
+        normalizeRateParamsForSolver(t0.rateParams || {}, normalizerState)
+      );
 
       // Collect output as column arrays for efficient DataFrame construction
       const columns = { 'time.s': [] };
@@ -113,11 +219,21 @@ export class MusicBox {
         }
       }
 
-      appendOutput(0);
       let currTime = 0;
-      let nextOutputTime = outputTimeStep;
+      let nextOutputTime = 0;
 
-      while (currTime < simulationLength) {
+      outer: while (currTime <= simulationLength) {
+        // Collect output at all configured output times that have been reached
+        while (nextOutputTime <= currTime) {
+          appendOutput(currTime);
+          nextOutputTime += outputTimeStep;
+
+          // Bail out once we've emitted the last requested output timestamp.
+          if (nextOutputTime > simulationLength) {
+            break outer;
+          }
+        }
+
         // Apply any concentration events at or before current time
         while (
           nextEventIdx < sortedEventTimes.length &&
@@ -130,9 +246,9 @@ export class MusicBox {
         // Update environment and rate parameters at current time
         const conds = condsMgr.getConditionsAtTime(currTime);
         state.setConditions({ temperatures: conds.temperature, pressures: conds.pressure });
-        if (Object.keys(conds.rateParams).length > 0) {
-          state.setUserDefinedRateParameters(conds.rateParams);
-        }
+        state.setUserDefinedRateParameters(
+          normalizeRateParamsForSolver(conds.rateParams || {}, normalizerState)
+        );
 
         // Integrate one chemistry step (may require multiple sub-steps)
         let elapsed = 0;
@@ -155,10 +271,6 @@ export class MusicBox {
           elapsed += result.stats.final_time;
           currTime += result.stats.final_time;
 
-          if (currTime >= nextOutputTime && nextOutputTime <= simulationLength) {
-            appendOutput(currTime);
-            nextOutputTime += outputTimeStep;
-          }
         }
       }
 

@@ -47,7 +47,7 @@ def setup_logging(verbosity):
 # Parse the command-line arguments in this form: --parameter value
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description='Extraction of WACCM model output for input to MusicBox.',
+        description='Extraction of WACCM or WRF-Chem model output for input to MusicBox.',
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument(
@@ -59,11 +59,6 @@ def parse_arguments():
         '--wrfchemDir',
         type=str,
         help='Directory containing WRF-Chem model output as NetCDF files.'
-    )
-    parser.add_argument(
-        '--musicaDir',
-        type=str,
-        help='Write MusicBox initial conditions into this directory as CSV and/or JSON.'
     )
     parser.add_argument(
         '--date',
@@ -120,9 +115,14 @@ def parse_arguments():
         version=f'MusicBox {__version__}',
     )
     parser.add_argument(
-        '--output',
+        '-o', '--output',
         type=str,
-        help="Format(s) for writing the initial conditions: CSV,JSON"
+        action="append",
+        default=[],
+        help=("Path to save the initial/evolving conditions, including the file name."
+              + "\nIf not provided, result will be printed to the console."
+              + "\nUse the file extension to specify the output format: .csv"
+              )
     )
     return parser.parse_args()
 
@@ -357,11 +357,19 @@ def convertWaccm(varDict):
     # https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2019MS001882&file=jame21103-sup-0001-2019MS001882+Text_SI-S01.pdf
     soa_molecular_weight = 0.115  # kg mol-1
     soa_density = 1770  # kg m-3
+    hPaToPa = 100
 
     # retrieve temperature and pressure from WACCM
     temperature = varDict["temperature"][valueIndex][0]
+    tempUnits = varDict["temperature"][unitIndex]
+
     pressure = varDict["pressure"][valueIndex][0]
-    logger.info(f"temperature = {temperature} K   pressure = {pressure} Pa")
+    pressUnits = varDict["pressure"][unitIndex]
+    if (pressUnits == "hPa"):
+        pressure *= hPaToPa
+        pressUnits = "Pa"
+    logger.info(f"temperature = {temperature} {tempUnits}   pressure = {pressure} {pressUnits}")
+
     air_density = calculate_air_density(temperature, pressure)
     logger.info(f"air density = {air_density} mol m-3")
 
@@ -375,6 +383,9 @@ def convertWaccm(varDict):
             # soa species only
             varDict[key] = (vTuple[0], "mol m-3",
                             [vTuple[valueIndex][0] * soa_density / soa_molecular_weight])
+        if (units == "hPa"):
+            varDict[key] = (vTuple[0], "Pa",
+                            [vTuple[valueIndex][0] * hPaToPa])
 
     return (varDict)
 
@@ -400,7 +411,12 @@ def isEnvironment(varName):
 # Write CSV file suitable for initial_conditions.csv in MusicBox.
 # initValues = dictionary of Musica varnames and (WACCM name, value, units)
 def writeInitCSV(initValues, filename):
-    fp = open(filename, "w")
+    console = False
+    if (filename == sys.stdout.name):
+        fp = sys.stdout
+        console = True
+    else:
+        fp = open(filename, "w")
 
     # write the column titles
     firstColumn = True
@@ -438,7 +454,8 @@ def writeInitCSV(initValues, filename):
             fp.write(f"{value[valueIndex][ri]}")
         fp.write("\n")
 
-    fp.close()
+    if not console:
+        fp.close()
     return
 
 
@@ -446,18 +463,50 @@ def writeInitCSV(initValues, filename):
 # initValues = dictionary of Musica varnames and (WACCM name, value, units)
 def writeInitJSON(initValues, filename):
 
-    # set up dictionary of vars and initial values
-    dictName = "chemical species"
+    # set up dictionary of CSV files and JSON initial values
+    dictName = "conditions"
     initConfig = {dictName: {}}
 
+    # two sections of conditions
+    dataName = "data"
+    pathsName = "filepaths"
+    initConfig[dictName][dataName] = []
+    initConfig[dictName][pathsName] = []
+
+    # build the column headers
+    headerList = []
     for key, value in initValues.items():
-        initConfig[dictName][key] = {f"initial value [{value[unitIndex]}]": value[valueIndex]}
+        reaction_type = "CONC"
+        if isSystem(key):
+            reaction_type = None
+        if isEnvironment(key):
+            reaction_type = "ENV"
+
+        titleString = conditions_manager.ConditionsManager.format_reaction_var_units(
+            key, units=value[unitIndex], prefix=reaction_type)
+        headerList.append(titleString)
+
+    # build the rows of chemical concentrations
+    concArray = []
+    firstColumn = next(iter(initValues.items()))
+    numDataRows = len(firstColumn[1][valueIndex])
+    logger.debug(f"numDataRows = {numDataRows}")
+    for ri in range(numDataRows):
+        # write the variable values
+        oneRow = []
+        for key, value in initValues.items():
+            oneRow.append(value[valueIndex][ri])
+        concArray.append(oneRow)
+
+    # create row of variables and units
+    headersName = "headers"
+    rowsName = "rows"
+    initConfig[dictName][dataName].append({headersName: headerList, rowsName: concArray})
 
     # write JSON content to the file
     fpJson = open(filename, "w")
 
     json.dump(initConfig, fpJson, indent=2)
-    fpJson.close()
 
     fpJson.close()
     return
@@ -533,21 +582,18 @@ modelNames = [None, "waccm", "wrf-chem"]
 def main():
     # start with basic logging until args are parsed
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-    logger.info(f"{__file__}")
-    logger.info(f"Start time: {datetime.datetime.now()}")
 
     # retrieve and parse the command-line arguments
     myArgs = parse_arguments()
     setup_logging(myArgs.verbose)
+
+    logger.info(f"{__file__}")
+    logger.info(f"Start time: {datetime.datetime.now()}")
     logger.info(f"Command line = {myArgs}")
 
     # set up the directories
     waccmDir = myArgs.waccmDir
     wrfChemDir = myArgs.wrfchemDir
-
-    musicaDir = os.path.dirname(Examples.WACCM.path)
-    if (myArgs.musicaDir is not None):
-        musicaDir = myArgs.musicaDir
 
     template = Examples.TS1.path
     if (myArgs.template is not None):
@@ -615,16 +661,8 @@ def main():
 
     logger.info(f"lats = {lats}   lons = {lons}   alts = {alts}")
 
-    # get the requested (diagnostic) output
-    outputCSV = False
-    outputJSON = False
+    # write the requested (calculated) output
     insertIntoConfig = False
-    if (myArgs.output is not None):
-        # parameter is like: output=CSV,JSON
-        outputFormats = myArgs.output.split(",")
-        outputFormats = [lowFormat.lower() for lowFormat in outputFormats]
-        outputCSV = "csv" in outputFormats
-        outputJSON = "json" in outputFormats
 
     for modelDir, modelType, modelStride in zip(
             [waccmDir, wrfChemDir], [WACCM_OUT, WRFCHEM_OUT], [6, 1]):
@@ -680,7 +718,7 @@ def main():
 
             # read and glean chemical species from WACCM and MUSICA
             waccmChems = getWaccmSpecies(modelDir, waccmFilename)
-            musicaChems = getMusicaSpecies(template)
+            musicaChems = getMusicaSpecies(templateFile)
 
             # create map of species common to both WACCM and MUSICA
             commonDict = getMusicaDictionary(modelType, waccmChems, musicaChems)
@@ -720,24 +758,36 @@ def main():
         logger.info(f"Final frameCount = {frameCount}")
         logger.debug(f"Final WACCM accumValues = {accumValues}")
 
-        # Did we just calculate a single initial condition or multiple evolving?
-        spanConditions = "initial"
-        if (frameCount > 1):
-            spanConditions = "evolving"
+        # loop through the requested output files/formats
+        for output in myArgs.output:
+            logger.info(f"Writing output to {output} ...")
 
-        if (outputCSV):
-            # Write CSV file for MusicBox initial conditions.
-            csvName = os.path.join(musicaDir,
-                                   "{}_conditions-{}.csv".format(spanConditions, modelNames[modelType]))
-            logger.info(f"csvName = {csvName}")
-            writeInitCSV(accumValues, csvName)
+            # ensure that any directories already exist
+            dir_path = os.path.dirname(output)
+            if dir_path and not os.path.exists(dir_path):
+                os.makedirs(dir_path, exist_ok=True)
+                logger.info(f"Created directory: {dir_path}")
 
-        if (outputJSON):
-            # Write JSON file for MusicBox initial conditions.
-            jsonName = os.path.join(musicaDir,
-                                    "{}_config-{}.json".format(spanConditions, modelNames[modelType]))
-            logger.info(f"jsonName = {jsonName}")
-            writeInitJSON(accumValues, jsonName)
+            # file extension specifies the output type
+            nameonly, extension = os.path.splitext(output)
+            extension = extension.replace('.', '').lower()
+
+            if (extension in {"csv"}):
+                # Write CSV file for MusicBox initial conditions.
+                csvName = output
+                writeInitCSV(accumValues, csvName)
+
+            elif (extension in {"json"}):
+                # Write JSON file for MusicBox initial conditions.
+                jsonName = output
+                writeInitJSON(accumValues, jsonName)
+
+            else:
+                logger.warning(f"Skipping unrecognized file extension {output}")
+
+        if (len(myArgs.output) == 0):
+            # no output supplied; write CSV to console
+            writeInitCSV(accumValues, sys.stdout.name)
 
         if (insertIntoConfig):
             logger.info(f"Insert values into template {templateDir}")
