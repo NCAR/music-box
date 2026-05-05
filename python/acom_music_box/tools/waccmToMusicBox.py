@@ -21,6 +21,7 @@ from acom_music_box import Examples, __version__
 from acom_music_box.utils import calculate_air_density
 import netCDF4
 from acom_music_box.tools import gridUtils
+from acom_music_box.tools import fileUtils
 from acom_music_box import conditions_manager
 import copy
 
@@ -53,11 +54,15 @@ def parse_arguments():
     parser.add_argument(
         '--waccmDir',
         type=str,
+        action="append",
+        default=[],
         help='Directory containing WACCM model output as NetCDF files.'
     )
     parser.add_argument(
         '--wrfchemDir',
         type=str,
+        action="append",
+        default=[],
         help='Directory containing WRF-Chem model output as NetCDF files.'
     )
     parser.add_argument(
@@ -250,6 +255,7 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     # the common species between WACCM and MUSICA.
     if (modelType == WACCM_OUT):
         varMap = {
+            # WACCM: MusicBox
             "T": "temperature",
             "lev": "pressure"       # sigma pressure coordinates
         }
@@ -666,10 +672,12 @@ def main():
 
     for modelDir, modelType, modelStride in zip(
             [waccmDir, wrfChemDir], [WACCM_OUT, WRFCHEM_OUT], [6, 1]):
-        if not modelDir:
+        if (len(modelDir) == 0):
             continue
 
-        logger.info(f"Directory: {modelDir}   type {modelType}")
+        logger.info(f"Directories: {modelDir}   type {modelType}")
+        files = fileUtils.collectFilesDates(modelDir)
+        logger.info(f"Collected files: {files}")
 
         # determine the date-time bounds to retrieve
         startDateTime = datetime.datetime.strptime(
@@ -710,14 +718,14 @@ def main():
                 waccmFilename = os.path.join(dateDir, "wrf", waccmFilename)
 
             # if this frame time is not present, skip
-            waccmFullPath = os.path.join(modelDir, waccmFilename)
+            waccmFullPath = os.path.join(modelDir[0], waccmFilename)
             if not os.path.exists(waccmFullPath):
                 logger.warning(f"File {waccmFullPath} does not exist. Skipping...")
                 when += datetime.timedelta(hours=strideHours)
                 continue
 
             # read and glean chemical species from WACCM and MUSICA
-            waccmChems = getWaccmSpecies(modelDir, waccmFilename)
+            waccmChems = getWaccmSpecies(modelDir[0], waccmFilename)
             musicaChems = getMusicaSpecies(templateFile)
 
             # create map of species common to both WACCM and MUSICA
@@ -733,7 +741,7 @@ def main():
             # Read named variables from WACCM model output.
             logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
             waccmValues = readWACCM(commonDict, lats, lons, alts,
-                                    when, modelDir, waccmFilename, modelType)
+                                    when, modelDir[0], waccmFilename, modelType)
             logger.debug(f"Original WACCM waccmValues = {waccmValues}")
             varValues.update(waccmValues)
 

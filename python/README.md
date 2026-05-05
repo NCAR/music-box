@@ -158,7 +158,7 @@ waccmToMusicBox --help
 
 You may specify a single point in space and date-time by passing single values to date, time, latitude, and longitude.
 Altitude defaults to the surface.
-You may also specify a rectangle or cube by specifying multiple values for latitude, longitude, and altitude.
+You may also specify a rectangle or a cube by specifying multiple values for latitude, longitude, and altitude.
 Use a lat-lon variable (PBLH) to bound the vertical dimension at a specific height.
 If you request two date-time pairs, the tool will create evolving conditions over time rather than initial conditions.
 
@@ -170,7 +170,7 @@ waccmToMusicBox --waccmDir "./sample_waccm_data" --date "20260208" --time "07:00
 waccmToMusicBox --wrfchemDir "./sample_waccm_data" --date "20250820" --time "08:00" --latitude 47.0,49.0 --longitude "'-123.0,-121.0'"
 ```
 
-waccmToMusicBox uses MUSICA configuration file to create a list of common chemical species between MusicBox and WACCM or WRF-Chem.
+waccmToMusicBox uses a MUSICA configuration file to create a list of common chemical species between MusicBox and WACCM or WRF-Chem.
 The default configuration file is in the ts1 example because that example has many species.
 Use the --template parameter to specify your own configuration file (usually my_config.json).
 
