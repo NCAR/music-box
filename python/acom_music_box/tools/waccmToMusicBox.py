@@ -263,9 +263,7 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
         varMap = {
             # WRF-Chem: MusicBox
             "T2": "temperature",
-            "PB": "pressure",
-            "isopr": "ISOPB02",
-            "o3": "O3"
+            "PB": "pressure"
         }
 
     for varName in inCommon:
