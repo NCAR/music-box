@@ -253,13 +253,13 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     # as most of the entries are identical. We may map additional
     # pairs in the future. This map is still useful in identifying
     # the common species between WACCM and MUSICA.
-    if (modelType == WACCM_OUT):
+    if (modelType == fileUtils.WACCM_File):
         varMap = {
             # WACCM: MusicBox
             "T": "temperature",
             "lev": "pressure"       # sigma pressure coordinates
         }
-    elif (modelType == WRFCHEM_OUT):
+    elif (modelType == fileUtils.WRF_Chem_file):
         varMap = {
             # WRF-Chem: MusicBox
             "T2": "temperature",
@@ -280,7 +280,7 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
 # when = date and time to extract
 # modelDir = directory containing model output
 # waccmFilename = name of the model output file
-# modelType = WACCM_OUT or WRFCHEM_OUT
+# modelType = WACCM_File or WRF)Chem_File
 # return dictionary of MUSICA variable names, units, and values
 def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
               when, modelDir, waccmFilename, modelType):
@@ -295,11 +295,11 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
 
     # retrieve all vars at a single point
     meanPoint = None
-    if (modelType == WACCM_OUT):            # straight grid
+    if (modelType == fileUtils.WACCM_File):            # straight grid
         meanPoint = gridUtils.meanStraightGrid(waccmDataSet, when,
                                                latitudes, longitudes, altitudes)
 
-    elif (modelType == WRFCHEM_OUT):        # curved grid
+    elif (modelType == fileUtils.WRF_Chem_File):        # curved grid
         wrfDataSet = netCDF4.Dataset(waccmFilepath)     # needed for the z-levels
         meanPoint = gridUtils.meanCurvedGrid(waccmDataSet, when,
                                              latitudes, longitudes, altitudes,
@@ -576,12 +576,6 @@ def appendRow(waccmData, moreData):
     return waccmData
 
 
-# type of model output in directory
-WACCM_OUT = 1
-WRFCHEM_OUT = 2
-modelNames = [None, "waccm", "wrf-chem"]
-
-
 # Main routine begins here.
 def main():
     # start with basic logging until args are parsed
@@ -668,14 +662,29 @@ def main():
     # write the requested (calculated) output
     insertIntoConfig = False
 
-    for modelDir, modelType, modelStride in zip(
-            [waccmDir, wrfChemDir], [WACCM_OUT, WRFCHEM_OUT], [6, 1]):
-        if (len(modelDir) == 0):
+    # process the two model types
+    for modelDirs, modelType, modelStride in zip(
+            [waccmDir, wrfChemDir],
+            [fileUtils.WACCM_File, fileUtils.WRF_Chem_File],
+            [6, 1]):
+        if (len(modelDirs) == 0):
             continue
 
-        logger.info(f"Directories: {modelDir}   type {modelType}")
-        files = fileUtils.collectFilesDates(modelDir)
-        logger.info(f"Collected files: {files}")
+        # collect model output files in specified directories
+        logger.info(f"Directories: {modelDirs}   type {modelType}")
+        allFiles = []
+        for modelDir in modelDirs:
+            outFiles = fileUtils.collectFilesDates(modelDir, modelType)
+            allFiles.extend(outFiles)
+
+        # sort the output files by date-time
+        fileUtils.sortFiles(allFiles)
+        logger.info(f"Collected files (sorted):")
+        for outFile in allFiles:
+            outFile.display()
+
+        # possibly exit here if just collecting files
+        #sys.exit(0)    # bogus
 
         # determine the date-time bounds to retrieve
         startDateTime = datetime.datetime.strptime(
@@ -701,29 +710,29 @@ def main():
             seconds = (when - startDateTime).total_seconds()
 
             # locate the WACCM output file
-            if (modelType == WACCM_OUT):
+            if (modelType == fileUtils.WACCM_File):
                 waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02d}-00000.nc"
-            elif (modelType == WRFCHEM_OUT):
+            elif (modelType == fileUtils.WRF_Chem_File):
                 waccmFilename = f"wrfout_hourly_d01_{when.year:4d}-{when.month:02d}-{when.day:02d}_{when.hour:02d}:00:00"
 
             # Windows does not allow colons : in filenames. Replace with hyphen -.
             if not pathvalidate.is_valid_filename(waccmFilename, platform="auto"):
                 waccmFilename = waccmFilename.replace(":", "-")
 
-            if (modelType == WRFCHEM_OUT):
+            if (modelType == fileUtils.WRF_Chem_File):
                 # WRF-Chem convention stores files in sub-directories by date
                 dateDir = f"{when.year:4d}{when.month:02d}{when.day:02d}"
                 waccmFilename = os.path.join(dateDir, "wrf", waccmFilename)
 
             # if this frame time is not present, skip
-            waccmFullPath = os.path.join(modelDir[0], waccmFilename)
+            waccmFullPath = os.path.join(modelDirs[0], waccmFilename)
             if not os.path.exists(waccmFullPath):
                 logger.warning(f"File {waccmFullPath} does not exist. Skipping...")
                 when += datetime.timedelta(hours=strideHours)
                 continue
 
             # read and glean chemical species from WACCM and MUSICA
-            waccmChems = getWaccmSpecies(modelDir[0], waccmFilename)
+            waccmChems = getWaccmSpecies(modelDirs[0], waccmFilename)
             musicaChems = getMusicaSpecies(templateFile)
 
             # create map of species common to both WACCM and MUSICA
@@ -739,7 +748,7 @@ def main():
             # Read named variables from WACCM model output.
             logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
             waccmValues = readWACCM(commonDict, lats, lons, alts,
-                                    when, modelDir[0], waccmFilename, modelType)
+                                    when, modelDirs[0], waccmFilename, modelType)
             logger.debug(f"Original WACCM waccmValues = {waccmValues}")
             varValues.update(waccmValues)
 
