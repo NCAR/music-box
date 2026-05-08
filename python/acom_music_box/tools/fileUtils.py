@@ -39,7 +39,7 @@ class Model_File:
 
 # WACCM output file
 class WACCM_File(Model_File):
-    def __init__(self, myPath = "blank.txt"):
+    def __init__(self, myPath = "blank-WACCM.txt"):
         super().__init__(myPath)
         logger.debug(f"WACCM file type: {myPath}")
 
@@ -56,6 +56,10 @@ class WACCM_File(Model_File):
 
 
 class WRF_Chem_File(Model_File):
+    def __init__(self, myPath = "blank-WRF-Chem.txt"):
+        super().__init__(myPath)
+        logger.debug(f"WRF-Chem file type: {myPath}")
+
     # WRF-Chem:   Times = "2025-08-20_08:00:00";                  char
     def inventoryDateTimes(self, fileDataset):
         super().inventoryDateTimes(fileDataset)
@@ -111,4 +115,28 @@ def collectFilesDates(modelDir, modelClass):
 # Sort list of model files in place, by first date-time contained.
 def sortFiles(myModelList):
    myModelList.sort(key=lambda modelFile: modelFile.dateTimes[0])
+
+
+# Expand the original Model_File collection:
+#    File2:  time1, time2, time3, time4
+# strictly into pairs:
+#    File2:  time1
+#    File2:  time2
+#    File2:  time3
+#    File2:  time4
+# This separation makes the extraction loop easier
+# and permits interleaving of model output frames.
+# Return the separated pairs as Model_Files objects.
+def collectionToPairs(myFiles):
+    pairCollection = []
+
+    for compositeFile in myFiles:
+        for myTime in compositeFile.dateTimes:
+            pairFile = Model_File(compositeFile.filePath)
+            pairFile.dateTimes = [myTime]
+            pairCollection.append(pairFile)
+
+    # sort the file objects by date-time
+    sortFiles(pairCollection)
+    return pairCollection
 

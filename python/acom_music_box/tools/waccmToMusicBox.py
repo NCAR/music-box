@@ -677,9 +677,14 @@ def main():
             outFiles = fileUtils.collectFilesDates(modelDir, modelType)
             allFiles.extend(outFiles)
 
+        logger.info(f"Collected files with multiple times:")
+        for outFile in allFiles:
+            outFile.display()
+
+        # separate the collection of file:times into pairs of file:time
         # sort the output files by date-time
-        fileUtils.sortFiles(allFiles)
-        logger.info(f"Collected files (sorted):")
+        allFiles = fileUtils.collectionToPairs(allFiles)
+        logger.info(f"Collected and sorted file-time pairs:")
         for outFile in allFiles:
             outFile.display()
 
