@@ -170,16 +170,14 @@ def isFloat(numString):
 
 # Create and return list of WACCM chemical species
 # that will be mapped to MUSICA.
-# modelDir = directory containing model output
-# waccmFilename = name of WACCM model output file
+# waccmFilename = full path to WACCM model output
 # return list of variable names
-def getWaccmSpecies(modelDir, waccmFilename):
+def getWaccmSpecies(waccmFilename):
     # create the filename
     logger.info(f"WACCM species file = {waccmFilename}")
 
     # open dataset for reading
-    waccmDataSet = xarray.open_dataset(os.path.join(modelDir, waccmFilename),
-                                       engine="netcdf4")
+    waccmDataSet = xarray.open_dataset(waccmFilename, engine="netcdf4")
 
     # collect the data variables
     waccmNames = [varName for varName in waccmDataSet.data_vars]
@@ -259,7 +257,7 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
             "T": "temperature",
             "lev": "pressure"       # sigma pressure coordinates
         }
-    elif (modelType == fileUtils.WRF_Chem_file):
+    elif (modelType == fileUtils.WRF_Chem_File):
         varMap = {
             # WRF-Chem: MusicBox
             "T2": "temperature",
@@ -278,14 +276,12 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
 #   Could be a single point or corners of a selection rectangle.
 # altitudes = height bounds across which to average (meters)
 # when = date and time to extract
-# modelDir = directory containing model output
-# waccmFilename = name of the model output file
+# waccmFilepath = full path to model output file
 # modelType = WACCM_File or WRF)Chem_File
 # return dictionary of MUSICA variable names, units, and values
 def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
-              when, modelDir, waccmFilename, modelType):
+              when, waccmFilepath, modelType):
 
-    waccmFilepath = os.path.join(modelDir, waccmFilename)
     logger.info(f"WACCM file path = {waccmFilepath}")
 
     # open dataset for reading
@@ -677,6 +673,7 @@ def main():
             outFiles = fileUtils.collectFilesDates(modelDir, modelType)
             allFiles.extend(outFiles)
 
+        # the filenames include the full directory path
         logger.info(f"Collected files with multiple times:")
         for outFile in allFiles:
             outFile.display()
@@ -714,30 +711,17 @@ def main():
             logger.info(f"Extracting date-time {when}:")
             seconds = (when - startDateTime).total_seconds()
 
-            # locate the WACCM output file
-            if (modelType == fileUtils.WACCM_File):
-                waccmFilename = f"f.e22.beta02.FWSD.f09_f09_mg17.cesm2_2_beta02.forecast.001.cam.h3.{when.year:4d}-{when.month:02d}-{when.day:02d}-00000.nc"
-            elif (modelType == fileUtils.WRF_Chem_File):
-                waccmFilename = f"wrfout_hourly_d01_{when.year:4d}-{when.month:02d}-{when.day:02d}_{when.hour:02d}:00:00"
-
-            # Windows does not allow colons : in filenames. Replace with hyphen -.
-            if not pathvalidate.is_valid_filename(waccmFilename, platform="auto"):
-                waccmFilename = waccmFilename.replace(":", "-")
-
-            if (modelType == fileUtils.WRF_Chem_File):
-                # WRF-Chem convention stores files in sub-directories by date
-                dateDir = f"{when.year:4d}{when.month:02d}{when.day:02d}"
-                waccmFilename = os.path.join(dateDir, "wrf", waccmFilename)
+            # locate the WACCM / WRF-Chem output filepath for this date-time
+            waccmFilename = fileUtils.findNearestDateTime(when, allFiles)
 
             # if this frame time is not present, skip
-            waccmFullPath = os.path.join(modelDirs[0], waccmFilename)
-            if not os.path.exists(waccmFullPath):
-                logger.warning(f"File {waccmFullPath} does not exist. Skipping...")
+            if not waccmFilename:
+                logger.warning(f"No file found for date-time {when}. Skipping...")
                 when += datetime.timedelta(hours=strideHours)
                 continue
 
             # read and glean chemical species from WACCM and MUSICA
-            waccmChems = getWaccmSpecies(modelDirs[0], waccmFilename)
+            waccmChems = getWaccmSpecies(waccmFilename)
             musicaChems = getMusicaSpecies(templateFile)
 
             # create map of species common to both WACCM and MUSICA
@@ -753,7 +737,7 @@ def main():
             # Read named variables from WACCM model output.
             logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
             waccmValues = readWACCM(commonDict, lats, lons, alts,
-                                    when, modelDirs[0], waccmFilename, modelType)
+                                    when, waccmFilename, modelType)
             logger.debug(f"Original WACCM waccmValues = {waccmValues}")
             varValues.update(waccmValues)
 
@@ -777,6 +761,11 @@ def main():
 
         logger.info(f"Final frameCount = {frameCount}")
         logger.debug(f"Final WACCM accumValues = {accumValues}")
+
+        if not accumValues:
+            logger.error("No time steps found and no values extracted."
+                + "\nPlease check your date-time window against your model output.")
+            sys.exit(1)
 
         # loop through the requested output files/formats
         for output in myArgs.output:

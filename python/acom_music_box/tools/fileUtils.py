@@ -140,3 +140,19 @@ def collectionToPairs(myFiles):
     sortFiles(pairCollection)
     return pairCollection
 
+
+dateTimeTolerance = datetime.timedelta(minutes = 5)
+
+# Locate and return the closest model file to the requested date-time.
+# "Nearest" currently is the first file within the tolerance above.
+# myDateTime = seeking this model step
+# myModelFiles = list of Model_File objects, sorted by date-time
+def findNearestDateTime(myDateTime, myModelFiles):
+
+    for modelFile in myModelFiles:
+        timeDifference = abs(myDateTime - modelFile.dateTimes[0])
+        if (timeDifference < dateTimeTolerance):
+            return modelFile.filePath
+
+    return None
+
