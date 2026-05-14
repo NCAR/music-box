@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 # A file (probably NetCDF) containing output from an atmospheric model.
 class Model_File:
     hourStride = 1                   # default time step for model output
+    modelType = "Generic model"      # for diagnosing errors of wrong model type
 
     def __init__(self, myPath):
         self.filePath = myPath       # full directory, name, and file extension
@@ -42,6 +43,7 @@ class Model_File:
 # WACCM output file
 class WACCM_File(Model_File):
     hourStride = 6       # WACCM global output is typically every 6 hours
+    modelType = "WACCM"
 
     def __init__(self, myPath = "blank-WACCM.txt"):
         super().__init__(myPath)
@@ -60,6 +62,8 @@ class WACCM_File(Model_File):
 
 
 class WRF_Chem_File(Model_File):
+    modelType = "WRF-Chem"
+
     def __init__(self, myPath = "blank-WRF-Chem.txt"):
         super().__init__(myPath)
         logger.debug(f"WRF-Chem file type: {myPath}")
@@ -111,6 +115,11 @@ def collectFilesDates(modelDir, modelClass):
         except ValueError as oops:
             logger.warning(f"Cannot open {filename} because it is not a NetCDF file.")
             logger.debug(f"Cannot open {filename} because {oops}.")
+
+        except KeyError as oops:
+            logger.warning(f"Cannot find expected date-time in {filename} as {modelClass.modelType} model output."
+                + " Wrong model specified?")
+            logger.debug(f"Cannot get date-time for {filename} because {oops}.")
 
     # pass back just the NetCDF files
     return modelFiles
