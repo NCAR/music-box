@@ -659,10 +659,10 @@ def main():
     insertIntoConfig = False
 
     # process the two model types
-    for modelDirs, modelType, modelStride in zip(
+    for modelDirs, modelType in zip(
             [waccmDir, wrfChemDir],
             [fileUtils.WACCM_File, fileUtils.WRF_Chem_File],
-            [6, 1]):
+            ):
         if (len(modelDirs) == 0):
             continue
 
@@ -686,7 +686,7 @@ def main():
             outFile.display()
 
         # possibly exit here if just collecting files
-        #sys.exit(0)    # bogus
+        #sys.exit(0)
 
         # determine the date-time bounds to retrieve
         startDateTime = datetime.datetime.strptime(
@@ -699,7 +699,7 @@ def main():
         logger.info(f"Calculate averages from date-time {startDateTime} to {endDateTime}.")
 
         # determine the interval for time frames
-        strideHours = modelStride
+        strideHours = modelType.hourStride
         if (strideArg is not None):
             strideHours = strideArg
         logger.info(f"stride = {strideHours} hours")

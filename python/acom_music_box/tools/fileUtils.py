@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 # A file (probably NetCDF) containing output from an atmospheric model.
 class Model_File:
+    hourStride = 1                   # default time step for model output
+
     def __init__(self, myPath):
         self.filePath = myPath       # full directory, name, and file extension
         self.dateTimes = []          # date-time steps contained in the file
@@ -39,6 +41,8 @@ class Model_File:
 
 # WACCM output file
 class WACCM_File(Model_File):
+    hourStride = 6       # WACCM global output is typically every 6 hours
+
     def __init__(self, myPath = "blank-WACCM.txt"):
         super().__init__(myPath)
         logger.debug(f"WACCM file type: {myPath}")
