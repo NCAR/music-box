@@ -662,7 +662,7 @@ def main():
     for modelDirs, modelType in zip(
             [waccmDir, wrfChemDir],
             [fileUtils.WACCM_File, fileUtils.WRF_Chem_File],
-            ):
+    ):
         if (len(modelDirs) == 0):
             continue
 
@@ -686,7 +686,7 @@ def main():
             outFile.display()
 
         # possibly exit here if just collecting files
-        #sys.exit(0)
+        # sys.exit(0)
 
         # determine the date-time bounds to retrieve
         startDateTime = datetime.datetime.strptime(
@@ -764,7 +764,7 @@ def main():
 
         if not accumValues:
             logger.error("No time steps found and no values extracted."
-                + "\nPlease check your date-time window against your model output.")
+                         + "\nPlease check your date-time window against your model output.")
             sys.exit(1)
 
         # loop through the requested output files/formats
