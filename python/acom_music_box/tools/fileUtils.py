@@ -41,7 +41,7 @@ class WACCM_File(Model_File):
     hourStride = 6       # WACCM global output is typically every 6 hours
     modelType = "WACCM"
 
-    def __init__(self, myPath = "blank-WACCM.txt"):
+    def __init__(self, myPath="blank-WACCM.txt"):
         super().__init__(myPath)
         logger.debug(f"WACCM file type: {myPath}")
 
@@ -53,14 +53,14 @@ class WACCM_File(Model_File):
             logger.debug(f"date = {date}   datesec = {datesec}")
             dateStr = str(date)
             stepDate = (datetime.datetime.strptime(dateStr, "%Y%m%d")
-                + datetime.timedelta(seconds=int(datesec)))
+                        + datetime.timedelta(seconds=int(datesec)))
             self.dateTimes.append(stepDate)
 
 
 class WRF_Chem_File(Model_File):
     modelType = "WRF-Chem"
 
-    def __init__(self, myPath = "blank-WRF-Chem.txt"):
+    def __init__(self, myPath="blank-WRF-Chem.txt"):
         super().__init__(myPath)
         logger.debug(f"WRF-Chem file type: {myPath}")
 
@@ -118,7 +118,7 @@ def collectFilesDates(modelDir, modelClass):
 
         except KeyError as oops:
             logger.warning(f"Cannot find expected date-time in {filename} as {modelClass.modelType} model output."
-                + " Wrong model specified?")
+                           + " Wrong model specified?")
             logger.debug(f"Cannot get date-time for {filename} because {oops}.")
 
     # pass back just the NetCDF files
@@ -127,7 +127,7 @@ def collectFilesDates(modelDir, modelClass):
 
 # Sort list of model files in place, by first date-time contained.
 def sortFiles(myModelList):
-   myModelList.sort(key=lambda modelFile: modelFile.dateTimes[0])
+    myModelList.sort(key=lambda modelFile: modelFile.dateTimes[0])
 
 
 # Expand the original Model_File collection:
@@ -154,12 +154,14 @@ def collectionToPairs(myFiles):
     return pairCollection
 
 
-dateTimeTolerance = datetime.timedelta(minutes = 5)
+dateTimeTolerance = datetime.timedelta(minutes=5)
 
 # Locate and return the closest model file to the requested date-time.
 # "Nearest" currently is the first file within the tolerance above.
 # myDateTime = seeking this model step
 # myModelFiles = list of Model_File objects, sorted by date-time
+
+
 def findNearestDateTime(myDateTime, myModelFiles):
 
     for modelFile in myModelFiles:
@@ -168,4 +170,3 @@ def findNearestDateTime(myDateTime, myModelFiles):
             return modelFile.filePath
 
     return None
-
