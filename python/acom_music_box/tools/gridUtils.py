@@ -425,7 +425,7 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
     timesVar = gridDataset["Times"]
     timesVarStrings = timesVar.str.decode("utf-8")
     stringMatches = numpy.where(timesVarStrings == whenStr)
-    timeIndex = stringMatches[0][0]
+    timeIndex = stringMatches[0][0]             # [tuple][first match]
     logger.info(f"timeIndex = {timeIndex}")
 
     # estimate the grid spacing
@@ -460,7 +460,6 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
 
     iLat, iLon = None, None
     singlePoints = []
-    timeIndex = 0
     for latFloat in latTicks:
         logger.info(f"latFloat = {latFloat}")
         for lonFloat in lonTicks:

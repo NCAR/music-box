@@ -60,8 +60,9 @@ def test_waccm_to_music_box_conversion(temp_dir):
     jsonOutPath = os.path.join("wrfchemExtract", "initial_conditions-wrfchem.json")
 
     # Set up arguments for the WRF-Chem conversion
+    wrf_chem_dir = os.path.join(sample_data_dir, "20250820", "wrf")
     args = [
-        "--wrfchemDir", f"{sample_data_dir}",
+        "--wrfchemDir", f"{wrf_chem_dir}",
         "--date", "20250820",
         "--time", "08:00",
         "--latitude", "47.0,49.0",
