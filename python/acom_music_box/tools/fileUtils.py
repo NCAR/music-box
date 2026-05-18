@@ -78,6 +78,10 @@ class WRF_Chem_File(Model_File):
 # Scan a directory and create a list of NetCDF files.
 # Each file represents several time steps of model output.
 # Those times are collected with the filename.
+# Note: The NetCDF files currently produced by the ACOM near-real-time
+# forecast system do not have any extension:
+#     wrfout_hourly_d02_2025-08-21_08:00:00
+# That is why we don't glob() on *.nc as of May 18, 2026.
 # We can tolerate README.txt files in the same directory.
 # modelDir = scan this directory
 # modelClass = class of model (WACCM or WRF-Chem) expected in this directory
