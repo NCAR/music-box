@@ -160,7 +160,6 @@ You may specify a single point in space and date-time by passing single values t
 Altitude defaults to the surface.
 You may also specify a rectangle or a cube by specifying pairs of values for latitude, longitude, and altitude.
 Use a lat-lon variable (PBLH) to bound the vertical dimension at a specific height.
-If you request a pair of dates and a pair of times, the tool will create evolving conditions over time rather than initial conditions.
 
 ```bash
 waccmToMusicBox --waccmDir "./sample_waccm_data" --date "20260208" --time "07:00" --latitude 3.1 --longitude 101.7 --verbose
@@ -177,6 +176,11 @@ Use the --template parameter to specify your own configuration file (usually my_
 ```bash
 waccmToMusicBox --wrfchemDir ~/MusicBox/WRF-Chem/model-output --date 20250820,20250822 --time 18:00,05:00 --stride 3 --latitude 47.0,49.0 --longitude "'-123.0,-121.0'" --altitude surface,PBLH --template ./examples/ts1 --output evolving_conditions.csv --verbose
 ```
+
+If you request a pair of dates and a pair of times, waccmToMusicBox will create evolving conditions over time rather than initial conditions.
+You can expect to generate multiple rows of model output with time in the first column of the CSV file.
+For multiple date-times there is no time interpolation between the two date-times that you specify for evolving conditions.
+The script will simply extract variables at whatever model time steps are found between those two bounds.
 
 ```bash
 waccmToMusicBox --waccmDir ~/MusicBox/WACCM/model-output --date 20240301,20240304 --time 17:00,04:00 --latitude "'-4.0,-2.0'" --longitude 101.0,103.0 --altitude 567.8,4567.8 --template ./examples/ts1 --output conditions/evolving_conditions.csv --verbose -v
