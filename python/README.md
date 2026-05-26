@@ -178,7 +178,7 @@ The default configuration file is in the ts1 example because that example has ma
 Use the --template parameter to specify your own configuration file (usually my_config.json).
 
 ```bash
-waccmToMusicBox --wrfchemDir ./sample_waccm_data/20250820/wrf --date 20250820 --time 8:00 --latitude 47.0,49.0 --longitude "'-123.0,-121.0'" --altitude surface,PBLH --template ./examples/ts1 --output conditions/initial_conditions.csv --verbose
+waccmToMusicBox --wrfchemDir ./sample_waccm_data/20250820/wrf --date 20250820 --time 8:00 --latitude 47.0,49.0 --longitude "'-123.0,-121.0'" --altitude surface,PBLH --template ./examples/ts1 --output conditions/initial_conditions-wrfchem.csv --verbose
 ```
 
 If you request a pair of dates and a pair of times, waccmToMusicBox will create evolving conditions over time rather than initial conditions.
