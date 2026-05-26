@@ -178,7 +178,7 @@ The default configuration file is in the ts1 example because that example has ma
 Use the --template parameter to specify your own configuration file (usually my_config.json).
 
 ```bash
-waccmToMusicBox --wrfchemDir ~/MusicBox/WRF-Chem/model-output --date 20250820,20250822 --time 18:00,05:00 --stride 3 --latitude 47.0,49.0 --longitude "'-123.0,-121.0'" --altitude surface,PBLH --template ./examples/ts1 --output evolving_conditions.csv --verbose
+waccmToMusicBox --wrfchemDir ./sample_waccm_data/20250820/wrf --date 20250820 --time 8:00 --latitude 47.0,49.0 --longitude "'-123.0,-121.0'" --altitude surface,PBLH --template ./examples/ts1 --output conditions/initial_conditions.csv --verbose
 ```
 
 If you request a pair of dates and a pair of times, waccmToMusicBox will create evolving conditions over time rather than initial conditions.
@@ -187,7 +187,7 @@ For multiple date-times there is no time interpolation between the two date-time
 The script will simply extract variables at whatever model time steps are found between those two bounds.
 
 ```bash
-waccmToMusicBox --waccmDir ~/MusicBox/WACCM/model-output --date 20240301,20240304 --time 17:00,04:00 --latitude "'-4.0,-2.0'" --longitude 101.0,103.0 --altitude 567.8,4567.8 --template ./examples/ts1 --output conditions/evolving_conditions.csv --verbose -v
+waccmToMusicBox --waccmDir ./sample_waccm_data --date 20260208,20260208 --time 00:00,23:00 --latitude "'-4.0,-2.0'" --longitude 101.0,103.0 --altitude 567.8,4567.8 --template ./examples/ts1 --output conditions/evolving_conditions-waccm.csv --verbose -v
 ```
 
 When you specify waccmDir and wrfchemDir, waccmToMusicBox will scan all the NetCDF files in that directory to determine the date-time steps that they contain.
@@ -196,7 +196,7 @@ If you specify a pair of date-times for evolving conditions, waccmToMusicBox wil
 You may specify several directories to scan; for example, WRF-Chem forecast output is often saved into daily directories:
 
 ```bash
-waccmToMusicBox --wrfchemDir ~/MusicBox/WRF-Chem/model-output/20250820/wrf --wrfchemDir ~/MusicBox/WRF-Chem/model-output/20250821/wrf --date 20250820,20250822 --time 18:00,05:00 --latitude 47.0,49.0 --longitude "'-123.0,-121.0'" --template ../../../examples/ts1 --output musicbox-out/evolving_conditions-wrfchem.csv --verbose
+waccmToMusicBox --wrfchemDir ./sample_waccm_data/20250820/wrf --wrfchemDir ./sample_waccm_data/20250821/wrf --date 20250820,20250821 --time 08:00,08:00 --stride 24 --latitude 47.0,49.0 --longitude "'-123.0,-121.0'" --template ./examples/ts1 --output conditions/evolving_conditions-wrfchem.csv --verbose
 ```
 
 waccmToMusicBox will also follow links to NetCDF files, in case you need to avoid copying multi-GB files around.
