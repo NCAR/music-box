@@ -160,10 +160,14 @@ You may specify a single point in space and date-time by passing single values t
 Altitude defaults to the surface.
 You may also specify a rectangle or a cube by specifying pairs of values for latitude, longitude, and altitude.
 Use a lat-lon variable (PBLH) to bound the vertical dimension at a specific height.
+Run the following examples from the root level of your github repository, where you can see the sample_waccm_data/ sub-directory.
 
 ```bash
-waccmToMusicBox --waccmDir "./sample_waccm_data" --date "20260208" --time "07:00" --latitude 3.1 --longitude 101.7 --verbose
+waccmToMusicBox --waccmDir "./sample_waccm_data" --date "20260208" --time "06:00" --latitude 3.1 --longitude 101.7 --verbose
 ```
+
+The command above should print two lines of Comma-Separated Values (CSV) to the console.
+Since this command is run with --verbose, you will see diagnostic output as well.
 
 ```bash
 waccmToMusicBox --wrfchemDir "./sample_waccm_data/20250820/wrf" --date "20250820" --time "08:00" --latitude 47.0,49.0 --longitude "'-123.0,-121.0'"
