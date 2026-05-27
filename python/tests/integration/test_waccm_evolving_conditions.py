@@ -91,7 +91,7 @@ def test_waccm_evolving_conditions(temp_dir):
         "--verbose", "-v"
     ]
 
-    # Run the waccmToMusicBox script with the arguments
+    # Run the MusicBox script with the arguments
     run_command_with_args("music_box", args, temp_dir)
     print(f"outputPath = {outputPath}")
     assert os.path.exists(outputPath)
