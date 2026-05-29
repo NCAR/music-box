@@ -204,7 +204,7 @@ modelToMusicBox will also follow links to NetCDF files, in case you need to avoi
 ### End-to-end example
 In this section we will fully import initial conditions from WRF-Chem and evolving conditions from WACCM.
 We will run MusicBox after each step to ensure that the model conditions are indeed affecting the output.
-Begin this exercise with an up-to-date github repository, and move to the root level (>).
+Begin this exercise with an up-to-date github repository, and move to that root level directory.
 We will copy sample configuration files into this root level; do not add them to the repository, but leave them Untracked in github.
 
 ```bash
@@ -220,7 +220,7 @@ Produce MusicBox output from the standard example:
 music_box --config my_config.json --output chapman-out-01.csv --verbose
 ```
 
-You should now have a file of Comma-Separated-Values in your current directory: chapman-out-01.csv
+You should now have a file of Comma-Separated-Values in your current directory: chapman-out-01.csv.
 Since the WRF-Chem Lambert Conformal grid takes longer to extract, let’s use that model for initial conditions and WACCM later for evolving conditions.
 
 ```bash
