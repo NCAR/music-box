@@ -2,7 +2,7 @@ import os
 import pytest
 import tempfile
 import sys
-from acom_music_box.tools.waccmToMusicBox import main as waccmToMusicBoxMain
+from acom_music_box.tools.modelToMusicBox import main as modelToMusicBoxMain
 from acom_music_box import Examples
 
 
@@ -19,10 +19,10 @@ def get_repo_root():
 def run_waccm_to_music_box_with_args(args, cwd):
     original_argv = sys.argv
     original_cwd = os.getcwd()
-    sys.argv = ['waccmToMusicBox'] + args
+    sys.argv = ['modelToMusicBox'] + args
     try:
         os.chdir(cwd)
-        waccmToMusicBoxMain()
+        modelToMusicBoxMain()
     finally:
         os.chdir(original_cwd)
         sys.argv = original_argv
@@ -73,7 +73,7 @@ def test_waccm_to_music_box_conversion(temp_dir):
         "--verbose"
     ]
 
-    # Run the waccmToMusicBox script with the arguments
+    # Run the modelToMusicBox script with the arguments
     run_waccm_to_music_box_with_args(args, temp_dir)
 
     # Check if the output files are created
@@ -100,7 +100,7 @@ def test_waccm_to_music_box_conversion(temp_dir):
     create_colon_link(os.path.join(sample_data_dir, "20250820", "wrf"), "wrfout_hourly_d01_2025-08-20_08:00:00")
     create_colon_link(os.path.join(sample_data_dir, "20250821", "wrf"), "wrfout_hourly_d01_2025-08-21_08:00:00")
 
-    # Run the waccmToMusicBox script with the arguments
+    # Run the modelToMusicBox script with the arguments
     run_waccm_to_music_box_with_args(args, temp_dir)
 
     # Check if the output files are created
