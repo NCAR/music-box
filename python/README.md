@@ -201,6 +201,50 @@ modelToMusicBox --wrfchemDir ./sample_waccm_data/20250820/wrf --wrfchemDir ./sam
 
 modelToMusicBox will also follow links to NetCDF files, in case you need to avoid copying multi-GB files around.
 
+### End-to-end example
+In this section we will fully import initial conditions from WRF-Chem and evolving conditions from WACCM.
+We will run MusicBox after each step to ensure that the model conditions are affecting the output.
+Begin this exercise with an up-to-date github repository, and move to the root level (>).
+We will copy sample configuration files into this root level; do not add them to the repository, but leave them Untracked in github.
+
+```bash
+cp examples/chapman/my_config.json .
+cp examples/chapman/*.csv .
+```
+
+Produce MusicBox output from the standard example:
+
+```bash
+music_box --config my_config.json --output chapman-out-01.csv --verbose
+```
+
+Since the WRF-Chem Lambert Conformal grid takes longer to extract, let’s use that model for initial conditions and WACCM for evolving conditions.
+
+```bash
+modelToMusicBox --template . --wrfchemDir sample_waccm_data/20250820/wrf --date 20250820 --time 08:00 --latitude 40.0 --longitude -105.27 --output initial_concentrations.csv --verbose
+```
+
+Run MusicBox with these new intial conditions derived from WRF-Chem model output.
+
+```bash
+music_box --config my_config.json --output chapman-out-02.csv --verbose
+```
+
+Use your favorite comparison tool (ls -l, diff, vim, spreadsheet, etc.) to confirm that the MusicBox output has indeed changed between Chapman output files 01 and 02.
+Then create evolving conditions (with multiple time steps) from WACCM:
+
+```bash
+modelToMusicBox --template . --waccmDir sample_waccm_data --date 20260208,20260208 --time 00:00,23:00 --stride 6 --latitude 40.0 --longitude -105.27 --output conditions_Boulder.csv --verbose
+```
+
+Run MusicBox with the new evolving conditions:
+
+```bash
+music_box --config my_config.json --output chapman-out-03.csv --verbose
+```
+
+Finally, confirm that Chapman output file 03 is different from the first two output files.
+
 ## Development
 
 Install as an editable package with dev dependencies:
