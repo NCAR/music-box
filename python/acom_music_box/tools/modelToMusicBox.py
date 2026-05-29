@@ -242,9 +242,9 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     waccmOnly = [species for species in waccmSpecies if species not in musicaSpecies]
     musicaOnly = [species for species in musicaSpecies if species not in waccmSpecies]
     if (len(waccmOnly) > 0):
-        logger.debug(f"The following chemical species are only in WACCM: {waccmOnly}")
+        logger.info(f"The following chemical species are only in WACCM: {waccmOnly}")
     if (len(musicaOnly) > 0):
-        logger.debug(f"The following chemical species are only in MUSICA: {musicaOnly}")
+        logger.info(f"The following chemical species are only in MUSICA: {musicaOnly}")
 
     # build the dictionary
     # To do: As of September 4, 2024 this is not much of a map,
@@ -337,7 +337,6 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
 def addStandardGases(varValues):
     varValues["N2"] = ("N2", "mol/mol", [0.78084])    # standard fraction by volume
     varValues["O2"] = ("O2", "mol/mol", [0.20946])
-    varValues["Ar"] = ("Ar", "mol/mol", [0.00934])
 
     return (varValues)
 
@@ -726,7 +725,7 @@ def main():
 
             # create map of species common to both WACCM and MUSICA
             commonDict = getMusicaDictionary(modelType, waccmChems, musicaChems)
-            logger.debug(f"Species in common are = {commonDict}")
+            logger.info(f"Species in common are = {commonDict}")
             if (len(commonDict) == 0):
                 logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
 
