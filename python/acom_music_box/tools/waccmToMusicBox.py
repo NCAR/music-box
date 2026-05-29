@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# waccmToMusicBox.py
+# modelToMusicBox.py
 # MusicBox: Extract variables from WACCM model output,
 # and convert to initial conditions for MusicBox (case TS1).
 #
