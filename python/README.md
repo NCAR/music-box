@@ -147,13 +147,13 @@ Change output units (default is `mol m-3`):
 music_box -e TS1 --plot O3 --plot-output-unit ppb
 ```
 
-## Tool: waccmToMusicBox
+## Tool: modelToMusicBox
 
 This tool allows you to extract chemical species concentrations from WACCM or WRF-Chem model output and write them as MusicBox initial conditions.
 Use the built-in help to display all options including template configurations and output files:
 
 ```bash
-waccmToMusicBox --help
+modelToMusicBox --help
 ```
 
 You may specify a single point in space and date-time by passing single values to date, time, latitude, and longitude.
@@ -163,43 +163,43 @@ Use a lat-lon variable (PBLH) to bound the vertical dimension at a specific heig
 Run the following examples from the root level of your github repository, where you can see the sample_waccm_data/ sub-directory.
 
 ```bash
-waccmToMusicBox --waccmDir "./sample_waccm_data" --date "20260208" --time "06:00" --latitude 3.1 --longitude 101.7 --verbose
+modelToMusicBox --waccmDir "./sample_waccm_data" --date "20260208" --time "06:00" --latitude 3.1 --longitude 101.7 --verbose
 ```
 
 The command above should print two lines of Comma-Separated Values (CSV) to the console.
 Since this command is run with --verbose, you will see diagnostic output as well.
 
 ```bash
-waccmToMusicBox --wrfchemDir "./sample_waccm_data/20250820/wrf" --date "20250820" --time "08:00" --latitude 47.0,49.0 --longitude "'-123.0,-121.0'"
+modelToMusicBox --wrfchemDir "./sample_waccm_data/20250820/wrf" --date "20250820" --time "08:00" --latitude 47.0,49.0 --longitude "'-123.0,-121.0'"
 ```
 
-waccmToMusicBox uses a MUSICA configuration file to create a list of common chemical species between MusicBox and WACCM or WRF-Chem.
+modelToMusicBox uses a MUSICA configuration file to create a list of common chemical species between MusicBox and WACCM or WRF-Chem.
 The default configuration file is in the ts1 example because that example has many species.
 Use the --template parameter to specify your own configuration file (usually my_config.json).
 
 ```bash
-waccmToMusicBox --wrfchemDir ./sample_waccm_data/20250820/wrf --date 20250820 --time 8:00 --latitude 47.0,49.0 --longitude "'-123.0,-121.0'" --altitude surface,PBLH --template ./examples/ts1 --output conditions/initial_conditions-wrfchem.csv --verbose
+modelToMusicBox --wrfchemDir ./sample_waccm_data/20250820/wrf --date 20250820 --time 8:00 --latitude 47.0,49.0 --longitude "'-123.0,-121.0'" --altitude surface,PBLH --template ./examples/ts1 --output conditions/initial_conditions-wrfchem.csv --verbose
 ```
 
-If you request a pair of dates and a pair of times, waccmToMusicBox will create evolving conditions over time rather than initial conditions.
+If you request a pair of dates and a pair of times, modelToMusicBox will create evolving conditions over time rather than initial conditions.
 You can expect to generate multiple rows of model output with time in the first column of the CSV file.
 For multiple date-times there is no time interpolation between the two date-times that you specify for evolving conditions.
 The script will simply extract variables at whatever model time steps are found between those two bounds.
 
 ```bash
-waccmToMusicBox --waccmDir ./sample_waccm_data --date 20260208,20260208 --time 00:00,23:00 --latitude "'-4.0,-2.0'" --longitude 101.0,103.0 --altitude 567.8,4567.8 --template ./examples/ts1 --output conditions/evolving_conditions-waccm.csv --verbose -v
+modelToMusicBox --waccmDir ./sample_waccm_data --date 20260208,20260208 --time 00:00,23:00 --latitude "'-4.0,-2.0'" --longitude 101.0,103.0 --altitude 567.8,4567.8 --template ./examples/ts1 --output conditions/evolving_conditions-waccm.csv --verbose -v
 ```
 
-When you specify waccmDir and wrfchemDir, waccmToMusicBox will scan all the NetCDF files in that directory to determine the date-time steps that they contain.
-Then when you specify a date-time for the extraction, waccmToMusicBox will look for the time step within 5 minutes of the requested date-time.
-If you specify a pair of date-times for evolving conditions, waccmToMusicBox will use your date window and hour stride to locate the proper time steps.
+When you specify waccmDir and wrfchemDir, modelToMusicBox will scan all the NetCDF files in that directory to determine the date-time steps that they contain.
+Then when you specify a date-time for the extraction, modelToMusicBox will look for the time step within 5 minutes of the requested date-time.
+If you specify a pair of date-times for evolving conditions, modelToMusicBox will use your date window and hour stride to locate the proper time steps.
 You may specify several directories to scan; for example, WRF-Chem forecast output is often saved into daily directories:
 
 ```bash
-waccmToMusicBox --wrfchemDir ./sample_waccm_data/20250820/wrf --wrfchemDir ./sample_waccm_data/20250821/wrf --date 20250820,20250821 --time 08:00,08:00 --stride 24 --latitude 47.0,49.0 --longitude "'-123.0,-121.0'" --template ./examples/ts1 --output conditions/evolving_conditions-wrfchem.csv --verbose
+modelToMusicBox --wrfchemDir ./sample_waccm_data/20250820/wrf --wrfchemDir ./sample_waccm_data/20250821/wrf --date 20250820,20250821 --time 08:00,08:00 --stride 24 --latitude 47.0,49.0 --longitude "'-123.0,-121.0'" --template ./examples/ts1 --output conditions/evolving_conditions-wrfchem.csv --verbose
 ```
 
-waccmToMusicBox will also follow links to NetCDF files, in case you need to avoid copying multi-GB files around.
+modelToMusicBox will also follow links to NetCDF files, in case you need to avoid copying multi-GB files around.
 
 ## Development
 
