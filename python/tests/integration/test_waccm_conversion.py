@@ -2,7 +2,7 @@ import os
 import pytest
 import tempfile
 import sys
-from acom_music_box.tools.waccmToMusicBox import main as waccmToMusicBoxMain
+from acom_music_box.tools.modelToMusicBox import main as modelToMusicBoxMain
 from acom_music_box import Examples
 
 
@@ -19,13 +19,38 @@ def get_repo_root():
 def run_waccm_to_music_box_with_args(args, cwd):
     original_argv = sys.argv
     original_cwd = os.getcwd()
-    sys.argv = ['waccmToMusicBox'] + args
+    sys.argv = ['modelToMusicBox'] + args
     try:
         os.chdir(cwd)
-        waccmToMusicBoxMain()
+        modelToMusicBoxMain()
     finally:
         os.chdir(original_cwd)
         sys.argv = original_argv
+
+
+# Windows does not accept filenames with colon : characters.
+# The ACOM WRF-Chem forecast system creates those named
+# files on Linux: wrfout_hourly_d01_2025-08-20_08:00:00
+# To handle those filenames in Windows, we create a link
+# to the hyphenated filename by replacing colons with hyphens.
+# myDir = directory containing the problematic files
+# colonLink = desired filename including colons
+def create_colon_link(myDir, colonLink):
+    colon_path = os.path.join(myDir, colonLink)
+    hyphen_path = colonLink.replace(":", "-")
+
+    try:
+        os.symlink(hyphen_path, colon_path)
+    except FileExistsError:
+        # Remove broken symlink (e.g. absolute path copied from another machine) and recreate
+        if os.path.islink(colon_path) and not os.path.exists(colon_path):
+            os.remove(colon_path)
+            os.symlink(hyphen_path, colon_path)
+    except OSError:
+        # the colon link is not allowed under Windows
+        pass
+
+    return
 
 
 def test_waccm_to_music_box_conversion(temp_dir):
@@ -48,7 +73,7 @@ def test_waccm_to_music_box_conversion(temp_dir):
         "--verbose"
     ]
 
-    # Run the waccmToMusicBox script with the arguments
+    # Run the modelToMusicBox script with the arguments
     run_waccm_to_music_box_with_args(args, temp_dir)
 
     # Check if the output files are created
@@ -71,20 +96,11 @@ def test_waccm_to_music_box_conversion(temp_dir):
         "-o", jsonOutPath
     ]
 
-    # Create symbolic link from Linux colon filename pointing to Window-safe hyphen file.
-    colon_path = os.path.join(sample_data_dir, "20250820", "wrf", "wrfout_hourly_d01_2025-08-20_08:00:00")
-    try:
-        os.symlink("wrfout_hourly_d01_2025-08-20_08-00-00", colon_path)
-    except FileExistsError:
-        # Remove broken symlink (e.g. absolute path copied from another machine) and recreate
-        if os.path.islink(colon_path) and not os.path.exists(colon_path):
-            os.remove(colon_path)
-            os.symlink("wrfout_hourly_d01_2025-08-20_08-00-00", colon_path)
-    except OSError:
-        # the colon link is not allowed under Windows
-        pass
+    # Create symbolic links from Linux colon filenames pointing to Window-safe hyphen files.
+    create_colon_link(os.path.join(sample_data_dir, "20250820", "wrf"), "wrfout_hourly_d01_2025-08-20_08:00:00")
+    create_colon_link(os.path.join(sample_data_dir, "20250821", "wrf"), "wrfout_hourly_d01_2025-08-21_08:00:00")
 
-    # Run the waccmToMusicBox script with the arguments
+    # Run the modelToMusicBox script with the arguments
     run_waccm_to_music_box_with_args(args, temp_dir)
 
     # Check if the output files are created

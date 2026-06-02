@@ -1,0 +1,809 @@
+#!/usr/bin/env python3
+# modelToMusicBox.py
+# MusicBox: Extract variables from WACCM model output,
+# and convert to initial conditions for MusicBox (case TS1).
+#
+# Author: Carl Drews
+# Copyright 2024 by Atmospheric Chemistry Observations & Modeling (UCAR/ACOM)
+
+# import os
+import pathvalidate
+import argparse
+import datetime
+import xarray
+import json
+import sys
+import os
+import shutil
+import tempfile
+import zipfile
+from acom_music_box import Examples, __version__
+from acom_music_box.utils import calculate_air_density
+import netCDF4
+from acom_music_box.tools import gridUtils
+from acom_music_box.tools import fileUtils
+from acom_music_box import conditions_manager
+import copy
+
+import logging
+logger = logging.getLogger(__name__)
+
+
+# Set up the amount of information logged.
+# verbosity = from the -v and --verbose args
+def setup_logging(verbosity):
+    log_level = logging.DEBUG if verbosity >= 2 else logging.INFO if verbosity == 1 else logging.CRITICAL
+    datefmt = '%Y-%m-%d %H:%M:%S'
+    format_string = '%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s'
+    formatter = logging.Formatter(format_string, datefmt=datefmt)
+    console_handler = logging.StreamHandler()
+
+    console_handler.setFormatter(formatter)
+
+    console_handler.setLevel(log_level)
+    logging.basicConfig(level=log_level, handlers=[console_handler], force=True)
+    return
+
+
+# Parse the command-line arguments in this form: --parameter value
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description='Extraction of WACCM or WRF-Chem model output for input to MusicBox.',
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    parser.add_argument(
+        '--waccmDir',
+        type=str,
+        action="append",
+        default=[],
+        help='Directory containing WACCM model output as NetCDF files.'
+    )
+    parser.add_argument(
+        '--wrfchemDir',
+        type=str,
+        action="append",
+        default=[],
+        help='Directory containing WRF-Chem model output as NetCDF files.'
+    )
+    parser.add_argument(
+        '--date',
+        type=str,
+        help="Date of model output to extract, in format YYYYMMDD"
+    )
+    parser.add_argument(
+        '--time',
+        type=str,
+        help="Time of model output to extract, in format HH:MM"
+    )
+    parser.add_argument(
+        '--stride',
+        type=int,
+        help=("Number of hours between time steps."
+              + "\nDefaults to 6 hours for WACCM and 1 hour for WRF-Chem.")
+    )
+    parser.add_argument(
+        '--latitude',
+        type=str,
+        help=("Latitude of grid cell(s) to extract: 47.0,49.0"
+              + "\nSpecify negative value pairs as: --latitude \"'-4.0,-2.0'\""
+              + "\nIf two latitudes supplied, then average over that range.")
+    )
+    parser.add_argument(
+        '--longitude',
+        type=str,
+        help=("Longitude of grid cell(s) to extract: 101.7"
+              + "\nIf two longitudes supplied, then average over that range.")
+    )
+    parser.add_argument(
+        '--altitude',
+        type=str,
+        help=("Height of extraction(s) above sea level, in meters."
+              + "\nIf two altitudes supplied, then average over that height range."
+              + "\nIf no altitude supplied, then extract surface level of model output."
+              + "\nUse the keyword 'surface' to extract the surface layer."
+              + "\nUse a lat-lon variable name to represent that height: PBLH.")
+    )
+    parser.add_argument(
+        '--template',
+        type=str,
+        help="Path to a MusicBox config file (my_config.json) or its parent directory."
+    )
+    parser.add_argument(
+        '-v', '--verbose',
+        action='count',
+        default=0,
+        help='Increase logging verbosity. Use -v for info, -vv for debug.'
+    )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version=f'MusicBox {__version__}',
+    )
+    parser.add_argument(
+        '-o', '--output',
+        type=str,
+        action="append",
+        default=[],
+        help=("Path to save the initial/evolving conditions, including the file name."
+              + "\nIf not provided, result will be printed to the console."
+              + "\nUse the file extension to specify the output format: .csv"
+              )
+    )
+    return parser.parse_args()
+
+
+# Convert safely from string to integer (alphas convert to 0).
+def safeInt(intString):
+    intValue = 0
+    try:
+        intValue = int(intString)
+    except ValueError as error:
+        intValue = 0
+
+    return intValue
+
+
+# Convert string to number, or 0.0 if not numeric.
+# numString = string that probably can be converted
+def safeFloat(numString):
+    result = -1.0
+    try:
+        result = float(numString)
+    except ValueError:
+        result = 0.0
+
+    return result
+
+
+# Checks if a string can be converted safely to a float.
+# numString = string that might be a float or a varname like PBLH
+def isFloat(numString):
+    try:
+        float(numString)
+        return True
+    except ValueError:
+        return False
+    except TypeError:
+        # Handles cases like None or non-string inputs
+        return False
+
+
+# Create and return list of WACCM chemical species
+# that will be mapped to MUSICA.
+# waccmFilename = full path to WACCM model output
+# return list of variable names
+def getWaccmSpecies(waccmFilename):
+    # create the filename
+    logger.info(f"WACCM species file = {waccmFilename}")
+
+    # open dataset for reading
+    waccmDataSet = xarray.open_dataset(waccmFilename, engine="netcdf4")
+
+    # collect the data variables
+    waccmNames = [varName for varName in waccmDataSet.data_vars]
+
+    # To do: remove extraneous non-chemical vars like date and time
+    # Idea: use the dimensions to filter out non-chemicals
+
+    # close the NetCDF file
+    waccmDataSet.close()
+
+    return (waccmNames)
+
+
+# Create list of chemical species in MUSICA,
+# corresponding to the same chemical species in WACCM.
+# myConfigFile = path to the configuration file
+# return list of variable names
+def getMusicaSpecies(myConfigFile):
+    with open(myConfigFile) as jsonFile:
+        myConfig = json.load(jsonFile)
+
+    # locate the section for chemical species
+    chemSpecies = myConfig["mechanism"]["species"]
+
+    # retrieve just the names
+    musicaNames = []
+    for spec in chemSpecies:
+        specName = spec.get("name")
+        if (specName):
+            musicaNames.append(spec.get("name"))
+
+    return (musicaNames)
+
+
+# Build and return dictionary of WACCM variable names
+# and their MusicBox equivalents.
+# waccmSpecies = list of variable names in the WACCM model output
+# musicaSpecies = list of variable names in species.json
+# return ordered dictionary
+def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
+    if ((waccmSpecies is None) or (musicaSpecies is None)):
+        logger.warning("No species map found for WACCM or MUSICA.")
+
+        # build a simple species map
+        varMap = {
+            "T": "temperature",
+            "lev": "pressure",      # WACCM sigma pressure coordinates
+            "N2O": "N2O",
+            "H2O2": "H2O2",
+            "O3": "O3",
+            "NH3": "NH3",
+            "CH4": "CH4"
+        }
+
+        return (dict(sorted(varMap.items())))
+
+    # create new list of species common to both lists
+    inCommon = sorted([species for species in waccmSpecies if species in musicaSpecies])
+
+    # provide some diagnostic warnings
+    # If these messages are crucially important, change to logger.warning().
+    waccmOnly = [species for species in waccmSpecies if species not in musicaSpecies]
+    musicaOnly = [species for species in musicaSpecies if species not in waccmSpecies]
+    if (len(waccmOnly) > 0):
+        logger.info(f"The following chemical species are only in WACCM: {waccmOnly}")
+    if (len(musicaOnly) > 0):
+        logger.info(f"The following chemical species are only in MUSICA: {musicaOnly}")
+
+    # build the dictionary
+    # To do: As of September 4, 2024 this is not much of a map,
+    # as most of the entries are identical. We may map additional
+    # pairs in the future. This map is still useful in identifying
+    # the common species between WACCM and MUSICA.
+    if (modelType == fileUtils.WACCM_File):
+        varMap = {
+            # WACCM: MusicBox
+            "T": "temperature",
+            "lev": "pressure"       # sigma pressure coordinates
+        }
+    elif (modelType == fileUtils.WRF_Chem_File):
+        varMap = {
+            # WRF-Chem: MusicBox
+            "T2": "temperature",
+            "PB": "pressure"
+        }
+
+    for varName in inCommon:
+        varMap[varName] = varName
+
+    return (varMap)
+
+
+# Read array values at a single lat-lon-time point.
+# waccmMusicaDict = mapping from WACCM names to MusicBox
+# latitudes, longitudes = geo-coordinates of retrieval point(s)
+#   Could be a single point or corners of a selection rectangle.
+# altitudes = height bounds across which to average (meters)
+# when = date and time to extract
+# waccmFilepath = full path to model output file
+# modelType = WACCM_File or WRF)Chem_File
+# return dictionary of MUSICA variable names, units, and values
+def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
+              when, waccmFilepath, modelType):
+
+    logger.info(f"WACCM file path = {waccmFilepath}")
+
+    # open dataset for reading
+    waccmDataSet = xarray.open_dataset(waccmFilepath)
+    # diagnostic to look at dataset structure
+    logger.debug(f"WACCM dataset = {waccmDataSet}")
+
+    # retrieve all vars at a single point
+    meanPoint = None
+    if (modelType == fileUtils.WACCM_File):            # straight grid
+        meanPoint = gridUtils.meanStraightGrid(waccmDataSet, when,
+                                               latitudes, longitudes, altitudes)
+
+    elif (modelType == fileUtils.WRF_Chem_File):        # curved grid
+        wrfDataSet = netCDF4.Dataset(waccmFilepath)     # needed for the z-levels
+        meanPoint = gridUtils.meanCurvedGrid(waccmDataSet, when,
+                                             latitudes, longitudes, altitudes,
+                                             wrfDataSet)
+        wrfDataSet.close()
+
+    # diagnostic to look at single point structure
+    logger.debug(f"WACCM / WRF-Chem meanPoint = {meanPoint}")
+
+    # loop through vars and build another dictionary
+    musicaDict = {}
+    for waccmKey, musicaName in waccmMusicaDict.items():
+        if waccmKey not in meanPoint:
+            logger.warning(f"Requested variable {waccmKey} not found in WACCM model output.")
+            musicaTuple = (waccmKey, None, [None])
+            musicaDict[musicaName] = musicaTuple
+            continue
+
+        chemSinglePoint = meanPoint[waccmKey]
+        logger.debug(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
+
+        # this next line takes the mean along any remaining vertical axis/dimension
+        verticalMean = float(chemSinglePoint.values.mean())
+
+        # verticalMean is placed into a list because we want to add rows later
+        musicaTuple = (waccmKey, chemSinglePoint.units, [verticalMean])
+        logger.debug(f"musicaTuple = {musicaTuple}")
+        musicaDict[musicaName] = musicaTuple
+
+    # close the NetCDF file
+    waccmDataSet.close()
+
+    return (musicaDict)
+
+
+# Add molecular Nitrogen, Oxygen, and Argon to dictionary.
+# varValues = already read from WACCM, contains (name, concentration, units)
+# return varValues with N2, O2, and Ar added
+def addStandardGases(varValues):
+    varValues["N2"] = ("N2", "mol/mol", [0.78084])    # standard fraction by volume
+    varValues["O2"] = ("O2", "mol/mol", [0.20946])
+
+    return (varValues)
+
+
+# set up indexes for the tuple
+musicaIndex = 0
+unitIndex = 1
+valueIndex = 2
+
+# Perform any numeric conversion needed.
+# varDict = originally read from WACCM, tuples are (musicaName, units, value)
+# return varDict with values modified
+
+
+def convertWaccm(varDict):
+    # from the supporting documents
+    # https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2019MS001882&file=jame21103-sup-0001-2019MS001882+Text_SI-S01.pdf
+    soa_molecular_weight = 0.115  # kg mol-1
+    soa_density = 1770  # kg m-3
+    hPaToPa = 100
+
+    # retrieve temperature and pressure from WACCM
+    temperature = varDict["temperature"][valueIndex][0]
+    tempUnits = varDict["temperature"][unitIndex]
+
+    pressure = varDict["pressure"][valueIndex][0]
+    pressUnits = varDict["pressure"][unitIndex]
+    if (pressUnits == "hPa"):
+        pressure *= hPaToPa
+        pressUnits = "Pa"
+    logger.info(f"temperature = {temperature} {tempUnits}   pressure = {pressure} {pressUnits}")
+
+    air_density = calculate_air_density(temperature, pressure)
+    logger.info(f"air density = {air_density} mol m-3")
+
+    for key, vTuple in varDict.items():
+        # convert moles / mole to moles / cubic meter
+        units = vTuple[unitIndex]
+        if (units == "mol/mol"):
+            varDict[key] = (vTuple[0], "mol m-3",
+                            [vTuple[valueIndex][0] * air_density])
+        if (units == "kg/kg"):
+            # soa species only
+            varDict[key] = (vTuple[0], "mol m-3",
+                            [vTuple[valueIndex][0] * soa_density / soa_molecular_weight])
+        if (units == "hPa"):
+            varDict[key] = (vTuple[0], "Pa",
+                            [vTuple[valueIndex][0] * hPaToPa])
+
+    return (varDict)
+
+
+# Determines if a chemical "name" is a system variable or not.
+# return True for time, . . .
+def isSystem(varName):
+    if (varName.lower() in {"time"}):
+        return (True)
+
+    return (False)
+
+
+# Determines if chemical "name" is an environmental variable or not.
+# return True for temperature, pressure, ...
+def isEnvironment(varName):
+    if (varName.lower() in {"temperature", "pressure"}):
+        return (True)
+
+    return (False)
+
+
+# Write CSV file suitable for initial_conditions.csv in MusicBox.
+# initValues = dictionary of Musica varnames and (WACCM name, value, units)
+def writeInitCSV(initValues, filename):
+    console = False
+    if (filename == sys.stdout.name):
+        fp = sys.stdout
+        console = True
+    else:
+        fp = open(filename, "w")
+
+    # write the column titles
+    firstColumn = True
+    for key, value in initValues.items():
+        if (firstColumn):
+            firstColumn = False
+        else:
+            fp.write(",")
+
+        reaction_type = "CONC"
+        if isSystem(key):
+            reaction_type = None
+        if isEnvironment(key):
+            reaction_type = "ENV"
+
+        titleString = conditions_manager.ConditionsManager.format_reaction_var_units(
+            key, units=value[unitIndex], prefix=reaction_type)
+        fp.write(titleString)
+    fp.write("\n")
+
+    # loop through the rows of chemical values
+    firstColumn = next(iter(initValues.items()))
+    logger.debug(f"firstColumn = {firstColumn}")
+    numDataRows = len(firstColumn[1][valueIndex])
+    logger.debug(f"numDataRows = {numDataRows}")
+    for ri in range(numDataRows):
+        # write the variable values
+        firstColumn = True
+        for key, value in initValues.items():
+            if (firstColumn):
+                firstColumn = False
+            else:
+                fp.write(",")
+
+            fp.write(f"{value[valueIndex][ri]}")
+        fp.write("\n")
+
+    if not console:
+        fp.close()
+    return
+
+
+# Write JSON fragment suitable for my_config.json in MusicBox.
+# initValues = dictionary of Musica varnames and (WACCM name, value, units)
+def writeInitJSON(initValues, filename):
+
+    # set up dictionary of CSV files and JSON initial values
+    dictName = "conditions"
+    initConfig = {dictName: {}}
+
+    # two sections of conditions
+    dataName = "data"
+    pathsName = "filepaths"
+    initConfig[dictName][dataName] = []
+    initConfig[dictName][pathsName] = []
+
+    # build the column headers
+    headerList = []
+    for key, value in initValues.items():
+        reaction_type = "CONC"
+        if isSystem(key):
+            reaction_type = None
+        if isEnvironment(key):
+            reaction_type = "ENV"
+
+        titleString = conditions_manager.ConditionsManager.format_reaction_var_units(
+            key, units=value[unitIndex], prefix=reaction_type)
+        headerList.append(titleString)
+
+    # build the rows of chemical concentrations
+    concArray = []
+    firstColumn = next(iter(initValues.items()))
+    numDataRows = len(firstColumn[1][valueIndex])
+    logger.debug(f"numDataRows = {numDataRows}")
+    for ri in range(numDataRows):
+        # write the variable values
+        oneRow = []
+        for key, value in initValues.items():
+            oneRow.append(value[valueIndex][ri])
+        concArray.append(oneRow)
+
+    # create row of variables and units
+    headersName = "headers"
+    rowsName = "rows"
+    initConfig[dictName][dataName].append({headersName: headerList, rowsName: concArray})
+
+    # write JSON content to the file
+    fpJson = open(filename, "w")
+
+    json.dump(initConfig, fpJson, indent=2)
+
+    fpJson.close()
+    return
+
+
+# Reproduce the MusicBox configuration with new initial values and write to config.zip in the current directory
+# initValues = dictionary of Musica varnames and (WACCM name, value, units)
+# templateDir = directory containing configuration files and camp_data
+def insertIntoTemplate(initValues, templateDir):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # copy the template directory to a new 'configuration' folder
+        destPath = os.path.join(temp_dir, 'configuration')
+        logger.info(f"Create new configuration in = {destPath}")
+
+        # copy the template directory
+        shutil.copytree(templateDir, destPath)
+
+        # find the standard configuration file and parse it
+        myConfigFile = os.path.join(destPath, "my_config.json")
+        with open(myConfigFile) as jsonFile:
+            myConfig = json.load(jsonFile)
+
+        # retrieve temperature and pressure
+        temperature = 0.0
+        pressure = 0.0
+        key = "temperature"
+        if key in initValues:
+            temperature = safeFloat(initValues[key][valueIndex][0])
+        key = "pressure"
+        if key in initValues:
+            pressure = safeFloat(initValues[key][valueIndex][0])
+
+        # replace the values of temperature and pressure
+        envConditionsTag = "environmental conditions"
+        envConfig = myConfig[envConditionsTag]
+        envConfig["temperature"]["initial value [K]"] = temperature
+        envConfig["pressure"]["initial value [Pa]"] = pressure
+
+        # save over the former json file
+        with open(myConfigFile, "w") as myConfigFp:
+            json.dump(myConfig, myConfigFp, indent=2)
+
+        # Create a zip file that contains the 'configuration' folder
+        zip_path = os.path.join(os.getcwd(), 'config.zip')
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            for root, dirs, files in os.walk(temp_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    # Ensure the files are zipped under 'configuration' directory
+                    zipf.write(file_path, os.path.relpath(file_path, temp_dir))
+
+        logger.info(f"Configuration zipped to {zip_path}")
+
+
+# Add another row at the end of a WACCM data dictionary.
+# The two dictionaries should have the same set of keys.
+# waccmData = contains columns with a title and list of numeric values
+# moreData = ignore headers and add these values to each column
+def appendRow(waccmData, moreData):
+    for colTitle in waccmData:
+        waccmData[colTitle][valueIndex].append(moreData[colTitle][valueIndex][0])
+
+    return waccmData
+
+
+# Main routine begins here.
+def main():
+    # start with basic logging until args are parsed
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+    # retrieve and parse the command-line arguments
+    myArgs = parse_arguments()
+    setup_logging(myArgs.verbose)
+
+    logger.info(f"{__file__}")
+    logger.info(f"Start time: {datetime.datetime.now()}")
+    logger.info(f"Command line = {myArgs}")
+
+    # set up the directories
+    waccmDir = myArgs.waccmDir
+    wrfChemDir = myArgs.wrfchemDir
+
+    template = Examples.TS1.path
+    if (myArgs.template is not None):
+        template = myArgs.template
+
+    # Normalize: accept either a config file path or its parent directory
+    if os.path.isdir(template):
+        templateFile = os.path.join(template, 'my_config.json')
+    else:
+        templateFile = template
+    templateDir = os.path.dirname(templateFile)
+
+    # get the date-times to retrieve
+    dateStrs = myArgs.date.split(",")
+    timeStrs = ["00:00"]
+    if (myArgs.time is not None):
+        timeStrs = myArgs.time.split(",")
+
+    strideArg = myArgs.stride
+
+    # get the geographical location(s) to retrieve
+    lats = []
+    if (myArgs.latitude is not None):
+        # negative values must be specified on command line like this: --latitude "'-5.0,-2.0'"
+        latString = myArgs.latitude.replace("'", "").replace('"', '')
+        latStrings = latString.split(",")
+        for latString in latStrings:
+            lats.append(safeFloat(latString))
+
+    lons = []
+    if (myArgs.longitude is not None):
+        lonString = myArgs.longitude.replace("'", "").replace('"', '')
+        lonStrings = lonString.split(",")
+        for lonString in lonStrings:
+            lons.append(safeFloat(lonString))
+
+    alts = []
+    if (myArgs.altitude is not None):
+        altString = myArgs.altitude.replace("'", "").replace('"', '')
+        altStrings = altString.split(",")
+        for altString in altStrings:
+            if isFloat(altString):
+                alts.append(safeFloat(altString))
+            else:
+                alts.append(altString)
+    else:
+        alts = [gridUtils.kSurfaceKeyword]
+
+    # fix common lat-lon errors
+    if (len(lats) > 1):
+        if (lats[0] > lats[1]):
+            # swap latitudes
+            lats = [lats[1], lats[0]]
+
+    # always use two lat-lon and altitude bounds
+    if (len(lats) < 2):
+        lats.append(lats[0])
+    if (len(lons) < 2):
+        lons.append(lons[0])
+    if (len(alts) == 1):
+        alts.append(alts[0])
+
+    # For longitude, we assume the user knows the model's
+    # longitude conventions regarding 0:360 or -180:180.
+
+    logger.info(f"lats = {lats}   lons = {lons}   alts = {alts}")
+
+    # write the requested (calculated) output
+    insertIntoConfig = False
+
+    # process the two model types
+    for modelDirs, modelType in zip(
+            [waccmDir, wrfChemDir],
+            [fileUtils.WACCM_File, fileUtils.WRF_Chem_File],
+    ):
+        if (len(modelDirs) == 0):
+            continue
+
+        # collect model output files in specified directories
+        logger.info(f"Directories: {modelDirs}   type {modelType}")
+        allFiles = []
+        for modelDir in modelDirs:
+            outFiles = fileUtils.collectFilesDates(modelDir, modelType)
+            allFiles.extend(outFiles)
+
+        # the filenames include the full directory path
+        logger.info(f"Collected files with multiple times:")
+        for outFile in allFiles:
+            outFile.display()
+
+        # separate the collection of file:times into pairs of file:time
+        # sort the output files by date-time
+        allFiles = fileUtils.collectionToPairs(allFiles)
+        logger.info(f"Collected and sorted file-time pairs:")
+        for outFile in allFiles:
+            outFile.display()
+
+        # possibly exit here if just collecting files
+        # sys.exit(0)
+
+        # determine the date-time bounds to retrieve
+        startDateTime = datetime.datetime.strptime(
+            f"{dateStrs[0]} {timeStrs[0]}", "%Y%m%d %H:%M")
+        if (len(dateStrs) > 1 and len(timeStrs) > 1):
+            endDateTime = datetime.datetime.strptime(
+                f"{dateStrs[1]} {timeStrs[1]}", "%Y%m%d %H:%M")
+        else:
+            endDateTime = startDateTime
+        logger.info(f"Calculate averages from date-time {startDateTime} to {endDateTime}.")
+
+        # determine the interval for time frames
+        strideHours = modelType.hourStride
+        if (strideArg is not None):
+            strideHours = strideArg
+        logger.info(f"stride = {strideHours} hours")
+
+        when = startDateTime
+        accumValues = None          # accumulate the values in rows here
+        frameCount = 0
+        while (when <= endDateTime):
+            logger.info(f"Extracting date-time {when}:")
+            seconds = (when - startDateTime).total_seconds()
+
+            # locate the WACCM / WRF-Chem output filepath for this date-time
+            waccmFilename = fileUtils.findNearestDateTime(when, allFiles)
+
+            # if this frame time is not present, skip
+            if not waccmFilename:
+                logger.warning(f"No file found for date-time {when}. Skipping...")
+                when += datetime.timedelta(hours=strideHours)
+                continue
+
+            # read and glean chemical species from WACCM and MUSICA
+            waccmChems = getWaccmSpecies(waccmFilename)
+            musicaChems = getMusicaSpecies(templateFile)
+
+            # create map of species common to both WACCM and MUSICA
+            commonDict = getMusicaDictionary(modelType, waccmChems, musicaChems)
+            logger.info(f"Species in common are = {commonDict}")
+            if (len(commonDict) == 0):
+                logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
+
+            # time is the first listed variable for initial conditions
+            varValues = {}
+            varValues["time"] = ("time", "s", [seconds])
+
+            # Read named variables from WACCM model output.
+            logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
+            waccmValues = readWACCM(commonDict, lats, lons, alts,
+                                    when, waccmFilename, modelType)
+            logger.debug(f"Original WACCM waccmValues = {waccmValues}")
+            varValues.update(waccmValues)
+
+            # add molecular Nitrogen, Oxygen, and Argon
+            varValues = addStandardGases(varValues)
+
+            # Perform any conversions needed, or derive variables.
+            varValues = convertWaccm(varValues)
+            logger.debug(f"Converted WACCM varValues = {varValues}")
+            frameCount += 1
+
+            if (accumValues is None):
+                # first time step begins with headers and first row of values
+                accumValues = copy.deepcopy(varValues)
+            else:
+                # add another row to the dataset
+                appendRow(accumValues, varValues)
+
+            # move on to the next time step
+            when += datetime.timedelta(hours=strideHours)
+
+        logger.info(f"Final frameCount = {frameCount}")
+        logger.debug(f"Final WACCM accumValues = {accumValues}")
+
+        if not accumValues:
+            logger.error("No time steps found and no values extracted."
+                         + "\nPlease check your date-time window against your model output.")
+            sys.exit(1)
+
+        # loop through the requested output files/formats
+        for output in myArgs.output:
+            logger.info(f"Writing output to {output} ...")
+
+            # ensure that any directories already exist
+            dir_path = os.path.dirname(output)
+            if dir_path and not os.path.exists(dir_path):
+                os.makedirs(dir_path, exist_ok=True)
+                logger.info(f"Created directory: {dir_path}")
+
+            # file extension specifies the output type
+            nameonly, extension = os.path.splitext(output)
+            extension = extension.replace('.', '').lower()
+
+            if (extension in {"csv"}):
+                # Write CSV file for MusicBox initial conditions.
+                csvName = output
+                writeInitCSV(accumValues, csvName)
+
+            elif (extension in {"json"}):
+                # Write JSON file for MusicBox initial conditions.
+                jsonName = output
+                writeInitJSON(accumValues, jsonName)
+
+            else:
+                logger.warning(f"Skipping unrecognized file extension {output}")
+
+        if (len(myArgs.output) == 0):
+            # no output supplied; write CSV to console
+            writeInitCSV(accumValues, sys.stdout.name)
+
+        if (insertIntoConfig):
+            logger.info(f"Insert values into template {templateDir}")
+            insertIntoTemplate(accumValues, templateDir)
+
+    logger.info(f"End time: {datetime.datetime.now()}")
+
+
+if (__name__ == "__main__"):
+    main()
+    sys.exit(0)  # no error

@@ -5,7 +5,7 @@ import pytest
 import tempfile
 import sys
 from acom_music_box.main import main as musicBoxMain
-from acom_music_box.tools.waccmToMusicBox import main as waccmToMusicBoxMain
+from acom_music_box.tools.modelToMusicBox import main as modelToMusicBoxMain
 import pandas as pd
 import math
 import pathlib
@@ -21,7 +21,7 @@ def get_repo_root():
     return os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
 
 
-# cmdName = "waccmToMusicBox" or "music_box"
+# cmdName = "modelToMusicBox" or "music_box"
 # args = command-line parameters
 # cmd = temporary directory for running this test
 def run_command_with_args(cmdName, args, cwd):
@@ -30,8 +30,8 @@ def run_command_with_args(cmdName, args, cwd):
     sys.argv = [cmdName] + args
     try:
         os.chdir(cwd)
-        if (cmdName == "waccmToMusicBox"):
-            waccmToMusicBoxMain()
+        if (cmdName == "modelToMusicBox"):
+            modelToMusicBoxMain()
         if (cmdName == "music_box"):
             musicBoxMain()
     finally:
@@ -40,9 +40,7 @@ def run_command_with_args(cmdName, args, cwd):
 
 
 def test_waccm_evolving_conditions(temp_dir):
-    print(f"temp_dir = {temp_dir}")
-
-    # Step 1: Create a required CSV by converting WACCM data.
+    # the tests use sample model output
     repo_root = get_repo_root()
     sample_data_dir = os.path.join(repo_root, "sample_waccm_data")
 
@@ -52,11 +50,8 @@ def test_waccm_evolving_conditions(temp_dir):
     csvOutPath = os.path.join(repo_root, "python", "tests", "integration",
                               "configs", "waccm_evolving_conditions", "evolving_conditions.csv")
 
-    # make sure to create entirely new test file
-    pathlib.Path(csvOutPath).unlink(missing_ok=True)
-
     # Set up arguments for the WACCM conversion
-    args = [
+    waccmArgs = [
         "--waccmDir", f"{sample_data_dir}",
         "--date", "20260208,20260208",
         "--time", "00:00,23:00",
@@ -67,13 +62,44 @@ def test_waccm_evolving_conditions(temp_dir):
         "--output", csvOutPath,
         "--verbose"
     ]
+    waccm_evolving_conditions(temp_dir, waccmArgs)
 
-    # Run the waccmToMusicBox script with the arguments
-    run_command_with_args("waccmToMusicBox", args, temp_dir)
+    # Set up arguments for the WRF-Chem conversion
+    wrfchemArgs = [
+        "--wrfchemDir", os.path.join(f"{sample_data_dir}", "20250820", "wrf"),
+        "--wrfchemDir", os.path.join(f"{sample_data_dir}", "20250821", "wrf"),
+        "--date", "20250820,20250821",
+        "--time", "08:00,08:00",
+        "--stride", "24",
+        "--latitude", "45.0,47.0",
+        "--longitude", "'-103.0,-101.0'",
+        "--altitude", "567.8,4567.8",
+        "--template", configPath,
+        "--output", csvOutPath,
+        "--verbose"
+    ]
+    waccm_evolving_conditions(temp_dir, wrfchemArgs)
+
+
+def waccm_evolving_conditions(temp_dir, args):
+    print(f"temp_dir = {temp_dir}")
+
+    # Step 1: Create a required CSV by converting WACCM data.
+
+    # set up the output files
+    repo_root = get_repo_root()
+    csvOutPath = os.path.join(repo_root, "python", "tests", "integration",
+                              "configs", "waccm_evolving_conditions", "evolving_conditions.csv")
+
+    # make sure to create entirely new test file
+    pathlib.Path(csvOutPath).unlink(missing_ok=True)
+
+    # Run the modelToMusicBox script with the supplied arguments
+    run_command_with_args("modelToMusicBox", args, temp_dir)
     assert os.path.exists(csvOutPath)
 
     # Step 2: Now run MusicBox with that CSV file containing WACCM data.
-    # This portion of the test will fail if waccmToMusicBox did not run correctly.
+    # This portion of the test will fail if modelToMusicBox did not run correctly.
 
     # capture the output file
     configPath = os.path.join(repo_root, "python", "tests", "integration",
@@ -84,14 +110,15 @@ def test_waccm_evolving_conditions(temp_dir):
     # make sure to create entirely new test file
     pathlib.Path(outputPath).unlink(missing_ok=True)
 
-    # Set up arguments for the WACCM conversion
+    # Set up arguments to run MusicBox
     args = [
         "--config", configPath,
         "--output", outputPath,
         "--verbose", "-v"
     ]
 
-    # Run the waccmToMusicBox script with the arguments
+    # Run the MusicBox script with the arguments
     run_command_with_args("music_box", args, temp_dir)
     print(f"outputPath = {outputPath}")
     assert os.path.exists(outputPath)
+
