@@ -6,7 +6,6 @@
 # Author: Carl Drews
 # Copyright 2024 by Atmospheric Chemistry Observations & Modeling (UCAR/ACOM)
 
-# import os
 import pathvalidate
 import argparse
 import datetime
