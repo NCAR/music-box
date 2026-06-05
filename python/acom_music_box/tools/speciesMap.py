@@ -68,4 +68,3 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
         varMap[varName] = varName
 
     return (varMap)
-
