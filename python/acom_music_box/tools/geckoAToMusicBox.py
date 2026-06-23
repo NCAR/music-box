@@ -81,7 +81,9 @@ def parse_arguements():
 
 
 def setup_logging(verbosity, color_output):
-    log_level = logging.DEBUG if verbosity >= 2 else logging.INFO if verbosity == 1 else logging.CRITICAL
+    # Default to WARNING so unmapped-reaction warnings always print; -v adds
+    # INFO, -vv adds DEBUG.
+    log_level = logging.DEBUG if verbosity >= 2 else logging.INFO if verbosity == 1 else logging.WARNING
     datefmt = '%Y-%m-%d %H:%M:%S'
     format_string = '%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s'
     formatter = logging.Formatter(format_string, datefmt=datefmt)
@@ -624,7 +626,12 @@ def convert_reactions(reactions, species_by_name, gas_phase, logger):
     photolysis_map = {}  # unique reaction name -> GECKO j-value id
     photo_counters = {}  # j_id -> running count, to build unique per-reaction names
     counters = {}
-    unknown_extra = {}  # extra code -> count, summarized after the loop
+    # reactions that do NOT map to a native MICM rate type -> {description: count},
+    # warned in a summary after the loop.
+    unmapped = {}
+
+    def note_unmapped(description):
+        unmapped[description] = unmapped.get(description, 0) + 1
 
     def name_for(prefix):
         counters[prefix] = counters.get(prefix, 0) + 1
@@ -655,7 +662,8 @@ def convert_reactions(reactions, species_by_name, gas_phase, logger):
                 products=products, gas_phase=gas_phase))
 
         elif category == 'falloff':
-            converted.append(_convert_falloff(r, reactants, products, gas_phase, logger))
+            converted.append(_convert_falloff(
+                r, reactants, products, gas_phase, note_unmapped))
 
         elif category == 'photolysis':
             j_id = int(r['extra_values'][0])
@@ -686,12 +694,15 @@ def convert_reactions(reactions, species_by_name, gas_phase, logger):
         elif category == 'extra':
             converted.extend(_convert_extra(
                 r, reactants, products, species_by_name, gas_phase, name_for,
-                unknown_extra))
+                note_unmapped))
 
         elif category == 'ro2':
             # X + RO2pool -> ... : rate depends on the externally summed RO2 pool
             # concentration, which musica has no native operator for. Emit as a
             # UserDefined reaction carrying the pool id and Arrhenius parameters.
+            note_unmapped(
+                "RO2 pool reaction(s) (PERO/MEPERO; no summed-RO2 operator) "
+                "-> USER_DEFINED, inert until a rate is supplied externally")
             converted.append(mc.UserDefined(
                 name=name_for(f"RO2.{r['ro2_pool']}"),
                 reactants=reactants, products=products, gas_phase=gas_phase,
@@ -703,6 +714,9 @@ def convert_reactions(reactions, species_by_name, gas_phase, logger):
         elif category == 'partitioning':
             # Gas <-> particle mass transfer; musica has no native partitioning
             # operator. Emit as UserDefined preserving the direction.
+            note_unmapped(
+                "gas/particle partitioning reaction(s) (AIN/AOU; no transfer "
+                "operator) -> USER_DEFINED, inert until a rate is supplied externally")
             converted.append(mc.UserDefined(
                 name=name_for(f"PART.{r['partition']}"),
                 reactants=reactants, products=products, gas_phase=gas_phase,
@@ -711,16 +725,13 @@ def convert_reactions(reactions, species_by_name, gas_phase, logger):
         else:
             logger.warning(f"Unknown reaction category '{category}', skipping: {r}")
 
-    for code, count in sorted(unknown_extra.items()):
-        logger.warning(
-            f"EXTRA code {code} is not defined in the available GECKO source; "
-            f"emitted {count} reaction(s) as UserDefined with the main-line "
-            "Arrhenius parameters.")
+    for description, count in sorted(unmapped.items()):
+        logger.warning(f"{count} {description}")
 
     return converted, photolysis_map
 
 
-def _convert_falloff(r, reactants, products, gas_phase, logger):
+def _convert_falloff(r, reactants, products, gas_phase, note_unmapped):
     """
     GECKO FALLOFF (Troe). Low-pressure limit comes from the continuation-line
     parameters (focf1-3); high-pressure limit is the main-line Arrhenius.
@@ -728,10 +739,9 @@ def _convert_falloff(r, reactants, products, gas_phase, logger):
     """
     focf = r['extra_values']
     if focf[4] != 0.0 or focf[5] != 0.0 or focf[6] != 0.0:
-        logger.warning(
-            "FALLOFF reaction uses a temperature-dependent fcent (focf5-7 != 0); "
-            "musica Troe only supports a constant Fc, so this is approximate. "
-            f"reactants={[s['species name'] for s in r['reactants']]}")
+        note_unmapped(
+            "FALLOFF reaction(s) with a temperature-dependent fcent (focf5-7) "
+            "-> approximated by Troe with a constant Fc")
     return mc.Troe(
         k0_A=focf[0], k0_B=focf[1], k0_C=-focf[2],
         kinf_A=r['A'], kinf_B=r['n'], kinf_C=-r['E/R'],
@@ -740,7 +750,7 @@ def _convert_falloff(r, reactants, products, gas_phase, logger):
 
 
 def _convert_extra(r, reactants, products, species_by_name, gas_phase, name_for,
-                   unknown_extra):
+                   note_unmapped):
     """
     GECKO EXTRA reactions (hardwired rates keyed by a code; see spakkextra4.f).
     Returns a list because code 501 expands into two reactions.
@@ -783,6 +793,9 @@ def _convert_extra(r, reactants, products, species_by_name, gas_phase, name_for,
     if code == 550:
         # OH + HNO3: k = k0 + k3*M / (1 + k3*M/k2), no native musica form.
         focf = r['extra_values']
+        note_unmapped(
+            "EXTRA 550 reaction(s) (OH+HNO3, k0+k3M/(1+k3M/k2)) "
+            "-> USER_DEFINED, inert until a rate is supplied externally")
         return [mc.UserDefined(
             name=name_for("EXTRA.550"),
             reactants=reactants, products=products, gas_phase=gas_phase,
@@ -802,6 +815,9 @@ def _convert_extra(r, reactants, products, species_by_name, gas_phase, name_for,
         # musica rate form, so this stays UserDefined. The two H2O reactants make
         # musica supply the [H2O]^2 dependence; the externally supplied rate
         # coefficient is k_arrhenius(T) * kd(T), fully specified below.
+        note_unmapped(
+            "EXTRA 502 reaction(s) (H2O dimer; exp linear in T) "
+            "-> USER_DEFINED, inert until a rate is supplied externally")
         return [mc.UserDefined(
             name=name_for("EXTRA.502"),
             reactants=reactants
@@ -818,7 +834,9 @@ def _convert_extra(r, reactants, products, species_by_name, gas_phase, name_for,
             }))]
 
     # Any other code, undefined in the available spakkextra4.f.
-    unknown_extra[code] = unknown_extra.get(code, 0) + 1
+    note_unmapped(
+        f"EXTRA code {code} reaction(s) (undefined in available GECKO source) "
+        "-> USER_DEFINED, inert until a rate is supplied externally")
     return [mc.UserDefined(
         name=name_for(f"EXTRA.{code}"),
         reactants=reactants, products=products, gas_phase=gas_phase,
