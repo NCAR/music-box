@@ -1,6 +1,6 @@
 {
   "name": "@ncar/music-box",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "type": "module",
   "description": "JavaScript implementation of music-box atmospheric chemistry box model",
   "main": "./javascript/src/index.js",
@@ -48,7 +48,7 @@
     "test:coverage": "c8 node --test javascript/tests/unit/*.test.js javascript/tests/integration/*.test.js"
   },
   "dependencies": {
-    "@ncar/musica": "^0.15.0"
+    "@ncar/musica": "^0.16.0"
   },
   "devDependencies": {
     "c8": "^10.1.3",
