@@ -41,6 +41,11 @@ THIRD_BODY = "M"
 MOLECULAR_OXYGEN = "O2"
 WATER = "H2O"
 
+ATOMIC_WEIGHTS = {  # g/mol, used as a last-resort molecular weight from atom counts
+    'C': 12.011, 'H': 1.008, 'N': 14.007, 'O': 15.999,
+    'S': 32.06, 'F': 18.998, 'Cl': 35.45, 'Br': 79.904,
+}
+
 
 def parse_arguements():
     parser = argparse.ArgumentParser(
@@ -480,12 +485,6 @@ def classify_reactions(reactions, logger):
 # Building musica objects
 # ---------------------------------------------------------------------------
 
-ATOMIC_WEIGHTS = {  # g/mol, used as a last-resort molecular weight from atom counts
-    'C': 12.011, 'H': 1.008, 'N': 14.007, 'O': 15.999,
-    'S': 32.06, 'F': 18.998, 'Cl': 35.45, 'Br': 79.904,
-}
-
-
 def _strip_prefix(name):
     """Remove the gas (G) or aerosol (A) phase prefix to recover the dictionary name."""
     if name and name[0] in ('G', 'A'):
@@ -710,6 +709,7 @@ def convert_reactions(reactions, species_by_name, gas_phase, logger):
                     "__ro2 pool": r['ro2_pool'],
                     "__gecko arrhenius": {"A": r['A'], "n": r['n'], "E/R": r['E/R']},
                 })))
+            # print(converted[-1].to_equation())
 
         elif category == 'partitioning':
             # Gas <-> particle mass transfer; musica has no native partitioning
@@ -1071,7 +1071,7 @@ def main():
 
     output_file = output if output else 'my_config.json'
     with open(output_file, 'w') as f:
-        json.dump(config, f, indent=2)
+        json.dump(config, f, separators=(',', ':'))
     logger.info(
         f'MusicBox configuration written to {output_file} '
         f'({len(species_objects)} species, {len(reaction_objects)} reactions, '
