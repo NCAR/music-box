@@ -55,13 +55,15 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
         varMap = {
             # WACCM: MusicBox
             "T": "temperature",
-            "lev": "pressure"       # sigma pressure coordinates
+            "lev": "pressure",       # sigma pressure coordinates
+            "O3": "O3"
         }
     elif (modelType == fileUtils.WRF_Chem_File):
         varMap = {
             # WRF-Chem: MusicBox
             "T2": "temperature",
-            "PB": "pressure"
+            "PB": "pressure",
+            "o3": "O3"
         }
 
     for varName in inCommon:
