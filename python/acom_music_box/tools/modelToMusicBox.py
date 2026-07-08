@@ -299,6 +299,7 @@ def convertWaccm(varDict):
     soa_molecular_weight = 0.115  # kg mol-1
     soa_density = 1770  # kg m-3
     hPaToPa = 100
+    rConstant = 8.31446 # ideal gas constant J/(mol K)
 
     # retrieve temperature and pressure from WACCM
     temperature = varDict["temperature"][valueIndex][0]
@@ -327,6 +328,10 @@ def convertWaccm(varDict):
         if (units == "hPa"):
             varDict[key] = (vTuple[0], "Pa",
                             [vTuple[valueIndex][0] * hPaToPa])
+
+        if (units == "ppmv"):
+            varDict[key] = (vTuple[0], "mol m-3",
+                            [(vTuple[valueIndex][0] * 1e-6 * pressure) / (rConstant * temperature)])
 
     return (varDict)
 
