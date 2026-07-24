@@ -50,7 +50,7 @@ def _build_model():
     gas = mc.Phase(
         name="gas",
         species=[
-            mc.PhaseSpecies(srf.name, diffusion_coefficient_m2_s=1e-5),
+            mc.PhaseSpecies(name=srf.name, diffusion_coefficient_m2_s=1e-5),
             A, B, C, D, E, F, G, H, I, J,
         ],
     )
