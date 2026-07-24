@@ -299,7 +299,7 @@ def convertWaccm(varDict):
     soa_molecular_weight = 0.115  # kg mol-1
     soa_density = 1770  # kg m-3
     hPaToPa = 100
-    rConstant = 8.31446 # ideal gas constant J/(mol K)
+    rConstant = 8.31446  # ideal gas constant J/(mol K)
 
     # retrieve temperature and pressure from WACCM
     temperature = varDict["temperature"][valueIndex][0]
