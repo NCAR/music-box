@@ -12,3 +12,4 @@ from .music_box import MusicBox
 from .examples import Examples
 from .data_output import DataOutput
 from .plot_output import PlotOutput
+from .process_analysis_output import ProcessAnalysisOutput
