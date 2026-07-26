@@ -45,6 +45,7 @@ Home = "https://github.com/NCAR/music-box"
 
 [project.scripts]
 music_box = "acom_music_box.main:main"
+music_box_convert = "acom_music_box.config_converter:main"
 modelToMusicBox = "acom_music_box.tools.modelToMusicBox:main"
 
 [project.optional-dependencies]
