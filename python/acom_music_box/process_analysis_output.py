@@ -113,12 +113,15 @@ class ProcessAnalysisOutput:
             arrow = "->[j]" if photolysis else "->[k]"
 
             reactant_names = [c.name for c in reactants]
-            base = "_".join(reactant_names)
-            if photolysis:
-                base = (base + "_HV") if base else "HV"
-            if not base:
-                # Fall back to the reaction's own name (e.g. emissions with no reactants).
-                base = getattr(rxn, "name", "") or type(rxn).__name__
+            if reactant_names:
+                base = "_".join(reactant_names)
+                if photolysis:
+                    base += "_HV"
+            else:
+                # No reactants (e.g. an emission encoded as reactant-less
+                # photolysis): use the reaction's own name so the IRR variable is
+                # identifiable rather than a generic "HV".
+                base = getattr(rxn, "name", "") or ("HV" if photolysis else type(rxn).__name__)
 
             name = self._unique_name(base + IRR_SUFFIX, used_names)
 
