@@ -3,13 +3,18 @@ import os
 import tempfile
 import unittest
 
-from acom_music_box.config_converter import convert_csv_header, convert_config
+from acom_music_box.config_converter import (
+    convert_csv_header, convert_config, _convert_inline_data)
 
 
 class TestConvertCsvHeader(unittest.TestCase):
     def test_conc_keeps_units_dot_separated(self):
         self.assertEqual(convert_csv_header("CONC.O3 [mol m-3]"), "CONC.O3.mol m-3")
         self.assertEqual(convert_csv_header("CONC.GLYOXAL [mol m-3]"), "CONC.GLYOXAL.mol m-3")
+
+    def test_env_bracket_to_dot(self):
+        self.assertEqual(convert_csv_header("ENV.temperature [K]"), "ENV.temperature.K")
+        self.assertEqual(convert_csv_header("ENV.pressure [Pa]"), "ENV.pressure.Pa")
 
     def test_surface_effective_radius(self):
         self.assertEqual(
@@ -24,6 +29,23 @@ class TestConvertCsvHeader(unittest.TestCase):
     def test_passthrough(self):
         for col in ("time.s", "ENV.temperature.K", "PHOTO.jno2.s-1", "EMIS.NO.mol m-3 s-1"):
             self.assertEqual(convert_csv_header(col), col)
+
+
+class TestConvertInlineData(unittest.TestCase):
+    def test_list_of_lists_prepends_time(self):
+        block = _convert_inline_data(
+            [["ENV.temperature [K]", "CONC.A [mol m-3]"], [298.0, 1e-9]])
+        self.assertEqual(block["headers"], ["time.s", "ENV.temperature.K", "CONC.A.mol m-3"])
+        self.assertEqual(block["rows"], [[0.0, 298.0, 1e-9]])
+
+    def test_existing_time_column_preserved(self):
+        block = _convert_inline_data([["time.s", "PHOTO.j.s-1"], [0, 1e-4]])
+        self.assertEqual(block["headers"], ["time.s", "PHOTO.j.s-1"])
+        self.assertEqual(block["rows"], [[0, 1e-4]])
+
+    def test_empty(self):
+        self.assertIsNone(_convert_inline_data(None))
+        self.assertIsNone(_convert_inline_data([]))
 
 
 class TestConvertConfig(unittest.TestCase):
@@ -123,6 +145,26 @@ class TestConvertConfig(unittest.TestCase):
             lines = [line.strip() for line in f if line.strip()]
         self.assertEqual(lines[0], "time.s,PHOTO.rphoto.s-1")
         self.assertEqual(lines[1:], ["0,1e-4", "60,2e-4"])
+
+    def test_inline_initial_conditions_data(self):
+        # An old config that uses an inline 'data' table instead of a CSV filepath.
+        with open(self.old_config) as f:
+            cfg = json.load(f)
+        cfg["initial conditions"] = {
+            "data": [["CONC.A [mol m-3]", "CONC.B [mol m-3]"], [1e-9, 2e-9]]}
+        cfg.pop("evolving conditions", None)
+        with open(self.old_config, "w") as f:
+            json.dump(cfg, f)
+
+        out_config = convert_config(self.old_config, self.out_dir)
+        with open(out_config) as f:
+            cond = json.load(f)["conditions"]
+        # The inline table becomes a converted data block (with a time.s column).
+        inline = [b for b in cond["data"] if "CONC.A.mol m-3" in b["headers"]]
+        self.assertEqual(len(inline), 1)
+        self.assertEqual(inline[0]["headers"], ["time.s", "CONC.A.mol m-3", "CONC.B.mol m-3"])
+        self.assertEqual(inline[0]["rows"], [[0.0, 1e-9, 2e-9]])
+        self.assertNotIn("filepaths", cond)
 
 
 if __name__ == "__main__":
