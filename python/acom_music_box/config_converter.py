@@ -151,19 +151,23 @@ def convert_config(old_config_path, output_dir):
             "rows": [[0.0, temperature, pressure]],
         }]
 
+    # Both initial and evolving conditions become CSV filepaths in the new
+    # 'conditions' section; ConditionsManager merges them by time. Evolving CSVs
+    # already carry a time.s column, so convert_csv leaves their timing intact.
     filepaths = []
-    init = old.get("initial conditions", {})
-    for rel in init.get("filepaths", []):
-        src = os.path.join(old_dir, rel)
-        base = os.path.basename(rel)
-        convert_csv(src, os.path.join(output_dir, base))
-        filepaths.append(base)
+    for section in ("initial conditions", "evolving conditions"):
+        block = old.get(section, {})
+        for rel in block.get("filepaths", []):
+            src = os.path.join(old_dir, rel)
+            base = os.path.basename(rel)
+            convert_csv(src, os.path.join(output_dir, base))
+            filepaths.append(base)
+        if block.get("data"):
+            logger.warning(
+                "Inline '%s' data table is not auto-converted; add it to the "
+                "'conditions' data block manually if needed.", section)
     if filepaths:
         conditions["filepaths"] = filepaths
-    if init.get("data"):
-        logger.warning(
-            "Inline 'initial conditions' data table is not auto-converted; "
-            "add it to the 'conditions' data block manually if needed.")
     if conditions:
         new["conditions"] = conditions
 
