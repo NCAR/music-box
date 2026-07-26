@@ -39,8 +39,10 @@ def convert_csv_header(col):
     - ``CONC.<sp> [unit]``      -> ``CONC.<sp>.<unit>`` (e.g. ``CONC.O3.mol m-3``)
     - ``SURFACE.<rxn>.m``       -> ``SURF.<rxn>.effective radius.m``
     - ``SURFACE.<rxn>.# m-3``   -> ``SURF.<rxn>.particle number concentration.# m-3``
-    - everything else (``ENV.*``, ``PHOTO.*``, ``EMIS.*``, ``LOSS.*``, ``USER.*``,
-      ``time.s``) is passed through unchanged.
+    - any other ``PREFIX.name [unit]`` -> ``PREFIX.name.unit`` (e.g.
+      ``ENV.temperature [K]`` -> ``ENV.temperature.K``)
+    - already dot-separated columns (``PHOTO.j.s-1``, ``time.s``,
+      ``ENV.temperature.K``) are passed through unchanged.
     """
     c = col.strip()
     if c.startswith("CONC."):
@@ -63,6 +65,10 @@ def convert_csv_header(col):
             return f"SURF.{rest[:-len('.m')]}.effective radius.m"
         logger.warning(f"Unrecognized SURFACE column '{c}'; left unchanged.")
         return c
+    # General case: rewrite a trailing " [unit]" (e.g. "ENV.pressure [Pa]") as ".unit".
+    match = re.match(r"^(.*?)\s*\[\s*(.*?)\s*\]\s*$", c)
+    if match:
+        return f"{match.group(1)}.{match.group(2)}"
     return c
 
 
@@ -120,6 +126,35 @@ def _convert_mechanism(camp_config_path, override_species=None):
     return mech
 
 
+def _convert_inline_data(table):
+    """Convert an old inline conditions data table to a new 'data' block.
+
+    The old format is a list of two lists -- a header row and a value row --
+    with old-style column names, e.g.::
+
+        [["ENV.temperature [K]", "CONC.A [mol m-3]"], [298.0, 1e-9]]
+
+    Returns a ``{"headers": [...], "rows": [[...]]}`` block with converted column
+    names, prepending a ``time.s`` column when the table has none, or ``None`` when
+    there is nothing to convert.
+    """
+    if not table:
+        return None
+    # Documented list-of-lists form; also accept a {headers, rows} dict defensively.
+    if isinstance(table, dict):
+        headers = [convert_csv_header(h) for h in table.get("headers", [])]
+        rows = [list(r) for r in table.get("rows", [])]
+    else:
+        headers = [convert_csv_header(h) for h in table[0]]
+        rows = [list(r) for r in table[1:]]
+    if not headers:
+        return None
+    if "time.s" not in headers:
+        headers = ["time.s"] + headers
+        rows = [[0.0] + r for r in rows]
+    return {"headers": headers, "rows": rows}
+
+
 def convert_config(old_config_path, output_dir):
     """Convert an old-format MusicBox config (and its CSVs) into ``output_dir``.
 
@@ -139,31 +174,38 @@ def convert_config(old_config_path, output_dir):
     if "box model options" in old:
         new["box model options"] = old["box model options"]
 
-    # 2. Conditions: environmental values become an inline data row at t=0; each
-    #    referenced CSV is converted and re-referenced by basename.
+    # 2. Conditions: environmental values, inline data tables, and referenced CSVs
+    #    all become entries in the new 'conditions' section (merged by time).
     conditions = {}
+    data_blocks = []
     env = old.get("environmental conditions", {})
     if "temperature" in env and "pressure" in env:
         temperature = convert_temperature(env["temperature"], "initial value")
         pressure = convert_pressure(env["pressure"], "initial value")
-        conditions["data"] = [{
+        data_blocks.append({
             "headers": ["time.s", "ENV.temperature.K", "ENV.pressure.Pa"],
             "rows": [[0.0, temperature, pressure]],
-        }]
+        })
 
+    # Both initial and evolving conditions become CSV filepaths and/or inline data
+    # blocks in the new 'conditions' section; ConditionsManager merges them by time.
+    # Evolving CSVs already carry a time.s column, so convert_csv keeps their timing.
     filepaths = []
-    init = old.get("initial conditions", {})
-    for rel in init.get("filepaths", []):
-        src = os.path.join(old_dir, rel)
-        base = os.path.basename(rel)
-        convert_csv(src, os.path.join(output_dir, base))
-        filepaths.append(base)
+    for section in ("initial conditions", "evolving conditions"):
+        block = old.get(section, {})
+        for rel in block.get("filepaths", []):
+            src = os.path.join(old_dir, rel)
+            base = os.path.basename(rel)
+            convert_csv(src, os.path.join(output_dir, base))
+            filepaths.append(base)
+        inline = _convert_inline_data(block.get("data"))
+        if inline:
+            data_blocks.append(inline)
+
+    if data_blocks:
+        conditions["data"] = data_blocks
     if filepaths:
         conditions["filepaths"] = filepaths
-    if init.get("data"):
-        logger.warning(
-            "Inline 'initial conditions' data table is not auto-converted; "
-            "add it to the 'conditions' data block manually if needed.")
     if conditions:
         new["conditions"] = conditions
 

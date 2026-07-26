@@ -62,16 +62,19 @@ class TestProcessAnalysisOutput(unittest.TestCase):
             # Same reactants as the first reaction -> exercises name disambiguation.
             Arrhenius([_Comp("NO3"), _Comp("CH3COCHO")],
                       [_Comp("HNO3", 0.5), _Comp("irr__ddd")]),
+            # Reactant-less photolysis (an emission) -> named after the reaction.
+            Photolysis([], [_Comp("NO"), _Comp("irr__eee")], name="EMIS_NO"),
         ]
         self.species = [_Species(n) for n in (
-            "NO3", "CH3COCHO", "HNO3", "CO", "CCL4", "CL", "GLYOXAL", "SOAG0",
-            "irr__aaa", "irr__bbb", "irr__ccc", "irr__ddd")]
+            "NO3", "CH3COCHO", "HNO3", "CO", "CCL4", "CL", "GLYOXAL", "SOAG0", "NO",
+            "irr__aaa", "irr__bbb", "irr__ccc", "irr__ddd", "irr__eee")]
         self.mech = _Mechanism(self.reactions, self.species)
 
         # Three output steps; irr tracers accumulate (cumulative IRR).
         cols = {"time.s": [0.0, 60.0, 120.0]}
         for s in self.species:
-            base = {"irr__aaa": 1e-12, "irr__bbb": 2e-12, "irr__ccc": 3e-12, "irr__ddd": 4e-12}.get(s.name, 0.0)
+            base = {"irr__aaa": 1e-12, "irr__bbb": 2e-12, "irr__ccc": 3e-12,
+                    "irr__ddd": 4e-12, "irr__eee": 5e-12}.get(s.name, 0.0)
             cols[f"CONC.{s.name}.mol m-3"] = [base, base * 2, base * 3]
         self.df = pd.DataFrame(cols)
 
@@ -94,15 +97,17 @@ class TestProcessAnalysisOutput(unittest.TestCase):
         # Real species only; tracers excluded.
         self.assertNotIn("irr__aaa", doc["species_list"])
         self.assertIn("GLYOXAL", doc["species_list"])
-        self.assertEqual(len(doc["species_list"]), 8)
+        self.assertEqual(len(doc["species_list"]), 9)
 
         rl = doc["reaction_list"]
-        self.assertEqual(len(rl), 4)
+        self.assertEqual(len(rl), 5)
         # Names, disambiguation, and grammar.
         self.assertEqual(rl["NO3_CH3COCHO_IRR"], "NO3 + CH3COCHO ->[k] HNO3 + CO")
         self.assertEqual(rl["CCL4_HV_IRR"], "CCL4 ->[j] 4*CL")
         self.assertEqual(rl["GLYOXAL_IRR"], "GLYOXAL ->[k] SOAG0")
         self.assertEqual(rl["NO3_CH3COCHO_a_IRR"], "NO3 + CH3COCHO ->[k] 0.5*HNO3")
+        # A reactant-less photolysis (emission) is named after the reaction, not "HV".
+        self.assertEqual(rl["EMIS_NO_IRR"], "->[j] NO")
         # No irr__ tracer leaks into any equation.
         self.assertFalse(any("irr__" in eq for eq in rl.values()))
 
