@@ -89,12 +89,35 @@ def convert_csv(old_path, new_path):
     logger.info(f"Converted conditions CSV -> {new_path}")
 
 
-def _convert_mechanism(camp_config_path):
-    """Parse a CAMP (v0) config and return an embeddable v1 mechanism dict."""
+def _convert_mechanism(camp_config_path, override_species=None):
+    """Parse a CAMP (v0) config and return an embeddable v1 mechanism dict.
+
+    ``override_species`` are the old ``override species`` directives. A fixed
+    ``mixing ratio mol mol-1`` is translated to a ``constant mixing ratio
+    [mol mol-1]`` on the species, which musica fixes to ``air_density * ratio``
+    for the whole run -- exactly what the old override did. Third-body species
+    (e.g. M) already fix their concentration to air density, so they are left
+    as-is.
+    """
     mechanism = parse(camp_config_path)
     # The v0 parser stamps version 0.0.0; this is emitted as a v1 document.
     mechanism.version = Version(1, 0, 0)
-    return mechanism.serialize()
+    mech = mechanism.serialize()
+
+    for name, spec in (override_species or {}).items():
+        entry = next((s for s in mech["species"] if s.get("name") == name), None)
+        if entry is None:
+            logger.warning("override species '%s' is not in the mechanism; skipped.", name)
+            continue
+        if entry.get("is third body"):
+            continue  # third bodies are already fixed to air density
+        if "mixing ratio mol mol-1" in spec:
+            entry["constant mixing ratio [mol mol-1]"] = spec["mixing ratio mol mol-1"]
+        else:
+            logger.warning(
+                "override species '%s' uses unsupported keys %s and was not translated; "
+                "set it in the conditions CSV.", name, list(spec))
+    return mech
 
 
 def convert_config(old_config_path, output_dir):
@@ -150,13 +173,8 @@ def convert_config(old_config_path, output_dir):
     if camp is None:
         raise ValueError("No CAMP 'model components' entry found to convert.")
     camp_config = os.path.join(old_dir, camp["configuration file"])
-    new["mechanism"] = _convert_mechanism(camp_config)
+    new["mechanism"] = _convert_mechanism(camp_config, camp.get("override species"))
 
-    if camp.get("override species"):
-        logger.warning(
-            "'override species' (%s) not translated. Third-body species (e.g. M) "
-            "are handled by the mechanism; set any others in the conditions CSV.",
-            ", ".join(camp["override species"].keys()))
     if camp.get("suppress output"):
         logger.info("'suppress output' has no current equivalent and was dropped.")
 

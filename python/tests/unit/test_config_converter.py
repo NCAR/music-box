@@ -60,7 +60,8 @@ class TestConvertConfig(unittest.TestCase):
                 "initial conditions": {"filepaths": ["ic.csv"]},
                 "model components": [{
                     "type": "CAMP", "configuration file": "camp_data/config.json",
-                    "override species": {"M": {"mixing ratio mol mol-1": 1}},
+                    "override species": {"M": {"mixing ratio mol mol-1": 1},
+                                         "A": {"mixing ratio mol mol-1": 0.5}},
                     "suppress output": {"M": {}}}],
             }, f)
         self.out_dir = os.path.join(root, "out")
@@ -88,6 +89,19 @@ class TestConvertConfig(unittest.TestCase):
         names = {s["name"] for s in new["mechanism"]["species"]}
         self.assertEqual(names, {"A", "B", "M"})
         self.assertEqual(len(new["mechanism"]["reactions"]), 1)
+
+    def test_override_species_translation(self):
+        out_config = convert_config(self.old_config, self.out_dir)
+        with open(out_config) as f:
+            species = {s["name"]: s for s in json.load(f)["mechanism"]["species"]}
+
+        # Third-body M is fixed to air density by the mechanism; the override
+        # needs no translation and must not add a constant mixing ratio.
+        self.assertTrue(species["M"]["is third body"])
+        self.assertNotIn("constant mixing ratio [mol mol-1]", species["M"])
+
+        # A non-third-body override becomes a constant mixing ratio on the species.
+        self.assertEqual(species["A"]["constant mixing ratio [mol mol-1]"], 0.5)
 
     def test_convert_config_rewrites_csv(self):
         convert_config(self.old_config, self.out_dir)
