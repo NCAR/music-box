@@ -7,9 +7,9 @@ from acom_music_box.config_converter import convert_csv_header, convert_config
 
 
 class TestConvertCsvHeader(unittest.TestCase):
-    def test_conc_strips_units(self):
-        self.assertEqual(convert_csv_header("CONC.O3 [mol m-3]"), "CONC.O3")
-        self.assertEqual(convert_csv_header("CONC.GLYOXAL [mol m-3]"), "CONC.GLYOXAL")
+    def test_conc_keeps_units_dot_separated(self):
+        self.assertEqual(convert_csv_header("CONC.O3 [mol m-3]"), "CONC.O3.mol m-3")
+        self.assertEqual(convert_csv_header("CONC.GLYOXAL [mol m-3]"), "CONC.GLYOXAL.mol m-3")
 
     def test_surface_effective_radius(self):
         self.assertEqual(
@@ -93,7 +93,7 @@ class TestConvertConfig(unittest.TestCase):
         convert_config(self.old_config, self.out_dir)
         with open(os.path.join(self.out_dir, "ic.csv")) as f:
             lines = [line.strip() for line in f if line.strip()]
-        self.assertEqual(lines[0], "time.s,CONC.A,CONC.B")
+        self.assertEqual(lines[0], "time.s,CONC.A.mol m-3,CONC.B.mol m-3")
         self.assertEqual(lines[1], "0.0,1e-9,2e-9")
 
 

@@ -36,7 +36,7 @@ _RATE_PREFIXES = ("ENV", "CONC", "EMIS", "PHOTO", "LOSS", "USER", "SURF")
 def convert_csv_header(col):
     """Convert one old-format CSV column name to the current convention.
 
-    - ``CONC.<sp> [unit]``      -> ``CONC.<sp>``
+    - ``CONC.<sp> [unit]``      -> ``CONC.<sp>.<unit>`` (e.g. ``CONC.O3.mol m-3``)
     - ``SURFACE.<rxn>.m``       -> ``SURF.<rxn>.effective radius.m``
     - ``SURFACE.<rxn>.# m-3``   -> ``SURF.<rxn>.particle number concentration.# m-3``
     - everything else (``ENV.*``, ``PHOTO.*``, ``EMIS.*``, ``LOSS.*``, ``USER.*``,
@@ -44,9 +44,17 @@ def convert_csv_header(col):
     """
     c = col.strip()
     if c.startswith("CONC."):
-        # Strip a trailing " [unit]" so the species name stands alone.
-        species = re.sub(r"\s*\[.*\]\s*$", "", c[len("CONC."):]).strip()
-        return f"CONC.{species}"
+        # Rewrite " [unit]" as a dot-separated ".unit" (e.g. "CONC.O3 [mol m-3]"
+        # -> "CONC.O3.mol m-3"), keeping the unit like the SURF columns do.
+        body = c[len("CONC."):]
+        match = re.search(r"\[\s*(.*?)\s*\]\s*$", body)
+        unit = match.group(1) if match else "mol m-3"
+        species = re.sub(r"\s*\[.*\]\s*$", "", body).strip()
+        if unit != "mol m-3":
+            logger.warning(
+                "Concentration column '%s' is in '%s'; the current MusicBox reads "
+                "concentrations as mol m-3 and does not convert units.", c, unit)
+        return f"CONC.{species}.{unit}"
     if c.startswith("SURFACE."):
         rest = c[len("SURFACE."):]
         if rest.endswith(".# m-3"):
