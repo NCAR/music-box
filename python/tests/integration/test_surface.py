@@ -9,7 +9,7 @@ def in_code_surface_reaction():
     A = mc.Species(name="A", molecular_weight_kg_mol=6)
     B = mc.Species(name="B")
     species = {s.name: s for s in [A, B]}
-    gas = mc.Phase(name="gas", species=[mc.PhaseSpecies(A.name, diffusion_coefficient_m2_s=1e-9), B])
+    gas = mc.Phase(name="gas", species=[mc.PhaseSpecies(name=A.name, diffusion_coefficient_m2_s=1e-9), B])
     surface = mc.Surface(name="surface", reaction_probability=1.0, gas_phase_species=A, gas_phase_products=[B], gas_phase=gas)
     mechanism = mc.Mechanism(name="test_mechanism", species=list(species.values()), phases=[gas], reactions=[surface])
     box_model = MusicBox()

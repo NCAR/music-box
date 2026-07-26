@@ -30,7 +30,7 @@ dependencies = [
   "colorlog>=6.7.0",
   "matplotlib>=3.6.0",
   "mplcursors>=0.3",
-  "musica>=0.16.0",
+  "musica>=0.16.4",
   "netcdf4>=1.6.0",
   "numpy>=2.0.0",
   "pandas>=2.2.0",
@@ -45,6 +45,7 @@ Home = "https://github.com/NCAR/music-box"
 
 [project.scripts]
 music_box = "acom_music_box.main:main"
+music_box_convert = "acom_music_box.config_converter:main"
 modelToMusicBox = "acom_music_box.tools.modelToMusicBox:main"
 
 [project.optional-dependencies]
@@ -54,7 +55,7 @@ dev = [
   "pytest-cov>=7.0.0"
 ]
 gpu = [
-  "musica[gpu]==0.16.0"
+  "musica[gpu]==0.16.4"
 ]
 doc = [
   "ipython",

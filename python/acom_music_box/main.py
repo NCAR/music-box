@@ -3,7 +3,7 @@ import colorlog
 import datetime
 import logging
 import os
-from acom_music_box import MusicBox, Examples, __version__, DataOutput, PlotOutput
+from acom_music_box import MusicBox, Examples, __version__, DataOutput, PlotOutput, ProcessAnalysisOutput
 from acom_music_box.utils import get_available_units
 
 
@@ -64,6 +64,14 @@ def parse_arguments():
         choices=get_available_units(),
         default='mol m-3',
         help='Specify the output unit for plotting concentrations.'
+    )
+    parser.add_argument(
+        '--process-analysis',
+        type=str,
+        metavar='PATH',
+        help=("Write process-analysis output for permm (https://github.com/barronh/permm)."
+              + "\nGiven a path/prefix, writes <PATH>.yaml (mechanism) and <PATH>.nc"
+              + "\n(integrated reaction rates). Requires irr__ accumulator tracers in the mechanism.")
     )
     return parser.parse_args()
 
@@ -132,6 +140,10 @@ def main():
     # Create an instance of PlotOutput
     plotOutput = PlotOutput(result, args)
     plotOutput.plot()
+
+    # Optionally write permm-compatible process-analysis output.
+    if args.process_analysis:
+        ProcessAnalysisOutput(result, myBox.mechanism, args.process_analysis).write()
 
     end = datetime.datetime.now()
     logger.info(f"End time: {end}")
