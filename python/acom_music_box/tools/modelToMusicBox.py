@@ -257,6 +257,8 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
             continue
 
         chemSinglePoint = meanPoint[waccmKey]
+        # get rid of {curly brackets} surrounding the exponent
+        chemSinglePoint.attrs["units"] = chemSinglePoint.units.replace("{", "").replace("}", "")
         logger.debug(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
 
         # this next line takes the mean along any remaining vertical axis/dimension
@@ -300,6 +302,7 @@ def convertWaccm(varDict):
     soa_density = 1770  # kg m-3
     hPaToPa = 100
     rConstant = 8.31446  # ideal gas constant J/(mol K)
+    minutesToSeconds = 60
 
     # retrieve temperature and pressure from WACCM
     temperature = varDict["temperature"][valueIndex][0]
@@ -325,13 +328,16 @@ def convertWaccm(varDict):
             # soa species only
             varDict[key] = (vTuple[0], "mol m-3",
                             [vTuple[valueIndex][0] * soa_density / soa_molecular_weight])
-        if (units == "hPa"):
-            varDict[key] = (vTuple[0], "Pa",
-                            [vTuple[valueIndex][0] * hPaToPa])
-
         if (units == "ppmv"):
             varDict[key] = (vTuple[0], "mol m-3",
                             [(vTuple[valueIndex][0] * 1e-6 * pressure) / (rConstant * temperature)])
+
+        if (units == "hPa"):
+            varDict[key] = (vTuple[0], "Pa",
+                            [vTuple[valueIndex][0] * hPaToPa])
+        if (units == "min-1"):
+            varDict[key] = (vTuple[0], "s-1",
+                            [vTuple[valueIndex][0] / minutesToSeconds])
 
     return (varDict)
 
