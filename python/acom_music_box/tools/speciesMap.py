@@ -61,9 +61,19 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     elif (modelType == fileUtils.WRF_Chem_File):
         varMap = {
             # WRF-Chem: MusicBox
-            "T2": "temperature",
-            "PB": "pressure",
-            "o3": "O3"
+            "T2": "temperature",  # is derived variable
+            "PB": "pressure", # is derived variable
+            "o3": "O3",
+            "co": "CO",
+            "hcho": "CH2O",
+            "no": "NO",
+            "no2": "NO2",
+            "hno3": "HNO3",
+            "pan": "PAN",
+            "no3": "NO3",
+            "n2o5": "N2O5",
+            "PHOTR2": "jo3_a",  # Photoloysis rate, WRF-Chem unit is min-1
+            "PHOTR3": "jno2"    # Photoloysis rate, WRF-Chem unit is min-1
         }
 
     for varName in inCommon:
