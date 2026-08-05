@@ -61,8 +61,8 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     elif (modelType == fileUtils.WRF_Chem_File):
         varMap = {
             # WRF-Chem: MusicBox
-            "T2": "temperature",  # is derived variable
-            "PB": "pressure", # is derived variable
+            "Temperature derived": "temperature",   # is derived variable
+            "Pressure derived": "pressure",         # is derived variable
             "o3": "O3",
             "co": "CO",
             "hcho": "CH2O",
