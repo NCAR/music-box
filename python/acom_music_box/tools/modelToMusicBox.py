@@ -214,10 +214,11 @@ def getMusicaSpecies(myConfigFile):
 
 # Add the components of any model variables that must be calculated from others.
 # varDictionary = dictionary of common species names
-# return varDictionary with component species added
+# return (varDictionary, newComponents) with component species added
 def addDerivedComponents(varDictionary):
     # create a set of unique variable names to add
     components = set()
+    addedVars = []
 
     for key in varDictionary:
         # we are looking for patterns like: "Temperature derived"
@@ -239,9 +240,12 @@ def addDerivedComponents(varDictionary):
 
     # add those model component species to the dictionary
     for component in components:
+        if component in varDictionary:
+            continue
         varDictionary[component] = component     # for CSV only; no MUSICA equivalent
+        addedVars.append(component)
 
-    return(varDictionary)
+    return (varDictionary, addedVars)
 
 
 # Calculated derived variable from component native species.
@@ -772,8 +776,9 @@ def main():
                 logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
 
             # add the species components of any derived variables
-            commonDict = addDerivedComponents(commonDict)
+            commonDict, componentSpecies = addDerivedComponents(commonDict)
             logger.info(f"Species in common plus derived components = {commonDict}")
+            logger.info(f"Temporary component species for deriving vars = {componentSpecies}")
 
             # time is the first listed variable for initial conditions
             varValues = {}
@@ -812,6 +817,10 @@ def main():
             logger.error("No time steps found and no values extracted."
                          + "\nPlease check your date-time window against your model output.")
             sys.exit(1)
+
+        # remove those temporary component species used in deriving variables
+        for species in componentSpecies:
+            accumValues.pop(species, None)
 
         # loop through the requested output files/formats
         for output in myArgs.output:
