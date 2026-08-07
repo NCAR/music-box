@@ -53,14 +53,14 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     # the common species between WACCM and MUSICA.
     if (modelType == fileUtils.WACCM_File):
         varMap = {
-            # WACCM: MusicBox
+            # WACCM variable: MusicBox equivalent
             "T": "temperature",
             "lev": "pressure",       # sigma pressure coordinates
             "O3": "O3"
         }
     elif (modelType == fileUtils.WRF_Chem_File):
         varMap = {
-            # WRF-Chem: MusicBox
+            # WRF-Chem variable: MusicBox equivalent
             "Temperature derived": "temperature",   # is derived variable
             "Pressure derived": "pressure",         # is derived variable
             "o3": "O3",
@@ -72,8 +72,8 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
             "pan": "PAN",
             "no3": "NO3",
             "n2o5": "N2O5",
-            "PHOTR2": "jo3_a",  # Photoloysis rate, WRF-Chem unit is min-1
-            "PHOTR3": "jno2"    # Photoloysis rate, WRF-Chem unit is min-1
+            "PHOTR2": "jo3_a",  # WRF-Chem: O31D Photoloysis rate (min-1)
+            "PHOTR3": "jno2"    # WRF-Chem: O33P Photoloysis rate (min-1)
         }
 
     for varName in inCommon:

@@ -263,29 +263,29 @@ def calcDerivedVar(columnVars, varToDerive):
 
     varNameOnly = varToDerive.replace("derived", "").replace(" ", "")
     if (varNameOnly.lower() == "pressure"):
-        pSinglePoint = columnVars["P"]
-        pbSinglePoint = columnVars["PB"]
+        pSinglePoint = columnVars["P"]      # WRF-Chem: perturbation pressure (Pa)
+        pbSinglePoint = columnVars["PB"]    # WRF-Chem: base state pressure (Pa)
 
-        pressureSinglePoint = pSinglePoint + pbSinglePoint
+        pressureSinglePoint = pSinglePoint + pbSinglePoint  # actual atmospheric pressure (Pa)
         units = pSinglePoint.units      # should be Pa
         verticalMean = float(pressureSinglePoint.values.mean())
         foundVariable = True
 
     if (varNameOnly.lower() == "temperature"):
-        tSinglePoint = columnVars["T"]
-        pSinglePoint = columnVars["P"]
-        pbSinglePoint = columnVars["PB"]
+        tSinglePoint = columnVars["T"]      # WRF-Chem: perturbation potential temperature theta-t0
+        pSinglePoint = columnVars["P"]      # WRF-Chem: perturbation pressure (Pa)
+        pbSinglePoint = columnVars["PB"]    # WRF-Chem: base state pressure (Pa)
 
         theta0 = 300.0  # WRF baseline constant potential temperature (K)
-        tSinglePoint += theta0
+        tSinglePoint += theta0  # actual potential temperature (K)
 
         P1000MB = 100000.0      # sea level pressure in Pascals
         RD = 287.0              # specific gas constant R for dry air J/(kg K)
         CP = 1004.50            # heat capacity of dry air J/(kg K) at constant pressure
 
-        # Perform the numeric calculation.
+        # Perform the numeric calculation; convert potential temperature to actual temperature.
         # see fortran/wrf_user.f90 SUBROUTINE DCOMPUTETK(tk, pressure, theta, nx)
-        pressureSinglePoint = pSinglePoint + pbSinglePoint
+        pressureSinglePoint = pSinglePoint + pbSinglePoint  # actual atmospheric pressure (Pa)
         temperatureSinglePoint = ((pressureSinglePoint / P1000MB) ** (RD / CP)) * tSinglePoint
 
         units = tSinglePoint.units  # should be K
