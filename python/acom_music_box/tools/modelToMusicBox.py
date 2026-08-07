@@ -212,6 +212,92 @@ def getMusicaSpecies(myConfigFile):
     return (musicaNames)
 
 
+# Add the components of any model variables that must be calculated from others.
+# varDictionary = dictionary of common species names
+# return (varDictionary, newComponents) with component species added
+def addDerivedComponents(varDictionary):
+    # create a set of unique variable names to add
+    components = set()
+    addedVars = []
+
+    for key in varDictionary:
+        # we are looking for patterns like: "Temperature derived"
+        if not "derived" in key:
+            continue
+        derivedName = key.replace("derived", "").replace(" ", "")
+
+        # WACCM
+
+        # WRF-Chem
+        if (derivedName.lower() == "temperature"):
+            components.add("T")     # perturbation potential temperature theta-t0, units K
+            components.add("P")     # perturbation pressure, units Pa
+            components.add("PB")    # base state pressure, units Pa
+
+        if (derivedName.lower() == "pressure"):
+            components.add("P")
+            components.add("PB")
+
+    # add those model component species to the dictionary
+    for component in components:
+        if component in varDictionary:
+            continue
+        varDictionary[component] = component     # for CSV only; no MUSICA equivalent
+        addedVars.append(component)
+
+    return (varDictionary, addedVars)
+
+
+# Calculated derived variable from component native species.
+# columnVars = xarray.Dataset; multiple variable horizontal means
+#       at a single lat-lon point, at many vertical levels
+# varToDerive = name of the non-native chemical to calculate
+# return tuple of (waccmVarName, units, [verticalMean])
+def calcDerivedVar(columnVars, varToDerive):
+    logger.debug(f"columnVars = {columnVars}   varToDerive = {varToDerive}")
+
+    # set up default error values in case variable name not known
+    units = "None"
+    verticalMean = 0.0
+    foundVariable = False
+
+    varNameOnly = varToDerive.replace("derived", "").replace(" ", "")
+    if (varNameOnly.lower() == "pressure"):
+        pSinglePoint = columnVars["P"]      # WRF-Chem: perturbation pressure (Pa)
+        pbSinglePoint = columnVars["PB"]    # WRF-Chem: base state pressure (Pa)
+
+        pressureSinglePoint = pSinglePoint + pbSinglePoint  # actual atmospheric pressure (Pa)
+        units = pSinglePoint.units      # should be Pa
+        verticalMean = float(pressureSinglePoint.values.mean())
+        foundVariable = True
+
+    if (varNameOnly.lower() == "temperature"):
+        tSinglePoint = columnVars["T"]      # WRF-Chem: perturbation potential temperature theta-t0
+        pSinglePoint = columnVars["P"]      # WRF-Chem: perturbation pressure (Pa)
+        pbSinglePoint = columnVars["PB"]    # WRF-Chem: base state pressure (Pa)
+
+        theta0 = 300.0  # WRF baseline constant potential temperature (K)
+        tSinglePoint += theta0  # actual potential temperature (K)
+
+        P1000MB = 100000.0      # sea level pressure in Pascals
+        RD = 287.0              # specific gas constant R for dry air J/(kg K)
+        CP = 1004.50            # heat capacity of dry air J/(kg K) at constant pressure
+
+        # Perform the numeric calculation; convert potential temperature to actual temperature.
+        # see fortran/wrf_user.f90 SUBROUTINE DCOMPUTETK(tk, pressure, theta, nx)
+        pressureSinglePoint = pSinglePoint + pbSinglePoint  # actual atmospheric pressure (Pa)
+        temperatureSinglePoint = ((pressureSinglePoint / P1000MB) ** (RD / CP)) * tSinglePoint
+
+        units = tSinglePoint.units  # should be K
+        verticalMean = float(temperatureSinglePoint.values.mean())
+        foundVariable = True
+
+    if not foundVariable:
+        logger.warning(f"Requested variable name {varNameOnly} not found in calcDerivedVar().")
+
+    return (varToDerive, units, [verticalMean])
+
+
 # Read array values at a single lat-lon-time point.
 # waccmMusicaDict = mapping from WACCM names to MusicBox
 # latitudes, longitudes = geo-coordinates of retrieval point(s)
@@ -250,6 +336,13 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
     # loop through vars and build another dictionary
     musicaDict = {}
     for waccmKey, musicaName in waccmMusicaDict.items():
+        if "derived" in waccmKey:
+            # resolve this derived variable
+            musicaTuple = calcDerivedVar(meanPoint, waccmKey)
+            logger.debug(f"Derived musicaTuple = {musicaTuple}")
+            musicaDict[musicaName] = musicaTuple
+            continue
+
         if waccmKey not in meanPoint:
             logger.warning(f"Requested variable {waccmKey} not found in WACCM model output.")
             musicaTuple = (waccmKey, None, [None])
@@ -257,6 +350,8 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
             continue
 
         chemSinglePoint = meanPoint[waccmKey]
+        # get rid of {curly brackets} surrounding the exponent
+        chemSinglePoint.attrs["units"] = chemSinglePoint.units.replace("{", "").replace("}", "")
         logger.debug(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
 
         # this next line takes the mean along any remaining vertical axis/dimension
@@ -274,7 +369,7 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
 
 
 # Add molecular Nitrogen, Oxygen, and Argon to dictionary.
-# varValues = already read from WACCM, contains (name, concentration, units)
+# varValues = already read from WACCM, contains (name, units, concentration)
 # return varValues with N2, O2, and Ar added
 def addStandardGases(varValues):
     varValues["N2"] = ("N2", "mol/mol", [0.78084])    # standard fraction by volume
@@ -300,6 +395,7 @@ def convertWaccm(varDict):
     soa_density = 1770  # kg m-3
     hPaToPa = 100
     rConstant = 8.31446  # ideal gas constant J/(mol K)
+    minutesToSeconds = 60
 
     # retrieve temperature and pressure from WACCM
     temperature = varDict["temperature"][valueIndex][0]
@@ -325,13 +421,16 @@ def convertWaccm(varDict):
             # soa species only
             varDict[key] = (vTuple[0], "mol m-3",
                             [vTuple[valueIndex][0] * soa_density / soa_molecular_weight])
-        if (units == "hPa"):
-            varDict[key] = (vTuple[0], "Pa",
-                            [vTuple[valueIndex][0] * hPaToPa])
-
         if (units == "ppmv"):
             varDict[key] = (vTuple[0], "mol m-3",
                             [(vTuple[valueIndex][0] * 1e-6 * pressure) / (rConstant * temperature)])
+
+        if (units == "hPa"):
+            varDict[key] = (vTuple[0], "Pa",
+                            [vTuple[valueIndex][0] * hPaToPa])
+        if (units == "min-1"):
+            varDict[key] = (vTuple[0], "s-1",
+                            [vTuple[valueIndex][0] / minutesToSeconds])
 
     return (varDict)
 
@@ -676,11 +775,17 @@ def main():
             if (len(commonDict) == 0):
                 logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
 
+            # add the species components of any derived variables
+            commonDict, componentSpecies = addDerivedComponents(commonDict)
+            logger.info(f"Species in common plus derived components = {commonDict}")
+            logger.info(f"Temporary component species for deriving vars = {componentSpecies}")
+
             # time is the first listed variable for initial conditions
             varValues = {}
             varValues["time"] = ("time", "s", [seconds])
 
-            # Read named variables from WACCM model output.
+            # Read named variables from WACCM model output,
+            # and calculate any derived variables.
             logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
             waccmValues = readWACCM(commonDict, lats, lons, alts,
                                     when, waccmFilename, modelType)
@@ -690,7 +795,7 @@ def main():
             # add molecular Nitrogen, Oxygen, and Argon
             varValues = addStandardGases(varValues)
 
-            # Perform any conversions needed, or derive variables.
+            # Perform any unit conversions needed.
             varValues = convertWaccm(varValues)
             logger.debug(f"Converted WACCM varValues = {varValues}")
             frameCount += 1
@@ -712,6 +817,10 @@ def main():
             logger.error("No time steps found and no values extracted."
                          + "\nPlease check your date-time window against your model output.")
             sys.exit(1)
+
+        # remove those temporary component species used in deriving variables
+        for species in componentSpecies:
+            accumValues.pop(species, None)
 
         # loop through the requested output files/formats
         for output in myArgs.output:
