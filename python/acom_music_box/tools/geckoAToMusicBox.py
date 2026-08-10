@@ -603,13 +603,13 @@ def build_species_and_phases(reactions, species_df, molecular_weights,
 
 
 def _components(species_list, species_by_name):
-    """Convert a parsed species list into musica (coefficient, Species) tuples."""
-    return [(s['coefficient'], species_by_name[s['species name']])
+    """Convert a parsed species list into musica (Species, coefficient) tuples."""
+    return [(species_by_name[s['species name']], s['coefficient'])
             for s in species_list]
 
 
 def _extra_reactant(species_by_name, name, coefficient=1.0):
-    return (coefficient, species_by_name[name])
+    return (species_by_name[name], coefficient)
 
 
 def convert_reactions(reactions, species_by_name, gas_phase, logger):
