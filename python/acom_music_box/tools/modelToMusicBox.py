@@ -453,6 +453,15 @@ def isEnvironment(varName):
     return (False)
 
 
+# Determines if WACCM chemical "name" is a photolysis variable or not.
+# return True for names beginning with PHOTR*.
+def isPhotolysis(varName):
+    if varName.startswith("PHOTR"):
+        return (True)
+
+    return (False)
+
+
 # Write CSV file suitable for initial_conditions.csv in MusicBox.
 # initValues = dictionary of Musica varnames and (WACCM name, value, units)
 def writeInitCSV(initValues, filename):
@@ -476,6 +485,10 @@ def writeInitCSV(initValues, filename):
             reaction_type = None
         if isEnvironment(key):
             reaction_type = "ENV"
+
+        # photolysis vars are indicated by the model name
+        if isPhotolysis(value[musicaIndex]):
+            reaction_type = "PHOTO"
 
         titleString = conditions_manager.ConditionsManager.format_reaction_var_units(
             key, units=value[unitIndex], prefix=reaction_type)
@@ -526,6 +539,8 @@ def writeInitJSON(initValues, filename):
             reaction_type = None
         if isEnvironment(key):
             reaction_type = "ENV"
+        if isPhotolysis(value[musicaIndex]):
+            reaction_type = "PHOTO"
 
         titleString = conditions_manager.ConditionsManager.format_reaction_var_units(
             key, units=value[unitIndex], prefix=reaction_type)

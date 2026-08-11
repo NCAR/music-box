@@ -76,6 +76,7 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
             "PHOTR3": "jno2"    # WRF-Chem: O33P Photoloysis rate (min-1)
         }
 
+    # all common species are mapped to themselves
     for varName in inCommon:
         varMap[varName] = varName
 
