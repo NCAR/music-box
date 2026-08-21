@@ -400,6 +400,13 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
 # altitudes[] = lower and upper values to select
 # return indexes like [23, 24, 25, 26, 27]
 def getSubColumn(wholeColumn, altitudes):
+    # check for no requested values within range of the column
+    if ((altitudes[0] > wholeColumn[-1])
+        or (altitudes[1] < wholeColumn[0])):
+        floatColumn = [wholeColumn[0].item(), wholeColumn[-1].item()]
+        logger.warning(f"Altitude range {altitudes} is outside the vertical column {floatColumn}")
+        return []
+
     logger.debug(f"wholeColumn = {wholeColumn} meters")
     dummy, lower = findNearestAltitude(wholeColumn, altitudes[0])
     dummy, upper = findNearestAltitude(wholeColumn, altitudes[1])
@@ -480,7 +487,7 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
             verticalIndexes = getSubColumn(zLevels.values[:, iLat, iLon], heightPair)
             logger.debug(f"verticalIndexes = {verticalIndexes}")
             if (len(verticalIndexes) == 0):
-                logger.debug("\tNo level within those height bounds.")
+                logger.warning("\tNo model level within those height bounds.")
                 continue        # there is no level here within the height range
 
             singlePoint = gridDataset.isel(Time=timeIndex,
@@ -493,6 +500,10 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
             singlePoint = singlePoint.mean(skipna=True, keep_attrs=True)   # take mean within sub-column
             logger.debug(f"Mean singlePoint = {singlePoint}")
             singlePoints.append(singlePoint)
+
+    if (len(singlePoints) <= 0):
+        logger.warning("No grid points found within your lat-lon and altitude bounds.")
+        return None
 
     logger.info(f"Combining {len(singlePoints)} points into a single set...")
     pointDimension = "point_index"

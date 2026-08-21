@@ -333,6 +333,10 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
     # diagnostic to look at single point structure
     logger.debug(f"WACCM / WRF-Chem meanPoint = {meanPoint}")
 
+    if meanPoint is None:
+        logger.warning(f"No grid points collected for model time step {when}.")
+        return None
+
     # loop through vars and build another dictionary
     musicaDict = {}
     for waccmKey, musicaName in waccmMusicaDict.items():
@@ -805,6 +809,13 @@ def main():
             waccmValues = readWACCM(commonDict, lats, lons, alts,
                                     when, waccmFilename, modelType)
             logger.debug(f"Original WACCM waccmValues = {waccmValues}")
+
+            if waccmValues is None:
+                logger.warning(f"Skipping time step {when}")
+                when += datetime.timedelta(hours=strideHours)
+                continue
+
+            # append extracted model values to this row
             varValues.update(waccmValues)
 
             # add molecular Nitrogen, Oxygen, and Argon
