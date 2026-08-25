@@ -181,6 +181,12 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
             lonIndex -= 1
         numSteps += 1
 
+        # Did search run off the edge of the model domain?
+        if (latIndex < 0 or latIndex >= len(lats)
+            or lonIndex < 0 or lonIndex >= len(lons)):
+            logger.warning(f"Requested point ({latitude} North, {longitude} East) is outside the model grid.")
+            return (None, None)
+
         myLat = lats[latIndex, lonIndex]
         myLon = lons[latIndex, lonIndex]
         logger.debug(f"\tvertex search now at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
@@ -476,6 +482,10 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
             iLat, iLon = findClosestVertex(gridDataset,
                                            "XLAT", "XLONG", latFloat, lonFloat, iLat, iLon)
             logger.debug(f"iLat = {iLat}   iLon = {iLon}")
+
+            if (iLat is None or iLon is None):
+                logger.warning("\tSkipping lat-lon point outside the model domain.")
+                continue
 
             # set up the column bounds for this grid cell
             for pi in range(0, 2):
