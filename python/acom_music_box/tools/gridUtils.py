@@ -52,8 +52,6 @@ def isNumber(myVar):
 # reversed = values are listed from top of atmosphere to surface (WACCM)
 # Return nearest height value and index where it was found
 def findNearestAltitude(altitudes, value, reversed=False):
-    isNum = isNumber(value)
-    # logger.debug(f"value = {value}   isNum = {isNum}")
     if not isNumber(value):
         if (value.lower() == kSurfaceKeyword):
             if (not reversed):
@@ -403,12 +401,26 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
 
 # Calculate indexes of levels to retrieve in a whole column.
 # wholeColumn = altitudes from surface to top of atmosphere
-# altitudes[] = lower and upper values to select
+# altitudes[] = lower and upper values to select; could be strings
 # return indexes like [23, 24, 25, 26, 27]
 def getSubColumn(wholeColumn, altitudes):
+    logger.debug(f"wholeColumn = {wholeColumn}   altitudes = {altitudes}")
+
+    # check for inverted range; maybe involving PBLH
+    if (isNumber(altitudes[0]) and isNumber(altitudes[1])):
+        if (altitudes[0] > altitudes[1]):
+            logger.warning(f"Altitude range {altitudes} is inverted.")
+            return []
+
     # check for no requested values within range of the column
-    if ((altitudes[0] > wholeColumn[-1])
-        or (altitudes[1] < wholeColumn[0])):
+    withinRange = True
+    if isNumber(altitudes[0]):
+        if (altitudes[0] > wholeColumn[-1]):
+            withinRange = False
+    if isNumber(altitudes[1]):
+        if (altitudes[1] < wholeColumn[0]):
+            withinRange = False
+    if not withinRange:
         floatColumn = [wholeColumn[0].item(), wholeColumn[-1].item()]
         logger.warning(f"Altitude range {altitudes} is outside the vertical column {floatColumn}")
         return []
