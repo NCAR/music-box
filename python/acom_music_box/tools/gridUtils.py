@@ -22,6 +22,9 @@ kBoundaryLayerHeight = "PBLH"   # Height of Planetary Boundary Layer
 kTerrainHeight = "HGT"          # level of ground in meters above sea level
 P0 = 1013.25                    # standard surface pressure in hPa
 
+kSeaLevelKeyword = "sea"        # baseline level for altitude(s)
+kGroundKeyword = "ground"       # above terrain
+
 # Convert altitude in meters to pressure in hPa (hectopascals).
 # altMeters = height above sea level (meters)
 # return the pressure level in hPa
@@ -217,10 +220,12 @@ def removeStringVars(myDataset):
 # as the lower or upper bound of the average. Those variables
 # do not have a height dimension.
 # PBLH is converted from above ground terrain to above sea level.
+# Wavy surfaces are like PBLH; a surface of varying height, maybe relative to terrain.
 # altParams = pair of command-line args like [surface, PBLH]
+# altBase = baseline for altitude; either kSeaLevelKeyword or kGroundKeyword
 # myDataset = WACCM or WRF-Chem data loaded from disk file
-# return pointers to height vars in myDataset
-def loadHeightVars(altParams, myDataset):
+# return pointers to height vars in myDataset, or wavy surfaces created here
+def loadHeightVars(altParams, altBase, myDataset):
     heightVars = [None, None]
     for hi in range(0, 2):
         if isNumber(altParams[hi]):
@@ -251,8 +256,9 @@ def loadHeightVars(altParams, myDataset):
 # The truncation could happen at both ends of the column.
 # mySubGrid = dataset already selected for time and lat-lon bounds
 # altitudePair = altitude bounds in which to select, in meters
+# altitudeBase = kSeaLevelKeyword or kGroundKeyword
 # return grid dataset with same lat-lon size but columns are shorter
-def cutOffColumns(mySubGrid, altitudePair):
+def cutOffColumns(mySubGrid, altitudePair, altitudeBase):
     kPressureKey = "lev"
     mySubPressure = mySubGrid[kPressureKey].data                   # units are hPa
     mySubHeights = numpy.zeros(len(mySubPressure))
@@ -261,7 +267,7 @@ def cutOffColumns(mySubGrid, altitudePair):
     logger.debug(f"mySubHeights = {mySubHeights} meters")
 
     # load PBLH here if requested as some altitude bound
-    heightVars = loadHeightVars(altitudePair, mySubGrid)    # meters
+    heightVars = loadHeightVars(altitudePair, altitudeBase, mySubGrid)    # meters
     logger.debug(f"Original heightVars = {heightVars}")
 
     heightPair = altitudePair.copy()      # we will replace PBLH with the numerical value at each grid cell
@@ -332,8 +338,10 @@ def cutOffColumns(mySubGrid, altitudePair):
 # when = desired date-time frame of gridDataset
 # latPair, lonPair = coordinates of a single point, or bounding box (SW to NE)
 # altPair = altitude bounds over which to average
+# altBase = baseline of altitude; sea level or ground
 # return the mean value of single point or the bounding box
-def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
+def meanStraightGrid(gridDataset, when, latPair, lonPair,
+    altPair, altBase):
     # find the time index
     whenStr = when.strftime("%Y-%m-%d %H:%M:%S")
     logger.info(f"whenStr = {whenStr}")
@@ -405,7 +413,7 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
     if not fixedHeight:
         # if height bounds are not fixed, then cut off individual columns
         logger.info("Cutting off columns at PBLH.")
-        gridBox = cutOffColumns(gridBox, altPair)
+        gridBox = cutOffColumns(gridBox, altPair, altBase)
         gridDims = ["point_index"]
 
     logger.debug(f"WACCM gridBox = {gridBox}")
@@ -458,10 +466,11 @@ def getSubColumn(wholeColumn, altitudes):
 # when = desired date-time frame of gridDataset
 # latPair, lonPair = coordinates of a single point, or bounding box (SW to NE)
 # altPair = altitude bounds over which to average
+# altBase = sea or ground
 # wrfDataset = WRF-Chem file opened as netCDF4 Dataset
 # return the mean value of single point or the bounding box
-def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
-                   wrfDataset):
+def meanCurvedGrid(gridDataset, when, latPair, lonPair,
+    altPair, altBase, wrfDataset):
     # find the time index
     whenStr = when.strftime("%Y-%m-%d_%H:%M:%S")
     logger.info(f"whenStr = {whenStr}")
@@ -495,8 +504,9 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
     logger.debug(f"zLevels = {zLevels}")
 
     # load PBLH here if requested as some altitude bound
-    heightVars = loadHeightVars(altPair, gridDataset)
+    heightVars = loadHeightVars(altPair, altBase, gridDataset)
     logger.debug(f"Curved heightVars = {heightVars}")
+    #sys.exit(0) # bogus
 
     heightPair = altPair.copy()      # we will replace PBLH with the numerical value at each grid cell
     logger.debug(f"Starting heightPair = {heightPair}")

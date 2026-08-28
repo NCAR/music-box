@@ -97,11 +97,18 @@ def parse_arguments():
     parser.add_argument(
         '--altitude',
         type=str,
-        help=("Height of extraction(s) above sea level, in meters."
+        help=("Height of extraction(s) above sea level (default), in meters."
               + "\nIf two altitudes supplied, then average over that height range."
               + "\nIf no altitude supplied, then extract surface level of model output."
               + "\nUse the keyword 'surface' to extract the surface layer."
               + "\nUse a lat-lon variable name to represent that height: PBLH.")
+    )
+    parser.add_argument(
+        '-ba', '--baseAltitude',
+        type=str,
+        default=gridUtils.kSeaLevelKeyword,
+        help=("Altitude is above sea level (default), or ground."
+              + "\nChoices are: sea or ground.")
     )
     parser.add_argument(
         '--template',
@@ -303,11 +310,13 @@ def calcDerivedVar(columnVars, varToDerive):
 # latitudes, longitudes = geo-coordinates of retrieval point(s)
 #   Could be a single point or corners of a selection rectangle.
 # altitudes = height bounds across which to average (meters)
+# altitudeBase = sea level or ground
 # when = date and time to extract
 # waccmFilepath = full path to model output file
 # modelType = WACCM_File or WRF)Chem_File
 # return dictionary of MUSICA variable names, units, and values
-def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
+def readWACCM(waccmMusicaDict, latitudes, longitudes,
+              altitudes, altitudeBase,
               when, waccmFilepath, modelType):
 
     logger.info(f"WACCM file path = {waccmFilepath}")
@@ -321,12 +330,14 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
     meanPoint = None
     if (modelType == fileUtils.WACCM_File):            # straight grid
         meanPoint = gridUtils.meanStraightGrid(waccmDataSet, when,
-                                               latitudes, longitudes, altitudes)
+                                               latitudes, longitudes,
+                                               altitudes, altitudeBase)
 
     elif (modelType == fileUtils.WRF_Chem_File):        # curved grid
         wrfDataSet = netCDF4.Dataset(waccmFilepath)     # needed for the z-levels
         meanPoint = gridUtils.meanCurvedGrid(waccmDataSet, when,
-                                             latitudes, longitudes, altitudes,
+                                             latitudes, longitudes,
+                                             altitudes, altitudeBase,
                                              wrfDataSet)
         wrfDataSet.close()
 
@@ -806,7 +817,8 @@ def main():
             # Read named variables from WACCM model output,
             # and calculate any derived variables.
             logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
-            waccmValues = readWACCM(commonDict, lats, lons, alts,
+            waccmValues = readWACCM(commonDict, lats, lons,
+                                    alts, myArgs.baseAltitude,
                                     when, waccmFilename, modelType)
             logger.debug(f"Original WACCM waccmValues = {waccmValues}")
 
