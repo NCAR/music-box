@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 kSurfaceKeyword = "surface"     # request is for the surface layer
+kBoundaryLayerHeight = "PBLH"   # Height of Planetary Boundary Layer
+kTerrainHeight = "HGT"          # level of ground in meters above sea level
 P0 = 1013.25                    # standard surface pressure in hPa
 
 # Convert altitude in meters to pressure in hPa (hectopascals).
@@ -54,10 +56,10 @@ def isNumber(myVar):
 def findNearestAltitude(altitudes, value, reversed=False):
     if not isNumber(value):
         if (value.lower() == kSurfaceKeyword):
-            if (not reversed):
-                return [0.0, 0]    # only WRF-Chem
-            else:
-                return [0.0, len(altitudes) - 1]
+            index = 0
+            if reversed:
+                index = len(altitudes) -1
+            return [altitudes[index], index]
 
     # locate the closest height
     index = (numpy.abs(altitudes - value)).argmin()
@@ -214,6 +216,7 @@ def removeStringVars(myDataset):
 # Some model variables (Planetary Boundary Layer Height) can serve
 # as the lower or upper bound of the average. Those variables
 # do not have a height dimension.
+# PBLH is converted from above ground terrain to above sea level.
 # altParams = pair of command-line args like [surface, PBLH]
 # myDataset = WACCM or WRF-Chem data loaded from disk file
 # return pointers to height vars in myDataset
@@ -227,6 +230,19 @@ def loadHeightVars(altParams, myDataset):
 
         # get a pointer to that variable
         heightVars[hi] = myDataset[altParams[hi]]
+
+        if (altParams[hi] != kBoundaryLayerHeight):
+            continue
+        if (kTerrainHeight not in myDataset):
+            # this dataset might be WACCM, but is not WRF-Chem
+            continue
+
+        # adjust PBLH to sea level by adding terrain HGT 
+        logger.info(f"Adjusting {altParams[hi]} to sea level by adding {kTerrainHeight}")
+        logger.debug(f"PBLH {heightVars[hi].data[0,100,200]} + HGT {myDataset[kTerrainHeight].data[0,100,200]} = ")
+        pblhSeaLevel = heightVars[hi] + myDataset[kTerrainHeight]
+        heightVars[hi] = pblhSeaLevel
+        logger.debug(f"\tPBLH at sea level {heightVars[hi].data[0,100,200]}")
 
     return heightVars
 
@@ -405,6 +421,7 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
 # return indexes like [23, 24, 25, 26, 27]
 def getSubColumn(wholeColumn, altitudes):
     logger.debug(f"wholeColumn = {wholeColumn}   altitudes = {altitudes}")
+    logger.info(f"wholeColumn = {wholeColumn}   altitudes = {altitudes}")   # bogus
 
     # check for inverted range; maybe involving PBLH
     if (isNumber(altitudes[0]) and isNumber(altitudes[1])):
@@ -429,6 +446,7 @@ def getSubColumn(wholeColumn, altitudes):
     dummy, lower = findNearestAltitude(wholeColumn, altitudes[0])
     dummy, upper = findNearestAltitude(wholeColumn, altitudes[1])
     logger.debug(f"lower index = {lower}   upper index = {upper}")
+    logger.info(f"lower index = {lower}   upper index = {upper}")   # bogus
     indexes = list(range(lower, upper + 1))
     return indexes
 
@@ -478,7 +496,7 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
 
     # load PBLH here if requested as some altitude bound
     heightVars = loadHeightVars(altPair, gridDataset)
-    logger.debug(f"heightVars = {heightVars}")
+    logger.debug(f"Curved heightVars = {heightVars}")
 
     heightPair = altPair.copy()      # we will replace PBLH with the numerical value at each grid cell
     logger.debug(f"Starting heightPair = {heightPair}")
