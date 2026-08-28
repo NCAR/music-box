@@ -11,6 +11,7 @@ import numbers
 import numpy
 import xarray
 import netCDF4
+import copy
 from acom_music_box.tools import g_geoht
 
 import logging
@@ -227,27 +228,39 @@ def removeStringVars(myDataset):
 # return pointers to height vars in myDataset, or wavy surfaces created here
 def loadHeightVars(altParams, altBase, myDataset):
     heightVars = [None, None]
+    terrainVar = myDataset[kTerrainHeight]      # used for reference and values
+    logger.debug(f"terrainVar = {terrainVar}")
+
     for hi in range(0, 2):
-        if isNumber(altParams[hi]):
-            continue
-        if (altParams[hi].lower() == kSurfaceKeyword):
+        addTerrain = False
+
+        altParamSpec = altParams[hi]
+        if isNumber(altParamSpec):
+            # create a flat surface at requested height
+            heightVars[hi] = copy.deepcopy(terrainVar)
+            heightVars[hi][:] = altParamSpec
+            addTerrain = (altBase == kGroundKeyword)
+
+        elif (altParamSpec.lower() == kSurfaceKeyword):
+            # We have to handle surface later,
+            # by index 0 not finding nearest floating-point value.
+            heightVars[hi] = kSurfaceKeyword
             continue
 
-        # get a pointer to that variable
-        heightVars[hi] = myDataset[altParams[hi]]
+        else:
+            # get a pointer to that variable (maybe PBLH)
+            heightVars[hi] = myDataset[altParamSpec]
+            addTerrain = (altParamSpec == kBoundaryLayerHeight)
 
-        if (altParams[hi] != kBoundaryLayerHeight):
-            continue
-        if (kTerrainHeight not in myDataset):
-            # this dataset might be WACCM, but is not WRF-Chem
+        if not addTerrain:
             continue
 
-        # adjust PBLH to sea level by adding terrain HGT 
-        logger.info(f"Adjusting {altParams[hi]} to sea level by adding {kTerrainHeight}")
-        logger.debug(f"PBLH {heightVars[hi].data[0,100,200]} + HGT {myDataset[kTerrainHeight].data[0,100,200]} = ")
-        pblhSeaLevel = heightVars[hi] + myDataset[kTerrainHeight]
-        heightVars[hi] = pblhSeaLevel
-        logger.debug(f"\tPBLH at sea level {heightVars[hi].data[0,100,200]}")
+        # adjust altitude to sea level by adding terrain HGT 
+        logger.info(f"Adjusting {altParamSpec} to sea level by adding {kTerrainHeight}")
+        logger.debug(f"{altParamSpec}: {heightVars[hi].data[0,100,200]} + HGT {myDataset[kTerrainHeight].data[0,100,200]} = ")
+        altSeaLevel = heightVars[hi] + terrainVar
+        heightVars[hi] = altSeaLevel
+        logger.debug(f"\t{altParamSpec} at sea level {heightVars[hi].data[0,100,200]}")
 
     return heightVars
 
@@ -508,9 +521,6 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair,
     logger.debug(f"Curved heightVars = {heightVars}")
     #sys.exit(0) # bogus
 
-    heightPair = altPair.copy()      # we will replace PBLH with the numerical value at each grid cell
-    logger.debug(f"Starting heightPair = {heightPair}")
-
     iLat, iLon = None, None
     singlePoints = []
     for latFloat in latTicks:
@@ -528,9 +538,12 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair,
                 continue
 
             # set up the column bounds for this grid cell
+            heightPair = [None, None]
             for pi in range(0, 2):
-                if (heightVars[pi] is not None):
+                if not isinstance(heightVars[pi], str):
                     heightPair[pi] = float(heightVars[pi].data[timeIndex, iLat, iLon])
+                else:
+                    heightPair[pi] = heightVars[pi]
             logger.debug(f"heightPair at {iLat}, {iLon} = {heightPair}")
 
             # retrieve the sub-column between the altitude bounds
