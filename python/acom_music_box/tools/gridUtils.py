@@ -468,6 +468,12 @@ def getSubColumn(wholeColumn, altitudes):
     dummy, upper = findNearestAltitude(wholeColumn, altitudes[1])
     logger.debug(f"lower index = {lower}   upper index = {upper}")
     logger.info(f"lower index = {lower}   upper index = {upper}")   # bogus
+
+    # check for inverted range involving surface
+    if (lower > upper):
+        logger.warning(f"Altitude range {altitudes} is inverted.")
+        return []
+
     indexes = list(range(lower, upper + 1))
     return indexes
 
