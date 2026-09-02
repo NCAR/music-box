@@ -406,9 +406,22 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair,
         logger.debug(f"nearest = {dummy} at index {pressIndexPair[1-pi]}")
     logger.info(f"Pressure indexes are {pressIndexPair[0]} through {pressIndexPair[1]}")
 
+    # check for no requested values within range of the column
+    withinRange = True
+    if isNumber(pressPair[0]):
+        if (pressPair[0] < pressLevels[0]):
+            withinRange = False
+    if isNumber(pressPair[1]):
+        if (pressPair[1] > pressLevels[-1]):
+            withinRange = False
+    if not withinRange:
+        floatColumn = [pressLevels[-1].item(), pressLevels[0].item()]
+        logger.warning(f"Altitude range {pressPair} hPa is outside the vertical column {floatColumn}")
+        return None
+
     # check for reversed altitude bounds
     if (pressIndexPair[0] > pressIndexPair[1]):
-        logger.error("Altitude bounds are reversed. Please specify lower,upper instead.")
+        logger.error("Altitude bounds are inverted. Please specify lower,upper instead.")
         return None
 
     # select the entire rectanglar region
