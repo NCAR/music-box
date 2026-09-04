@@ -13,6 +13,7 @@ import xarray
 import netCDF4
 import copy
 from acom_music_box.tools import g_geoht
+from acom_music_box.tools import fileUtils
 
 import logging
 logger = logging.getLogger(__name__)
@@ -250,7 +251,9 @@ def loadHeightVars(altParams, altBase, myDataset):
         else:
             # get a pointer to that variable (maybe PBLH)
             heightVars[hi] = myDataset[altParamSpec]
-            addTerrain = (altParamSpec == kBoundaryLayerHeight)
+            if (altParamSpec == kBoundaryLayerHeight):
+                if (myDataset.attrs["modelType"] == fileUtils.WRF_Chem_File.modelType):
+                    addTerrain = True
 
         if not addTerrain:
             continue
@@ -438,7 +441,7 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair,
 
     if not fixedHeight:
         # if height bounds are not fixed, then cut off individual columns
-        logger.info("Cutting off columns at PBLH.")
+        logger.info("Cutting off columns at {altPair}.")
         gridBox = cutOffColumns(gridBox, altPair, altBase)
         gridDims = ["point_index"]
 

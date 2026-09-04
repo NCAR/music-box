@@ -19,8 +19,8 @@ import zipfile
 from acom_music_box import Examples, __version__
 from acom_music_box.utils import calculate_air_density
 import netCDF4
-from acom_music_box.tools import gridUtils
 from acom_music_box.tools import fileUtils
+from acom_music_box.tools import gridUtils
 from acom_music_box.tools import speciesMap
 from acom_music_box import conditions_manager
 import copy
@@ -313,7 +313,7 @@ def calcDerivedVar(columnVars, varToDerive):
 # altitudeBase = sea level or ground
 # when = date and time to extract
 # waccmFilepath = full path to model output file
-# modelType = WACCM_File or WRF)Chem_File
+# modelType = WACCM_File or WRF_Chem_File
 # return dictionary of MUSICA variable names, units, and values
 def readWACCM(waccmMusicaDict, latitudes, longitudes,
               altitudes, altitudeBase,
@@ -323,6 +323,7 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
 
     # open dataset for reading
     waccmDataSet = xarray.open_dataset(waccmFilepath)
+    waccmDataSet.attrs["modelType"] = modelType.modelType   # mark dataset with the model type
     # diagnostic to look at dataset structure
     logger.debug(f"WACCM dataset = {waccmDataSet}")
 
