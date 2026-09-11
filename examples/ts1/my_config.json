@@ -16,7 +16,7 @@
     "filepaths": ["initial_conditions.csv"]
   },
   "mechanism": {
-    "name": "MZ327_TS1.2_20230307",
+    "name": "TS1, chemistry cafe tag MZ327_TS1.2_20230307",
     "reactions": [
         {
             "type": "ARRHENIUS",

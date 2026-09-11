@@ -18,7 +18,7 @@
         ]
     },
     "mechanism": {
-        "name": "cb05cl_ae5",
+        "name": "Carbon Bond V",
         "reactions": [
             {
                 "type": "ARRHENIUS",
