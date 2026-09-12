@@ -114,19 +114,37 @@ function normalizeRateParamsForSolver(rateParams, normalizerState) {
 export class MusicBox {
   /**
    * @param {Object} config - music-box v1 JSON config object
+   * @param {Object} [options]
+   * @param {boolean} [options.reuseSolver=false] - When true, the compiled MICM solver and its
+   *   state persist across solve() calls instead of being rebuilt and freed every call --
+   *   compiling a mechanism (parsing species/reactions, building the solver's Jacobian
+   *   structure) is the expensive part, while creating a state is not, so the perf win comes
+   *   from keeping the *solver* alive, not from any per-call caching. Only the box model
+   *   options and conditions are re-read on each solve() call; call updateConfig() first if
+   *   those change. The mechanism itself (species/reactions) is fixed for the life of the
+   *   instance -- create a new MusicBox for a different mechanism.
+   *
+   *   The caller is responsible for calling dispose() when done with a reusable instance, to
+   *   free the persisted solver's WASM memory. With reuseSolver false (the default), solve()
+   *   already frees everything itself every call and dispose() is a no-op.
    */
-  constructor(config) {
+  constructor(config, { reuseSolver = false } = {}) {
     this._config = config;
+    this._reuseSolver = reuseSolver;
+    this._micm = null;
+    this._state = null;
+    this._normalizerState = null;
   }
 
   /**
    * Create a MusicBox instance from a plain JSON object.
    *
    * @param {Object} jsonObject - music-box v1 config object
+   * @param {Object} [options] - see the constructor
    * @returns {MusicBox}
    */
-  static fromJson(jsonObject) {
-    return new MusicBox(jsonObject);
+  static fromJson(jsonObject, options) {
+    return new MusicBox(jsonObject, options);
   }
 
   /**
@@ -135,9 +153,10 @@ export class MusicBox {
    *
    * @param {string} filePath - Path to the config file. A real path on disk in Node;
    *   elsewhere it must already be a path in the virtual filesystem (see virtual_fs.js).
+   * @param {Object} [options] - see the constructor
    * @returns {Promise<MusicBox>}
    */
-  static async fromJsonFile(filePath) {
+  static async fromJsonFile(filePath, options) {
     const isNode = typeof process !== 'undefined' && process.versions?.node != null;
 
     if (isNode) {
@@ -151,11 +170,67 @@ export class MusicBox {
       const config = await resolveConditionsFilepaths(JSON.parse(text), (relPath) =>
         readFile(resolve(configDir, relPath), 'utf8')
       );
-      return new MusicBox(config);
+      return new MusicBox(config, options);
     }
 
     const config = await readConfigFromFile(filePath);
-    return new MusicBox(config);
+    return new MusicBox(config, options);
+  }
+
+  /**
+   * Replace the box model options and/or conditions used by subsequent solve() calls, without
+   * touching the mechanism. Only meaningful with { reuseSolver: true } -- otherwise each
+   * solve() call already reads whatever is on `config` at call time.
+   *
+   * @param {Object} config - A full music-box v1 config object. Only `box model options` and
+   *   `conditions` are used; `mechanism` is ignored (the compiled solver already reflects the
+   *   mechanism this instance was created with).
+   */
+  updateConfig(config) {
+    this._config = { ...this._config, ...config, mechanism: this._config.mechanism };
+  }
+
+  /**
+   * Builds (or returns the already-cached, with reuseSolver) compiled solver, state, and
+   * rate-parameter normalizer for this instance's mechanism.
+   */
+  _ensureSolver() {
+    if (this._micm) {
+      return { micm: this._micm, state: this._state, normalizerState: this._normalizerState };
+    }
+
+    const micm = MICM.fromMechanism({ getJSON: () => this._config.mechanism });
+    registerLambdaCallbacks(micm, this._config.mechanism);
+    const state = micm.createState(1);
+    const normalizerState = {
+      acceptedRateParamKeys: new Set(Object.keys(state.getUserDefinedRateParameters())),
+      warnedUnknownRateParams: new Set(),
+    };
+
+    if (this._reuseSolver) {
+      this._micm = micm;
+      this._state = state;
+      this._normalizerState = normalizerState;
+    }
+
+    return { micm, state, normalizerState };
+  }
+
+  /**
+   * Frees this instance's persisted solver and state, if any. Only meaningful for an instance
+   * created with { reuseSolver: true } -- call this once you are done re-running it (e.g. the
+   * user picked a different mechanism), since solve() no longer frees them itself in that mode.
+   */
+  dispose() {
+    if (this._state) {
+      this._state.delete();
+      this._state = null;
+    }
+    if (this._micm) {
+      this._micm.delete();
+      this._micm = null;
+    }
+    this._normalizerState = null;
   }
 
   /**
@@ -176,16 +251,9 @@ export class MusicBox {
 
     const { chemTimeStep, outputTimeStep, simulationLength, maxIterations } =
       parseBoxModelOptions(this._config);
-    const micm = MICM.fromMechanism({ getJSON: () => this._config.mechanism });
-    const state = micm.createState(1);
-    const normalizerState = {
-      acceptedRateParamKeys: new Set(Object.keys(state.getUserDefinedRateParameters())),
-      warnedUnknownRateParams: new Set(),
-    };
+    const { micm, state, normalizerState } = this._ensureSolver();
 
     try {
-      registerLambdaCallbacks(micm, this._config.mechanism);
-
       const condsMgr = new ConditionsManager(parseConditions(this._config.conditions));
       // Build sorted list of concentration event times (mirrors Python's sorted_event_times)
       const concentrationEvents = condsMgr.concentrationEvents;
@@ -295,8 +363,10 @@ export class MusicBox {
 
       return { columns: Object.keys(columns), height: columns['time.s'].length, data: columns };
     } finally {
-      state.delete();
-      micm.delete();
+      if (!this._reuseSolver) {
+        state.delete();
+        micm.delete();
+      }
     }
   }
 }
