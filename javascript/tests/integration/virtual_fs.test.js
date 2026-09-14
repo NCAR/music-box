@@ -1,11 +1,7 @@
 /**
- * Integration tests for virtual_fs.js -- these need the real musica WASM module (for its
- * Emscripten FS), not just Node's real filesystem, so they live alongside the other
- * integration tests rather than the unit tests.
- *
- * These specifically exercise the in-memory (MEMFS) side of the virtual filesystem, not the
- * "/host"-mounted real disk -- that path is what a browser (no real disk at all) actually
- * uses, and what music-box-interactive's uploaded-zip and bundled-example flows depend on.
+ * Integration tests for virtual_fs.js -- needs the real musica WASM module, so it lives
+ * with the other integration tests. Exercises the in-memory (MEMFS) side, not the
+ * "/host"-mounted real disk.
  */
 
 import { describe, it, before } from 'node:test';

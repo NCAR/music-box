@@ -133,15 +133,8 @@ export class MusicBox {
    * Create a MusicBox instance from a JSON config file, resolving any CSV
    * "conditions.filepaths" relative to it.
    *
-   * Reads through the musica WASM module's virtual filesystem (see virtual_fs.js), which
-   * works identically in Node and the browser -- so this one implementation, not a
-   * Node-only one, serves both. In Node, a real absolute path is also accepted directly:
-   * @ncar/musica's initModule() mounts the real filesystem at "/host", and this prefixes
-   * an absolute path with it automatically.
-   *
-   * @param {string} filePath - Path to the music-box v1 JSON config file. In Node this may
-   *   be a real absolute filesystem path; elsewhere it must already be a virtual FS path
-   *   (see writeConfigFiles() in virtual_fs.js to populate one).
+   * @param {string} filePath - Path to the config file. A real absolute path works in Node;
+   *   elsewhere it must already be a path in the virtual filesystem.
    * @returns {Promise<MusicBox>}
    */
   static async fromJsonFile(filePath) {

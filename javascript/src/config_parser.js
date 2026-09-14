@@ -58,19 +58,14 @@ export function parseCsvToBlock(csvText) {
 }
 
 /**
- * Resolves "conditions.filepaths" (CSV paths, relative to wherever the config came from)
- * into "conditions.data" blocks, then removes "filepaths" from the result.
+ * Resolves "conditions.filepaths" into "conditions.data" blocks, reading each CSV through
+ * the given callback, then removes "filepaths" from the result.
  *
- * Takes a caller-supplied reader instead of touching the filesystem directly, so the same
- * resolution logic works for a config read from disk (Node) or from anywhere else a caller
- * can read a named file from -- a zip's file list in a browser, for example.
- *
- * CSV-derived blocks are prepended, so pre-existing inline "conditions.data" (appended
- * after) takes precedence when both specify the same time point.
+ * CSV-derived blocks are prepended, so pre-existing "conditions.data" (appended after)
+ * takes precedence when both specify the same time point.
  *
  * @param {Object} config - music-box v1 config object; not mutated
  * @param {(relPath: string) => Promise<string>} readCsvText - reads a CSV file's text
- *   content, given one entry of "conditions.filepaths" as-is
  * @returns {Promise<Object>} a new config object with "conditions.filepaths" resolved
  */
 export async function resolveConditionsFilepaths(config, readCsvText) {

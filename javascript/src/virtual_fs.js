@@ -2,14 +2,8 @@ import { initModule } from '@ncar/musica';
 import { resolveConditionsFilepaths } from './config_parser.js';
 
 /**
- * The musica WASM module's virtual filesystem (Emscripten FS: MEMFS, in-memory, identical
- * API in Node and the browser). In Node, @ncar/musica's initModule() also mounts the real
- * filesystem at "/host", so a real absolute path is reachable there as "/host<path>".
- *
- * Exposed so a config file (and the CSVs its "conditions.filepaths" names) can be written
- * here and read back through readConfigFromFile()/resolveConditionsFilepathsFromFile() --
- * the same functions solve() itself uses to load a config. Callers never parse a CSV or
- * resolve a relative path themselves.
+ * The musica WASM module's virtual filesystem (Emscripten FS). In Node, @ncar/musica also
+ * mounts the real filesystem at "/host".
  *
  * @returns {Promise<Object>} the Emscripten FS object
  */
