@@ -15,7 +15,7 @@
     ]
   },
   "mechanism": {
-    "name": "music box interactive configuration",
+    "name": "Analytical Test Mechanism",
     "reactions": [
         {
             "type": "ARRHENIUS",
