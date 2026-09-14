@@ -138,3 +138,50 @@ describe('ConditionsManager.getConditionsAtTime - step interpolation', () => {
     assert.equal(mgr.concentrationEvents[0]['O3'], 6.43e-6);
   });
 });
+
+describe('ConditionsManager.timePoints', () => {
+  it('is empty for no data', () => {
+    const mgr = new ConditionsManager([]);
+    assert.deepEqual(mgr.timePoints, []);
+  });
+
+  it('lists every configured point sorted by time, unlike getConditionsAtTime', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 3600, 'ENV.temperature.K': 240.0 },
+      { 'time.s': 0, 'ENV.temperature.K': 220.0, 'ENV.pressure.Pa': 101325.0 },
+    ]);
+    assert.equal(mgr.timePoints.length, 2);
+    assert.equal(mgr.timePoints[0].t, 0);
+    assert.equal(mgr.timePoints[0].temp, 220.0);
+    assert.equal(mgr.timePoints[0].pressure, 101325.0);
+    assert.equal(mgr.timePoints[1].t, 3600);
+    assert.equal(mgr.timePoints[1].temp, 240.0);
+  });
+
+  it('only carries the columns a point actually set, unlike the accumulated getConditionsAtTime', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 0, 'ENV.temperature.K': 220.0 },
+      { 'time.s': 3600, 'ENV.pressure.Pa': 101000.0 },
+    ]);
+    // getConditionsAtTime accumulates: temperature is inherited from t=0
+    assert.equal(mgr.getConditionsAtTime(3600).temperature, 220.0);
+    // timePoints reports only what that point itself set: no inherited temperature
+    assert.equal(mgr.timePoints[1].t, 3600);
+    assert.equal(mgr.timePoints[1].temp, null);
+    assert.equal(mgr.timePoints[1].pressure, 101000.0);
+  });
+
+  it('carries rate params per point with unit suffixes already stripped', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 0, 'PHOTO.O2_1.s-1': 1.47e-12 },
+    ]);
+    assert.deepEqual(mgr.timePoints[0].rateParams, { 'PHOTO.O2_1': 1.47e-12 });
+  });
+
+  it('does not include CONC.* concentration events', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 0, 'CONC.O3.mol m-3': 6.43e-6, 'ENV.temperature.K': 217.6 },
+    ]);
+    assert.deepEqual(Object.keys(mgr.timePoints[0]).sort(), ['pressure', 'rateParams', 't', 'temp']);
+  });
+});

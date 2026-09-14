@@ -1,6 +1,7 @@
 import { initModule, MICM, SolverState } from '@ncar/musica';
-import { parseBoxModelOptions, parseConditions, parseCsvToBlock } from './config_parser.js';
+import { parseBoxModelOptions, parseConditions, resolveConditionsFilepaths } from './config_parser.js';
 import { ConditionsManager } from './conditions_manager.js';
+import { readConfigFromFile } from './virtual_fs.js';
 
 function evaluateJsLambda(source, reactionName) {
   const trimmed = (source || '').trim();
@@ -129,32 +130,31 @@ export class MusicBox {
   }
 
   /**
-   * Create a MusicBox instance from a JSON file path (Node.js only).
+   * Create a MusicBox instance from a JSON config file, resolving any CSV
+   * "conditions.filepaths" relative to it.
    *
-   * @param {string} filePath - Path to the music-box v1 JSON config file
+   * @param {string} filePath - Path to the config file. A real path on disk in Node;
+   *   elsewhere it must already be a path in the virtual filesystem (see virtual_fs.js).
    * @returns {Promise<MusicBox>}
    */
   static async fromJsonFile(filePath) {
-    // webpackIgnore: Node.js-only modules; not included in browser bundles
-    const { readFile } = await import(/* webpackIgnore: true */ 'fs/promises');
-    const { resolve, dirname } = await import(/* webpackIgnore: true */ 'node:path');
-    const text = await readFile(filePath, 'utf8');
-    const config = JSON.parse(text);
+    const isNode = typeof process !== 'undefined' && process.versions?.node != null;
 
-    // Resolve conditions.filepaths (CSV files) relative to the config file's directory
-    // and merge them into conditions.data so the rest of the pipeline is uniform.
-    if (config.conditions?.filepaths?.length > 0) {
+    if (isNode) {
+      // webpackIgnore: Node-only modules; not included in browser bundles. Node's own fs/path
+      // are used directly here since they already handle real paths correctly cross-platform,
+      // unlike routing through the WASM module's virtual filesystem.
+      const { readFile } = await import(/* webpackIgnore: true */ 'fs/promises');
+      const { resolve, dirname } = await import(/* webpackIgnore: true */ 'node:path');
+      const text = await readFile(filePath, 'utf8');
       const configDir = dirname(resolve(filePath));
-      // CSV blocks are prepended so that inline data (appended after) takes precedence
-      // when both specify the same time point.
-      const csvBlocks = [];
-      for (const relPath of config.conditions.filepaths) {
-        const csvText = await readFile(resolve(configDir, relPath), 'utf8');
-        csvBlocks.push(parseCsvToBlock(csvText));
-      }
-      config.conditions.data = [...csvBlocks, ...(config.conditions.data ?? [])];
+      const config = await resolveConditionsFilepaths(JSON.parse(text), (relPath) =>
+        readFile(resolve(configDir, relPath), 'utf8')
+      );
+      return new MusicBox(config);
     }
 
+    const config = await readConfigFromFile(filePath);
     return new MusicBox(config);
   }
 
