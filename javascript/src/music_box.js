@@ -1,5 +1,5 @@
 import { initModule, MICM, SolverState } from '@ncar/musica';
-import { parseBoxModelOptions, parseConditions } from './config_parser.js';
+import { parseBoxModelOptions, parseConditions, resolveConditionsFilepaths } from './config_parser.js';
 import { ConditionsManager } from './conditions_manager.js';
 import { readConfigFromFile } from './virtual_fs.js';
 
@@ -133,18 +133,28 @@ export class MusicBox {
    * Create a MusicBox instance from a JSON config file, resolving any CSV
    * "conditions.filepaths" relative to it.
    *
-   * @param {string} filePath - Path to the config file. A real absolute path works in Node;
-   *   elsewhere it must already be a path in the virtual filesystem.
+   * @param {string} filePath - Path to the config file. A real path on disk in Node;
+   *   elsewhere it must already be a path in the virtual filesystem (see virtual_fs.js).
    * @returns {Promise<MusicBox>}
    */
   static async fromJsonFile(filePath) {
     const isNode = typeof process !== 'undefined' && process.versions?.node != null;
-    const virtualPath =
-      isNode && filePath.startsWith('/') && !filePath.startsWith('/host')
-        ? `/host${filePath}`
-        : filePath;
 
-    const config = await readConfigFromFile(virtualPath);
+    if (isNode) {
+      // webpackIgnore: Node-only modules; not included in browser bundles. Node's own fs/path
+      // are used directly here since they already handle real paths correctly cross-platform,
+      // unlike routing through the WASM module's virtual filesystem.
+      const { readFile } = await import(/* webpackIgnore: true */ 'fs/promises');
+      const { resolve, dirname } = await import(/* webpackIgnore: true */ 'node:path');
+      const text = await readFile(filePath, 'utf8');
+      const configDir = dirname(resolve(filePath));
+      const config = await resolveConditionsFilepaths(JSON.parse(text), (relPath) =>
+        readFile(resolve(configDir, relPath), 'utf8')
+      );
+      return new MusicBox(config);
+    }
+
+    const config = await readConfigFromFile(filePath);
     return new MusicBox(config);
   }
 
