@@ -1,5 +1,9 @@
 import { initModule, MICM, SolverState } from '@ncar/musica';
-import { parseBoxModelOptions, parseConditions, parseCsvToBlock } from './config_parser.js';
+import {
+  parseBoxModelOptions,
+  parseConditions,
+  resolveConditionsFilepaths,
+} from './config_parser.js';
 import { ConditionsManager } from './conditions_manager.js';
 
 function evaluateJsLambda(source, reactionName) {
@@ -139,21 +143,13 @@ export class MusicBox {
     const { readFile } = await import(/* webpackIgnore: true */ 'fs/promises');
     const { resolve, dirname } = await import(/* webpackIgnore: true */ 'node:path');
     const text = await readFile(filePath, 'utf8');
-    const config = JSON.parse(text);
+    const configDir = dirname(resolve(filePath));
 
     // Resolve conditions.filepaths (CSV files) relative to the config file's directory
     // and merge them into conditions.data so the rest of the pipeline is uniform.
-    if (config.conditions?.filepaths?.length > 0) {
-      const configDir = dirname(resolve(filePath));
-      // CSV blocks are prepended so that inline data (appended after) takes precedence
-      // when both specify the same time point.
-      const csvBlocks = [];
-      for (const relPath of config.conditions.filepaths) {
-        const csvText = await readFile(resolve(configDir, relPath), 'utf8');
-        csvBlocks.push(parseCsvToBlock(csvText));
-      }
-      config.conditions.data = [...csvBlocks, ...(config.conditions.data ?? [])];
-    }
+    const config = await resolveConditionsFilepaths(JSON.parse(text), (relPath) =>
+      readFile(resolve(configDir, relPath), 'utf8')
+    );
 
     return new MusicBox(config);
   }

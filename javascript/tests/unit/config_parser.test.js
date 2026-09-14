@@ -1,6 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseBoxModelOptions, parseConditions } from '../../src/config_parser.js';
+import {
+  parseBoxModelOptions,
+  parseConditions,
+  resolveConditionsFilepaths,
+} from '../../src/config_parser.js';
 
 describe('parseBoxModelOptions', () => {
   it('converts minutes to seconds', () => {
@@ -120,5 +124,51 @@ describe('parseConditions', () => {
   it('ignores filepaths key (Python-only feature)', () => {
     const conditions = { filepaths: ['foo.csv'] };
     assert.deepEqual(parseConditions(conditions), []);
+  });
+});
+
+describe('resolveConditionsFilepaths', () => {
+  it('returns the config unchanged when there are no filepaths', async () => {
+    const config = { conditions: {} };
+    const result = await resolveConditionsFilepaths(config, async () => {
+      throw new Error('should not be called');
+    });
+    assert.deepEqual(result, config);
+  });
+
+  it('reads each path, parses it, and prepends the blocks to conditions.data', async () => {
+    const config = {
+      conditions: { filepaths: ['a.csv', 'b.csv'] },
+    };
+    const texts = {
+      'a.csv': 'time.s,CONC.O3.mol m-3\n0,6.43e-6\n',
+      'b.csv': 'time.s,ENV.temperature.K\n0,217.6\n3600,220.0\n',
+    };
+    const result = await resolveConditionsFilepaths(config, async (relPath) => texts[relPath]);
+
+    assert.equal(result.conditions.filepaths, undefined);
+    assert.equal(result.conditions.data.length, 2);
+    assert.deepEqual(result.conditions.data[0].headers, ['time.s', 'CONC.O3.mol m-3']);
+    assert.deepEqual(result.conditions.data[1].headers, ['time.s', 'ENV.temperature.K']);
+  });
+
+  it('prepends CSV-derived blocks ahead of pre-existing inline data', async () => {
+    const config = {
+      conditions: {
+        filepaths: ['a.csv'],
+        data: [{ headers: ['time.s'], rows: [[0]] }],
+      },
+    };
+    const result = await resolveConditionsFilepaths(config, async () => 'time.s,ENV.temperature.K\n0,298.15\n');
+
+    assert.equal(result.conditions.data.length, 2);
+    assert.deepEqual(result.conditions.data[0].headers, ['time.s', 'ENV.temperature.K']);
+    assert.deepEqual(result.conditions.data[1].headers, ['time.s']);
+  });
+
+  it('does not mutate the input config', async () => {
+    const config = { conditions: { filepaths: ['a.csv'] } };
+    await resolveConditionsFilepaths(config, async () => 'time.s\n0\n');
+    assert.deepEqual(config.conditions.filepaths, ['a.csv']);
   });
 });

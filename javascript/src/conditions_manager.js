@@ -144,6 +144,20 @@ export class ConditionsManager {
   }
 
   /**
+   * Every configured time point, sorted by time, before step interpolation. Unlike
+   * getConditionsAtTime(t), a point here only carries the columns that were actually set at
+   * that time -- temp/pressure are null, and rateParams omits a key, when that time point
+   * did not set it. A UI listing every point a config defines (as opposed to querying the
+   * solver's state at one moment) should use this rather than re-deriving it from the raw
+   * conditions.data blocks.
+   *
+   * @returns {Array<{t: number, temp: number|null, pressure: number|null, rateParams: Object}>}
+   */
+  get timePoints() {
+    return this._timePoints;
+  }
+
+  /**
    * Get step-interpolated conditions at a given simulation time.
    * Returns the most recent value at or before `t` for each column.
    *
