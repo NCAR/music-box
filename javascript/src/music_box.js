@@ -1,10 +1,7 @@
 import { initModule, MICM, SolverState } from '@ncar/musica';
-import {
-  parseBoxModelOptions,
-  parseConditions,
-  resolveConditionsFilepaths,
-} from './config_parser.js';
+import { parseBoxModelOptions, parseConditions } from './config_parser.js';
 import { ConditionsManager } from './conditions_manager.js';
+import { readConfigFromFile } from './virtual_fs.js';
 
 function evaluateJsLambda(source, reactionName) {
   const trimmed = (source || '').trim();
@@ -133,24 +130,28 @@ export class MusicBox {
   }
 
   /**
-   * Create a MusicBox instance from a JSON file path (Node.js only).
+   * Create a MusicBox instance from a JSON config file, resolving any CSV
+   * "conditions.filepaths" relative to it.
    *
-   * @param {string} filePath - Path to the music-box v1 JSON config file
+   * Reads through the musica WASM module's virtual filesystem (see virtual_fs.js), which
+   * works identically in Node and the browser -- so this one implementation, not a
+   * Node-only one, serves both. In Node, a real absolute path is also accepted directly:
+   * @ncar/musica's initModule() mounts the real filesystem at "/host", and this prefixes
+   * an absolute path with it automatically.
+   *
+   * @param {string} filePath - Path to the music-box v1 JSON config file. In Node this may
+   *   be a real absolute filesystem path; elsewhere it must already be a virtual FS path
+   *   (see writeConfigFiles() in virtual_fs.js to populate one).
    * @returns {Promise<MusicBox>}
    */
   static async fromJsonFile(filePath) {
-    // webpackIgnore: Node.js-only modules; not included in browser bundles
-    const { readFile } = await import(/* webpackIgnore: true */ 'fs/promises');
-    const { resolve, dirname } = await import(/* webpackIgnore: true */ 'node:path');
-    const text = await readFile(filePath, 'utf8');
-    const configDir = dirname(resolve(filePath));
+    const isNode = typeof process !== 'undefined' && process.versions?.node != null;
+    const virtualPath =
+      isNode && filePath.startsWith('/') && !filePath.startsWith('/host')
+        ? `/host${filePath}`
+        : filePath;
 
-    // Resolve conditions.filepaths (CSV files) relative to the config file's directory
-    // and merge them into conditions.data so the rest of the pipeline is uniform.
-    const config = await resolveConditionsFilepaths(JSON.parse(text), (relPath) =>
-      readFile(resolve(configDir, relPath), 'utf8')
-    );
-
+    const config = await readConfigFromFile(virtualPath);
     return new MusicBox(config);
   }
 
