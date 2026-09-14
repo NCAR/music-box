@@ -92,6 +92,7 @@ def parse_arguments():
         '--longitude',
         type=str,
         help=("Longitude of grid cell(s) to extract: 101.7"
+              + "\nSpecify WACCM longitude as positive degrees east 0-360."
               + "\nIf two longitudes supplied, then average over that range.")
     )
     parser.add_argument(
@@ -109,6 +110,11 @@ def parse_arguments():
         default=gridUtils.kSeaLevelKeyword,
         help=("Altitude is above sea level (default), or ground."
               + "\nChoices are: sea or ground.")
+    )
+    parser.add_argument(
+        '-tf', '--topoFile',
+        type=str,
+        help='Path to a WACCM topography file containing the NetCDF variable PHIS.'
     )
     parser.add_argument(
         '--template',
@@ -314,10 +320,12 @@ def calcDerivedVar(columnVars, varToDerive):
 # when = date and time to extract
 # waccmFilepath = full path to model output file
 # modelType = WACCM_File or WRF_Chem_File
+# topoFile = read WACCM PHIS from here and derive HGT
 # return dictionary of MUSICA variable names, units, and values
 def readWACCM(waccmMusicaDict, latitudes, longitudes,
               altitudes, altitudeBase,
-              when, waccmFilepath, modelType):
+              when, waccmFilepath, modelType,
+              topoFile=None):
 
     logger.info(f"WACCM file path = {waccmFilepath}")
 
@@ -330,6 +338,11 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
     # retrieve all vars at a single point
     meanPoint = None
     if (modelType == fileUtils.WACCM_File):            # straight grid
+        if (topoFile is not None):
+            # calculate the WACCM surface height from a separate topography file
+            topoArray = gridUtils.deriveHeight(topoFile)
+            waccmDataSet[gridUtils.kTerrainHeight] = (topoArray.dims, topoArray.values)
+            logger.debug(f"WACCM dataset HGT = {waccmDataSet['HGT']}")
         meanPoint = gridUtils.meanStraightGrid(waccmDataSet, when,
                                                latitudes, longitudes,
                                                altitudes, altitudeBase)
@@ -820,7 +833,8 @@ def main():
             logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
             waccmValues = readWACCM(commonDict, lats, lons,
                                     alts, myArgs.baseAltitude,
-                                    when, waccmFilename, modelType)
+                                    when, waccmFilename, modelType,
+                                    myArgs.topoFile)
             logger.debug(f"Original WACCM waccmValues = {waccmValues}")
 
             if waccmValues is None:

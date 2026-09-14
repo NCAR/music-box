@@ -217,6 +217,21 @@ def removeStringVars(myDataset):
     return numericDataset
 
 
+kWaccmGravity = 9.80616     # m/s²; slighty different from international g
+
+# Calculate the terrain height HGT from a dataset that is known to be WACCM.
+# myTopoFile = topography file from WACCM, containing PHIS
+# return DataArray of terrain height in meters
+def deriveHeight(myTopoFile):
+    topoSet = xarray.open_dataset(myTopoFile)
+    topoHgt = copy.deepcopy(topoSet["PHIS"])
+    topoHgt /= kWaccmGravity
+    topoHgt.name = kTerrainHeight
+    logger.debug(f"WACCM calculated terrainVar {kTerrainHeight} = {topoHgt}")
+
+    return topoHgt
+
+
 # Load PBLH and other 2D vars if requested.
 # Some model variables (Planetary Boundary Layer Height) can serve
 # as the lower or upper bound of the average. Those variables
@@ -296,8 +311,10 @@ def cutOffColumns(mySubGrid, altitudePair, altitudeBase):
 
             # retrieve the PBLH at this grid cell
             for pi in range(0, 2):
-                if (heightVars[pi] is not None):
+                if not isinstance(heightVars[pi], str):
                     heightPair[pi] = float(heightVars[pi].data[lati, loni])
+                else:
+                    heightPair[pi] = heightVars[pi]
             logger.debug(f"heightPair at {lati}, {loni} = {heightPair}")
 
             # set up the height bounds for this column
@@ -307,12 +324,12 @@ def cutOffColumns(mySubGrid, altitudePair, altitudeBase):
                 # and the user probably specifies from lower altitude to higher.
                 dummy, heightIndexPair[1 - pi] = findNearestAltitude(
                     mySubHeights, heightPair[pi], reversed=True)     # reverse the index bounds
-            logger.info(f"Height indexes are {heightIndexPair[0]} through {heightIndexPair[1]}")
+            logger.debug(f"Height indexes are {heightIndexPair[0]} through {heightIndexPair[1]}")
 
             # check for variable surfaces that are locally inverted at this grid point
-            if (heightPair[0] > heightPair[1]):
+            if (heightIndexPair[0] > heightIndexPair[1]):
                 # since lower bound > upper bound at this point, don't include anything
-                logger.info("Local surface inversion;, skipping this grid point.")
+                logger.info(f"Local surface inversion; skipping this grid point: {heightPair}")
                 continue
 
             # select only the sub-column
@@ -441,7 +458,7 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair,
 
     if not fixedHeight:
         # if height bounds are not fixed, then cut off individual columns
-        logger.info("Cutting off columns at {altPair}.")
+        logger.info(f"Cutting off columns at {altPair}.")
         gridBox = cutOffColumns(gridBox, altPair, altBase)
         gridDims = ["point_index"]
 
