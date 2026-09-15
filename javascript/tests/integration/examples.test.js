@@ -46,7 +46,6 @@ describe('Example config integration tests', () => {
       assert.ok(results.height > 0, 'solve() should return at least one output row');
       assert.ok(results.columns.includes('time.s'), 'output should have a time.s column');
 
-      // Environmental conditions are reported alongside concentrations
       for (const col of ['ENV.temperature.K', 'ENV.pressure.Pa', 'ENV.air number density.mol m-3']) {
         assert.ok(results.columns.includes(col), `output should have a ${col} column`);
         assert.equal(results.data[col].length, results.height, `${col} should have one value per row`);

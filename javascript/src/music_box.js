@@ -217,7 +217,6 @@ export class MusicBox {
       };
 
       function appendOutput(time) {
-        // Environmental conditions are read back from the state
         const [conditions] = state.getConditions();
         const concs = state.getConcentrations();
         columns['time.s'].push(time);
