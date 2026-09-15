@@ -62,7 +62,7 @@ export class ConditionsManager {
     this._defaultTemp = 298.15;
     this._defaultPressure = 101325.0;
 
-    // [{t, temp, pressure, airDensity, rateParams}] — for step interpolation
+    // [{t, temp, pressure, airDensity, rateParams, rawRateParams}] — for step interpolation
     this._timePoints = [];
 
     // {t: {species: value}} — applied at exact time only (mirrors Python concentration_events)
@@ -83,6 +83,7 @@ export class ConditionsManager {
           ? row['ENV.air number density.mol m-3']
           : null;
       const rateParams = {};
+      const rawRateParams = {};
 
       for (const [key, value] of Object.entries(row)) {
         if (key === 'time.s') continue;
@@ -103,6 +104,9 @@ export class ConditionsManager {
           this._concentrationEvents[t][species] = value;
         } else if (RATE_PARAM_PREFIXES.has(prefix)) {
           rateParams[stripUnit(key)] = value;
+          // Kept alongside the stripped key so a caller writing this row back out as a CSV
+          // header does not need to know the prefix convention itself.
+          rawRateParams[key] = value;
         }
         // ENV.temperature / ENV.pressure / ENV.air number density handled above; other ENV.* ignored
       }
@@ -140,7 +144,7 @@ export class ConditionsManager {
       }
       seenEnvAt.set(t, { temp, pressure, airDensity, rateParams });
 
-      this._timePoints.push({ t, temp, pressure, airDensity, rateParams });
+      this._timePoints.push({ t, temp, pressure, airDensity, rateParams, rawRateParams });
     }
 
     this._timePoints.sort((a, b) => a.t - b.t);
@@ -158,9 +162,12 @@ export class ConditionsManager {
   /**
    * Every configured time point, sorted by time, before step interpolation. Unlike
    * getConditionsAtTime(t), a point here only has the columns actually set at that time --
-   * temp/pressure/airDensity are null, and rateParams omits a key, when that point didn't set it.
+   * temp/pressure/airDensity are null, and rateParams/rawRateParams omit a key, when that
+   * point didn't set it. rateParams has the unit suffix stripped (what the solver takes);
+   * rawRateParams keeps the original header string, for a caller that needs to write it
+   * back out as a CSV header (e.g. to round-trip a config).
    *
-   * @returns {Array<{t: number, temp: number|null, pressure: number|null, airDensity: number|null, rateParams: Object}>}
+   * @returns {Array<{t: number, temp: number|null, pressure: number|null, airDensity: number|null, rateParams: Object, rawRateParams: Object}>}
    */
   get timePoints() {
     return this._timePoints;

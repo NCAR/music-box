@@ -178,13 +178,23 @@ describe('ConditionsManager.timePoints', () => {
     assert.deepEqual(mgr.timePoints[0].rateParams, { 'PHOTO.O2_1': 1.47e-12 });
   });
 
+  it('also carries rate params under their original, unstripped header', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 0, 'PHOTO.O2_1.s-1': 1.47e-12, 'EMIS.NO.mol m-3 s-1': 0.001 },
+    ]);
+    assert.deepEqual(mgr.timePoints[0].rawRateParams, {
+      'PHOTO.O2_1.s-1': 1.47e-12,
+      'EMIS.NO.mol m-3 s-1': 0.001,
+    });
+  });
+
   it('does not include CONC.* concentration events', () => {
     const mgr = new ConditionsManager([
       { 'time.s': 0, 'CONC.O3.mol m-3': 6.43e-6, 'ENV.temperature.K': 217.6 },
     ]);
     assert.deepEqual(
       Object.keys(mgr.timePoints[0]).sort(),
-      ['airDensity', 'pressure', 'rateParams', 't', 'temp']
+      ['airDensity', 'pressure', 'rateParams', 'rawRateParams', 't', 'temp']
     );
   });
 });
