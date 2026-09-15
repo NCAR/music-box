@@ -77,6 +77,7 @@ export class ConditionsManager {
       const temp = row['ENV.temperature.K'] !== undefined ? row['ENV.temperature.K'] : null;
       const pressure = row['ENV.pressure.Pa'] !== undefined ? row['ENV.pressure.Pa'] : null;
       const rateParams = {};
+      const rawRateParams = {};
 
       for (const [key, value] of Object.entries(row)) {
         if (key === 'time.s') continue;
@@ -97,6 +98,10 @@ export class ConditionsManager {
           this._concentrationEvents[t][species] = value;
         } else if (RATE_PARAM_PREFIXES.has(prefix)) {
           rateParams[stripUnit(key)] = value;
+          // Kept alongside the stripped key so a caller writing this row back out as a CSV
+          // header (e.g. to re-run through the solver) does not need to know the prefix
+          // convention itself -- it can just use the original header string.
+          rawRateParams[key] = value;
         }
         // ENV.temperature / ENV.pressure handled above; other ENV.* ignored
       }
@@ -128,7 +133,7 @@ export class ConditionsManager {
       }
       seenEnvAt.set(t, { temp, pressure, rateParams });
 
-      this._timePoints.push({ t, temp, pressure, rateParams });
+      this._timePoints.push({ t, temp, pressure, rateParams, rawRateParams });
     }
 
     this._timePoints.sort((a, b) => a.t - b.t);
@@ -146,9 +151,12 @@ export class ConditionsManager {
   /**
    * Every configured time point, sorted by time, before step interpolation. Unlike
    * getConditionsAtTime(t), a point here only has the columns actually set at that time --
-   * temp/pressure are null, and rateParams omits a key, when that point didn't set it.
+   * temp/pressure are null, and rateParams/rawRateParams omit a key, when that point didn't
+   * set it. rateParams has the unit suffix stripped (what the solver takes); rawRateParams
+   * keeps the original header string, for a caller that needs to write it back out as a CSV
+   * header (e.g. to round-trip a config).
    *
-   * @returns {Array<{t: number, temp: number|null, pressure: number|null, rateParams: Object}>}
+   * @returns {Array<{t: number, temp: number|null, pressure: number|null, rateParams: Object, rawRateParams: Object}>}
    */
   get timePoints() {
     return this._timePoints;
