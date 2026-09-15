@@ -182,6 +182,43 @@ describe('ConditionsManager.timePoints', () => {
     const mgr = new ConditionsManager([
       { 'time.s': 0, 'CONC.O3.mol m-3': 6.43e-6, 'ENV.temperature.K': 217.6 },
     ]);
-    assert.deepEqual(Object.keys(mgr.timePoints[0]).sort(), ['pressure', 'rateParams', 't', 'temp']);
+    assert.deepEqual(
+      Object.keys(mgr.timePoints[0]).sort(),
+      ['airDensity', 'pressure', 'rateParams', 't', 'temp']
+    );
+  });
+});
+
+describe('ConditionsManager.getConditionsAtTime - air density', () => {
+  it('defaults to null when no air density is configured', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 0, 'ENV.temperature.K': 217.6 },
+    ]);
+    assert.equal(mgr.getConditionsAtTime(0).airDensity, null);
+  });
+
+  it('reads air density from a data row', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 0, 'ENV.air number density.mol m-3': 42.39 },
+    ]);
+    assert.equal(mgr.getConditionsAtTime(0).airDensity, 42.39);
+  });
+
+  it('a single configured value holds for every later timestep (step interpolation)', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 0, 'ENV.air number density.mol m-3': 42.39 },
+    ]);
+    assert.equal(mgr.getConditionsAtTime(0).airDensity, 42.39);
+    assert.equal(mgr.getConditionsAtTime(1800).airDensity, 42.39);
+    assert.equal(mgr.getConditionsAtTime(999999).airDensity, 42.39);
+  });
+
+  it('stays null before the configured time point, then holds afterward', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 3600, 'ENV.air number density.mol m-3': 42.39 },
+    ]);
+    assert.equal(mgr.getConditionsAtTime(0).airDensity, null);
+    assert.equal(mgr.getConditionsAtTime(3600).airDensity, 42.39);
+    assert.equal(mgr.getConditionsAtTime(7200).airDensity, 42.39);
   });
 });

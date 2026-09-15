@@ -196,7 +196,11 @@ export class MusicBox {
 
       // Set initial conditions
       const t0 = condsMgr.getConditionsAtTime(0);
-      state.setConditions({ temperatures: t0.temperature, pressures: t0.pressure });
+      state.setConditions({
+        temperatures: t0.temperature,
+        pressures: t0.pressure,
+        airDensities: t0.airDensity,
+      });
 
       // Apply concentration event at t=0 if present
       if (nextEventIdx < sortedEventTimes.length && sortedEventTimes[nextEventIdx] === 0) {
@@ -256,7 +260,11 @@ export class MusicBox {
 
         // Update environment and rate parameters at current time
         const conds = condsMgr.getConditionsAtTime(currTime);
-        state.setConditions({ temperatures: conds.temperature, pressures: conds.pressure });
+        state.setConditions({
+          temperatures: conds.temperature,
+          pressures: conds.pressure,
+          airDensities: conds.airDensity,
+        });
         state.setUserDefinedRateParameters(
           normalizeRateParamsForSolver(conds.rateParams || {}, normalizerState)
         );
