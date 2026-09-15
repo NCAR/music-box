@@ -26,7 +26,10 @@ import chapmanConfig from '@ncar/music-box/examples/chapman/my_config.json' with
 const box = MusicBox.fromJson(chapmanConfig);
 const results = await box.solve();
 console.log(results);
-// [{ 'time.s': 0, 'CONC.O3.mol m-3': 6.43e-6, ... }, ...]
+// { columns: ['time.s', 'ENV.temperature.K', 'ENV.pressure.Pa',
+//             'ENV.air number density.mol m-3', 'CONC.O3.mol m-3', ...],
+//   height: 25,
+//   data: { 'time.s': [0, ...], 'ENV.temperature.K': [217.6, ...], ... } }
 ```
 
 Available examples: `analytical`, `chapman`, `flow_tube`, `carbon_bond_5`, `ts1`.
@@ -39,7 +42,10 @@ import { MusicBox } from '@ncar/music-box';
 const box = await MusicBox.fromJsonFile('./examples/chapman/my_config.json');
 const results = await box.solve();
 console.log(results);
-// [{ 'time.s': 0, 'CONC.O3.mol m-3': 6.43e-6, ... }, ...]
+// { columns: ['time.s', 'ENV.temperature.K', 'ENV.pressure.Pa',
+//             'ENV.air number density.mol m-3', 'CONC.O3.mol m-3', ...],
+//   height: 25,
+//   data: { 'time.s': [0, ...], 'ENV.temperature.K': [217.6, ...], ... } }
 ```
 
 ### Node.js or Browser — inline config object
@@ -131,8 +137,11 @@ const box = await MusicBox.fromJsonFile('/path/to/config.json');
 
 // Run the simulation
 const results = await box.solve();
-// Returns: Array of output rows, e.g.:
-// [{ 'time.s': 0, 'CONC.O3.mol m-3': 6.43e-6, ... }, ...]
+// Returns: { columns, height, data } — column-oriented output, e.g.:
+// { columns: ['time.s', 'ENV.temperature.K', 'ENV.pressure.Pa',
+//             'ENV.air number density.mol m-3', 'CONC.O3.mol m-3', ...],
+//   height: 25,
+//   data: { 'time.s': [0, ...], 'ENV.temperature.K': [217.6, ...], ... } }
 ```
 
 ### `parseBoxModelOptions`

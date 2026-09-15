@@ -167,7 +167,9 @@ export class MusicBox {
    *
    * @returns {Promise<{columns: string[], height: number, data: Object.<string, number[]>}>}
    *   Result with a `columns` array of column names, `height` (number of rows), and
-   *   `data` object mapping each column name to its array of values.
+   *   `data` object mapping each column name to its array of values. Columns are
+   *   `time.s`, `ENV.temperature.K`, `ENV.pressure.Pa`,
+   *   `ENV.air number density.mol m-3`, then `CONC.<species>.mol m-3`.
    */
   async solve() {
     await initModule();
@@ -207,11 +209,20 @@ export class MusicBox {
       );
 
       // Collect output as column arrays for efficient DataFrame construction
-      const columns = { 'time.s': [] };
+      const columns = {
+        'time.s': [],
+        'ENV.temperature.K': [],
+        'ENV.pressure.Pa': [],
+        'ENV.air number density.mol m-3': [],
+      };
 
       function appendOutput(time) {
+        const [conditions] = state.getConditions();
         const concs = state.getConcentrations();
         columns['time.s'].push(time);
+        columns['ENV.temperature.K'].push(conditions.temperature);
+        columns['ENV.pressure.Pa'].push(conditions.pressure);
+        columns['ENV.air number density.mol m-3'].push(conditions.air_density);
         for (const [name, values] of Object.entries(concs)) {
           const key = `CONC.${name}.mol m-3`;
           if (!columns[key]) columns[key] = [];

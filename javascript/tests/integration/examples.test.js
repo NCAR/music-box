@@ -5,7 +5,8 @@
  * (box model options / conditions / mechanism), verify that:
  *   1. The config loads via MusicBox.fromJsonFile (resolving any CSV filepaths)
  *   2. solve() completes without errors
- *   3. The result has a non-empty time.s column and CONC.* columns with non-negative values
+ *   3. The result has non-empty time.s and ENV.* columns, and CONC.* columns with
+ *      non-negative values
  *
  * The waccm configs use the old (non-v1) format and are excluded.
  */
@@ -44,6 +45,14 @@ describe('Example config integration tests', () => {
 
       assert.ok(results.height > 0, 'solve() should return at least one output row');
       assert.ok(results.columns.includes('time.s'), 'output should have a time.s column');
+
+      for (const col of ['ENV.temperature.K', 'ENV.pressure.Pa', 'ENV.air number density.mol m-3']) {
+        assert.ok(results.columns.includes(col), `output should have a ${col} column`);
+        assert.equal(results.data[col].length, results.height, `${col} should have one value per row`);
+        for (const value of results.data[col]) {
+          assert.ok(Number.isFinite(value) && value > 0, `${col} should be positive, got ${value}`);
+        }
+      }
 
       // Verify all CONC.* columns are non-negative
       for (const col of results.columns) {
