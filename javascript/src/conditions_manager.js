@@ -47,10 +47,12 @@ function stripUnit(key) {
  *   ]
  *
  * Column semantics (mirrors Python ConditionsManager):
- *   ENV.temperature.K      → temperature (K), step-interpolated
- *   ENV.pressure.Pa        → pressure (Pa), step-interpolated
- *   CONC.<species>.<unit>  → concentration event at exact time (not interpolated)
- *   PHOTO/EMIS/LOSS/USER.* → rate parameters, step-interpolated
+ *   ENV.temperature.K              -> temperature (K), step-interpolated
+ *   ENV.pressure.Pa                -> pressure (Pa), step-interpolated
+ *   ENV.air number density.mol m-3 -> air number density (mol/m³), step-interpolated;
+ *                                     falls back to the ideal gas law (P / (R·T)) when unset
+ *   CONC.<species>.<unit>          -> concentration event at exact time (not interpolated)
+ *   PHOTO/EMIS/LOSS/USER.*         -> rate parameters, step-interpolated
  */
 export class ConditionsManager {
   /**
@@ -60,14 +62,14 @@ export class ConditionsManager {
     this._defaultTemp = 298.15;
     this._defaultPressure = 101325.0;
 
-    // [{t, temp, pressure, rateParams}] — for step interpolation
+    // [{t, temp, pressure, airDensity, rateParams, rawRateParams}] — for step interpolation
     this._timePoints = [];
 
     // {t: {species: value}} — applied at exact time only (mirrors Python concentration_events)
     this._concentrationEvents = {};
 
     // Track the most recently seen env/rate values per time for duplicate detection.
-    // Maps t -> { temp, pressure, ...rateParamKeys }
+    // Maps t -> { temp, pressure, airDensity, ...rateParamKeys }
     const seenEnvAt = new Map();
 
     for (const row of (dataRows || [])) {
@@ -76,6 +78,10 @@ export class ConditionsManager {
 
       const temp = row['ENV.temperature.K'] !== undefined ? row['ENV.temperature.K'] : null;
       const pressure = row['ENV.pressure.Pa'] !== undefined ? row['ENV.pressure.Pa'] : null;
+      const airDensity =
+        row['ENV.air number density.mol m-3'] !== undefined
+          ? row['ENV.air number density.mol m-3']
+          : null;
       const rateParams = {};
       const rawRateParams = {};
 
@@ -99,11 +105,10 @@ export class ConditionsManager {
         } else if (RATE_PARAM_PREFIXES.has(prefix)) {
           rateParams[stripUnit(key)] = value;
           // Kept alongside the stripped key so a caller writing this row back out as a CSV
-          // header (e.g. to re-run through the solver) does not need to know the prefix
-          // convention itself -- it can just use the original header string.
+          // header does not need to know the prefix convention itself.
           rawRateParams[key] = value;
         }
-        // ENV.temperature / ENV.pressure handled above; other ENV.* ignored
+        // ENV.temperature / ENV.pressure / ENV.air number density handled above; other ENV.* ignored
       }
 
       // Warn on duplicate env/rate values at the same time
@@ -121,6 +126,12 @@ export class ConditionsManager {
             `${prev.pressure}; overwriting with ${pressure}. Inline data takes precedence over CSV.`
           );
         }
+        if (airDensity !== null && prev.airDensity !== null) {
+          console.warn(
+            `Duplicate condition: ENV.air number density.mol m-3 at time=${t}s already set to ` +
+            `${prev.airDensity}; overwriting with ${airDensity}. Inline data takes precedence over CSV.`
+          );
+        }
         for (const key of Object.keys(rateParams)) {
           if (prev.rateParams[key] !== undefined) {
             console.warn(
@@ -131,9 +142,9 @@ export class ConditionsManager {
           }
         }
       }
-      seenEnvAt.set(t, { temp, pressure, rateParams });
+      seenEnvAt.set(t, { temp, pressure, airDensity, rateParams });
 
-      this._timePoints.push({ t, temp, pressure, rateParams, rawRateParams });
+      this._timePoints.push({ t, temp, pressure, airDensity, rateParams, rawRateParams });
     }
 
     this._timePoints.sort((a, b) => a.t - b.t);
@@ -151,12 +162,12 @@ export class ConditionsManager {
   /**
    * Every configured time point, sorted by time, before step interpolation. Unlike
    * getConditionsAtTime(t), a point here only has the columns actually set at that time --
-   * temp/pressure are null, and rateParams/rawRateParams omit a key, when that point didn't
-   * set it. rateParams has the unit suffix stripped (what the solver takes); rawRateParams
-   * keeps the original header string, for a caller that needs to write it back out as a CSV
-   * header (e.g. to round-trip a config).
+   * temp/pressure/airDensity are null, and rateParams/rawRateParams omit a key, when that
+   * point didn't set it. rateParams has the unit suffix stripped (what the solver takes);
+   * rawRateParams keeps the original header string, for a caller that needs to write it
+   * back out as a CSV header (e.g. to round-trip a config).
    *
-   * @returns {Array<{t: number, temp: number|null, pressure: number|null, rateParams: Object, rawRateParams: Object}>}
+   * @returns {Array<{t: number, temp: number|null, pressure: number|null, airDensity: number|null, rateParams: Object, rawRateParams: Object}>}
    */
   get timePoints() {
     return this._timePoints;
@@ -166,24 +177,30 @@ export class ConditionsManager {
    * Get step-interpolated conditions at a given simulation time.
    * Returns the most recent value at or before `t` for each column.
    *
+   * airDensity stays `null` until a row sets it, so a single configured value applies
+   * from its time point onward; if it's never set, the caller (state.setConditions) falls
+   * back to the ideal gas law.
+   *
    * @param {number} t - Simulation time in seconds
-   * @returns {{ temperature: number, pressure: number, rateParams: Object }}
+   * @returns {{ temperature: number, pressure: number, airDensity: number|null, rateParams: Object }}
    */
   getConditionsAtTime(t) {
     let temperature = this._defaultTemp;
     let pressure = this._defaultPressure;
+    let airDensity = null;
     let rateParams = {};
 
     for (const point of this._timePoints) {
       if (point.t <= t) {
         if (point.temp !== null) temperature = point.temp;
         if (point.pressure !== null) pressure = point.pressure;
+        if (point.airDensity !== null) airDensity = point.airDensity;
         Object.assign(rateParams, point.rateParams);
       } else {
         break;
       }
     }
 
-    return { temperature, pressure, rateParams };
+    return { temperature, pressure, airDensity, rateParams };
   }
 }
