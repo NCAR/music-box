@@ -1,9 +1,5 @@
 /**
  * Unit tests for MusicBox.toJson() / MusicBox.export().
- *
- * The "every option" fixture covers all five box model options and one of
- * every reaction type, with two time points covering every condition type.
- * It's the same file the Python round-trip and cross-language tests use.
  */
 
 import { describe, it, before } from 'node:test';

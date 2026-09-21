@@ -159,12 +159,8 @@ export class MusicBox {
   }
 
   /**
-   * Returns this box model's current state as a v1 JSON config object.
-   * Conditions come out as inline data, so the result reloads with
-   * MusicBox.fromJson() with no external CSV files needed. Works in Node
-   * and the browser; does no file I/O.
-   *
-   * @returns {Object} a music-box v1 JSON config object
+   * Returns a json representation of the box model configuration
+   * @returns {Object} a music-box JSON config object
    */
   toJson() {
     const { chemTimeStep, outputTimeStep, simulationLength, maxIterations } =
@@ -211,19 +207,7 @@ export class MusicBox {
       const headers = ['time.s'];
       const values = [t];
 
-      // Merge every ENV/rate value set at this exact time, later ones winning --
-      // same order the solver itself uses in getConditionsAtTime.
-      let temp = null;
-      let pressure = null;
-      let airDensity = null;
-      const rawRateParams = {};
-      for (const point of condsMgr.timePoints) {
-        if (point.t !== t) continue;
-        if (point.temp !== null) temp = point.temp;
-        if (point.pressure !== null) pressure = point.pressure;
-        if (point.airDensity !== null) airDensity = point.airDensity;
-        Object.assign(rawRateParams, point.rawRateParams);
-      }
+      const { temp, pressure, airDensity, rawRateParams } = condsMgr.getRawConditionsAtTime(t);
       if (temp !== null) {
         headers.push('ENV.temperature.K');
         values.push(temp);

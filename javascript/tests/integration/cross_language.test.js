@@ -1,9 +1,6 @@
 /**
- * Cross-language parity: solve a fixture in JS, export it, then solve the
- * exported file in Python (via a subprocess) and check the results match.
- * JS/WASM and Python/native are different solver backends, so we compare
- * with a numeric tolerance rather than expecting exact equality. Skipped
- * if a Python venv isn't available.
+ * Solve a fixture in JS, export it, then solve the * exported file in Python 
+ * and check the results match.
  */
 
 import { describe, it, before } from 'node:test';
@@ -23,10 +20,7 @@ const PYTHON_BIN = join(REPO_ROOT, '.venv/bin/python');
 const PYTHON_DRIVER = join(REPO_ROOT, 'python/tests/integration/cross_language_solve.py');
 const PYTHON_AVAILABLE = existsSync(PYTHON_BIN) && existsSync(PYTHON_DRIVER);
 
-// Measured relative differences between the two backends top out around
-// 1e-14, so 1e-6 leaves plenty of margin. abs_tol covers near-zero values,
-// where a relative tolerance alone breaks down.
-const REL_TOL = 1e-6;
+const REL_TOL = 1e-10;
 const ABS_TOL = 1e-12;
 
 function isClose(a, b) {

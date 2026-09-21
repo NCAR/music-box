@@ -187,6 +187,32 @@ export class ConditionsManager {
   }
 
   /**
+   * The ENV/rate values explicitly set at exactly this time -- unlike
+   * getConditionsAtTime, nothing is carried forward from earlier times.
+   * Multiple rows sharing this time (e.g. a CSV block plus an inline block)
+   * are merged in the same later-wins order getConditionsAtTime uses.
+   *
+   * @param {number} t - Simulation time in seconds
+   * @returns {{ temp: number|null, pressure: number|null, airDensity: number|null, rawRateParams: Object }}
+   */
+  getRawConditionsAtTime(t) {
+    let temp = null;
+    let pressure = null;
+    let airDensity = null;
+    const rawRateParams = {};
+
+    for (const point of this._timePoints) {
+      if (point.t !== t) continue;
+      if (point.temp !== null) temp = point.temp;
+      if (point.pressure !== null) pressure = point.pressure;
+      if (point.airDensity !== null) airDensity = point.airDensity;
+      Object.assign(rawRateParams, point.rawRateParams);
+    }
+
+    return { temp, pressure, airDensity, rawRateParams };
+  }
+
+  /**
    * Get step-interpolated conditions at a given simulation time.
    * Returns the most recent value at or before `t` for each column.
    *

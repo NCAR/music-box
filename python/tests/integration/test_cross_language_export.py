@@ -1,10 +1,6 @@
 """
-Cross-language parity: solve a fixture in Python, export it, then solve the
-exported file in JS (via a subprocess) and check the results match. JS/WASM
-and Python/native are different solver backends, so we compare with a
-numeric tolerance rather than expecting exact equality -- measured relative
-differences top out around 1e-14, so REL_TOL=1e-6 leaves plenty of margin.
-ABS_TOL covers near-zero values, where a relative tolerance alone breaks
+Solve a fixture in Python, export it, then solve the exported file in JS 
+and check the results match.
 down.
 """
 
@@ -22,7 +18,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 NODE_DRIVER = REPO_ROOT / "javascript" / "tests" / "integration" / "cross_language_solve.mjs"
 NODE_BIN = shutil.which("node")
 
-REL_TOL = 1e-6
+REL_TOL = 1e-10
 ABS_TOL = 1e-12
 
 FIXTURES = [
