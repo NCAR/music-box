@@ -132,32 +132,19 @@ export class ConditionsManager {
   _recordTimePoint(t, { temp, pressure, airDensity, rateParams, rawRateParams }) {
     const prev = this._seenEnvAt.get(t);
     if (prev !== undefined) {
-      if (temp !== null && prev.temp !== null) {
+      const warnDuplicate = (label, prevValue, newValue) => {
         console.warn(
-          `Duplicate condition: ENV.temperature.K at time=${t}s already set to ` +
-          `${prev.temp}; overwriting with ${temp}. Inline data takes precedence over CSV.`
+          `Duplicate condition: ${label} at time=${t}s already set to ` +
+          `${prevValue}; overwriting with ${newValue}. Inline data takes precedence over CSV.`
         );
-      }
-      if (pressure !== null && prev.pressure !== null) {
-        console.warn(
-          `Duplicate condition: ENV.pressure.Pa at time=${t}s already set to ` +
-          `${prev.pressure}; overwriting with ${pressure}. Inline data takes precedence over CSV.`
-        );
-      }
+      };
+      if (temp !== null && prev.temp !== null) warnDuplicate('ENV.temperature.K', prev.temp, temp);
+      if (pressure !== null && prev.pressure !== null) warnDuplicate('ENV.pressure.Pa', prev.pressure, pressure);
       if (airDensity !== null && prev.airDensity !== null) {
-        console.warn(
-          `Duplicate condition: ENV.air number density.mol m-3 at time=${t}s already set to ` +
-          `${prev.airDensity}; overwriting with ${airDensity}. Inline data takes precedence over CSV.`
-        );
+        warnDuplicate('ENV.air number density.mol m-3', prev.airDensity, airDensity);
       }
       for (const key of Object.keys(rateParams)) {
-        if (prev.rateParams[key] !== undefined) {
-          console.warn(
-            `Duplicate condition: ${key} at time=${t}s already set to ` +
-            `${prev.rateParams[key]}; overwriting with ${rateParams[key]}. ` +
-            `Inline data takes precedence over CSV.`
-          );
-        }
+        if (prev.rateParams[key] !== undefined) warnDuplicate(key, prev.rateParams[key], rateParams[key]);
       }
     }
     this._seenEnvAt.set(t, { temp, pressure, airDensity, rateParams });
