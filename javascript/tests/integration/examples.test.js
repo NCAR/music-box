@@ -65,3 +65,24 @@ describe('Example config integration tests', () => {
     });
   }
 });
+
+describe('Example config export round trip', () => {
+  for (const configRelPath of EXAMPLE_CONFIGS) {
+    const name = configRelPath.split('/')[0];
+    const configPath = join(CONFIGS_DIR, configRelPath);
+
+    it(
+      `${name} - toJson() -> fromJson() round trip matches the original solve() results exactly`,
+      { timeout: 300_000 },
+      async () => {
+        const box1 = await MusicBox.fromJsonFile(configPath);
+        const result1 = await box1.solve();
+
+        const box2 = MusicBox.fromJson(box1.toJson());
+        const result2 = await box2.solve();
+
+        assert.deepStrictEqual(result1, result2);
+      }
+    );
+  }
+});

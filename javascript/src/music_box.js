@@ -159,6 +159,107 @@ export class MusicBox {
   }
 
   /**
+   * Returns a json representation of the box model configuration
+   * @returns {Object} a music-box JSON config object
+   */
+  toJson() {
+    const { chemTimeStep, outputTimeStep, simulationLength, maxIterations } =
+      parseBoxModelOptions(this._config);
+    const grid = this._config['box model options']?.grid ?? 'box';
+
+    const config = {};
+
+    config['box model options'] = {
+      grid,
+      'chemistry time step [sec]': chemTimeStep,
+      'output time step [sec]': outputTimeStep,
+      'simulation length [sec]': simulationLength,
+      'max iterations': maxIterations,
+    };
+
+    // The mechanism is already a plain JSON dict, so just clone it and stamp the version.
+    const mechanism = structuredClone(this._config.mechanism);
+    mechanism.version = '1.0.0';
+    config['mechanism'] = mechanism;
+
+    // Lambda reactions are JS-only; Python can't load them. Keep them in the
+    // export (they still work if reloaded in JS) but warn that it's not portable.
+    const lambdaReactions = (mechanism.reactions || []).filter(
+      (reaction) => reaction?.type === 'LAMBDA_RATE_CONSTANT'
+    );
+    if (lambdaReactions.length > 0) {
+      const names = lambdaReactions.map((reaction) => reaction.name || '(unnamed)').join(', ');
+      console.warn(
+        `Exported mechanism contains ${lambdaReactions.length} LAMBDA_RATE_CONSTANT ` +
+          `reaction(s) (${names}); these are a JS-only extension and will not load in the ` +
+          `Python implementation of music-box. Disregarding them for portability -- they ` +
+          `are still exported as-is and will work if this file is reloaded in JavaScript.`
+      );
+    }
+
+    // Write one data block per time point.
+    const condsMgr = new ConditionsManager(parseConditions(this._config.conditions));
+    const concentrationEvents = condsMgr.concentrationEvents;
+    const allTimes = condsMgr.getTimes();
+
+    const dataBlocks = [];
+    for (const t of allTimes) {
+      const headers = ['time.s'];
+      const values = [t];
+
+      const { temp, pressure, airDensity, rawRateParams } = condsMgr.getRawConditionsAtTime(t);
+      if (temp !== null) {
+        headers.push('ENV.temperature.K');
+        values.push(temp);
+      }
+      if (pressure !== null) {
+        headers.push('ENV.pressure.Pa');
+        values.push(pressure);
+      }
+      if (airDensity !== null) {
+        headers.push('ENV.air number density.mol m-3');
+        values.push(airDensity);
+      }
+      for (const [key, value] of Object.entries(rawRateParams)) {
+        headers.push(key);
+        values.push(value);
+      }
+
+      // Add any concentrations set at this exact time.
+      if (concentrationEvents[t] !== undefined) {
+        for (const species of Object.keys(concentrationEvents[t]).sort()) {
+          headers.push(`CONC.${species}.mol m-3`);
+          values.push(concentrationEvents[t][species]);
+        }
+      }
+
+      dataBlocks.push({ headers, rows: [values] });
+    }
+
+    config['conditions'] = { data: dataBlocks };
+
+    return config;
+  }
+
+  /**
+   * Writes this box model's current state to a v1 JSON file. Node-only.
+   *
+   * @param {string} filePath - Path to write the JSON file.
+   * @returns {Promise<void>}
+   */
+  async export(filePath) {
+    const isNode = typeof process !== 'undefined' && process.versions?.node != null;
+    if (!isNode) {
+      throw new Error('MusicBox.export(filePath) is only supported in Node; use toJson() elsewhere.');
+    }
+
+    // webpackIgnore: Node-only module; not included in browser bundles.
+    const { writeFile } = await import(/* webpackIgnore: true */ 'fs/promises');
+    const config = this.toJson();
+    await writeFile(filePath, JSON.stringify(config, null, 2));
+  }
+
+  /**
    * Run the chemistry simulation.
    *
    * Mirrors the Python solve() loop:
