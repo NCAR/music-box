@@ -1,5 +1,5 @@
 """
-Solve a fixture in Python, export it, then solve the exported file in JS 
+Solve a fixture in Python, export it, then solve the exported file in JS
 and check the results match.
 down.
 """
