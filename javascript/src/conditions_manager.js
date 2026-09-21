@@ -174,6 +174,19 @@ export class ConditionsManager {
   }
 
   /**
+   * Returns every time that has a condition set, sorted ascending.
+   *
+   * @returns {Array<number>}
+   */
+  getTimes() {
+    const times = new Set(this._timePoints.map((point) => point.t));
+    for (const t of Object.keys(this._concentrationEvents)) {
+      times.add(Number(t));
+    }
+    return [...times].sort((a, b) => a - b);
+  }
+
+  /**
    * Get step-interpolated conditions at a given simulation time.
    * Returns the most recent value at or before `t` for each column.
    *
