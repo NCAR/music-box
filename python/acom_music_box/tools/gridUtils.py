@@ -283,6 +283,8 @@ def loadHeightVars(altParams, altBase, myDataset):
     return heightVars
 
 
+kPressureKey = "lev"
+
 # Truncate columns in the grid at variable levels like PBLH.
 # The truncation could happen at both ends of the column.
 # mySubGrid = dataset already selected for time and lat-lon bounds
@@ -290,7 +292,6 @@ def loadHeightVars(altParams, altBase, myDataset):
 # altitudeBase = kSeaLevelKeyword or kGroundKeyword
 # return grid dataset with same lat-lon size but columns are shorter
 def cutOffColumns(mySubGrid, altitudePair, altitudeBase):
-    kPressureKey = "lev"
     mySubPressure = mySubGrid[kPressureKey].data                   # units are hPa
     mySubHeights = numpy.zeros(len(mySubPressure))
     for pi in range(len(mySubPressure)):
@@ -415,7 +416,7 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair,
     logger.info(f"Requesting pressure range {pressPair[0]} to {pressPair[1]} hPa")
 
     # look up pressure levels to get the pressure indexes
-    pressLevels = gridDataset["lev"].data
+    pressLevels = gridDataset[kPressureKey].data
     logger.debug(f"pressLevels = {pressLevels}")
     pressIndexPair = [0, 0]
     for pi in range(0, 2):
