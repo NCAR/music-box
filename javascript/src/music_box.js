@@ -197,46 +197,8 @@ export class MusicBox {
       );
     }
 
-    // Write one data block per time point.
     const condsMgr = new ConditionsManager(parseConditions(this._config.conditions));
-    const concentrationEvents = condsMgr.concentrationEvents;
-    const allTimes = condsMgr.getTimes();
-
-    const dataBlocks = [];
-    for (const t of allTimes) {
-      const headers = ['time.s'];
-      const values = [t];
-
-      const { temp, pressure, airDensity, rawRateParams } = condsMgr.getRawConditionsAtTime(t);
-      if (temp !== null) {
-        headers.push('ENV.temperature.K');
-        values.push(temp);
-      }
-      if (pressure !== null) {
-        headers.push('ENV.pressure.Pa');
-        values.push(pressure);
-      }
-      if (airDensity !== null) {
-        headers.push('ENV.air number density.mol m-3');
-        values.push(airDensity);
-      }
-      for (const [key, value] of Object.entries(rawRateParams)) {
-        headers.push(key);
-        values.push(value);
-      }
-
-      // Add any concentrations set at this exact time.
-      if (concentrationEvents[t] !== undefined) {
-        for (const species of Object.keys(concentrationEvents[t]).sort()) {
-          headers.push(`CONC.${species}.mol m-3`);
-          values.push(concentrationEvents[t][species]);
-        }
-      }
-
-      dataBlocks.push({ headers, rows: [values] });
-    }
-
-    config['conditions'] = { data: dataBlocks };
+    config['conditions'] = condsMgr.toDataBlocks();
 
     return config;
   }

@@ -68,9 +68,10 @@ export class ConditionsManager {
     // {t: {species: value}} — applied at exact time only (mirrors Python concentration_events)
     this._concentrationEvents = {};
 
-    // Track the most recently seen env/rate values per time for duplicate detection.
-    // Maps t -> { temp, pressure, airDensity, ...rateParamKeys }
-    const seenEnvAt = new Map();
+    // Track the most recently seen env/rate values per time for duplicate detection, across
+    // both the rows parsed below and any later setCondition() calls.
+    // Maps t -> { temp, pressure, airDensity, rateParams }
+    this._seenEnvAt = new Map();
 
     for (const row of (dataRows || [])) {
       const t = row['time.s'];
@@ -91,17 +92,7 @@ export class ConditionsManager {
         const prefix = parts[0];
 
         if (prefix === 'CONC') {
-          // Concentration event: stored separately, applied at exact time
-          const species = parts[1];
-          if (this._concentrationEvents[t]?.[species] !== undefined) {
-            console.warn(
-              `Duplicate condition: CONC.${species} at time=${t}s already set to ` +
-              `${this._concentrationEvents[t][species]}; overwriting with ${value}. ` +
-              `Inline data takes precedence over CSV.`
-            );
-          }
-          if (!this._concentrationEvents[t]) this._concentrationEvents[t] = {};
-          this._concentrationEvents[t][species] = value;
+          this._recordConcentrationEvent(t, parts[1], value);
         } else if (RATE_PARAM_PREFIXES.has(prefix)) {
           rateParams[stripUnit(key)] = value;
           // Kept alongside the stripped key so a caller writing this row back out as a CSV
@@ -111,43 +102,144 @@ export class ConditionsManager {
         // ENV.temperature / ENV.pressure / ENV.air number density handled above; other ENV.* ignored
       }
 
-      // Warn on duplicate env/rate values at the same time
-      const prev = seenEnvAt.get(t);
-      if (prev !== undefined) {
-        if (temp !== null && prev.temp !== null) {
-          console.warn(
-            `Duplicate condition: ENV.temperature.K at time=${t}s already set to ` +
-            `${prev.temp}; overwriting with ${temp}. Inline data takes precedence over CSV.`
-          );
-        }
-        if (pressure !== null && prev.pressure !== null) {
-          console.warn(
-            `Duplicate condition: ENV.pressure.Pa at time=${t}s already set to ` +
-            `${prev.pressure}; overwriting with ${pressure}. Inline data takes precedence over CSV.`
-          );
-        }
-        if (airDensity !== null && prev.airDensity !== null) {
-          console.warn(
-            `Duplicate condition: ENV.air number density.mol m-3 at time=${t}s already set to ` +
-            `${prev.airDensity}; overwriting with ${airDensity}. Inline data takes precedence over CSV.`
-          );
-        }
-        for (const key of Object.keys(rateParams)) {
-          if (prev.rateParams[key] !== undefined) {
-            console.warn(
-              `Duplicate condition: ${key} at time=${t}s already set to ` +
-              `${prev.rateParams[key]}; overwriting with ${rateParams[key]}. ` +
-              `Inline data takes precedence over CSV.`
-            );
-          }
-        }
-      }
-      seenEnvAt.set(t, { temp, pressure, airDensity, rateParams });
-
-      this._timePoints.push({ t, temp, pressure, airDensity, rateParams, rawRateParams });
+      this._recordTimePoint(t, { temp, pressure, airDensity, rateParams, rawRateParams });
     }
 
     this._timePoints.sort((a, b) => a.t - b.t);
+  }
+
+  /**
+   * Records a concentration event, warning if it silently overwrites one already set at this
+   * exact time (e.g. a CSV block and an inline block both setting the same species).
+   */
+  _recordConcentrationEvent(t, species, value) {
+    if (this._concentrationEvents[t]?.[species] !== undefined) {
+      console.warn(
+        `Duplicate condition: CONC.${species} at time=${t}s already set to ` +
+        `${this._concentrationEvents[t][species]}; overwriting with ${value}. ` +
+        `Inline data takes precedence over CSV.`
+      );
+    }
+    if (!this._concentrationEvents[t]) this._concentrationEvents[t] = {};
+    this._concentrationEvents[t][species] = value;
+  }
+
+  /**
+   * Records a time point, warning if any of its ENV/rate values overwrite ones already set at
+   * this exact time. Does not sort _timePoints -- callers do that once after they are done
+   * adding points, since the constructor adds many at once and setCondition() adds one at a time.
+   */
+  _recordTimePoint(t, { temp, pressure, airDensity, rateParams, rawRateParams }) {
+    const prev = this._seenEnvAt.get(t);
+    if (prev !== undefined) {
+      const warnDuplicate = (label, prevValue, newValue) => {
+        console.warn(
+          `Duplicate condition: ${label} at time=${t}s already set to ` +
+          `${prevValue}; overwriting with ${newValue}. Inline data takes precedence over CSV.`
+        );
+      };
+      if (temp !== null && prev.temp !== null) warnDuplicate('ENV.temperature.K', prev.temp, temp);
+      if (pressure !== null && prev.pressure !== null) warnDuplicate('ENV.pressure.Pa', prev.pressure, pressure);
+      if (airDensity !== null && prev.airDensity !== null) {
+        warnDuplicate('ENV.air number density.mol m-3', prev.airDensity, airDensity);
+      }
+      for (const key of Object.keys(rateParams)) {
+        if (prev.rateParams[key] !== undefined) warnDuplicate(key, prev.rateParams[key], rateParams[key]);
+      }
+    }
+    this._seenEnvAt.set(t, { temp, pressure, airDensity, rateParams });
+
+    this._timePoints.push({ t, temp, pressure, airDensity, rateParams, rawRateParams });
+  }
+
+  /**
+   * Sets the conditions at a specific time, creating a new time point. Chainable, mirroring
+   * Python's ConditionsManager.set_condition(). Lets a caller build up conditions
+   * programmatically instead of assembling {headers, rows} data blocks by hand -- call
+   * toDataBlocks() afterward to get the wire format.
+   *
+   * @param {number} t - Simulation time in seconds
+   * @param {Object} [options]
+   * @param {number} [options.temperature] - Temperature in Kelvin
+   * @param {number} [options.pressure] - Pressure in Pascals
+   * @param {number} [options.airDensity] - Air number density in mol m-3
+   * @param {Object<string, number>} [options.concentrations] - {species: value in mol m-3},
+   *   applied at this exact time only, not step-interpolated
+   * @param {Object<string, number>} [options.rateParameters] - {"PREFIX.name.unit": value},
+   *   e.g. {"PHOTO.photo1.s-1": 1.0e-4} -- same header convention as a CSV/inline column
+   * @returns {ConditionsManager} this, for chaining
+   */
+  setCondition(
+    t,
+    { temperature = null, pressure = null, airDensity = null, concentrations = {}, rateParameters = {} } = {}
+  ) {
+    const rateParams = {};
+    const rawRateParams = {};
+    for (const [key, value] of Object.entries(rateParameters)) {
+      const prefix = key.split('.')[0];
+      if (!RATE_PARAM_PREFIXES.has(prefix)) {
+        throw new Error(
+          `Invalid rate parameter key "${key}": expected prefix to be one of ` +
+            `${[...RATE_PARAM_PREFIXES].join(', ')}`
+        );
+      }
+      rateParams[stripUnit(key)] = value;
+      rawRateParams[key] = value;
+    }
+
+    this._recordTimePoint(t, { temp: temperature, pressure, airDensity, rateParams, rawRateParams });
+    for (const [species, value] of Object.entries(concentrations)) {
+      this._recordConcentrationEvent(t, species, value);
+    }
+
+    this._timePoints.sort((a, b) => a.t - b.t);
+
+    return this;
+  }
+
+  /**
+   * Serializes the current conditions back into the v1 wire format: one {headers, rows} data
+   * block per configured time. Used by MusicBox.toJson(), and by any caller that built
+   * conditions with setCondition() and now needs the wire format.
+   *
+   * @returns {{ data: Array<{headers: string[], rows: number[][]}> }}
+   */
+  toDataBlocks() {
+    const dataBlocks = [];
+
+    for (const t of this.getTimes()) {
+      const headers = ['time.s'];
+      const values = [t];
+
+      const { temp, pressure, airDensity, rawRateParams } = this.getRawConditionsAtTime(t);
+      if (temp !== null) {
+        headers.push('ENV.temperature.K');
+        values.push(temp);
+      }
+      if (pressure !== null) {
+        headers.push('ENV.pressure.Pa');
+        values.push(pressure);
+      }
+      if (airDensity !== null) {
+        headers.push('ENV.air number density.mol m-3');
+        values.push(airDensity);
+      }
+      for (const [key, value] of Object.entries(rawRateParams)) {
+        headers.push(key);
+        values.push(value);
+      }
+
+      if (this._concentrationEvents[t] !== undefined) {
+        for (const species of Object.keys(this._concentrationEvents[t]).sort()) {
+          headers.push(`CONC.${species}.mol m-3`);
+          values.push(this._concentrationEvents[t][species]);
+        }
+      }
+
+      dataBlocks.push({ headers, rows: [values] });
+    }
+
+    return { data: dataBlocks };
   }
 
   /**
