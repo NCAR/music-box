@@ -129,13 +129,70 @@ function bisectRight(sortedValues, value) {
  * Accepts the same music-box v1 JSON config format as the Python implementation.
  * For inline conditions, use conditions.data (array of row objects) — the same
  * format supported by Python's ConditionsManager.
+ *
+ * Can be built up programmatically instead of from JSON:
+ *   const box = new MusicBox();
+ *   box.chemTimeStep = 2.0;
+ *   box.outputTimeStep = 6.0;
+ *   box.simulationLength = 60.0;
+ *   box.loadMechanism(mechanismInstanceOrJSON);
+ *   box.setCondition(0, { temperature: 298.15, concentrations: { A: 1.0 } });
+ *   const result = await box.solve();
  */
 export class MusicBox {
+  constructor() {
+    /** Chemistry time step, in seconds. */
+    this.chemTimeStep = undefined;
+    /** Output time step, in seconds. */
+    this.outputTimeStep = undefined;
+    /** Simulation length, in seconds. */
+    this.simulationLength = undefined;
+    /** Maximum solver substep iterations before solve() throws. */
+    this.maxIterations = 1000;
+
+    // A plain v1 mechanism JSON object, or anything with a getJSON() method (e.g. a musica
+    // Mechanism instance) -- resolved to JSON on demand via _mechanismJSON().
+    this._mechanism = null;
+    this._conditionsManager = new ConditionsManager([]);
+  }
+
   /**
-   * @param {Object} config - music-box v1 JSON config object
+   * Set the mechanism. Chainable.
+   *
+   * @param {{getJSON: () => Object}|Object} mechanism - A musica Mechanism instance (or
+   *   anything with a getJSON() method), or a plain v1 mechanism JSON object.
+   * @returns {MusicBox} this, for chaining
    */
-  constructor(config) {
-    this._config = config;
+  loadMechanism(mechanism) {
+    this._mechanism = mechanism;
+    return this;
+  }
+
+  /**
+   * Set conditions at a specific time. Chainable. See ConditionsManager.setCondition().
+   *
+   * @param {number} t - Simulation time in seconds
+   * @param {Object} [options] - See ConditionsManager.setCondition().
+   * @returns {MusicBox} this, for chaining
+   */
+  setCondition(t, options) {
+    this._conditionsManager.setCondition(t, options);
+    return this;
+  }
+
+  /**
+   * Replace all conditions at once. Chainable.
+   *
+   * @param {ConditionsManager|Object} conditions - A ConditionsManager instance, or a plain
+   *   v1 conditions object ({data: [...]}).
+   * @returns {MusicBox} this, for chaining
+   */
+  loadConditions(conditions) {
+    this._conditionsManager =
+      conditions instanceof ConditionsManager
+        ? conditions
+        : new ConditionsManager(parseConditions(conditions));
+    return this;
   }
 
   /**
@@ -145,7 +202,16 @@ export class MusicBox {
    * @returns {MusicBox}
    */
   static fromJson(jsonObject) {
-    return new MusicBox(jsonObject);
+    const box = new MusicBox();
+    const { chemTimeStep, outputTimeStep, simulationLength, maxIterations } =
+      parseBoxModelOptions(jsonObject);
+    box.chemTimeStep = chemTimeStep;
+    box.outputTimeStep = outputTimeStep;
+    box.simulationLength = simulationLength;
+    box.maxIterations = maxIterations ?? 1000;
+    box._mechanism = jsonObject.mechanism;
+    box._conditionsManager = new ConditionsManager(parseConditions(jsonObject.conditions));
+    return box;
   }
 
   /**
@@ -170,11 +236,22 @@ export class MusicBox {
       const config = await resolveConditionsFilepaths(JSON.parse(text), (relPath) =>
         readFile(resolve(configDir, relPath), 'utf8')
       );
-      return new MusicBox(config);
+      return MusicBox.fromJson(config);
     }
 
     const config = await readConfigFromFile(filePath);
-    return new MusicBox(config);
+    return MusicBox.fromJson(config);
+  }
+
+  /**
+   * The mechanism as plain JSON, freshly resolved (and cloned, if it was already plain JSON)
+   * so callers can safely mutate the result without affecting this instance's state.
+   */
+  _mechanismJSON() {
+    if (typeof this._mechanism?.getJSON === 'function') {
+      return this._mechanism.getJSON();
+    }
+    return structuredClone(this._mechanism);
   }
 
   /**
@@ -182,24 +259,8 @@ export class MusicBox {
    * @returns {Object} a music-box JSON config object
    */
   toJson() {
-    const { chemTimeStep, outputTimeStep, simulationLength, maxIterations } =
-      parseBoxModelOptions(this._config);
-    const grid = this._config['box model options']?.grid ?? 'box';
-
-    const config = {};
-
-    config['box model options'] = {
-      grid,
-      'chemistry time step [sec]': chemTimeStep,
-      'output time step [sec]': outputTimeStep,
-      'simulation length [sec]': simulationLength,
-      'max iterations': maxIterations,
-    };
-
-    // The mechanism is already a plain JSON dict, so just clone it and stamp the version.
-    const mechanism = structuredClone(this._config.mechanism);
+    const mechanism = this._mechanismJSON();
     mechanism.version = '1.0.0';
-    config['mechanism'] = mechanism;
 
     // Lambda reactions are JS-only; Python can't load them. Keep them in the
     // export (they still work if reloaded in JS) but warn that it's not portable.
@@ -216,10 +277,19 @@ export class MusicBox {
       );
     }
 
-    const condsMgr = new ConditionsManager(parseConditions(this._config.conditions));
-    config['conditions'] = condsMgr.toDataBlocks();
-
-    return config;
+    return {
+      'box model options': {
+        // Not a real, settable option -- MusicBox is always a box model. Always "box" here
+        // only because Python's config parser currently requires the key to be present.
+        grid: 'box',
+        'chemistry time step [sec]': this.chemTimeStep,
+        'output time step [sec]': this.outputTimeStep,
+        'simulation length [sec]': this.simulationLength,
+        'max iterations': this.maxIterations,
+      },
+      mechanism,
+      conditions: this._conditionsManager.toDataBlocks(),
+    };
   }
 
   /**
@@ -252,9 +322,9 @@ export class MusicBox {
   async solve() {
     await initModule();
 
-    const { chemTimeStep, outputTimeStep, simulationLength, maxIterations } =
-      parseBoxModelOptions(this._config);
-    const micm = MICM.fromMechanism({ getJSON: () => this._config.mechanism });
+    const { chemTimeStep, outputTimeStep, simulationLength, maxIterations } = this;
+    const mechanism = this._mechanismJSON();
+    const micm = MICM.fromMechanism({ getJSON: () => mechanism });
     const state = micm.createState(1);
     const normalizerState = {
       acceptedRateParamKeys: new Set(Object.keys(state.getUserDefinedRateParameters())),
@@ -262,9 +332,9 @@ export class MusicBox {
     };
 
     try {
-      registerLambdaCallbacks(micm, this._config.mechanism);
+      registerLambdaCallbacks(micm, mechanism);
 
-      const condsMgr = new ConditionsManager(parseConditions(this._config.conditions));
+      const condsMgr = this._conditionsManager;
       // Every time any condition is applied
       const conditionTimes = condsMgr.getTimes();
 
@@ -291,7 +361,7 @@ export class MusicBox {
       }
 
       // Solve the chemistry from currTime to targetTime, in as many solver sub-calls as
-      // the solver needs, and return targetTime. 
+      // the solver needs, and return targetTime.
       function advanceTo(currTime, targetTime) {
         let t = currTime;
         let remaining = targetTime - currTime;
