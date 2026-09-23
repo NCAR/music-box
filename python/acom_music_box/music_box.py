@@ -2,7 +2,9 @@ import musica
 from musica.micm.solver_result import SolverState
 from .conditions_manager import ConditionsManager
 from .model_options import BoxModelOptions
+import bisect
 import json
+import math
 import os
 import atexit
 import pandas as pd
@@ -183,6 +185,11 @@ class MusicBox:
         """
         Solve the box model simulation.
 
+        At each stop, applies the conditions configured at that instant, records
+        output if this is an output boundary, then integrates to whichever is
+        closest: the next output time, the end of the current chemistry-step
+        budget, the next condition change, or the end of the simulation.
+
         Returns:
             pd.DataFrame: Results with columns time.s, ENV.temperature.K,
             ENV.pressure.Pa, ENV.air number density.mol m-3, and
@@ -208,88 +215,76 @@ class MusicBox:
         chem_step_time = self.box_model_options.chem_step_time
         max_iterations = self.box_model_options.max_iterations
 
-        # Get concentration events (times where concentrations are explicitly set)
-        concentration_events = self._conditions_manager.concentration_events
-
-        # Sort concentration event times once for efficient lookup
-        sorted_event_times = sorted(concentration_events.keys())
-        next_event_idx = 0  # Track index of next event to process
+        # Every time any condition is applied
+        condition_times = self._conditions_manager.get_times()
 
         # Get species names for output formatting
         species_names = list(self.state.get_concentrations().keys())
 
-        # Get initial conditions and set them on the state
-        curr_conds = self._conditions_manager.get_conditions_at_time(0.0)
-        self.state.set_conditions(curr_conds["temperature"], curr_conds["pressure"])
-        if 0.0 in concentration_events:
-            self.state.set_concentrations(concentration_events[0.0])
-            # Skip the initial event since we've already processed it
-            if sorted_event_times and sorted_event_times[0] == 0.0:
-                next_event_idx = 1
-        self.state.set_user_defined_rate_parameters(
-            self._normalize_rate_params(curr_conds["rate_parameters"])
-        )
-
-        # Run the simulation, collecting raw output
         curr_time = 0.0
-        next_output_time = curr_time
         output_array = []
 
-        with tqdm(total=simulation_length, desc="Simulation Progress", unit=f" [model integration steps ({chem_step_time} s)]", leave=False) as pbar:
+        with tqdm(total=simulation_length, desc="Simulation Progress", unit=" s", leave=False) as pbar:
             while curr_time <= simulation_length:
-
-                # Collect output if enough time has elapsed
-                if next_output_time <= curr_time:
-                    output_array.append(self._collect_output_row(curr_time))
-                    next_output_time += output_step_time
-
-                    # Bail out mid-loop if we completed the final output step
-                    if next_output_time > simulation_length:
-                        break
-
-                # Apply any concentration events we've crossed
-                while next_event_idx < len(sorted_event_times):
-                    next_event_time = sorted_event_times[next_event_idx]
-                    if next_event_time <= curr_time:
-                        self.state.set_concentrations(concentration_events[next_event_time])
-                        next_event_idx += 1
-                    else:
-                        break  # No more events to process at this time
-
-                # Look up conditions at current time (step interpolation for env/rate params)
+                # Apply conditions
                 curr_conds = self._conditions_manager.get_conditions_at_time(curr_time)
                 self.state.set_conditions(curr_conds["temperature"], curr_conds["pressure"])
                 self.state.set_user_defined_rate_parameters(
                     self._normalize_rate_params(curr_conds["rate_parameters"])
                 )
+                if curr_conds["concentrations"]:
+                    self.state.set_concentrations(curr_conds["concentrations"])
 
-                # Solve for one chemistry step
-                elapsed = 0
-                iteration_count = 0
-                while elapsed < chem_step_time:
-                    iteration_count += 1
-                    if max_iterations is not None and iteration_count > max_iterations:
-                        msg = (
-                            "Solver exceeded maximum substep iterations "
-                            f"({max_iterations}) at time {curr_time:.2f} s. "
-                            "This may indicate non-convergence or overly small steps. "
-                            f"Check the conditions at this time step: {curr_conds}"
-                        )
-                        raise Exception(msg)
-                    remaining_time = chem_step_time - elapsed
-                    result = self.solver.solve(self.state, remaining_time)
-                    elapsed += result.stats.final_time
-                    curr_time += result.stats.final_time
-                    if result.state != SolverState.Converged:
-                        msg = f"Solver failed to converge at time {curr_time:.2f} s with state {result.state}."
-                        msg += "Often this can be caused by reaction rates that are set to zero or are extremely large."
-                        msg += f"Check the conditions at this time step: {curr_conds}"
-                        msg += "Solver stats: " + str(result.stats)
-                        raise Exception(msg)
+                # Record output at every output-step boundary and always at the final time
+                if curr_time % output_step_time == 0 or curr_time == simulation_length:
+                    output_array.append(self._collect_output_row(curr_time))
 
-                pbar.update(elapsed)
+                if curr_time >= simulation_length:
+                    break
+
+                # The next stopping point is whichever boundary is closest: the next
+                # output time, the end of the current chemistry-step budget, the next
+                # condition change, or the end of the simulation.
+                next_output_time = (int(curr_time // output_step_time) + 1) * output_step_time
+                next_chem_boundary = (int(curr_time // chem_step_time) + 1) * chem_step_time
+                cond_idx = bisect.bisect_right(condition_times, curr_time)
+                next_condition_time = condition_times[cond_idx] if cond_idx < len(condition_times) else math.inf
+                target_time = min(next_output_time, next_chem_boundary, next_condition_time, simulation_length)
+
+                curr_time = self._advance_to(curr_time, target_time, max_iterations, curr_conds, pbar)
 
         return self._format_output(output_array, species_names)
+
+    def _advance_to(self, curr_time: float, target_time: float, max_iterations, curr_conds, pbar) -> float:
+        """
+        Solve the chemistry from curr_time to target_time, in as many solver
+        sub-calls as the solver needs, and return target_time.
+        """
+        t = curr_time
+        remaining = target_time - curr_time
+        iteration_count = 0
+        while remaining > 0:
+            iteration_count += 1
+            if max_iterations is not None and iteration_count > max_iterations:
+                msg = (
+                    "Solver exceeded maximum substep iterations "
+                    f"({max_iterations}) at time {t:.2f} s. "
+                    "This may indicate non-convergence or overly small steps. "
+                    f"Check the conditions at this time step: {curr_conds}"
+                )
+                raise Exception(msg)
+            result = self.solver.solve(self.state, remaining)
+            if result.state != SolverState.Converged:
+                msg = f"Solver failed to converge at time {t:.2f} s with state {result.state}."
+                msg += "Often this can be caused by reaction rates that are set to zero or are extremely large."
+                msg += f"Check the conditions at this time step: {curr_conds}"
+                msg += "Solver stats: " + str(result.stats)
+                raise Exception(msg)
+            t += result.stats.final_time
+            remaining -= result.stats.final_time
+
+        pbar.update(target_time - curr_time)
+        return target_time
 
     def _collect_output_row(self, curr_time: float) -> list:
         """

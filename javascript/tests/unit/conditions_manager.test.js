@@ -27,13 +27,13 @@ describe('ConditionsManager constructor', () => {
     assert.equal(mgr.concentrationEvents[0]['O2'], 0.162);
   });
 
-  it('concentration events do not appear in getConditionsAtTime', () => {
+  it('getConditionsAtTime returns concentrations only on an exact time match', () => {
     const mgr = new ConditionsManager([
       { 'time.s': 0, 'CONC.O3.mol m-3': 6.43e-6 },
     ]);
-    const conds = mgr.getConditionsAtTime(0);
-    assert.ok(!('concentrations' in conds), 'concentrations should not be in returned object');
-    assert.ok(!('O3' in conds), 'species should not be in returned object');
+    assert.deepEqual(mgr.getConditionsAtTime(0).concentrations, { O3: 6.43e-6 });
+    // A one-time perturbation, not a held value -- it doesn't carry forward.
+    assert.deepEqual(mgr.getConditionsAtTime(1).concentrations, {});
   });
 
   it('accepts null or empty input gracefully', () => {

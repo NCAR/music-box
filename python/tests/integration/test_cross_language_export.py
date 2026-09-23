@@ -28,6 +28,10 @@ FIXTURES = [
     ),
     ("chapman example", REPO_ROOT / "examples/chapman/my_config.json"),
     ("ts1 example", REPO_ROOT / "examples/ts1/my_config.json"),
+    (
+        "boundary stepping (10s sim, 5s chem step, 3s output step)",
+        REPO_ROOT / "python/tests/integration/configs/boundary_stepping/my_config.json",
+    ),
 ]
 
 
