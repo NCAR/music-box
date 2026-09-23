@@ -1,6 +1,7 @@
 import { initModule, MICM, SolverState } from '@ncar/musica';
 import { parseBoxModelOptions, parseConditions, resolveConditionsFilepaths } from './config_parser.js';
 import { ConditionsManager } from './conditions_manager.js';
+import { BoxModelOptions } from './box_model_options.js';
 import { readConfigFromFile } from './virtual_fs.js';
 
 function evaluateJsLambda(source, reactionName) {
@@ -178,23 +179,35 @@ export class MusicBox {
   }
 
   /**
+   * Create a MusicBox instance by composing music-box/musica builder objects, instead of a
+   * pre-built plain JSON config. This is the entry point for a caller building a config
+   * programmatically -- assembly into the wire-format config happens here, not in the caller.
+   *
+   * @param {Object} parts
+   * @param {BoxModelOptions} parts.boxModelOptions
+   * @param {{getJSON: () => Object}|Object} parts.mechanism - a musica Mechanism instance
+   *   (or already plain JSON, e.g. from an uploaded config)
+   * @param {ConditionsManager|Object} parts.conditions - a ConditionsManager instance (or
+   *   already {data: [...]} JSON)
+   * @returns {MusicBox}
+   */
+  static fromParts({ boxModelOptions, mechanism, conditions }) {
+    const config = {
+      'box model options': boxModelOptions.getJSON(),
+      mechanism: typeof mechanism?.getJSON === 'function' ? mechanism.getJSON() : mechanism,
+      conditions: conditions instanceof ConditionsManager ? conditions.toDataBlocks() : conditions,
+    };
+    return new MusicBox(config);
+  }
+
+  /**
    * Returns a json representation of the box model configuration
    * @returns {Object} a music-box JSON config object
    */
   toJson() {
-    const { chemTimeStep, outputTimeStep, simulationLength, maxIterations } =
-      parseBoxModelOptions(this._config);
-    const grid = this._config['box model options']?.grid ?? 'box';
-
     const config = {};
 
-    config['box model options'] = {
-      grid,
-      'chemistry time step [sec]': chemTimeStep,
-      'output time step [sec]': outputTimeStep,
-      'simulation length [sec]': simulationLength,
-      'max iterations': maxIterations,
-    };
+    config['box model options'] = BoxModelOptions.fromConfig(this._config).getJSON();
 
     // The mechanism is already a plain JSON dict, so just clone it and stamp the version.
     const mechanism = structuredClone(this._config.mechanism);
