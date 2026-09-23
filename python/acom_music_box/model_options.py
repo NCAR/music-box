@@ -85,3 +85,18 @@ class BoxModelOptions:
         max_iterations = config_JSON['box model options'].get('max iterations', 1000)
 
         return cls(chem_step_time, output_step_time, simulation_length, grid, max_iterations)
+
+    def serialize(self) -> dict:
+        """
+        Serialize to the v1 'box model options' wire format (all times in seconds).
+
+        Returns:
+            dict: A v1 'box model options' JSON object.
+        """
+        return {
+            'grid': self.grid,
+            'chemistry time step [sec]': self.chem_step_time,
+            'output time step [sec]': self.output_step_time,
+            'simulation length [sec]': self.simulation_length,
+            'max iterations': self.max_iterations,
+        }

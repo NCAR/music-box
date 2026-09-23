@@ -448,13 +448,7 @@ class MusicBox:
         config = {}
 
         # Box model options (all times in seconds for unambiguous round-trip)
-        config['box model options'] = {
-            'grid': self.box_model_options.grid,
-            'chemistry time step [sec]': self.box_model_options.chem_step_time,
-            'output time step [sec]': self.box_model_options.output_step_time,
-            'simulation length [sec]': self.box_model_options.simulation_length,
-            'max iterations': self.box_model_options.max_iterations,
-        }
+        config['box model options'] = self.box_model_options.serialize()
 
         # Mechanism — musica serialize() returns a v1-compatible dict
         mech_dict = self.mechanism.serialize()
