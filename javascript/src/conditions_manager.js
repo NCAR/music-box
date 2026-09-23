@@ -155,7 +155,7 @@ export class ConditionsManager {
   /**
    * Sets the conditions at a specific time, creating a new time point. Chainable. Lets a
    * caller build up conditions programmatically instead of assembling {headers, rows} data
-   * blocks by hand -- call toDataBlocks() afterward to get the wire format.
+   * blocks by hand -- call toDataBlocks() afterward to build those blocks.
    *
    * @param {number} t - Simulation time in seconds
    * @param {Object} [options]
@@ -197,9 +197,9 @@ export class ConditionsManager {
   }
 
   /**
-   * Serializes the current conditions back into the v1 wire format: one {headers, rows} data
-   * block per configured time. Used by MusicBox.toJson(), and by any caller that built
-   * conditions with setCondition() and now needs the wire format.
+   * Builds one {headers, rows} data block per configured time -- the format the v1 config's
+   * conditions.data uses. Used by MusicBox.toJson(), and by any caller that built conditions
+   * with setCondition() and now needs that format.
    *
    * @returns {{ data: Array<{headers: string[], rows: number[][]}> }}
    */
