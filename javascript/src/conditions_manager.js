@@ -155,7 +155,7 @@ export class ConditionsManager {
   /**
    * Sets the conditions at a specific time, creating a new time point. Chainable. Lets a
    * caller build up conditions programmatically instead of assembling {headers, rows} data
-   * blocks by hand -- call toDataBlocks() afterward to build those blocks.
+   * blocks by hand.
    *
    * @param {number} t - Simulation time in seconds
    * @param {Object} [options]
