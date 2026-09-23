@@ -62,6 +62,10 @@ const FIXTURES = [
   },
   { name: 'chapman example', path: join(REPO_ROOT, 'examples/chapman/my_config.json') },
   { name: 'ts1 example', path: join(REPO_ROOT, 'examples/ts1/my_config.json') },
+  {
+    name: 'boundary stepping (10s sim, 5s chem step, 3s output step)',
+    path: join(REPO_ROOT, 'python/tests/integration/configs/boundary_stepping/my_config.json'),
+  },
 ];
 
 describe('Cross-language parity: JS export -> Python reload', () => {

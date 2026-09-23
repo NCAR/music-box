@@ -105,6 +105,25 @@ function normalizeRateParamsForSolver(rateParams, normalizerState) {
 }
 
 /**
+ * The smallest value in a sorted array that is strictly greater than `value`,
+ * or Infinity if there is none
+ *
+ * @param {number[]} sortedValues
+ * @param {number} value
+ * @returns {number}
+ */
+function bisectRight(sortedValues, value) {
+  let lo = 0;
+  let hi = sortedValues.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (sortedValues[mid] <= value) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo < sortedValues.length ? sortedValues[lo] : Infinity;
+}
+
+/**
  * JavaScript implementation of the music-box atmospheric chemistry box model.
  *
  * Accepts the same music-box v1 JSON config format as the Python implementation.
@@ -224,10 +243,6 @@ export class MusicBox {
   /**
    * Run the chemistry simulation.
    *
-   * Mirrors the Python solve() loop:
-   *   1. Apply concentration events at t=0
-   *   2. Main loop: apply concentration events at current time, update env/rates, integrate
-   *
    * @returns {Promise<{columns: string[], height: number, data: Object.<string, number[]>}>}
    *   Result with a `columns` array of column names, `height` (number of rows), and
    *   `data` object mapping each column name to its array of values. Columns are
@@ -250,30 +265,8 @@ export class MusicBox {
       registerLambdaCallbacks(micm, this._config.mechanism);
 
       const condsMgr = new ConditionsManager(parseConditions(this._config.conditions));
-      // Build sorted list of concentration event times (mirrors Python's sorted_event_times)
-      const concentrationEvents = condsMgr.concentrationEvents;
-      const sortedEventTimes = Object.keys(concentrationEvents)
-        .map(Number)
-        .sort((a, b) => a - b);
-      let nextEventIdx = 0;
-
-      // Set initial conditions
-      const t0 = condsMgr.getConditionsAtTime(0);
-      state.setConditions({
-        temperatures: t0.temperature,
-        pressures: t0.pressure,
-        airDensities: t0.airDensity,
-      });
-
-      // Apply concentration event at t=0 if present
-      if (nextEventIdx < sortedEventTimes.length && sortedEventTimes[nextEventIdx] === 0) {
-        state.setConcentrations(concentrationEvents[0]);
-        nextEventIdx++;
-      }
-
-      state.setUserDefinedRateParameters(
-        normalizeRateParamsForSolver(t0.rateParams || {}, normalizerState)
-      );
+      // Every time any condition is applied
+      const conditionTimes = condsMgr.getTimes();
 
       // Collect output as column arrays for efficient DataFrame construction
       const columns = {
@@ -297,31 +290,37 @@ export class MusicBox {
         }
       }
 
-      let currTime = 0;
-      let nextOutputTime = 0;
-
-      outer: while (currTime <= simulationLength) {
-        // Collect output at all configured output times that have been reached
-        while (nextOutputTime <= currTime) {
-          appendOutput(currTime);
-          nextOutputTime += outputTimeStep;
-
-          // Bail out once we've emitted the last requested output timestamp.
-          if (nextOutputTime > simulationLength) {
-            break outer;
+      // Solve the chemistry from currTime to targetTime, in as many solver sub-calls as
+      // the solver needs, and return targetTime. 
+      function advanceTo(currTime, targetTime) {
+        let t = currTime;
+        let remaining = targetTime - currTime;
+        let iters = 0;
+        while (remaining > 0) {
+          if (maxIterations !== null && ++iters > maxIterations) {
+            throw new Error(
+              `Solver exceeded maximum substep iterations (${maxIterations}) at time ${t.toFixed(2)} s`
+            );
           }
-        }
 
-        // Apply any concentration events at or before current time
-        while (
-          nextEventIdx < sortedEventTimes.length &&
-          sortedEventTimes[nextEventIdx] <= currTime
-        ) {
-          state.setConcentrations(concentrationEvents[sortedEventTimes[nextEventIdx]]);
-          nextEventIdx++;
-        }
+          const result = micm.solve(state, remaining);
 
-        // Update environment and rate parameters at current time
+          if (result.state !== SolverState.Converged) {
+            throw new Error(
+              `Solver failed to converge at time ${t.toFixed(2)} s with state ${result.state}`
+            );
+          }
+
+          t += result.stats.final_time;
+          remaining -= result.stats.final_time;
+        }
+        return targetTime;
+      }
+
+      let currTime = 0;
+
+      while (currTime <= simulationLength) {
+        // Apply conditions
         const conds = condsMgr.getConditionsAtTime(currTime);
         state.setConditions({
           temperatures: conds.temperature,
@@ -331,29 +330,26 @@ export class MusicBox {
         state.setUserDefinedRateParameters(
           normalizeRateParamsForSolver(conds.rateParams || {}, normalizerState)
         );
-
-        // Integrate one chemistry step (may require multiple sub-steps)
-        let elapsed = 0;
-        let iters = 0;
-        while (elapsed < chemTimeStep) {
-          if (maxIterations !== null && ++iters > maxIterations) {
-            throw new Error(
-              `Solver exceeded maximum substep iterations (${maxIterations}) at time ${currTime.toFixed(2)} s`
-            );
-          }
-
-          const result = micm.solve(state, chemTimeStep - elapsed);
-
-          if (result.state !== SolverState.Converged) {
-            throw new Error(
-              `Solver failed to converge at time ${currTime.toFixed(2)} s with state ${result.state}`
-            );
-          }
-
-          elapsed += result.stats.final_time;
-          currTime += result.stats.final_time;
-
+        if (Object.keys(conds.concentrations).length > 0) {
+          state.setConcentrations(conds.concentrations);
         }
+
+        // Record output at every output-step boundary and always at the final time
+        if (currTime % outputTimeStep === 0 || currTime === simulationLength) {
+          appendOutput(currTime);
+        }
+
+        if (currTime >= simulationLength) break;
+
+        // The next stopping point is whichever boundary is closest: the next output
+        // time, the end of the current chemistry-step budget, the next condition
+        // change, or the end of the simulation.
+        const nextOutputTime = (Math.floor(currTime / outputTimeStep) + 1) * outputTimeStep;
+        const nextChemBoundary = (Math.floor(currTime / chemTimeStep) + 1) * chemTimeStep;
+        const nextConditionTime = bisectRight(conditionTimes, currTime);
+        const targetTime = Math.min(nextOutputTime, nextChemBoundary, nextConditionTime, simulationLength);
+
+        currTime = advanceTo(currTime, targetTime);
       }
 
       return { columns: Object.keys(columns), height: columns['time.s'].length, data: columns };

@@ -8,7 +8,7 @@ const RATE_PARAM_PREFIXES = new Set(['PHOTO', 'EMIS', 'LOSS', 'USER', 'SURF']);
  *   "PHOTO.O2_1.s-1" → "PHOTO.O2_1"
  *
  * For SURF parameters, preserve the property segment and express the unit
- * in brackets to mirror the Python solver normalization:
+ * in brackets, since the solver identifies SURF rate params by that form:
  *   "SURF.usr_NO2_aer.effective radius.m" → "SURF.usr_NO2_aer.effective radius [m]"
  */
 function stripUnit(key) {
@@ -46,7 +46,7 @@ function stripUnit(key) {
  *     { "time.s": 3600, "PHOTO.O2_1.s-1": 1.12e-13 }
  *   ]
  *
- * Column semantics (mirrors Python ConditionsManager):
+ * Column semantics:
  *   ENV.temperature.K              -> temperature (K), step-interpolated
  *   ENV.pressure.Pa                -> pressure (Pa), step-interpolated
  *   ENV.air number density.mol m-3 -> air number density (mol/m³), step-interpolated;
@@ -65,7 +65,7 @@ export class ConditionsManager {
     // [{t, temp, pressure, airDensity, rateParams, rawRateParams}] — for step interpolation
     this._timePoints = [];
 
-    // {t: {species: value}} — applied at exact time only (mirrors Python concentration_events)
+    // {t: {species: value}} — a one-time perturbation applied at exact time, not interpolated
     this._concentrationEvents = {};
 
     // Track the most recently seen env/rate values per time for duplicate detection, across
@@ -153,10 +153,9 @@ export class ConditionsManager {
   }
 
   /**
-   * Sets the conditions at a specific time, creating a new time point. Chainable, mirroring
-   * Python's ConditionsManager.set_condition(). Lets a caller build up conditions
-   * programmatically instead of assembling {headers, rows} data blocks by hand -- call
-   * toDataBlocks() afterward to get the wire format.
+   * Sets the conditions at a specific time, creating a new time point. Chainable. Lets a
+   * caller build up conditions programmatically instead of assembling {headers, rows} data
+   * blocks by hand -- call toDataBlocks() afterward to get the wire format.
    *
    * @param {number} t - Simulation time in seconds
    * @param {Object} [options]
@@ -244,7 +243,6 @@ export class ConditionsManager {
 
   /**
    * Concentration events dict: {time: {species: value}}.
-   * Mirrors Python's concentration_events property.
    * @returns {Object}
    */
   get concentrationEvents() {
@@ -312,8 +310,12 @@ export class ConditionsManager {
    * from its time point onward; if it's never set, the caller (state.setConditions) falls
    * back to the ideal gas law.
    *
+   * concentrations is only populated on an exact match -- unlike temperature/pressure/
+   * rateParams, a concentration is a one-time perturbation applied at its own time, not
+   * a held value.
+   *
    * @param {number} t - Simulation time in seconds
-   * @returns {{ temperature: number, pressure: number, airDensity: number|null, rateParams: Object }}
+   * @returns {{ temperature: number, pressure: number, airDensity: number|null, rateParams: Object, concentrations: Object }}
    */
   getConditionsAtTime(t) {
     let temperature = this._defaultTemp;
@@ -332,6 +334,6 @@ export class ConditionsManager {
       }
     }
 
-    return { temperature, pressure, airDensity, rateParams };
+    return { temperature, pressure, airDensity, rateParams, concentrations: this._concentrationEvents[t] || {} };
   }
 }
