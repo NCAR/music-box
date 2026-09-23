@@ -181,6 +181,21 @@ export class MusicBox {
   }
 
   /**
+   * Replace all conditions at once. Chainable.
+   *
+   * @param {ConditionsManager|Object} conditions - A ConditionsManager instance, or a plain
+   *   v1 conditions object ({data: [...]}).
+   * @returns {MusicBox} this, for chaining
+   */
+  loadConditions(conditions) {
+    this._conditionsManager =
+      conditions instanceof ConditionsManager
+        ? conditions
+        : new ConditionsManager(parseConditions(conditions));
+    return this;
+  }
+
+  /**
    * Create a MusicBox instance from a plain JSON object.
    *
    * @param {Object} jsonObject - music-box v1 config object

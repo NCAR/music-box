@@ -107,6 +107,23 @@ describe('MusicBox built up programmatically', () => {
     assert.deepEqual(box._mechanismJSON(), config.mechanism);
   });
 
+  it('loadConditions() accepts a ConditionsManager instance', () => {
+    const config = loadEveryOptionConfig();
+    const manager = new ConditionsManager(parseConditions(config.conditions));
+
+    const box = new MusicBox().loadConditions(manager);
+    assert.strictEqual(box._conditionsManager, manager);
+  });
+
+  it('loadConditions() accepts a plain conditions object', async () => {
+    const config = loadEveryOptionConfig();
+
+    const box = MusicBox.fromJson(config);
+    box.loadConditions(config.conditions);
+
+    assert.deepEqual(await box.solve(), await MusicBox.fromJson(config).solve());
+  });
+
   it('always serializes grid as "box", regardless of what was loaded', () => {
     const config = loadEveryOptionConfig();
     config['box model options'].grid = 'not-a-real-grid-type';
