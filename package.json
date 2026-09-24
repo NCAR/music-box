@@ -48,7 +48,7 @@
     "test:coverage": "c8 node --test javascript/tests/unit/*.test.js javascript/tests/integration/*.test.js"
   },
   "dependencies": {
-    "@ncar/musica": "github:NCAR/musica#6f91565f06ca4722dfc1a9bad5b92bd31337cd43"
+    "@ncar/musica": "github:NCAR/musica#f195895f96e4cd80be6bc6eaa775c85823595629"
   },
   "devDependencies": {
     "c8": "^10.1.3",
