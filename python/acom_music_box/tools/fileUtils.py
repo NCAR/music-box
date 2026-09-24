@@ -84,9 +84,9 @@ class WRF_Chem_File(Model_File):
 # That is why we don't glob() on *.nc as of May 18, 2026.
 # We can tolerate README.txt files in the same directory.
 # modelDir = scan this directory
-# modelClass = class of model (WACCM or WRF-Chem) expected in this directory
-# return list of populated modelClass objects
-def collectFilesDates(modelDir, modelClass):
+# fileClass = class of model output (WACCM or WRF-Chem) expected in this directory
+# return list of populated fileClass objects
+def collectFilesDates(modelDir, fileClass):
     # retrieve filenames
     dirFiles = [f for f in pathlib.Path(modelDir).iterdir() if f.is_file()]
     logger.debug(f"dirFiles = {dirFiles}")
@@ -95,7 +95,7 @@ def collectFilesDates(modelDir, modelClass):
     # This first list might not be all NetCDF files.
     maybeFiles = []
     for dirFile in dirFiles:
-        myModelFile = modelClass(dirFile)
+        myModelFile = fileClass(dirFile)
         maybeFiles.append(myModelFile)
 
     # extract the date and time
@@ -117,7 +117,7 @@ def collectFilesDates(modelDir, modelClass):
             logger.debug(f"Cannot open {filename} because {oops}.")
 
         except KeyError as oops:
-            logger.warning(f"Cannot find expected date-time in {filename} as {modelClass.modelType} model output."
+            logger.warning(f"Cannot find expected date-time in {filename} as {fileClass.modelType} model output."
                            + " Wrong model specified?")
             logger.debug(f"Cannot get date-time for {filename} because {oops}.")
 

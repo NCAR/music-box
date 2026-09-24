@@ -66,6 +66,18 @@ class WACCM_Model(Base_Model):
     def calcDerivedVar(self, columnVars, varToDerive):
         logger.debug(f"columnVars = {columnVars}   varToDerive = {varToDerive}")
 
+        # set up default error values in case variable name not known
+        units = "None"
+        verticalMean = 0.0
+        foundVariable = False
+
+        varNameOnly = varToDerive.replace("derived", "").replace(" ", "")
+
+        if not foundVariable:
+            logger.warning(f"Requested variable name {varNameOnly} not found in calcDerivedVar().")
+
+        return (varToDerive, units, [verticalMean])
+
 
 class WRF_Chem_Model(Base_Model):
     modelType = fileUtils.WRF_Chem_File.modelType

@@ -14,10 +14,11 @@ logger = logging.getLogger(__name__)
 
 # Build and return dictionary of WACCM variable names
 # and their MusicBox equivalents.
+# myFileClass = what kind of model output was read
 # waccmSpecies = list of variable names in the WACCM model output
 # musicaSpecies = list of variable names in species.json
 # return ordered dictionary
-def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
+def getMusicaDictionary(myFileClass, waccmSpecies=None, musicaSpecies=None):
     if ((waccmSpecies is None) or (musicaSpecies is None)):
         logger.warning("No species map found for WACCM or MUSICA.")
 
@@ -46,19 +47,21 @@ def getMusicaDictionary(modelType, waccmSpecies=None, musicaSpecies=None):
     if (len(musicaOnly) > 0):
         logger.info(f"The following chemical species are only in MUSICA: {musicaOnly}")
 
+    varMap = {}     # in case neither myFileClass matches
+
     # build the dictionary
     # To do: As of September 4, 2024 this is not much of a map,
     # as most of the entries are identical. We may map additional
     # pairs in the future. This map is still useful in identifying
     # the common species between WACCM and MUSICA.
-    if (modelType == fileUtils.WACCM_File):
+    if (myFileClass == fileUtils.WACCM_File):
         varMap = {
             # WACCM variable: MusicBox equivalent
             "T": "temperature",
-            "lev": "pressure",       # sigma pressure coordinates
+            "Pressure derived": "pressure",         # is derived variable
             "O3": "O3"
         }
-    elif (modelType == fileUtils.WRF_Chem_File):
+    elif (myFileClass == fileUtils.WRF_Chem_File):
         varMap = {
             # WRF-Chem variable: MusicBox equivalent
             "Temperature derived": "temperature",   # is derived variable

@@ -217,17 +217,28 @@ def removeStringVars(myDataset):
     return numericDataset
 
 
+kGeopotentialKeyword = "PHIS"
 kWaccmGravity = 9.80616     # m/s²; slighty different from international g
 
 # Calculate the terrain height HGT from a dataset that is known to be WACCM.
 # myTopoFile = topography file from WACCM, containing PHIS
+#       This can also be a WACCM output file containing Z3 (less accurate).
 # return DataArray of terrain height in meters
 def deriveHeight(myTopoFile):
     topoSet = xarray.open_dataset(myTopoFile)
-    topoHgt = copy.deepcopy(topoSet["PHIS"])
-    topoHgt /= kWaccmGravity
-    topoHgt.name = kTerrainHeight
-    logger.debug(f"WACCM calculated terrainVar {kTerrainHeight} = {topoHgt}")
+    topoHgt = None
+
+    if (kGeopotentialKeyword in topoSet):
+        topoHgt = copy.deepcopy(topoSet["PHIS"])
+        topoHgt /= kWaccmGravity
+        topoHgt.name = kTerrainHeight
+        logger.debug(f"WACCM calculated terrainVar {kTerrainHeight} = {topoHgt}")
+
+    else:
+        # use the surface model level Z3 as an approximation
+        topoHgt = copy.deepcopy(topoSet["Z3"][0][-1])
+        topoHgt.name = kTerrainHeight
+        logger.debug(f"WACCM approximate terrainVar {kTerrainHeight} = {topoHgt}")
 
     return topoHgt
 
@@ -244,6 +255,8 @@ def deriveHeight(myTopoFile):
 # return pointers to height vars in myDataset, or wavy surfaces created here
 def loadHeightVars(altParams, altBase, myDataset):
     heightVars = [None, None]
+
+    terrainVar = None
     terrainVar = myDataset[kTerrainHeight]      # used for reference and values
     logger.debug(f"terrainVar = {terrainVar}")
 
@@ -252,8 +265,8 @@ def loadHeightVars(altParams, altBase, myDataset):
 
         altParamSpec = altParams[hi]
         if isNumber(altParamSpec):
-            # create a flat surface at requested height
-            heightVars[hi] = copy.deepcopy(terrainVar)
+            # create a flat surface at the requested height
+            heightVars[hi] = copy.deepcopy(terrainVar)      # bogus - use dimensions from myDataset instead
             heightVars[hi][:] = altParamSpec
             addTerrain = (altBase == kGroundKeyword)
 
@@ -283,7 +296,7 @@ def loadHeightVars(altParams, altBase, myDataset):
     return heightVars
 
 
-kPressureKey = "lev"
+kHeightKey = "Z3"
 
 # Truncate columns in the grid at variable levels like PBLH.
 # The truncation could happen at both ends of the column.
@@ -292,11 +305,8 @@ kPressureKey = "lev"
 # altitudeBase = kSeaLevelKeyword or kGroundKeyword
 # return grid dataset with same lat-lon size but columns are shorter
 def cutOffColumns(mySubGrid, altitudePair, altitudeBase):
-    mySubPressure = mySubGrid[kPressureKey].data                   # units are hPa
-    mySubHeights = numpy.zeros(len(mySubPressure))
-    for pi in range(len(mySubPressure)):
-        mySubHeights[pi] = pressureToAltitude(mySubPressure[pi])      # units are meters
-    logger.debug(f"mySubHeights = {mySubHeights} meters")
+    myHeights = mySubGrid[kHeightKey]
+    logger.debug(f"myHeights = {myHeights}")
 
     # load PBLH here if requested as some altitude bound
     heightVars = loadHeightVars(altitudePair, altitudeBase, mySubGrid)    # meters
@@ -309,6 +319,9 @@ def cutOffColumns(mySubGrid, altitudePair, altitudeBase):
     singlePoints = []
     for lati in range(mySubGrid.sizes["lat"]):
         for loni in range(mySubGrid.sizes["lon"]):
+
+            # get the heights for this one column
+            mySubHeights = myHeights.data[:, lati, loni]                   # units are meters
 
             # retrieve the PBLH at this grid cell
             for pi in range(0, 2):
@@ -343,17 +356,17 @@ def cutOffColumns(mySubGrid, altitudePair, altitudeBase):
             singlePoint = removeStringVars(singlePoint)
             logger.debug(f"Numeric singlePoint = {singlePoint}")
 
-            # capture the pressure because vertical coordinate will get removed
-            myLev = singlePoint[kPressureKey]
-            logger.debug(f"Captured myLev = {myLev}")
+            # capture the height because vertical coordinate will get removed
+            myHeight = singlePoint[kHeightKey]
+            logger.debug(f"Captured myHeight = {myHeight}")
 
             # calculate variable means for the column
             singlePoint = singlePoint.mean(skipna=True, keep_attrs=True)   # take mean within sub-column
             logger.debug(f"Mean singlePoint = {singlePoint}")
 
-            # restore the pressure
-            singlePoint[kPressureKey] = myLev.mean()    # mean() preserves the attributes
-            logger.debug(f"Mean singlePoint with pressure restored = {singlePoint}")
+            # restore the height
+            singlePoint[kHeightKey] = myHeight.mean()    # mean() preserves the attributes
+            logger.debug(f"Mean singlePoint with height restored = {singlePoint}")
 
             singlePoints.append(singlePoint)
 
@@ -397,59 +410,14 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair,
     logger.info(f"latTicks = {latTicks}")
     logger.info(f"lonTicks = {lonTicks}")
 
-    # determine the pressure levels
-    pressPair = [None, None]
-    fixedHeight = True
-    for pi in range(0, 2):
-        if isNumber(altPair[pi]):
-            pressPair[pi] = altitudeToPressure(altPair[pi])
-        elif (altPair[pi].lower() == kSurfaceKeyword):
-            pressPair[pi] = kSurfaceKeyword
-        else:
-            # handle PBLH here; cut off the columns later
-            if (pi == 0):
-                pressPair[pi] = kSurfaceKeyword
-            else:
-                pressPair[pi] = 0.0     # pressure at top of atmosphere
-            fixedHeight = False
-
-    logger.info(f"Requesting pressure range {pressPair[0]} to {pressPair[1]} hPa")
-
-    # look up pressure levels to get the pressure indexes
-    pressLevels = gridDataset[kPressureKey].data
-    logger.debug(f"pressLevels = {pressLevels}")
-    pressIndexPair = [0, 0]
-    for pi in range(0, 2):
-        # WACCM uses pressure coordinates from top of atmosphere down to surface,
-        # and the user probably specifies from lower altitude to higher.
-        dummy, pressIndexPair[1 - pi] = findNearestAltitude(
-            pressLevels, pressPair[pi], reversed=True)     # reverse the index bounds
-        logger.debug(f"nearest = {dummy} at index {pressIndexPair[1-pi]}")
-    logger.info(f"Pressure indexes are {pressIndexPair[0]} through {pressIndexPair[1]}")
-
-    # check for no requested values within range of the column
-    withinRange = True
-    if isNumber(pressPair[0]):
-        if (pressPair[0] < pressLevels[0]):
-            withinRange = False
-    if isNumber(pressPair[1]):
-        if (pressPair[1] > pressLevels[-1]):
-            withinRange = False
-    if not withinRange:
-        floatColumn = [pressLevels[-1].item(), pressLevels[0].item()]
-        logger.warning(f"Altitude range {pressPair} hPa is outside the vertical column {floatColumn}")
-        return None
-
     # check for reversed altitude bounds
-    if (pressIndexPair[0] > pressIndexPair[1]):
-        logger.error("Altitude bounds are inverted. Please specify lower,upper instead.")
-        return None
+    if (isNumber(altPair[0]) and isNumber(altPair[1])):
+        if (altPair[0] > altPair[1]):
+            logger.error("Altitude bounds are inverted. Please specify lower,upper instead.")
+            return None
 
-    # select the entire rectanglar region
-    cutPressLevels = pressLevels[pressIndexPair[0]: pressIndexPair[1] + 1]
-    logger.debug(f"Selecting lev = {cutPressLevels}")
+    # select the entire rectanglar region by lat-lon
     gridBox = gridDataset.sel(lat=latTicks, lon=lonTicks,
-                              lev=cutPressLevels,
                               time=whenStr, method="nearest")
     gridDims = ["lat", "lon"]
     logger.debug(f"gridBox = {gridBox}")
@@ -457,11 +425,10 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair,
     # cannot take the mean() of strings, so remove them
     gridBox = removeStringVars(gridBox)
 
-    if not fixedHeight:
-        # if height bounds are not fixed, then cut off individual columns
-        logger.info(f"Cutting off columns at {altPair}.")
-        gridBox = cutOffColumns(gridBox, altPair, altBase)
-        gridDims = ["point_index"]
+    # cut off the individual columns on both ends
+    logger.info(f"Cutting off columns at {altPair}.")
+    gridBox = cutOffColumns(gridBox, altPair, altBase)
+    gridDims = ["point_index"]
 
     logger.debug(f"WACCM gridBox = {gridBox}")
     meanPoint = gridBox.mean(dim=gridDims, keep_attrs=True)
