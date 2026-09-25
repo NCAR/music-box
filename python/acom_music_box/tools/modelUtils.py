@@ -72,6 +72,20 @@ class WACCM_Model(Base_Model):
         foundVariable = False
 
         varNameOnly = varToDerive.replace("derived", "").replace(" ", "")
+        if (varNameOnly.lower() == "pressure"):
+            p0SinglePoint = columnVars["P0"]        # WACCM: reference pressure (Pa)
+            psSinglePoint = columnVars["PS"]        # WACCM: surface pressure (Pa)
+            hyamSinglePoint = columnVars["hyam"]    # WACCM: hybrid A coefficient at layer midpoints
+            hybmSinglePoint = columnVars["hybm"]    # WACCM: hybrid B coefficient at layer midpoints
+            logger.debug(f"psSinglePoint = {psSinglePoint}")
+            logger.debug(f"hyamSinglePoint = {hyamSinglePoint}")
+
+            # calculate the actual atmospheric pressure (Pa)
+            pressureSinglePoint = p0SinglePoint * hyamSinglePoint + psSinglePoint * hybmSinglePoint
+            logger.debug(f"pressureSinglePoint = {pressureSinglePoint}")
+            units = p0SinglePoint.units      # should be Pa
+            verticalMean = float(pressureSinglePoint.values.mean())
+            foundVariable = True
 
         if not foundVariable:
             logger.warning(f"Requested variable name {varNameOnly} not found in calcDerivedVar().")

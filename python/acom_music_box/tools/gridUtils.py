@@ -236,6 +236,7 @@ def deriveHeight(myTopoFile):
 
     else:
         # use the surface model level Z3 as an approximation
+        # Consider subtracting 50 meters to reach the actual ground level.
         topoHgt = copy.deepcopy(topoSet["Z3"][0][-1])
         topoHgt.name = kTerrainHeight
         logger.debug(f"WACCM approximate terrainVar {kTerrainHeight} = {topoHgt}")
@@ -266,7 +267,7 @@ def loadHeightVars(altParams, altBase, myDataset):
         altParamSpec = altParams[hi]
         if isNumber(altParamSpec):
             # create a flat surface at the requested height
-            heightVars[hi] = copy.deepcopy(terrainVar)      # bogus - use dimensions from myDataset instead
+            heightVars[hi] = copy.deepcopy(terrainVar)
             heightVars[hi][:] = altParamSpec
             addTerrain = (altBase == kGroundKeyword)
 

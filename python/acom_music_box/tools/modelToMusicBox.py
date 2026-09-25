@@ -255,56 +255,6 @@ def addDerivedComponents(varDictionary, modelInstance):
     return (varDictionary, addedVars)
 
 
-# Calculated derived variable from component native species.
-# columnVars = xarray.Dataset; multiple variable horizontal means
-#       at a single lat-lon point, at many vertical levels
-# varToDerive = name of the non-native chemical to calculate
-# return tuple of (waccmVarName, units, [verticalMean])
-def calcDerivedVarBogus(columnVars, varToDerive):
-    logger.debug(f"columnVars = {columnVars}   varToDerive = {varToDerive}")
-
-    # set up default error values in case variable name not known
-    units = "None"
-    verticalMean = 0.0
-    foundVariable = False
-
-    varNameOnly = varToDerive.replace("derived", "").replace(" ", "")
-    if (varNameOnly.lower() == "pressure"):
-        pSinglePoint = columnVars["P"]      # WRF-Chem: perturbation pressure (Pa)
-        pbSinglePoint = columnVars["PB"]    # WRF-Chem: base state pressure (Pa)
-
-        pressureSinglePoint = pSinglePoint + pbSinglePoint  # actual atmospheric pressure (Pa)
-        units = pSinglePoint.units      # should be Pa
-        verticalMean = float(pressureSinglePoint.values.mean())
-        foundVariable = True
-
-    if (varNameOnly.lower() == "temperature"):
-        tSinglePoint = columnVars["T"]      # WRF-Chem: perturbation potential temperature theta-t0
-        pSinglePoint = columnVars["P"]      # WRF-Chem: perturbation pressure (Pa)
-        pbSinglePoint = columnVars["PB"]    # WRF-Chem: base state pressure (Pa)
-
-        theta0 = 300.0  # WRF baseline constant potential temperature (K)
-        tSinglePoint += theta0  # actual potential temperature (K)
-
-        P1000MB = 100000.0      # sea level pressure in Pascals
-        RD = 287.0              # specific gas constant R for dry air J/(kg K)
-        CP = 1004.50            # heat capacity of dry air J/(kg K) at constant pressure
-
-        # Perform the numeric calculation; convert potential temperature to actual temperature.
-        # see fortran/wrf_user.f90 SUBROUTINE DCOMPUTETK(tk, pressure, theta, nx)
-        pressureSinglePoint = pSinglePoint + pbSinglePoint  # actual atmospheric pressure (Pa)
-        temperatureSinglePoint = ((pressureSinglePoint / P1000MB) ** (RD / CP)) * tSinglePoint
-
-        units = tSinglePoint.units  # should be K
-        verticalMean = float(temperatureSinglePoint.values.mean())
-        foundVariable = True
-
-    if not foundVariable:
-        logger.warning(f"Requested variable name {varNameOnly} not found in calcDerivedVar().")
-
-    return (varToDerive, units, [verticalMean])
-
-
 # Read array values at a single lat-lon-time point.
 # waccmMusicaDict = mapping from WACCM names to MusicBox
 # latitudes, longitudes = geo-coordinates of retrieval point(s)
