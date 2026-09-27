@@ -322,7 +322,7 @@ def cutOffColumns(mySubGrid, altitudePair, altitudeBase):
         for loni in range(mySubGrid.sizes["lon"]):
 
             # get the heights for this one column
-            mySubHeights = myHeights.data[:, lati, loni]                   # units are meters
+            myColumnHeights = myHeights.data[:, lati, loni]                   # units are meters
 
             # retrieve the PBLH at this grid cell
             for pi in range(0, 2):
@@ -333,24 +333,18 @@ def cutOffColumns(mySubGrid, altitudePair, altitudeBase):
             logger.debug(f"heightPair at {lati}, {loni} = {heightPair}")
 
             # set up the height bounds for this column
-            heightIndexPair = [0, 0]
-            for pi in range(0, 2):
-                # WACCM uses pressure coordinates from top of atmosphere down to surface,
-                # and the user probably specifies from lower altitude to higher.
-                dummy, heightIndexPair[1 - pi] = findNearestAltitude(
-                    mySubHeights, heightPair[pi], reversed=True)     # reverse the index bounds
-            logger.debug(f"Height indexes are {heightIndexPair[0]} through {heightIndexPair[1]}")
+            heightIndexes = getSubColumn(myColumnHeights, heightPair, reversed=True)
+            logger.debug(f"Height indexes are {heightIndexes}")
 
             # check for variable surfaces that are locally inverted at this grid point
-            if (heightIndexPair[0] > heightIndexPair[1]):
+            if (len(heightIndexes) == 0):
                 # since lower bound > upper bound at this point, don't include anything
-                logger.info(f"Local surface inversion; skipping this grid point: {heightPair}")
+                logger.info(f"\tNo model level within those height bounds: {heightPair}")
                 continue
 
             # select only the sub-column
             singlePoint = mySubGrid.isel(
-                lev=range(heightIndexPair[0], heightIndexPair[1] + 1),
-                lat=lati, lon=loni)
+                lev=heightIndexes, lat=lati, lon=loni)
             logger.debug(f"cutOff singlePoint = {singlePoint}")
 
             # remove string variables for numeric calculation
@@ -370,6 +364,10 @@ def cutOffColumns(mySubGrid, altitudePair, altitudeBase):
             logger.debug(f"Mean singlePoint with height restored = {singlePoint}")
 
             singlePoints.append(singlePoint)
+
+    if (len(singlePoints) <= 0):
+        logger.warning("No grid points found within your lat-lon and altitude bounds.")
+        return None
 
     logger.info(f"Combining {len(singlePoints)} cutoff points into a single set...")
     pointDimension = "point_index"
@@ -429,9 +427,11 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair,
     # cut off the individual columns on both ends
     logger.info(f"Cutting off columns at {altPair}.")
     gridBox = cutOffColumns(gridBox, altPair, altBase)
-    gridDims = ["point_index"]
-
     logger.debug(f"WACCM gridBox = {gridBox}")
+    if (gridBox is None):
+        return None
+
+    gridDims = ["point_index"]
     meanPoint = gridBox.mean(dim=gridDims, keep_attrs=True)
     logger.debug(f"meanPoint = {meanPoint}")
 
@@ -441,12 +441,13 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair,
 # Calculate indexes of levels to retrieve in a whole column.
 # wholeColumn = altitudes from surface to top of atmosphere
 # altitudes[] = lower and upper values to select; could be strings
+# reversed = altitudes run from high to low heights (in WACCM)
 # return indexes like [23, 24, 25, 26, 27]
-def getSubColumn(wholeColumn, altitudes):
+def getSubColumn(wholeColumn, altitudes, reversed=False):
     logger.debug(f"wholeColumn = {wholeColumn}   altitudes = {altitudes}")
     logger.info(f"wholeColumn = {wholeColumn}   altitudes = {altitudes}")   # bogus
 
-    # check for inverted range; maybe involving PBLH
+    # check for inverted specified range; maybe involving PBLH
     if (isNumber(altitudes[0]) and isNumber(altitudes[1])):
         if (altitudes[0] > altitudes[1]):
             logger.warning(f"Altitude range {altitudes} is inverted.")
@@ -455,21 +456,33 @@ def getSubColumn(wholeColumn, altitudes):
     # check for no requested values within range of the column
     withinRange = True
     if isNumber(altitudes[0]):
-        if (altitudes[0] > wholeColumn[-1]):
-            withinRange = False
+        if not reversed:
+            if (altitudes[0] > wholeColumn[-1]):
+                withinRange = False
+        else:
+            if (altitudes[0] > wholeColumn[0]):
+                withinRange = False
     if isNumber(altitudes[1]):
-        if (altitudes[1] < wholeColumn[0]):
-            withinRange = False
+        if not reversed:
+            if (altitudes[1] < wholeColumn[0]):
+                withinRange = False
+        else:
+            if (altitudes[1] < wholeColumn[-1]):
+                withinRange = False
+
     if not withinRange:
         floatColumn = [wholeColumn[0].item(), wholeColumn[-1].item()]
         logger.warning(f"Altitude range {altitudes} is outside the vertical column {floatColumn}")
         return []
 
     logger.debug(f"wholeColumn = {wholeColumn} meters")
-    dummy, lower = findNearestAltitude(wholeColumn, altitudes[0])
-    dummy, upper = findNearestAltitude(wholeColumn, altitudes[1])
+    dummy, lower = findNearestAltitude(wholeColumn, altitudes[0], reversed)
+    dummy, upper = findNearestAltitude(wholeColumn, altitudes[1], reversed)
     logger.debug(f"lower index = {lower}   upper index = {upper}")
     logger.info(f"lower index = {lower}   upper index = {upper}")   # bogus
+
+    if reversed:
+        lower, upper = (upper, lower)   # swap for normal python sequencing
 
     # check for inverted range involving surface
     if (lower > upper):
@@ -558,7 +571,7 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair,
             verticalIndexes = getSubColumn(zLevels.values[:, iLat, iLon], heightPair)
             logger.debug(f"verticalIndexes = {verticalIndexes}")
             if (len(verticalIndexes) == 0):
-                logger.warning("\tNo model level within those height bounds.")
+                logger.warning(f"\tNo model level within those height bounds: {heightPair}")
                 continue        # there is no level here within the height range
 
             singlePoint = gridDataset.isel(Time=timeIndex,
