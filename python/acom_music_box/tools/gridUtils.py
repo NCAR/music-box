@@ -11,14 +11,21 @@ import numbers
 import numpy
 import xarray
 import netCDF4
+import copy
 from acom_music_box.tools import g_geoht
+from acom_music_box.tools import fileUtils
 
 import logging
 logger = logging.getLogger(__name__)
 
 
 kSurfaceKeyword = "surface"     # request is for the surface layer
+kBoundaryLayerHeight = "PBLH"   # Height of Planetary Boundary Layer
+kTerrainHeight = "HGT"          # level of ground in meters above sea level
 P0 = 1013.25                    # standard surface pressure in hPa
+
+kSeaLevelKeyword = "sea"        # baseline level for altitude(s)
+kGroundKeyword = "ground"       # above terrain
 
 # Convert altitude in meters to pressure in hPa (hectopascals).
 # altMeters = height above sea level (meters)
@@ -46,24 +53,55 @@ def isNumber(myVar):
             and not isinstance(myVar, bool))
 
 
-# Find the nearest value in an array of altitude values.
+# Find the nearest numeric value in an array of altitude values.
 # value = surface, or a value in meters.
 #   Meteorological variables like PBLH are specified in meters before this function is called.
 # reversed = values are listed from top of atmosphere to surface (WACCM)
 # Return nearest height value and index where it was found
 def findNearestAltitude(altitudes, value, reversed=False):
-    isNum = isNumber(value)
-    # logger.debug(f"value = {value}   isNum = {isNum}")
-    if not isNumber(value):
-        if (value.lower() == kSurfaceKeyword):
-            if (not reversed):
-                return [0.0, 0]    # only WRF-Chem
-            else:
-                return [0.0, len(altitudes) - 1]
-
     # locate the closest height
     index = (numpy.abs(altitudes - value)).argmin()
-    return [altitudes[index], index]
+    return (altitudes[index], index)
+
+
+# Find and return the surface altitude.
+# altitudes = the height column in meters
+# reversed = values are listed from top of atmosphere to surface (WACCM)
+def findSurfaceAltitude(altitudes, reversed=False):
+    index = 0
+    if reversed:
+        index = len(altitudes) -1
+    return (altitudes[index], index)
+
+
+# Find the first model level that is >= the requested value.
+# return height value and index where it was found
+def findFloorAltitude(altitudes, value, reversed=False):
+    greaterIndexes = numpy.where(altitudes >= value)[0]
+    if (greaterIndexes.size == 0):
+        return (None, None)
+
+    floorIndex = greaterIndexes[0]
+    if reversed:
+        floorIndex = greaterIndexes[-1]
+    floorHeight = altitudes[floorIndex]
+
+    return (floorHeight, floorIndex)
+
+
+# Find the last model level that is <= the requested value.
+# return height value and index where it was found
+def findCeilingAltitude(altitudes, value, reversed=False):
+    lessIndexes = numpy.where(altitudes <= value)[0]
+    if (lessIndexes.size == 0):
+        return (None, None)
+
+    ceilingIndex = lessIndexes[-1]
+    if reversed:
+        ceilingIndex = lessIndexes[0]
+    ceilingHeight = altitudes[ceilingIndex]
+
+    return (ceilingHeight, ceilingIndex)
 
 
 # Calcuate the squared distance between points.
@@ -181,6 +219,12 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
             lonIndex -= 1
         numSteps += 1
 
+        # Did search run off the edge of the model domain?
+        if (latIndex < 0 or latIndex >= len(lats)
+            or lonIndex < 0 or lonIndex >= len(lons)):
+            logger.warning(f"Requested point ({latitude} North, {longitude} East) is outside the model grid.")
+            return (None, None)
+
         myLat = lats[latIndex, lonIndex]
         myLon = lons[latIndex, lonIndex]
         logger.debug(f"\tvertex search now at lat = {latIndex} {myLat}   lon = {lonIndex} {myLon}")
@@ -206,42 +250,98 @@ def removeStringVars(myDataset):
     return numericDataset
 
 
+kGeopotentialKeyword = "PHIS"
+kWaccmGravity = 9.80616     # m/s²; slighty different from international g
+
+# Calculate the terrain height HGT from a dataset that is known to be WACCM.
+# myTopoFile = topography file from WACCM, containing PHIS
+#       This can also be a WACCM output file containing Z3 (less accurate).
+# return DataArray of terrain height in meters
+def deriveHeight(myTopoFile):
+    topoSet = xarray.open_dataset(myTopoFile)
+    topoHgt = None
+
+    if (kGeopotentialKeyword in topoSet):
+        topoHgt = copy.deepcopy(topoSet["PHIS"])
+        topoHgt /= kWaccmGravity
+        topoHgt.name = kTerrainHeight
+        logger.debug(f"WACCM calculated terrainVar {kTerrainHeight} = {topoHgt}")
+
+    else:
+        # use the surface model level Z3 as an approximation
+        # Consider subtracting 50 meters to reach the actual ground level.
+        topoHgt = copy.deepcopy(topoSet["Z3"][0][-1])
+        topoHgt.name = kTerrainHeight
+        logger.debug(f"WACCM approximate terrainVar {kTerrainHeight} = {topoHgt}")
+
+    return topoHgt
+
+
 # Load PBLH and other 2D vars if requested.
 # Some model variables (Planetary Boundary Layer Height) can serve
 # as the lower or upper bound of the average. Those variables
 # do not have a height dimension.
+# PBLH is converted from above ground terrain to above sea level.
+# Wavy surfaces are like PBLH; a surface of varying height, maybe relative to terrain.
 # altParams = pair of command-line args like [surface, PBLH]
+# altBase = baseline for altitude; either kSeaLevelKeyword or kGroundKeyword
 # myDataset = WACCM or WRF-Chem data loaded from disk file
-# return pointers to height vars in myDataset
-def loadHeightVars(altParams, myDataset):
+# return pointers to height vars in myDataset, or wavy surfaces created here
+def loadHeightVars(altParams, altBase, myDataset):
     heightVars = [None, None]
+
+    terrainVar = None
+    terrainVar = myDataset[kTerrainHeight]      # used for reference and values
+    logger.debug(f"terrainVar = {terrainVar}")
+
     for hi in range(0, 2):
-        if isNumber(altParams[hi]):
-            continue
-        if (altParams[hi].lower() == kSurfaceKeyword):
+        addTerrain = False
+
+        altParamSpec = altParams[hi]
+        if isNumber(altParamSpec):
+            # create a flat surface at the requested height
+            heightVars[hi] = copy.deepcopy(terrainVar)
+            heightVars[hi][:] = altParamSpec
+            addTerrain = (altBase == kGroundKeyword)
+
+        elif (altParamSpec.lower() == kSurfaceKeyword):
+            # We have to handle surface later,
+            # by index 0 not finding nearest floating-point value.
+            heightVars[hi] = kSurfaceKeyword
             continue
 
-        # get a pointer to that variable
-        heightVars[hi] = myDataset[altParams[hi]]
+        else:
+            # get a pointer to that variable (maybe PBLH)
+            heightVars[hi] = myDataset[altParamSpec]
+            if (altParamSpec == kBoundaryLayerHeight):
+                if (myDataset.attrs["modelType"] == fileUtils.WRF_Chem_File.modelType):
+                    addTerrain = True
 
+        if not addTerrain:
+            continue
+
+        # adjust altitude to sea level by adding terrain HGT 
+        altSeaLevel = heightVars[hi] + terrainVar
+        heightVars[hi] = altSeaLevel
+
+    logger.debug(f"\t loaded heights {altParams} at sea level: {heightVars}")
     return heightVars
 
+
+kHeightKey = "Z3"
 
 # Truncate columns in the grid at variable levels like PBLH.
 # The truncation could happen at both ends of the column.
 # mySubGrid = dataset already selected for time and lat-lon bounds
 # altitudePair = altitude bounds in which to select, in meters
+# altitudeBase = kSeaLevelKeyword or kGroundKeyword
 # return grid dataset with same lat-lon size but columns are shorter
-def cutOffColumns(mySubGrid, altitudePair):
-    kPressureKey = "lev"
-    mySubPressure = mySubGrid[kPressureKey].data                   # units are hPa
-    mySubHeights = numpy.zeros(len(mySubPressure))
-    for pi in range(len(mySubPressure)):
-        mySubHeights[pi] = pressureToAltitude(mySubPressure[pi])      # units are meters
-    logger.debug(f"mySubHeights = {mySubHeights} meters")
+def cutOffColumns(mySubGrid, altitudePair, altitudeBase):
+    myHeights = mySubGrid[kHeightKey]
+    logger.debug(f"myHeights = {myHeights} {myHeights.data[:, 0, 0]}")
 
     # load PBLH here if requested as some altitude bound
-    heightVars = loadHeightVars(altitudePair, mySubGrid)    # meters
+    heightVars = loadHeightVars(altitudePair, altitudeBase, mySubGrid)    # meters
     logger.debug(f"Original heightVars = {heightVars}")
 
     heightPair = altitudePair.copy()      # we will replace PBLH with the numerical value at each grid cell
@@ -252,50 +352,53 @@ def cutOffColumns(mySubGrid, altitudePair):
     for lati in range(mySubGrid.sizes["lat"]):
         for loni in range(mySubGrid.sizes["lon"]):
 
+            # get the heights for this one column
+            myColumnHeights = myHeights.data[:, lati, loni]                   # units are meters
+
             # retrieve the PBLH at this grid cell
             for pi in range(0, 2):
-                if (heightVars[pi] is not None):
+                if not isinstance(heightVars[pi], str):
                     heightPair[pi] = float(heightVars[pi].data[lati, loni])
+                else:
+                    heightPair[pi] = heightVars[pi]
             logger.debug(f"heightPair at {lati}, {loni} = {heightPair}")
 
             # set up the height bounds for this column
-            heightIndexPair = [0, 0]
-            for pi in range(0, 2):
-                # WACCM uses pressure coordinates from top of atmosphere down to surface,
-                # and the user probably specifies from lower altitude to higher.
-                dummy, heightIndexPair[1 - pi] = findNearestAltitude(
-                    mySubHeights, heightPair[pi], reversed=True)     # reverse the index bounds
-            logger.info(f"Height indexes are {heightIndexPair[0]} through {heightIndexPair[1]}")
+            heightIndexes = getSubColumn(myColumnHeights, heightPair, reversed=True)
+            logger.debug(f"Height indexes are {heightIndexes}")
 
             # check for variable surfaces that are locally inverted at this grid point
-            if (heightPair[0] > heightPair[1]):
+            if (len(heightIndexes) == 0):
                 # since lower bound > upper bound at this point, don't include anything
-                logger.info("Local surface inversion;, skipping this grid point.")
+                logger.info(f"\tNo model level within those height bounds: {heightPair}")
                 continue
 
             # select only the sub-column
             singlePoint = mySubGrid.isel(
-                lev=range(heightIndexPair[0], heightIndexPair[1] + 1),
-                lat=lati, lon=loni)
+                lev=heightIndexes, lat=lati, lon=loni)
             logger.debug(f"cutOff singlePoint = {singlePoint}")
 
             # remove string variables for numeric calculation
             singlePoint = removeStringVars(singlePoint)
             logger.debug(f"Numeric singlePoint = {singlePoint}")
 
-            # capture the pressure because vertical coordinate will get removed
-            myLev = singlePoint[kPressureKey]
-            logger.debug(f"Captured myLev = {myLev}")
+            # capture the height because vertical coordinate will get removed
+            myHeight = singlePoint[kHeightKey]
+            logger.debug(f"Captured myHeight = {myHeight}")
 
             # calculate variable means for the column
             singlePoint = singlePoint.mean(skipna=True, keep_attrs=True)   # take mean within sub-column
             logger.debug(f"Mean singlePoint = {singlePoint}")
 
-            # restore the pressure
-            singlePoint[kPressureKey] = myLev.mean()    # mean() preserves the attributes
-            logger.debug(f"Mean singlePoint with pressure restored = {singlePoint}")
+            # restore the height
+            singlePoint[kHeightKey] = myHeight.mean()    # mean() preserves the attributes
+            logger.debug(f"Mean singlePoint with height restored = {singlePoint}")
 
             singlePoints.append(singlePoint)
+
+    if (len(singlePoints) <= 0):
+        logger.warning("No grid points found within your lat-lon and altitude bounds.")
+        return None
 
     logger.info(f"Combining {len(singlePoints)} cutoff points into a single set...")
     pointDimension = "point_index"
@@ -312,8 +415,10 @@ def cutOffColumns(mySubGrid, altitudePair):
 # when = desired date-time frame of gridDataset
 # latPair, lonPair = coordinates of a single point, or bounding box (SW to NE)
 # altPair = altitude bounds over which to average
+# altBase = baseline of altitude; sea level or ground
 # return the mean value of single point or the bounding box
-def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
+def meanStraightGrid(gridDataset, when, latPair, lonPair,
+    altPair, altBase):
     # find the time index
     whenStr = when.strftime("%Y-%m-%d %H:%M:%S")
     logger.info(f"whenStr = {whenStr}")
@@ -335,46 +440,14 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
     logger.info(f"latTicks = {latTicks}")
     logger.info(f"lonTicks = {lonTicks}")
 
-    # determine the pressure levels
-    pressPair = [None, None]
-    fixedHeight = True
-    for pi in range(0, 2):
-        if isNumber(altPair[pi]):
-            pressPair[pi] = altitudeToPressure(altPair[pi])
-        elif (altPair[pi].lower() == kSurfaceKeyword):
-            pressPair[pi] = kSurfaceKeyword
-        else:
-            # handle PBLH here; cut off the columns later
-            if (pi == 0):
-                pressPair[pi] = kSurfaceKeyword
-            else:
-                pressPair[pi] = 0.0     # pressure at top of atmosphere
-            fixedHeight = False
-
-    logger.info(f"Requesting pressure range {pressPair[0]} to {pressPair[1]} hPa")
-
-    # look up pressure levels to get the pressure indexes
-    pressLevels = gridDataset["lev"].data
-    logger.debug(f"pressLevels = {pressLevels}")
-    pressIndexPair = [0, 0]
-    for pi in range(0, 2):
-        # WACCM uses pressure coordinates from top of atmosphere down to surface,
-        # and the user probably specifies from lower altitude to higher.
-        dummy, pressIndexPair[1 - pi] = findNearestAltitude(
-            pressLevels, pressPair[pi], reversed=True)     # reverse the index bounds
-        logger.debug(f"nearest = {dummy} at index {pressIndexPair[1-pi]}")
-    logger.info(f"Pressure indexes are {pressIndexPair[0]} through {pressIndexPair[1]}")
-
     # check for reversed altitude bounds
-    if (pressIndexPair[0] > pressIndexPair[1]):
-        logger.error("Altitude bounds are reversed. Please specify lower,upper instead.")
-        return None
+    if (isNumber(altPair[0]) and isNumber(altPair[1])):
+        if (altPair[0] > altPair[1]):
+            logger.error("Altitude bounds are inverted. Please specify lower,upper instead.")
+            return None
 
-    # select the entire rectanglar region
-    cutPressLevels = pressLevels[pressIndexPair[0]: pressIndexPair[1] + 1]
-    logger.debug(f"Selecting lev = {cutPressLevels}")
+    # select the entire rectanglar region by lat-lon
     gridBox = gridDataset.sel(lat=latTicks, lon=lonTicks,
-                              lev=cutPressLevels,
                               time=whenStr, method="nearest")
     gridDims = ["lat", "lon"]
     logger.debug(f"gridBox = {gridBox}")
@@ -382,13 +455,14 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
     # cannot take the mean() of strings, so remove them
     gridBox = removeStringVars(gridBox)
 
-    if not fixedHeight:
-        # if height bounds are not fixed, then cut off individual columns
-        logger.info("Cutting off columns at PBLH.")
-        gridBox = cutOffColumns(gridBox, altPair)
-        gridDims = ["point_index"]
-
+    # cut off the individual columns on both ends
+    logger.info(f"Cutting off columns at {altPair}.")
+    gridBox = cutOffColumns(gridBox, altPair, altBase)
     logger.debug(f"WACCM gridBox = {gridBox}")
+    if (gridBox is None):
+        return None
+
+    gridDims = ["point_index"]
     meanPoint = gridBox.mean(dim=gridDims, keep_attrs=True)
     logger.debug(f"meanPoint = {meanPoint}")
 
@@ -397,13 +471,74 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair, altPair):
 
 # Calculate indexes of levels to retrieve in a whole column.
 # wholeColumn = altitudes from surface to top of atmosphere
-# altitudes[] = lower and upper values to select
+# altitudes[] = lower and upper values to select; could be strings
+# reversed = altitudes run from high to low heights (in WACCM)
 # return indexes like [23, 24, 25, 26, 27]
-def getSubColumn(wholeColumn, altitudes):
-    logger.debug(f"wholeColumn = {wholeColumn} meters")
-    dummy, lower = findNearestAltitude(wholeColumn, altitudes[0])
-    dummy, upper = findNearestAltitude(wholeColumn, altitudes[1])
-    logger.debug(f"lower index = {lower}   upper index = {upper}")
+def getSubColumn(wholeColumn, altitudes, reversed=False):
+    logger.info(f"wholeColumn = {wholeColumn} meters   altitude bounds to select = {altitudes}")
+
+    bothNumbers = False
+
+    # check for inverted specified range; maybe involving PBLH
+    if (isNumber(altitudes[0]) and isNumber(altitudes[1])):
+        bothNumbers = True
+        if (altitudes[0] > altitudes[1]):
+            logger.warning(f"Altitude range {altitudes} is inverted.")
+            return []
+
+    # check for no requested values within range of the column
+    withinRange = True
+    if isNumber(altitudes[0]):
+        if not reversed:
+            if (altitudes[0] > wholeColumn[-1]):
+                withinRange = False
+        else:
+            if (altitudes[0] > wholeColumn[0]):
+                withinRange = False
+    if isNumber(altitudes[1]):
+        if not reversed:
+            if (altitudes[1] < wholeColumn[0]):
+                withinRange = False
+        else:
+            if (altitudes[1] < wholeColumn[-1]):
+                withinRange = False
+
+    if not withinRange:
+        floatColumn = [wholeColumn[0].item(), wholeColumn[-1].item()]
+        logger.warning(f"Altitude range {altitudes} is outside the vertical column {floatColumn}")
+        return []
+
+    if (bothNumbers):
+        if abs(altitudes[1] - altitudes[0] < 1.0):
+            # if single altitude, then user meant nearest layer since none will exactly match
+            nearestHeight, lower = findNearestAltitude(wholeColumn, altitudes[0], reversed)
+            logger.info(f"Single index = {lower} at nearest altitude {nearestHeight}")
+            return [lower]
+
+    if not isNumber(altitudes[0]):
+        # only kSurfaceKeyword is recognized at this point
+        foundHeight, lower = findSurfaceAltitude(wholeColumn, reversed)
+    else:
+        foundHeight, lower = findFloorAltitude(wholeColumn, altitudes[0], reversed)
+    logger.debug(f"Lower index = {lower} at altitude {foundHeight}")
+
+    if not isNumber(altitudes[1]):
+        # only kSurfaceKeyword is recognized at this point
+        foundHeight, upper = findSurfaceAltitude(wholeColumn, reversed)
+    else:
+        foundHeight, upper = findCeilingAltitude(wholeColumn, altitudes[1], reversed)
+    logger.debug(f"Upper index = {upper} at altitude {foundHeight}")
+
+    logger.info(f"lower index = {lower}   upper index = {upper}")
+
+    if reversed:
+        lower, upper = (upper, lower)   # swap for normal python sequencing
+
+    # check for inverted range involving surface
+    if (lower > upper):
+        logger.warning(f"Altitude range {altitudes} is inverted.")
+        return []
+
     indexes = list(range(lower, upper + 1))
     return indexes
 
@@ -415,10 +550,11 @@ def getSubColumn(wholeColumn, altitudes):
 # when = desired date-time frame of gridDataset
 # latPair, lonPair = coordinates of a single point, or bounding box (SW to NE)
 # altPair = altitude bounds over which to average
+# altBase = sea or ground
 # wrfDataset = WRF-Chem file opened as netCDF4 Dataset
 # return the mean value of single point or the bounding box
-def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
-                   wrfDataset):
+def meanCurvedGrid(gridDataset, when, latPair, lonPair,
+    altPair, altBase, wrfDataset):
     # find the time index
     whenStr = when.strftime("%Y-%m-%d_%H:%M:%S")
     logger.info(f"whenStr = {whenStr}")
@@ -452,11 +588,9 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
     logger.debug(f"zLevels = {zLevels}")
 
     # load PBLH here if requested as some altitude bound
-    heightVars = loadHeightVars(altPair, gridDataset)
-    logger.debug(f"heightVars = {heightVars}")
-
-    heightPair = altPair.copy()      # we will replace PBLH with the numerical value at each grid cell
-    logger.debug(f"Starting heightPair = {heightPair}")
+    heightVars = loadHeightVars(altPair, altBase, gridDataset)
+    logger.debug(f"Curved heightVars = {heightVars}")
+    #sys.exit(0) # bogus
 
     iLat, iLon = None, None
     singlePoints = []
@@ -470,17 +604,24 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
                                            "XLAT", "XLONG", latFloat, lonFloat, iLat, iLon)
             logger.debug(f"iLat = {iLat}   iLon = {iLon}")
 
+            if (iLat is None or iLon is None):
+                logger.warning("\tSkipping lat-lon point outside the model domain.")
+                continue
+
             # set up the column bounds for this grid cell
+            heightPair = [None, None]
             for pi in range(0, 2):
-                if (heightVars[pi] is not None):
+                if not isinstance(heightVars[pi], str):
                     heightPair[pi] = float(heightVars[pi].data[timeIndex, iLat, iLon])
+                else:
+                    heightPair[pi] = heightVars[pi]
             logger.debug(f"heightPair at {iLat}, {iLon} = {heightPair}")
 
             # retrieve the sub-column between the altitude bounds
             verticalIndexes = getSubColumn(zLevels.values[:, iLat, iLon], heightPair)
             logger.debug(f"verticalIndexes = {verticalIndexes}")
             if (len(verticalIndexes) == 0):
-                logger.debug("\tNo level within those height bounds.")
+                logger.warning(f"\tNo model level within those height bounds: {heightPair}")
                 continue        # there is no level here within the height range
 
             singlePoint = gridDataset.isel(Time=timeIndex,
@@ -493,6 +634,10 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair, altPair,
             singlePoint = singlePoint.mean(skipna=True, keep_attrs=True)   # take mean within sub-column
             logger.debug(f"Mean singlePoint = {singlePoint}")
             singlePoints.append(singlePoint)
+
+    if (len(singlePoints) <= 0):
+        logger.warning("No grid points found within your lat-lon and altitude bounds.")
+        return None
 
     logger.info(f"Combining {len(singlePoints)} points into a single set...")
     pointDimension = "point_index"
