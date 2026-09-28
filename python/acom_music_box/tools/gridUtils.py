@@ -53,22 +53,55 @@ def isNumber(myVar):
             and not isinstance(myVar, bool))
 
 
-# Find the nearest value in an array of altitude values.
+# Find the nearest numeric value in an array of altitude values.
 # value = surface, or a value in meters.
 #   Meteorological variables like PBLH are specified in meters before this function is called.
 # reversed = values are listed from top of atmosphere to surface (WACCM)
 # Return nearest height value and index where it was found
 def findNearestAltitude(altitudes, value, reversed=False):
-    if not isNumber(value):
-        if (value.lower() == kSurfaceKeyword):
-            index = 0
-            if reversed:
-                index = len(altitudes) -1
-            return [altitudes[index], index]
-
     # locate the closest height
     index = (numpy.abs(altitudes - value)).argmin()
-    return [altitudes[index], index]
+    return (altitudes[index], index)
+
+
+# Find and return the surface altitude.
+# altitudes = the height column in meters
+# reversed = values are listed from top of atmosphere to surface (WACCM)
+def findSurfaceAltitude(altitudes, reversed=False):
+    index = 0
+    if reversed:
+        index = len(altitudes) -1
+    return (altitudes[index], index)
+
+
+# Find the first model level that is >= the requested value.
+# return height value and index where it was found
+def findFloorAltitude(altitudes, value, reversed=False):
+    greaterIndexes = numpy.where(altitudes >= value)[0]
+    if (greaterIndexes.size == 0):
+        return (None, None)
+
+    floorIndex = greaterIndexes[0]
+    if reversed:
+        floorIndex = greaterIndexes[-1]
+    floorHeight = altitudes[floorIndex]
+
+    return (floorHeight, floorIndex)
+
+
+# Find the last model level that is <= the requested value.
+# return height value and index where it was found
+def findCeilingAltitude(altitudes, value, reversed=False):
+    lessIndexes = numpy.where(altitudes <= value)[0]
+    if (lessIndexes.size == 0):
+        return (None, None)
+
+    ceilingIndex = lessIndexes[-1]
+    if reversed:
+        ceilingIndex = lessIndexes[0]
+    ceilingHeight = altitudes[ceilingIndex]
+
+    return (ceilingHeight, ceilingIndex)
 
 
 # Calcuate the squared distance between points.
@@ -288,12 +321,10 @@ def loadHeightVars(altParams, altBase, myDataset):
             continue
 
         # adjust altitude to sea level by adding terrain HGT 
-        logger.info(f"Adjusting {altParamSpec} to sea level by adding {kTerrainHeight}")
-        logger.debug(f"{altParamSpec}: {heightVars[hi].data[0,100,200]} + HGT {myDataset[kTerrainHeight].data[0,100,200]} = ")
         altSeaLevel = heightVars[hi] + terrainVar
         heightVars[hi] = altSeaLevel
-        logger.debug(f"\t{altParamSpec} at sea level {heightVars[hi].data[0,100,200]}")
 
+    logger.debug(f"\t loaded heights {altParams} at sea level: {heightVars}")
     return heightVars
 
 
@@ -307,7 +338,7 @@ kHeightKey = "Z3"
 # return grid dataset with same lat-lon size but columns are shorter
 def cutOffColumns(mySubGrid, altitudePair, altitudeBase):
     myHeights = mySubGrid[kHeightKey]
-    logger.debug(f"myHeights = {myHeights}")
+    logger.debug(f"myHeights = {myHeights} {myHeights.data[:, 0, 0]}")
 
     # load PBLH here if requested as some altitude bound
     heightVars = loadHeightVars(altitudePair, altitudeBase, mySubGrid)    # meters
@@ -444,11 +475,13 @@ def meanStraightGrid(gridDataset, when, latPair, lonPair,
 # reversed = altitudes run from high to low heights (in WACCM)
 # return indexes like [23, 24, 25, 26, 27]
 def getSubColumn(wholeColumn, altitudes, reversed=False):
-    logger.debug(f"wholeColumn = {wholeColumn}   altitudes = {altitudes}")
-    logger.info(f"wholeColumn = {wholeColumn}   altitudes = {altitudes}")   # bogus
+    logger.info(f"wholeColumn = {wholeColumn} meters   altitude bounds to select = {altitudes}")
+
+    bothNumbers = False
 
     # check for inverted specified range; maybe involving PBLH
     if (isNumber(altitudes[0]) and isNumber(altitudes[1])):
+        bothNumbers = True
         if (altitudes[0] > altitudes[1]):
             logger.warning(f"Altitude range {altitudes} is inverted.")
             return []
@@ -475,11 +508,28 @@ def getSubColumn(wholeColumn, altitudes, reversed=False):
         logger.warning(f"Altitude range {altitudes} is outside the vertical column {floatColumn}")
         return []
 
-    logger.debug(f"wholeColumn = {wholeColumn} meters")
-    dummy, lower = findNearestAltitude(wholeColumn, altitudes[0], reversed)
-    dummy, upper = findNearestAltitude(wholeColumn, altitudes[1], reversed)
-    logger.debug(f"lower index = {lower}   upper index = {upper}")
-    logger.info(f"lower index = {lower}   upper index = {upper}")   # bogus
+    if (bothNumbers):
+        if abs(altitudes[1] - altitudes[0] < 1.0):
+            # if single altitude, then user meant nearest layer since none will exactly match
+            nearestHeight, lower = findNearestAltitude(wholeColumn, altitudes[0], reversed)
+            logger.info(f"Single index = {lower} at nearest altitude {nearestHeight}")
+            return [lower]
+
+    if not isNumber(altitudes[0]):
+        # only kSurfaceKeyword is recognized at this point
+        foundHeight, lower = findSurfaceAltitude(wholeColumn, reversed)
+    else:
+        foundHeight, lower = findFloorAltitude(wholeColumn, altitudes[0], reversed)
+    logger.debug(f"Lower index = {lower} at altitude {foundHeight}")
+
+    if not isNumber(altitudes[1]):
+        # only kSurfaceKeyword is recognized at this point
+        foundHeight, upper = findSurfaceAltitude(wholeColumn, reversed)
+    else:
+        foundHeight, upper = findCeilingAltitude(wholeColumn, altitudes[1], reversed)
+    logger.debug(f"Upper index = {upper} at altitude {foundHeight}")
+
+    logger.info(f"lower index = {lower}   upper index = {upper}")
 
     if reversed:
         lower, upper = (upper, lower)   # swap for normal python sequencing
