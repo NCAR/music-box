@@ -70,7 +70,7 @@ def findNearestAltitude(altitudes, value, reversed=False):
 def findSurfaceAltitude(altitudes, reversed=False):
     index = 0
     if reversed:
-        index = len(altitudes) -1
+        index = len(altitudes) - 1
     return (altitudes[index], index)
 
 
@@ -221,7 +221,7 @@ def findClosestVertex(wrfChemDataSet, latsVarname, lonsVarname,
 
         # Did search run off the edge of the model domain?
         if (latIndex < 0 or latIndex >= len(lats)
-            or lonIndex < 0 or lonIndex >= len(lons)):
+                or lonIndex < 0 or lonIndex >= len(lons)):
             logger.warning(f"Requested point ({latitude} North, {longitude} East) is outside the model grid.")
             return (None, None)
 
@@ -257,6 +257,8 @@ kWaccmGravity = 9.80616     # m/s²; slighty different from international g
 # myTopoFile = topography file from WACCM, containing PHIS
 #       This can also be a WACCM output file containing Z3 (less accurate).
 # return DataArray of terrain height in meters
+
+
 def deriveHeight(myTopoFile):
     topoSet = xarray.open_dataset(myTopoFile)
     topoHgt = None
@@ -320,7 +322,7 @@ def loadHeightVars(altParams, altBase, myDataset):
         if not addTerrain:
             continue
 
-        # adjust altitude to sea level by adding terrain HGT 
+        # adjust altitude to sea level by adding terrain HGT
         altSeaLevel = heightVars[hi] + terrainVar
         heightVars[hi] = altSeaLevel
 
@@ -336,6 +338,8 @@ kHeightKey = "Z3"
 # altitudePair = altitude bounds in which to select, in meters
 # altitudeBase = kSeaLevelKeyword or kGroundKeyword
 # return grid dataset with same lat-lon size but columns are shorter
+
+
 def cutOffColumns(mySubGrid, altitudePair, altitudeBase):
     myHeights = mySubGrid[kHeightKey]
     logger.debug(f"myHeights = {myHeights} {myHeights.data[:, 0, 0]}")
@@ -418,7 +422,7 @@ def cutOffColumns(mySubGrid, altitudePair, altitudeBase):
 # altBase = baseline of altitude; sea level or ground
 # return the mean value of single point or the bounding box
 def meanStraightGrid(gridDataset, when, latPair, lonPair,
-    altPair, altBase):
+                     altPair, altBase):
     # find the time index
     whenStr = when.strftime("%Y-%m-%d %H:%M:%S")
     logger.info(f"whenStr = {whenStr}")
@@ -554,7 +558,7 @@ def getSubColumn(wholeColumn, altitudes, reversed=False):
 # wrfDataset = WRF-Chem file opened as netCDF4 Dataset
 # return the mean value of single point or the bounding box
 def meanCurvedGrid(gridDataset, when, latPair, lonPair,
-    altPair, altBase, wrfDataset):
+                   altPair, altBase, wrfDataset):
     # find the time index
     whenStr = when.strftime("%Y-%m-%d_%H:%M:%S")
     logger.info(f"whenStr = {whenStr}")
@@ -590,7 +594,7 @@ def meanCurvedGrid(gridDataset, when, latPair, lonPair,
     # load PBLH here if requested as some altitude bound
     heightVars = loadHeightVars(altPair, altBase, gridDataset)
     logger.debug(f"Curved heightVars = {heightVars}")
-    #sys.exit(0) # bogus
+    # sys.exit(0) # bogus
 
     iLat, iLon = None, None
     singlePoints = []
