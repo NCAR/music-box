@@ -171,4 +171,3 @@ def factory(myFileClass):
         return WRF_Chem_Model()
 
     return Base_Model()
-

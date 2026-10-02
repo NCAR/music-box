@@ -319,7 +319,7 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes,
             # resolve this derived variable
             musicaTuple = modelObject.calcDerivedVar(meanPoint, waccmKey)
             logger.debug(f"Derived musicaTuple = {musicaTuple}")
-            #bogus
+            # bogus
             musicaDict[musicaName] = musicaTuple
             continue
 
