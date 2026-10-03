@@ -249,6 +249,56 @@ music_box --config my_config.json --output chapman-out-03.csv --verbose
 
 Finally, confirm that Chapman output file 03 is different from the first two output files.
 
+## Tool: geckoAToMusicBox
+
+This tool converts a [GECKO-A](https://geckoa.lisa.u-pec.fr/) mechanism directory into a complete, runnable MusicBox configuration (a single JSON file like `examples/analytical/my_config.json`). It reads the GECKO output files (`dictionary.out`, `reactions.dum`, `gasspe.dum`, `partspe.dum`, `pero*.dat`, `size.dum`), builds the mechanism with the MUSICA API, and writes the mechanism, box-model options, and initial conditions into one config.
+
+Show all options:
+
+```bash
+geckoAToMusicBox --help
+```
+
+Basic usage — point it at a GECKO directory and an output path:
+
+```bash
+geckoAToMusicBox -i path/to/Hexane_2gen_GECKO -o my_config.json
+```
+
+To fill in photolysis rates, pass a GECKO `.phot` table and a solar zenith angle (in degrees). The tool linearly interpolates every photolysis channel in the table to that angle and bakes the rates into the configuration:
+
+```bash
+geckoAToMusicBox -i path/to/Hexane_2gen_GECKO -o my_config.json \
+    --photolysis-table path/to/solarlight.phot --solar-zenith-angle 30
+```
+
+By default the generated box model runs for **1 hour with output every minute**, at 298.15 K and 101325 Pa, with every species initialized to 1 mol m⁻³. Override any of these:
+
+```bash
+geckoAToMusicBox -i path/to/Hexane_2gen_GECKO -o my_config.json \
+    -p path/to/solarlight.phot -z 45 \
+    --temperature 280 --pressure 90000 --initial-concentration 1.0 \
+    --simulation-length-hours 2 --output-step-minutes 5 -v
+```
+
+Then run it like any other configuration:
+
+```bash
+music_box --config my_config.json --output gecko-out.csv --verbose
+```
+
+### Notes and current simplifications
+
+Because the box-model solver is single-phase and one configuration represents one set of conditions, the conversion makes a few deliberate simplifications:
+
+- **Single phase.** GECKO gas (`G…`) and aerosol (`A…`) species are placed in one gas phase; aerosol-origin species are tagged with `__gecko phase: aerosol`. The `AIN`/`AOU` gas–particle partitioning reactions become `USER_DEFINED` reactions (rate 0 unless you supply it), since there is no native partitioning operator.
+- **RO2 pools** (`PERO1`–`PERO9`, `MEPERO`) become `USER_DEFINED` reactions carrying the GECKO Arrhenius parameters and pool id, because MICM has no built-in summed-RO2 operator.
+- **Photolysis** is evaluated at the single chosen solar zenith angle and held constant for the run. Each photolysis reaction gets a unique name, and reactions that reuse a GECKO j-value all receive the same interpolated rate.
+- **Initial concentrations** are a uniform placeholder (default 1 mol m⁻³ for every species); `M` and `O2` are excluded because they are derived from temperature/pressure.
+- **Reaction rates** are translated exactly where MICM supports the form (Arrhenius with `D=1`, Troe/falloff, `TaylorSeries` for isomerization, and the EXTRA inorganic codes 100/500/501/502/550). Unsupported special forms are emitted as `USER_DEFINED` with their parameters preserved in `other_properties`.
+
+The conversion is validated against the per-type reaction counts in `size.dum`.
+
 ## Development
 
 Install as an editable package with dev dependencies:
