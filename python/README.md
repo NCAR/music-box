@@ -229,7 +229,21 @@ If the user specifies ground, then modelToMusicBox will add the terrain height a
 and use the sum(s) to select within the vertical column(s).
 
 #### --topoFile
-WRF-Chem model output usually contains the variable ???; WACCM output usually does not contain any variable for terrain height.
+WRF-Chem model output routinely contains the variable HGT for terrain height;
+WACCM output usually does not contain any variable for terrain height.
+Specifying --baseAltitude ground requires modelToMusicBox to calculate the altitude above the terrain.
+For WACCM output, the user has the option here to specify a separate topograhy file used in WACCM.
+
+```bash
+--topoFile ~/WACCM/model-output/fv_0.9x1.25_nc3000_Nsw042_Nrs008_Co060_Fi001_ZR_sgh30_24km_GRNL_MERRA2_c171218.nc
+```
+
+You may obtain ACOM's topography file from WACCM downloads at: https://www.acom.ucar.edu/waccm/DATA/topography/
+
+For WACCM, modelToMusicBox calculates the terrain height = PHIS / g,
+where g = 9.80616 m/s2 is the gravitational constant used in WACCM.
+If you leave out the --topoFile for WACCM with baseAltitude ground,
+modelToMusicBox will approximate the terrain height with the lowest model level Z3.
 
 ### End-to-end example
 In this section we will fully import initial conditions from WRF-Chem and evolving conditions from WACCM.

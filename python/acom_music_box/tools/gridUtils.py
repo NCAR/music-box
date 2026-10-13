@@ -251,7 +251,7 @@ def removeStringVars(myDataset):
 
 
 kGeopotentialKeyword = "PHIS"
-kWaccmGravity = 9.80616     # m/s²; slighty different from international g
+kWaccmGravity = 9.80616     # m/s²; slightly different from international g
 
 # Calculate the terrain height HGT from a dataset that is known to be WACCM.
 # myTopoFile = topography file from WACCM, containing PHIS
