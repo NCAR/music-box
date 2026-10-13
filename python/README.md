@@ -208,6 +208,15 @@ modelToMusicBox supplies three parameters related to altitude:
 *  -ba BASEALTITUDE, --baseAltitude BASEALTITUDE
 *  -tf TOPOFILE, --topoFile TOPOFILE
 
+## -altitude
+The altitude parameter controls the height(s) at which model results are extracted.
+
+# --baseAltitude
+The base altitude can be specified as 'sea' or 'ground'.
+If the user specified ground, then modelToMusicBox will add the terrain height at each point to the altitude parameter.
+
+# --topoFile
+WRF-Chem model output usually contains the variable ???; WACCM output usually does not contain any variable for terrain height.
 
 ### End-to-end example
 In this section we will fully import initial conditions from WRF-Chem and evolving conditions from WACCM.
