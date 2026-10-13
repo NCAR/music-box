@@ -159,6 +159,8 @@ modelToMusicBox --help
 You may specify a single point in space and date-time by passing single values to date, time, latitude, and longitude.
 Altitude defaults to the surface.
 You may also specify a rectangle or a cube by specifying pairs of values for latitude, longitude, and altitude.
+ModelToMusicBox will average across a lat-lon bounding box when the latitude and/or longitude parameters
+are specified as paired ranges: --latitude 40.0,49.0
 Use a lat-lon variable (PBLH) to bound the vertical dimension at a specific height.
 Run the following examples from the root level of your github repository, where you can see the sample_waccm_data/ sub-directory.
 
@@ -208,14 +210,25 @@ modelToMusicBox supplies three parameters related to altitude:
 *  -ba BASEALTITUDE, --baseAltitude BASEALTITUDE
 *  -tf TOPOFILE, --topoFile TOPOFILE
 
-## -altitude
+#### -altitude
 The altitude parameter controls the height(s) at which model results are extracted.
+Note that since WRF-Chem and WACCM both implement a scheme of terrain-following coordinates,
+the altitude does not strictly correspond to a fixed model level (by index).
+Most model surfaces are wavy, meaning that they vary in altitude over the model domain.
 
-# --baseAltitude
+The default altitude "surface" is the only altitude setting that selects a model level by index.
+Use PBLH or another variable name to specify altitude by some model-calculated value.
+That variable should have dimensions of latitude and longitude, but not height/level.
+
+For a single altitude parameter, modelToMusicBox will select the model level closest to that altitude.
+For an altitude range, modelToMusicBox will select model levels such that alt1 <= level[n] <= alt2.
+
+#### --baseAltitude
 The base altitude can be specified as 'sea' or 'ground'.
-If the user specified ground, then modelToMusicBox will add the terrain height at each point to the altitude parameter.
+If the user specifies ground, then modelToMusicBox will add the terrain height at each grid cell to the altitude parameter,
+and use the sum(s) to select within the vertical column(s).
 
-# --topoFile
+#### --topoFile
 WRF-Chem model output usually contains the variable ???; WACCM output usually does not contain any variable for terrain height.
 
 ### End-to-end example
