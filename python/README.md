@@ -220,7 +220,8 @@ The default altitude "surface" is the only altitude setting that selects a model
 Use PBLH or another variable name to specify altitude by some model-calculated value.
 That variable should have dimensions of latitude and longitude, but not height/level.
 
-For a single altitude parameter, modelToMusicBox will select the model level closest to that altitude.
+For a single altitude parameter, modelToMusicBox will select the model level closest to that altitude,
+but not below ground level.
 For an altitude range, modelToMusicBox will select model levels such that alt1 <= level[n] <= alt2.
 
 #### --baseAltitude
