@@ -23,6 +23,15 @@ class TestInCodeMechanism:
 
         return gas, species
 
+    # Temperature/pressure in effect during each regime, i.e. the conditions actually
+    # used to integrate the chemistry over that regime's time span -- not necessarily
+    # what a row at the exact boundary time reports, since get_conditions_at_time()
+    # treats a change at time T as taking effect exactly at T (the new value governs
+    # the *next* regime, but the row output for time T reflects the new value too).
+    REGIME_1 = (298.15, 101325.0)  # [0, 300]
+    REGIME_2 = (310.0, 100100.0)   # (300, 450]
+    REGIME_3 = (280.0, 90500.0)    # (450, 600]
+
     def create_box_model(self, mechanism):
         """
         Create a MusicBox instance and load the mechanism.
@@ -34,8 +43,8 @@ class TestInCodeMechanism:
         (box_model
             .set_condition(
                 time=0,
-                temperature=298.15,
-                pressure=101325.0,
+                temperature=self.REGIME_1[0],
+                pressure=self.REGIME_1[1],
                 concentrations={
                     "A": 1.0,
                     "B": 0.0,
@@ -49,8 +58,8 @@ class TestInCodeMechanism:
         (box_model
             .set_condition(
                 time=300.0,
-                temperature=310.0,
-                pressure=100100.0,
+                temperature=self.REGIME_2[0],
+                pressure=self.REGIME_2[1],
                 concentrations={
                     "D": 1.0,
                     "E": 0.0,
@@ -58,8 +67,8 @@ class TestInCodeMechanism:
                 })
             .set_condition(
                 time=450.0,
-                temperature=280.0,
-                pressure=90500.0,
+                temperature=self.REGIME_3[0],
+                pressure=self.REGIME_3[1],
                 concentrations={
                     "A": 100.0,
                     "B": 0.0,
@@ -80,12 +89,18 @@ class TestInCodeMechanism:
         df = box_model.solve()
         model_concentrations = df[["CONC.A.mol m-3", "CONC.B.mol m-3", "CONC.C.mol m-3",
                                    "CONC.D.mol m-3", "CONC.E.mol m-3", "CONC.F.mol m-3"]].values
-        temperatures = df["ENV.temperature.K"].values
-        pressures = df["ENV.pressure.Pa"].values
-        air_densities = df["ENV.air number density.mol m-3"].values
         times = df["time.s"].values
 
         logging.debug(f"Model output: {df}")
+
+        # Rate constants for each regime, computed once from the temperature/pressure
+        # that actually governed the chemistry over that regime -- not read from the
+        # output rows, since the row at a regime's boundary time reports the new
+        # (not-yet-integrated) conditions. See REGIME_1/2/3 above.
+        k1_r1, k2_r1 = calc_k1(*self.REGIME_1, None), calc_k2(*self.REGIME_1, None)
+        k3_r1, k4_r1 = calc_k3(*self.REGIME_1, None), calc_k4(*self.REGIME_1, None)
+        k3_r2, k4_r2 = calc_k3(*self.REGIME_2, None), calc_k4(*self.REGIME_2, None)
+        k1_r3, k2_r3 = calc_k1(*self.REGIME_3, None), calc_k2(*self.REGIME_3, None)
 
         for i_time, time in enumerate(times):
 
@@ -97,16 +112,9 @@ class TestInCodeMechanism:
             E_conc_model = model_concentrations[i_time][4]
             F_conc_model = model_concentrations[i_time][5]
 
-            # Calculate the rate constants for the current time step
-            k1 = calc_k1(temperatures[i_time], pressures[i_time], air_densities[i_time])
-            k2 = calc_k2(temperatures[i_time], pressures[i_time], air_densities[i_time])
-            k3 = calc_k3(temperatures[i_time], pressures[i_time], air_densities[i_time])
-            k4 = calc_k4(temperatures[i_time], pressures[i_time], air_densities[i_time])
-
-            logging.debug(f"Rate constants at time {time}: k1={k1}, k2={k2}, k3={k3}, k4={k4}")
-
             # Calculate the analytical concentrations
             if time <= 300.0:
+                k1, k2, k3, k4 = k1_r1, k2_r1, k3_r1, k4_r1
                 curr_time = time
                 initial_A = 1.0
                 A_conc = initial_A * math.exp(-(k1) * curr_time)
@@ -120,18 +128,23 @@ class TestInCodeMechanism:
                     + (k1 * math.exp(-k2 * curr_time) - k2 * math.exp(-k1 * curr_time))
                     / (k2 - k1)
                 )
-                initial_D = 10.0
-                D_conc = initial_D * math.exp(-(k3) * curr_time)
-                E_conc = (
-                    initial_D
-                    * (k3 / (k4 - k3))
-                    * (math.exp(-k3 * curr_time) - math.exp(-k4 * curr_time))
-                )
-                F_conc = initial_D * (
-                    1.0
-                    + (k3 * math.exp(-k4 * curr_time) - k4 * math.exp(-k3 * curr_time))
-                    / (k4 - k3)
-                )
+                if time == 300.0:
+                    # D/E/F are reset exactly here (see create_box_model); the decay
+                    # from initial_D=10.0 no longer applies to this row.
+                    D_conc, E_conc, F_conc = 1.0, 0.0, 0.0
+                else:
+                    initial_D = 10.0
+                    D_conc = initial_D * math.exp(-(k3) * curr_time)
+                    E_conc = (
+                        initial_D
+                        * (k3 / (k4 - k3))
+                        * (math.exp(-k3 * curr_time) - math.exp(-k4 * curr_time))
+                    )
+                    F_conc = initial_D * (
+                        1.0
+                        + (k3 * math.exp(-k4 * curr_time) - k4 * math.exp(-k3 * curr_time))
+                        / (k4 - k3)
+                    )
 
                 # Compare the model and analytical concentrations
                 assert math.isclose(A_conc, A_conc_model, rel_tol=1e-6, abs_tol=1.0e-3), f"A concentrations differ at time {time}"
@@ -141,6 +154,7 @@ class TestInCodeMechanism:
                 assert math.isclose(E_conc, E_conc_model, rel_tol=1e-6, abs_tol=1.0e-3), f"E concentrations differ at time {time}"
                 assert math.isclose(F_conc, F_conc_model, rel_tol=1e-6, abs_tol=1.0e-3), f"F concentrations differ at time {time}"
             elif time <= 450.0:
+                k3, k4 = k3_r2, k4_r2
                 curr_time = time - 300.0
                 initial_D = 1.0
                 D_conc = initial_D * math.exp(-(k3) * curr_time)
@@ -160,6 +174,7 @@ class TestInCodeMechanism:
                 assert math.isclose(E_conc, E_conc_model, rel_tol=1e-6, abs_tol=1.0e-3), f"E concentrations differ at time {time}"
                 assert math.isclose(F_conc, F_conc_model, rel_tol=1e-6, abs_tol=1.0e-3), f"F concentrations differ at time {time}"
             else:
+                k1, k2 = k1_r3, k2_r3
                 curr_time = time - 450.0
                 initial_A = 100.0
                 A_conc = initial_A * math.exp(-(k1) * curr_time)

@@ -42,8 +42,17 @@ jobs:
 
     - name: Install this package
       run: pip install -e '.[dev]'
-      env: 
+      env:
         FC: gfortran-14
+
+    # The cross-language export test runs the JS package through Node, so
+    # the JS dependencies must be installed too.
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+
+    - name: Install JS dependencies
+      run: npm ci
 
     - name: Run tests and generate coverage reports
       run: pytest --cov python/

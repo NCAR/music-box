@@ -19,8 +19,9 @@ import zipfile
 from acom_music_box import Examples, __version__
 from acom_music_box.utils import calculate_air_density
 import netCDF4
-from acom_music_box.tools import gridUtils
 from acom_music_box.tools import fileUtils
+from acom_music_box.tools import modelUtils
+from acom_music_box.tools import gridUtils
 from acom_music_box.tools import speciesMap
 from acom_music_box import conditions_manager
 import copy
@@ -92,16 +93,29 @@ def parse_arguments():
         '--longitude',
         type=str,
         help=("Longitude of grid cell(s) to extract: 101.7"
+              + "\nSpecify WACCM longitude as positive degrees east 0-360."
               + "\nIf two longitudes supplied, then average over that range.")
     )
     parser.add_argument(
         '--altitude',
         type=str,
-        help=("Height of extraction(s) above sea level, in meters."
+        help=("Height of extraction(s) above sea level (default), in meters."
               + "\nIf two altitudes supplied, then average over that height range."
               + "\nIf no altitude supplied, then extract surface level of model output."
               + "\nUse the keyword 'surface' to extract the surface layer."
               + "\nUse a lat-lon variable name to represent that height: PBLH.")
+    )
+    parser.add_argument(
+        '-ba', '--baseAltitude',
+        type=str,
+        default=gridUtils.kSeaLevelKeyword,
+        help=("Altitude is above sea level (default), or ground."
+              + "\nChoices are: sea or ground.")
+    )
+    parser.add_argument(
+        '-tf', '--topoFile',
+        type=str,
+        help='Path to a WACCM topography file containing the NetCDF variable PHIS.'
     )
     parser.add_argument(
         '--template',
@@ -212,44 +226,103 @@ def getMusicaSpecies(myConfigFile):
     return (musicaNames)
 
 
+# Add the components of any model variables that must be calculated from others.
+# varDictionary = dictionary of common species names
+# modelInstance = some type of Base_Model; currently WACCM or WRF-Chem
+# return (varDictionary, newComponents) with component species added
+def addDerivedComponents(varDictionary, modelInstance):
+    # create a set of unique variable names to add
+    components = set()
+    addedVars = []
+
+    for key in varDictionary:
+        # we are looking for patterns like: "Temperature derived"
+        if not "derived" in key:
+            continue
+        derivedName = key.replace("derived", "").replace(" ", "")
+
+        # ask model what components it needs to derive this variable
+        varComponents = modelInstance.getDerivedComponents(derivedName.lower())
+        components.update(varComponents)
+
+    # add those model component species to the dictionary
+    for component in components:
+        if component in varDictionary:
+            continue
+        varDictionary[component] = component     # for CSV only; no MUSICA equivalent
+        addedVars.append(component)
+
+    return (varDictionary, addedVars)
+
+
 # Read array values at a single lat-lon-time point.
 # waccmMusicaDict = mapping from WACCM names to MusicBox
 # latitudes, longitudes = geo-coordinates of retrieval point(s)
 #   Could be a single point or corners of a selection rectangle.
 # altitudes = height bounds across which to average (meters)
+# altitudeBase = sea level or ground
 # when = date and time to extract
 # waccmFilepath = full path to model output file
-# modelType = WACCM_File or WRF)Chem_File
+# modelObject = instance of Base_Model, currently WACCM_Model or WRF_Chem_Model
+# topoFile = read WACCM PHIS from here and derive HGT
 # return dictionary of MUSICA variable names, units, and values
-def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
-              when, waccmFilepath, modelType):
+def readWACCM(waccmMusicaDict, latitudes, longitudes,
+              altitudes, altitudeBase,
+              when, waccmFilepath, modelObject,
+              topoFile=None):
 
     logger.info(f"WACCM file path = {waccmFilepath}")
 
     # open dataset for reading
     waccmDataSet = xarray.open_dataset(waccmFilepath)
+    waccmDataSet.attrs["modelType"] = modelObject.modelType   # mark dataset with the model type
     # diagnostic to look at dataset structure
     logger.debug(f"WACCM dataset = {waccmDataSet}")
 
     # retrieve all vars at a single point
     meanPoint = None
-    if (modelType == fileUtils.WACCM_File):            # straight grid
-        meanPoint = gridUtils.meanStraightGrid(waccmDataSet, when,
-                                               latitudes, longitudes, altitudes)
+    if (modelObject.modelType == fileUtils.WACCM_File.modelType):            # straight grid
+        if (topoFile is not None):
+            # calculate the WACCM surface height from a separate topography file
+            topoArray = gridUtils.deriveHeight(topoFile)
+            waccmDataSet[gridUtils.kTerrainHeight] = (topoArray.dims, topoArray.values)
+        else:
+            logger.warning(f"Using Z3[lev=surface] for terrain height; PHIS in WACCM topography file would be more accurate.")
+            topoArray = gridUtils.deriveHeight(waccmFilepath)
+            waccmDataSet[gridUtils.kTerrainHeight] = (topoArray.dims, topoArray.values)
 
-    elif (modelType == fileUtils.WRF_Chem_File):        # curved grid
+        logger.debug(f"WACCM dataset HGT = {waccmDataSet['HGT']}")
+
+        meanPoint = gridUtils.meanStraightGrid(waccmDataSet, when,
+                                               latitudes, longitudes,
+                                               altitudes, altitudeBase)
+
+    elif (modelObject.modelType == fileUtils.WRF_Chem_File.modelType):        # curved grid
         wrfDataSet = netCDF4.Dataset(waccmFilepath)     # needed for the z-levels
         meanPoint = gridUtils.meanCurvedGrid(waccmDataSet, when,
-                                             latitudes, longitudes, altitudes,
+                                             latitudes, longitudes,
+                                             altitudes, altitudeBase,
                                              wrfDataSet)
         wrfDataSet.close()
 
     # diagnostic to look at single point structure
     logger.debug(f"WACCM / WRF-Chem meanPoint = {meanPoint}")
 
+    if meanPoint is None:
+        logger.warning(f"No grid points collected for model time step {when}.")
+        return None
+
     # loop through vars and build another dictionary
     musicaDict = {}
     for waccmKey, musicaName in waccmMusicaDict.items():
+        if "derived" in waccmKey:
+            # resolve this derived variable
+            musicaTuple = modelObject.calcDerivedVar(meanPoint, waccmKey)
+            logger.debug(f"Derived musicaTuple = {musicaTuple}")
+            # bogus
+            musicaDict[musicaName] = musicaTuple
+            continue
+
         if waccmKey not in meanPoint:
             logger.warning(f"Requested variable {waccmKey} not found in WACCM model output.")
             musicaTuple = (waccmKey, None, [None])
@@ -257,13 +330,20 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
             continue
 
         chemSinglePoint = meanPoint[waccmKey]
-        logger.debug(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemSinglePoint.units}")
+
+        # get rid of {curly brackets} surrounding the exponent
+        chemUnits = None
+        logger.debug(f"chemSinglePoint = {chemSinglePoint}")
+        if ("units" in chemSinglePoint.attrs):
+            chemSinglePoint.attrs["units"] = chemSinglePoint.units.replace("{", "").replace("}", "")
+            chemUnits = chemSinglePoint.attrs["units"]
+        logger.debug(f"WACCM chemical {waccmKey} = value {chemSinglePoint.values} {chemUnits}")
 
         # this next line takes the mean along any remaining vertical axis/dimension
         verticalMean = float(chemSinglePoint.values.mean())
 
         # verticalMean is placed into a list because we want to add rows later
-        musicaTuple = (waccmKey, chemSinglePoint.units, [verticalMean])
+        musicaTuple = (waccmKey, chemUnits, [verticalMean])
         logger.debug(f"musicaTuple = {musicaTuple}")
         musicaDict[musicaName] = musicaTuple
 
@@ -274,7 +354,7 @@ def readWACCM(waccmMusicaDict, latitudes, longitudes, altitudes,
 
 
 # Add molecular Nitrogen, Oxygen, and Argon to dictionary.
-# varValues = already read from WACCM, contains (name, concentration, units)
+# varValues = already read from WACCM, contains (name, units, concentration)
 # return varValues with N2, O2, and Ar added
 def addStandardGases(varValues):
     varValues["N2"] = ("N2", "mol/mol", [0.78084])    # standard fraction by volume
@@ -300,6 +380,7 @@ def convertWaccm(varDict):
     soa_density = 1770  # kg m-3
     hPaToPa = 100
     rConstant = 8.31446  # ideal gas constant J/(mol K)
+    minutesToSeconds = 60
 
     # retrieve temperature and pressure from WACCM
     temperature = varDict["temperature"][valueIndex][0]
@@ -325,13 +406,16 @@ def convertWaccm(varDict):
             # soa species only
             varDict[key] = (vTuple[0], "mol m-3",
                             [vTuple[valueIndex][0] * soa_density / soa_molecular_weight])
-        if (units == "hPa"):
-            varDict[key] = (vTuple[0], "Pa",
-                            [vTuple[valueIndex][0] * hPaToPa])
-
         if (units == "ppmv"):
             varDict[key] = (vTuple[0], "mol m-3",
                             [(vTuple[valueIndex][0] * 1e-6 * pressure) / (rConstant * temperature)])
+
+        if (units == "hPa"):
+            varDict[key] = (vTuple[0], "Pa",
+                            [vTuple[valueIndex][0] * hPaToPa])
+        if (units == "min-1"):
+            varDict[key] = (vTuple[0], "s-1",
+                            [vTuple[valueIndex][0] / minutesToSeconds])
 
     return (varDict)
 
@@ -349,6 +433,15 @@ def isSystem(varName):
 # return True for temperature, pressure, ...
 def isEnvironment(varName):
     if (varName.lower() in {"temperature", "pressure"}):
+        return (True)
+
+    return (False)
+
+
+# Determines if WACCM chemical "name" is a photolysis variable or not.
+# return True for names beginning with PHOTR*.
+def isPhotolysis(varName):
+    if varName.startswith("PHOTR"):
         return (True)
 
     return (False)
@@ -377,6 +470,10 @@ def writeInitCSV(initValues, filename):
             reaction_type = None
         if isEnvironment(key):
             reaction_type = "ENV"
+
+        # photolysis vars are indicated by the model name
+        if isPhotolysis(value[musicaIndex]):
+            reaction_type = "PHOTO"
 
         titleString = conditions_manager.ConditionsManager.format_reaction_var_units(
             key, units=value[unitIndex], prefix=reaction_type)
@@ -427,6 +524,8 @@ def writeInitJSON(initValues, filename):
             reaction_type = None
         if isEnvironment(key):
             reaction_type = "ENV"
+        if isPhotolysis(value[musicaIndex]):
+            reaction_type = "PHOTO"
 
         titleString = conditions_manager.ConditionsManager.format_reaction_var_units(
             key, units=value[unitIndex], prefix=reaction_type)
@@ -605,18 +704,18 @@ def main():
     insertIntoConfig = False
 
     # process the two model types
-    for modelDirs, modelType in zip(
+    for fileDirs, fileClass in zip(
             [waccmDir, wrfChemDir],
             [fileUtils.WACCM_File, fileUtils.WRF_Chem_File],
     ):
-        if (len(modelDirs) == 0):
+        if (len(fileDirs) == 0):
             continue
 
         # collect model output files in specified directories
-        logger.info(f"Directories: {modelDirs}   type {modelType}")
+        logger.info(f"Directories: {fileDirs}   type {fileClass}")
         allFiles = []
-        for modelDir in modelDirs:
-            outFiles = fileUtils.collectFilesDates(modelDir, modelType)
+        for modelDir in fileDirs:
+            outFiles = fileUtils.collectFilesDates(modelDir, fileClass)
             allFiles.extend(outFiles)
 
         # the filenames include the full directory path
@@ -634,6 +733,10 @@ def main():
         # possibly exit here if just collecting files
         # sys.exit(0)
 
+        # create a model object here (WACCM or WRF-Chem)
+        myModelObject = modelUtils.factory(fileClass)
+        logger.debug(f"myModelObject = {myModelObject}")
+
         # determine the date-time bounds to retrieve
         startDateTime = datetime.datetime.strptime(
             f"{dateStrs[0]} {timeStrs[0]}", "%Y%m%d %H:%M")
@@ -645,7 +748,7 @@ def main():
         logger.info(f"Calculate averages from date-time {startDateTime} to {endDateTime}.")
 
         # determine the interval for time frames
-        strideHours = modelType.hourStride
+        strideHours = fileClass.hourStride
         if (strideArg is not None):
             strideHours = strideArg
         logger.info(f"stride = {strideHours} hours")
@@ -671,26 +774,41 @@ def main():
             musicaChems = getMusicaSpecies(templateFile)
 
             # create map of species common to both WACCM and MUSICA
-            commonDict = speciesMap.getMusicaDictionary(modelType, waccmChems, musicaChems)
+            commonDict = speciesMap.getMusicaDictionary(fileClass, waccmChems, musicaChems)
             logger.info(f"Species in common are = {commonDict}")
             if (len(commonDict) == 0):
                 logger.warning("There are no common species between WACCM and your MUSICA species.json file.")
+
+            # add the species components of any derived variables
+            commonDict, componentSpecies = addDerivedComponents(commonDict, myModelObject)
+            logger.info(f"Species in common plus derived components = {commonDict}")
+            logger.info(f"Temporary component species for deriving vars = {componentSpecies}")
 
             # time is the first listed variable for initial conditions
             varValues = {}
             varValues["time"] = ("time", "s", [seconds])
 
-            # Read named variables from WACCM model output.
+            # Read named variables from WACCM model output,
+            # and calculate any derived variables.
             logger.info(f"Retrieve WACCM conditions at ({lats} North, {lons} East)   when {when}.")
-            waccmValues = readWACCM(commonDict, lats, lons, alts,
-                                    when, waccmFilename, modelType)
+            waccmValues = readWACCM(commonDict, lats, lons,
+                                    alts, myArgs.baseAltitude,
+                                    when, waccmFilename, myModelObject,
+                                    myArgs.topoFile)
             logger.debug(f"Original WACCM waccmValues = {waccmValues}")
+
+            if waccmValues is None:
+                logger.warning(f"Skipping time step {when}")
+                when += datetime.timedelta(hours=strideHours)
+                continue
+
+            # append extracted model values to this row
             varValues.update(waccmValues)
 
             # add molecular Nitrogen, Oxygen, and Argon
             varValues = addStandardGases(varValues)
 
-            # Perform any conversions needed, or derive variables.
+            # Perform any unit conversions needed.
             varValues = convertWaccm(varValues)
             logger.debug(f"Converted WACCM varValues = {varValues}")
             frameCount += 1
@@ -712,6 +830,10 @@ def main():
             logger.error("No time steps found and no values extracted."
                          + "\nPlease check your date-time window against your model output.")
             sys.exit(1)
+
+        # remove those temporary component species used in deriving variables
+        for species in componentSpecies:
+            accumValues.pop(species, None)
 
         # loop through the requested output files/formats
         for output in myArgs.output:

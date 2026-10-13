@@ -1,0 +1,135 @@
+{
+  "box model options": {
+    "grid": "box",
+    "chemistry time step [sec]": 2.0,
+    "output time step [sec]": 6.0,
+    "simulation length [sec]": 60.0,
+    "max iterations": 100
+  },
+  "conditions": {
+    "data": [
+      {
+        "headers": [
+          "time.s", "ENV.temperature.K", "ENV.pressure.Pa",
+          "CONC.Srf.mol m-3", "CONC.A.mol m-3", "CONC.B.mol m-3", "CONC.C.mol m-3",
+          "CONC.D.mol m-3", "CONC.E.mol m-3", "CONC.F.mol m-3", "CONC.G.mol m-3",
+          "CONC.H.mol m-3", "CONC.I.mol m-3", "CONC.J.mol m-3",
+          "PHOTO.photo1.s-1", "EMIS.emis1.mol m-3 s-1", "LOSS.loss1.s-1", "USER.ud1.s-1",
+          "SURF.surf1.particle number concentration.# m-3", "SURF.surf1.effective radius.m"
+        ],
+        "rows": [[
+          0.0, 298.15, 101325.0,
+          1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0,
+          1.0e-4, 1.0e-8, 1.0e-3, 1.0e-5, 1.0e12, 1.0e-7
+        ]]
+      },
+      {
+        "headers": [
+          "time.s", "ENV.temperature.K", "ENV.pressure.Pa", "CONC.A.mol m-3",
+          "PHOTO.photo1.s-1", "EMIS.emis1.mol m-3 s-1", "LOSS.loss1.s-1", "USER.ud1.s-1",
+          "SURF.surf1.particle number concentration.# m-3", "SURF.surf1.effective radius.m"
+        ],
+        "rows": [[
+          30.0, 300.0, 101000.0, 0.5,
+          2.0e-4, 5.0e-9, 2.0e-3, 2.0e-5, 5.0e11, 2.0e-7
+        ]]
+      }
+    ]
+  },
+  "mechanism": {
+    "version": "1.0.0",
+    "name": "all_options_test",
+    "species": [
+      { "name": "Srf", "molecular weight [kg mol-1]": 0.029 },
+      { "name": "A" }, { "name": "B" }, { "name": "C" }, { "name": "D" },
+      { "name": "E" }, { "name": "F" }, { "name": "G" }, { "name": "H" },
+      { "name": "I" }, { "name": "J" }
+    ],
+    "phases": [
+      {
+        "name": "gas",
+        "species": [
+          { "name": "Srf", "diffusion coefficient [m2 s-1]": 1e-5 },
+          { "name": "A" }, { "name": "B" }, { "name": "C" }, { "name": "D" },
+          { "name": "E" }, { "name": "F" }, { "name": "G" }, { "name": "H" },
+          { "name": "I" }, { "name": "J" }
+        ]
+      }
+    ],
+    "reactions": [
+      {
+        "type": "ARRHENIUS", "name": "arr1",
+        "A": 4.0e-3, "B": 0.5, "C": 50.0, "D": 300.0, "E": 0.1,
+        "reactants": [ { "species name": "A", "coefficient": 1 } ],
+        "products": [ { "species name": "B", "coefficient": 1 } ],
+        "gas phase": "gas"
+      },
+      {
+        "type": "TROE", "name": "troe1",
+        "k0_A": 1.0e-28, "k0_B": -3.0, "k0_C": 0.0,
+        "kinf_A": 1.0e-11, "kinf_B": 0.0, "kinf_C": 0.0,
+        "Fc": 0.45, "N": 1.0,
+        "reactants": [ { "species name": "B", "coefficient": 1 } ],
+        "products": [ { "species name": "C", "coefficient": 1 } ],
+        "gas phase": "gas"
+      },
+      {
+        "type": "BRANCHED_NO_RO2", "name": "branched1",
+        "X": 1.2e-3, "Y": 1.0, "a0": 0.15, "n": 9,
+        "reactants": [ { "species name": "C", "coefficient": 1 } ],
+        "nitrate products": [ { "species name": "D", "coefficient": 1 } ],
+        "alkoxy products": [ { "species name": "E", "coefficient": 1 } ],
+        "gas phase": "gas"
+      },
+      {
+        "type": "TERNARY_CHEMICAL_ACTIVATION", "name": "tca1",
+        "k0_A": 1.0e-28, "k0_B": -3.0, "k0_C": 0.0,
+        "kinf_A": 1.0e-11, "kinf_B": 0.0, "kinf_C": 0.0,
+        "Fc": 0.45, "N": 1.0,
+        "reactants": [ { "species name": "D", "coefficient": 1 } ],
+        "products": [ { "species name": "F", "coefficient": 1 } ],
+        "gas phase": "gas"
+      },
+      {
+        "type": "TUNNELING", "name": "tunnel1",
+        "A": 1.0e-3, "B": 100.0, "C": 200.0,
+        "reactants": [ { "species name": "E", "coefficient": 1 } ],
+        "products": [ { "species name": "G", "coefficient": 1 } ],
+        "gas phase": "gas"
+      },
+      {
+        "type": "PHOTOLYSIS", "name": "photo1",
+        "scaling factor": 1.0,
+        "reactants": [ { "species name": "F", "coefficient": 1 } ],
+        "products": [ { "species name": "H", "coefficient": 1 } ],
+        "gas phase": "gas"
+      },
+      {
+        "type": "EMISSION", "name": "emis1",
+        "scaling factor": 1.0,
+        "products": [ { "species name": "I", "coefficient": 1 } ],
+        "gas phase": "gas"
+      },
+      {
+        "type": "FIRST_ORDER_LOSS", "name": "loss1",
+        "scaling factor": 1.0,
+        "reactants": [ { "species name": "H", "coefficient": 1 } ],
+        "gas phase": "gas"
+      },
+      {
+        "type": "USER_DEFINED", "name": "ud1",
+        "scaling factor": 1.0,
+        "reactants": [ { "species name": "I", "coefficient": 1 } ],
+        "products": [ { "species name": "J", "coefficient": 1 } ],
+        "gas phase": "gas"
+      },
+      {
+        "type": "SURFACE", "name": "surf1",
+        "reaction probability": 0.1,
+        "gas-phase species": "Srf",
+        "gas-phase products": [ { "species name": "A", "coefficient": 1 } ],
+        "gas phase": "gas"
+      }
+    ]
+  }
+}

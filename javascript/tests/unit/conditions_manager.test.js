@@ -27,13 +27,13 @@ describe('ConditionsManager constructor', () => {
     assert.equal(mgr.concentrationEvents[0]['O2'], 0.162);
   });
 
-  it('concentration events do not appear in getConditionsAtTime', () => {
+  it('getConditionsAtTime returns concentrations only on an exact time match', () => {
     const mgr = new ConditionsManager([
       { 'time.s': 0, 'CONC.O3.mol m-3': 6.43e-6 },
     ]);
-    const conds = mgr.getConditionsAtTime(0);
-    assert.ok(!('concentrations' in conds), 'concentrations should not be in returned object');
-    assert.ok(!('O3' in conds), 'species should not be in returned object');
+    assert.deepEqual(mgr.getConditionsAtTime(0).concentrations, { O3: 6.43e-6 });
+    // A one-time perturbation, not a held value -- it doesn't carry forward.
+    assert.deepEqual(mgr.getConditionsAtTime(1).concentrations, {});
   });
 
   it('accepts null or empty input gracefully', () => {
@@ -138,3 +138,209 @@ describe('ConditionsManager.getConditionsAtTime - step interpolation', () => {
     assert.equal(mgr.concentrationEvents[0]['O3'], 6.43e-6);
   });
 });
+
+describe('ConditionsManager.timePoints', () => {
+  it('is empty for no data', () => {
+    const mgr = new ConditionsManager([]);
+    assert.deepEqual(mgr.timePoints, []);
+  });
+
+  it('lists every configured point sorted by time, unlike getConditionsAtTime', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 3600, 'ENV.temperature.K': 240.0 },
+      { 'time.s': 0, 'ENV.temperature.K': 220.0, 'ENV.pressure.Pa': 101325.0 },
+    ]);
+    assert.equal(mgr.timePoints.length, 2);
+    assert.equal(mgr.timePoints[0].t, 0);
+    assert.equal(mgr.timePoints[0].temp, 220.0);
+    assert.equal(mgr.timePoints[0].pressure, 101325.0);
+    assert.equal(mgr.timePoints[1].t, 3600);
+    assert.equal(mgr.timePoints[1].temp, 240.0);
+  });
+
+  it('only carries the columns a point actually set, unlike the accumulated getConditionsAtTime', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 0, 'ENV.temperature.K': 220.0 },
+      { 'time.s': 3600, 'ENV.pressure.Pa': 101000.0 },
+    ]);
+    // getConditionsAtTime accumulates: temperature is inherited from t=0
+    assert.equal(mgr.getConditionsAtTime(3600).temperature, 220.0);
+    // timePoints reports only what that point itself set: no inherited temperature
+    assert.equal(mgr.timePoints[1].t, 3600);
+    assert.equal(mgr.timePoints[1].temp, null);
+    assert.equal(mgr.timePoints[1].pressure, 101000.0);
+  });
+
+  it('carries rate params per point with unit suffixes already stripped', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 0, 'PHOTO.O2_1.s-1': 1.47e-12 },
+    ]);
+    assert.deepEqual(mgr.timePoints[0].rateParams, { 'PHOTO.O2_1': 1.47e-12 });
+  });
+
+  it('also carries rate params under their original, unstripped header', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 0, 'PHOTO.O2_1.s-1': 1.47e-12, 'EMIS.NO.mol m-3 s-1': 0.001 },
+    ]);
+    assert.deepEqual(mgr.timePoints[0].rawRateParams, {
+      'PHOTO.O2_1.s-1': 1.47e-12,
+      'EMIS.NO.mol m-3 s-1': 0.001,
+    });
+  });
+
+  it('does not include CONC.* concentration events', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 0, 'CONC.O3.mol m-3': 6.43e-6, 'ENV.temperature.K': 217.6 },
+    ]);
+    assert.deepEqual(
+      Object.keys(mgr.timePoints[0]).sort(),
+      ['airDensity', 'pressure', 'rateParams', 'rawRateParams', 't', 'temp']
+    );
+  });
+});
+
+describe('ConditionsManager.getConditionsAtTime - air density', () => {
+  it('defaults to null when no air density is configured', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 0, 'ENV.temperature.K': 217.6 },
+    ]);
+    assert.equal(mgr.getConditionsAtTime(0).airDensity, null);
+  });
+
+  it('reads air density from a data row', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 0, 'ENV.air number density.mol m-3': 42.39 },
+    ]);
+    assert.equal(mgr.getConditionsAtTime(0).airDensity, 42.39);
+  });
+
+  it('a single configured value holds for every later timestep (step interpolation)', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 0, 'ENV.air number density.mol m-3': 42.39 },
+    ]);
+    assert.equal(mgr.getConditionsAtTime(0).airDensity, 42.39);
+    assert.equal(mgr.getConditionsAtTime(1800).airDensity, 42.39);
+    assert.equal(mgr.getConditionsAtTime(999999).airDensity, 42.39);
+  });
+
+  it('stays null before the configured time point, then holds afterward', () => {
+    const mgr = new ConditionsManager([
+      { 'time.s': 3600, 'ENV.air number density.mol m-3': 42.39 },
+    ]);
+    assert.equal(mgr.getConditionsAtTime(0).airDensity, null);
+    assert.equal(mgr.getConditionsAtTime(3600).airDensity, 42.39);
+    assert.equal(mgr.getConditionsAtTime(7200).airDensity, 42.39);
+  });
+});
+
+describe('ConditionsManager.setCondition', () => {
+  it('sets temperature, pressure, and air density at a time', () => {
+    const mgr = new ConditionsManager([]);
+    mgr.setCondition(0, { temperature: 217.6, pressure: 1394.3, airDensity: 42.39 });
+
+    const conds = mgr.getConditionsAtTime(0);
+    assert.equal(conds.temperature, 217.6);
+    assert.equal(conds.pressure, 1394.3);
+    assert.equal(conds.airDensity, 42.39);
+  });
+
+  it('sets concentrations as exact-time events', () => {
+    const mgr = new ConditionsManager([]);
+    mgr.setCondition(0, { concentrations: { O3: 6.43e-6, O2: 0.162 } });
+
+    assert.equal(mgr.concentrationEvents[0]['O3'], 6.43e-6);
+    assert.equal(mgr.concentrationEvents[0]['O2'], 0.162);
+  });
+
+  it('sets rate parameters, exposing both the stripped and raw header forms', () => {
+    const mgr = new ConditionsManager([]);
+    mgr.setCondition(0, { rateParameters: { 'PHOTO.photo1.s-1': 1.0e-4 } });
+
+    assert.equal(mgr.getConditionsAtTime(0).rateParams['PHOTO.photo1'], 1.0e-4);
+    assert.equal(mgr.getRawConditionsAtTime(0).rawRateParams['PHOTO.photo1.s-1'], 1.0e-4);
+  });
+
+  it('is chainable and supports multiple times', () => {
+    const mgr = new ConditionsManager([])
+      .setCondition(0, { temperature: 298.15 })
+      .setCondition(30, { temperature: 300 });
+
+    assert.deepEqual(mgr.getTimes(), [0, 30]);
+    assert.equal(mgr.getConditionsAtTime(0).temperature, 298.15);
+    assert.equal(mgr.getConditionsAtTime(30).temperature, 300);
+  });
+
+  it('throws for a rate parameter key with an unrecognized prefix', () => {
+    const mgr = new ConditionsManager([]);
+    assert.throws(
+      () => mgr.setCondition(0, { rateParameters: { 'BOGUS.rate.s-1': 1 } }),
+      /Invalid rate parameter key/
+    );
+  });
+
+  it('warns when overwriting a value already set at the same time', () => {
+    const mgr = new ConditionsManager([]);
+    mgr.setCondition(0, { temperature: 298.15 });
+
+    const originalWarn = console.warn;
+    const warnings = [];
+    console.warn = (...args) => warnings.push(args.join(' '));
+    try {
+      mgr.setCondition(0, { temperature: 300 });
+    } finally {
+      console.warn = originalWarn;
+    }
+
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /Duplicate condition: ENV.temperature.K/);
+  });
+});
+
+describe('ConditionsManager.toDataBlocks', () => {
+  it('round-trips setCondition() output through the wire format unchanged', () => {
+    const original = new ConditionsManager([])
+      .setCondition(0, {
+        temperature: 298.15,
+        pressure: 101325,
+        concentrations: { A: 1.0, B: 0.0 },
+        rateParameters: { 'PHOTO.photo1.s-1': 1.0e-4 },
+      })
+      .setCondition(30, {
+        temperature: 300,
+        concentrations: { A: 0.5 },
+        rateParameters: { 'PHOTO.photo1.s-1': 2.0e-4 },
+      });
+
+    const { data } = original.toDataBlocks();
+    const reloaded = new ConditionsManager(parseConditionsRows(data));
+
+    for (const t of [0, 30]) {
+      assert.deepEqual(reloaded.getConditionsAtTime(t), original.getConditionsAtTime(t));
+      assert.deepEqual(reloaded.concentrationEvents[t], original.concentrationEvents[t]);
+    }
+  });
+
+  it('omits a column entirely at a time point where it was never set', () => {
+    const mgr = new ConditionsManager([]).setCondition(0, { temperature: 298.15 });
+    const { data } = mgr.toDataBlocks();
+
+    assert.equal(data.length, 1);
+    assert.deepEqual(data[0].headers, ['time.s', 'ENV.temperature.K']);
+  });
+});
+
+// Inlined rather than imported from config_parser.js, to keep this file's only dependency on
+// ConditionsManager itself.
+function parseConditionsRows(blocks) {
+  const rows = [];
+  for (const { headers, rows: blockRows } of blocks) {
+    for (const values of blockRows) {
+      const row = {};
+      headers.forEach((header, i) => {
+        row[header] = values[i];
+      });
+      rows.push(row);
+    }
+  }
+  return rows;
+}

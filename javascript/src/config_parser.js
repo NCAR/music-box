@@ -58,6 +58,39 @@ export function parseCsvToBlock(csvText) {
 }
 
 /**
+ * Resolves "conditions.filepaths" into "conditions.data" blocks, reading each CSV through
+ * the given callback, then removes "filepaths" from the result.
+ *
+ * CSV-derived blocks are prepended, so pre-existing "conditions.data" (appended after)
+ * takes precedence when both specify the same time point.
+ *
+ * @param {Object} config - music-box v1 config object; not mutated
+ * @param {(relPath: string) => Promise<string>} readCsvText - reads a CSV file's text
+ * @returns {Promise<Object>} a new config object with "conditions.filepaths" resolved
+ */
+export async function resolveConditionsFilepaths(config, readCsvText) {
+  const filepaths = config?.conditions?.filepaths;
+  if (!Array.isArray(filepaths) || filepaths.length === 0) {
+    return config;
+  }
+
+  const csvBlocks = [];
+  for (const relPath of filepaths) {
+    csvBlocks.push(parseCsvToBlock(await readCsvText(relPath)));
+  }
+
+  const { filepaths: _filepaths, ...conditionsWithoutFilepaths } = config.conditions;
+
+  return {
+    ...config,
+    conditions: {
+      ...conditionsWithoutFilepaths,
+      data: [...csvBlocks, ...(conditionsWithoutFilepaths.data ?? [])],
+    },
+  };
+}
+
+/**
  * Parse inline conditions from a music-box v1 config.
  *
  * Supports conditions["data"]: an array of {headers, rows} blocks, matching the

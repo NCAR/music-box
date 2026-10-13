@@ -4,7 +4,8 @@
  * Usage (from project root):
  *   node javascript/bin/run.js <path-to-config.json>
  *
- * Output columns: time.s, CONC.<species>.mol m-3, ...
+ * Output columns: time.s, ENV.temperature.K, ENV.pressure.Pa,
+ * ENV.air number density.mol m-3, CONC.<species>.mol m-3, ...
  */
 
 import { MusicBox } from '../src/music_box.js';
