@@ -232,7 +232,7 @@ and use the sum(s) to select within the vertical column(s).
 WRF-Chem model output routinely contains the variable HGT for terrain height;
 WACCM output usually does not contain any variable for terrain height.
 Specifying --baseAltitude ground requires modelToMusicBox to calculate the altitude above the terrain.
-For WACCM output, the user has the option here to specify a separate topograhy file used in WACCM.
+For WACCM output, the user has the option here to specify a separate topograhy file used in running WACCM.
 
 ```bash
 --topoFile ~/WACCM/model-output/fv_0.9x1.25_nc3000_Nsw042_Nrs008_Co060_Fi001_ZR_sgh30_24km_GRNL_MERRA2_c171218.nc
