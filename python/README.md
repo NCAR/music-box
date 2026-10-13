@@ -201,6 +201,14 @@ modelToMusicBox --wrfchemDir ./sample_waccm_data/20250820/wrf --wrfchemDir ./sam
 
 modelToMusicBox will also follow links to NetCDF files, in case you need to avoid copying multi-GB files around.
 
+### Altitude
+
+modelToMusicBox supplies three parameters related to altitude:
+  --altitude ALTITUDE   Height of extraction(s) above sea level (default), in meters.
+  -ba BASEALTITUDE, --baseAltitude BASEALTITUDE
+  -tf TOPOFILE, --topoFile TOPOFILE
+
+
 ### End-to-end example
 In this section we will fully import initial conditions from WRF-Chem and evolving conditions from WACCM.
 We will run MusicBox after each step to ensure that the model conditions are indeed affecting the output.
