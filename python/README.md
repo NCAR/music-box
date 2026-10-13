@@ -216,7 +216,7 @@ Note that since WRF-Chem and WACCM both implement a scheme of terrain-following 
 the altitude does not strictly correspond to a fixed model level (by index).
 Most model surfaces are wavy, meaning that they vary in altitude over the model domain.
 
-The default altitude "surface" is the only altitude setting that selects a model level by index.
+The default altitude "surface" is the only altitude setting that selects a model level by index (the lowest).
 Use PBLH or another variable name to specify altitude by some model-calculated value.
 That variable should have dimensions of latitude and longitude, but not height/level.
 
@@ -242,8 +242,9 @@ You may obtain ACOM's topography file from WACCM downloads at: https://www.acom.
 
 For WACCM, modelToMusicBox calculates the terrain height = PHIS / g,
 where g = 9.80616 m/s2 is the gravitational constant used in WACCM.
-If you leave out the --topoFile for WACCM with baseAltitude ground,
-modelToMusicBox will approximate the terrain height with the lowest model level Z3.
+If you leave out the --topoFile for WACCM while using baseAltitude ground,
+then modelToMusicBox will approximate the terrain height with the lowest model level Z3.
+Z3[surface] is a few meters above the actual terrain.
 
 ### End-to-end example
 In this section we will fully import initial conditions from WRF-Chem and evolving conditions from WACCM.
