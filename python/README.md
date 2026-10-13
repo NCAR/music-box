@@ -159,6 +159,8 @@ modelToMusicBox --help
 You may specify a single point in space and date-time by passing single values to date, time, latitude, and longitude.
 Altitude defaults to the surface.
 You may also specify a rectangle or a cube by specifying pairs of values for latitude, longitude, and altitude.
+ModelToMusicBox will average across a lat-lon bounding box when the latitude and/or longitude parameters
+are specified as paired ranges: --latitude 40.0,49.0
 Use a lat-lon variable (PBLH) to bound the vertical dimension at a specific height.
 Run the following examples from the root level of your github repository, where you can see the sample_waccm_data/ sub-directory.
 
@@ -200,6 +202,50 @@ modelToMusicBox --wrfchemDir ./sample_waccm_data/20250820/wrf --wrfchemDir ./sam
 ```
 
 modelToMusicBox will also follow links to NetCDF files, in case you need to avoid copying multi-GB files around.
+
+### Altitude parameters
+
+modelToMusicBox supplies three parameters related to altitude:
+*  --altitude ALTITUDE   Height of extraction(s) above sea level (default), in meters.
+*  -ba BASEALTITUDE, --baseAltitude BASEALTITUDE
+*  -tf TOPOFILE, --topoFile TOPOFILE
+
+#### -altitude
+The altitude parameter controls the height(s) at which model results are extracted.
+Note that since WRF-Chem and WACCM both implement a scheme of terrain-following coordinates,
+the altitude does not strictly correspond to a fixed model level (by index).
+Most model surfaces are wavy, meaning that they vary in altitude over the model domain.
+
+The default altitude "surface" is the only altitude setting that selects a model level by index (the lowest).
+Use PBLH or another variable name to specify altitude by some model-calculated value.
+That variable should have dimensions of latitude and longitude, but not height/level.
+
+For a single altitude parameter, modelToMusicBox will select the model level closest to that altitude,
+but not below ground level.
+For an altitude range, modelToMusicBox will select model levels such that alt1 <= level[n] <= alt2.
+
+#### --baseAltitude
+The base altitude can be specified as 'sea' or 'ground'.
+If the user specifies ground, then modelToMusicBox will add the terrain height at each grid cell to the altitude parameter,
+and use the sum(s) to select within the vertical column(s).
+
+#### --topoFile
+WRF-Chem model output routinely contains the variable HGT for terrain height;
+WACCM output usually does not contain any variable for terrain height.
+Specifying --baseAltitude ground requires modelToMusicBox to calculate the altitude above the terrain.
+For WACCM output, the user has the option here to specify a separate topography file used in running WACCM.
+
+```bash
+--topoFile ~/WACCM/model-output/fv_0.9x1.25_nc3000_Nsw042_Nrs008_Co060_Fi001_ZR_sgh30_24km_GRNL_MERRA2_c171218.nc
+```
+
+You may obtain ACOM's topography file from WACCM downloads at: https://www.acom.ucar.edu/waccm/DATA/topography/
+
+For WACCM, modelToMusicBox calculates the terrain height = PHIS / g,
+where g = 9.80616 m/s2 is the gravitational constant used in WACCM.
+If you leave out the --topoFile for WACCM while using baseAltitude ground,
+then modelToMusicBox will approximate the terrain height with the lowest model level Z3.
+Z3[surface] is a few meters above the actual terrain.
 
 ### End-to-end example
 In this section we will fully import initial conditions from WRF-Chem and evolving conditions from WACCM.
