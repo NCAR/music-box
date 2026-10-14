@@ -11,8 +11,10 @@ import math
 
 
 @pytest.mark.parametrize("data, key, expected", [
+    ({'time [s]': 60}, 'time', 60),
     ({'time [sec]': 60}, 'time', 60),
     ({'time [min]': 1}, 'time', 60),
+    ({'time [hr]': 1}, 'time', 3600),
     ({'time [hour]': 1}, 'time', 3600),
     ({'time [day]': 1}, 'time', 86400),
 ])

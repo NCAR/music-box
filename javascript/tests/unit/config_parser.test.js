@@ -46,6 +46,20 @@ describe('parseBoxModelOptions', () => {
     assert.equal(opts.chemTimeStep, 30.0);
   });
 
+  it('accepts the [sec], [hr], and [hour] aliases', () => {
+    const config = {
+      'box model options': {
+        'chemistry time step [sec]': 30.0,
+        'output time step [hr]': 1.0,
+        'simulation length [hour]': 2.0,
+      },
+    };
+    const opts = parseBoxModelOptions(config);
+    assert.equal(opts.chemTimeStep, 30.0);
+    assert.equal(opts.outputTimeStep, 3600.0);
+    assert.equal(opts.simulationLength, 7200.0);
+  });
+
   it('reads max iterations', () => {
     const config = {
       'box model options': {
