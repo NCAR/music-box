@@ -177,11 +177,9 @@ To set these configurations for your box model::
 
 This code block sets some of the attributes of the box model's options, including:
 
-- **simulation_length:** the number of time steps that the simulation lasts for,
-- **chem_step_time:** the number of time steps between each simulation calculation, and
-- **output_step_time:** the number of time steps between each output of the model.
-
-All three of these have seconds as their unit.
+- **simulation_length:** the length of the simulation, in seconds,
+- **chem_step_time:** the time between each chemistry calculation, in seconds, and
+- **output_step_time:** the time between each model output, in seconds.
 
 5. Running and Solving Your Box Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

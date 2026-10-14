@@ -42,7 +42,7 @@ def convert_time(data, key):
     """
     time_value, unit = extract_unit(data, key)
 
-    if unit == 'sec':
+    if unit in ['s', 'sec']:
         return time_value
     elif unit == 'min':
         return time_value * 60

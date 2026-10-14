@@ -39,7 +39,7 @@ The ``"box model options"`` key controls simulation timing:
     }
 
 Time values may be specified in any of the following units by appending the unit in square brackets:
-``[s]``, ``[min]``, ``[hr]``, or ``[day]``.
+``[s]`` or ``[sec]``, ``[min]``, ``[hr]`` or ``[hour]``, and ``[day]``.
 
 Mechanism
 ---------
