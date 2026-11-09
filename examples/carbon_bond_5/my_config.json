@@ -5279,7 +5279,7 @@
                 ],
                 "products": [
                     {
-                        "species name": "O",
+                        "species name": "O3P",
                         "coefficient": 1.0
                     }
                 ],
@@ -6179,6 +6179,10 @@
             },
             {
                 "name": "O",
+                "__description": "oxygen atom"
+            },
+            {
+                "name": "O3P",
                 "__description": "oxygen atom in the O3P electronic state"
             },
             {
@@ -6416,6 +6420,9 @@
                     },
                     {
                         "name": "O3"
+                    },
+                    {
+                        "name": "O3P"
                     },
                     {
                         "name": "OH"
