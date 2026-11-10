@@ -5269,7 +5269,7 @@
             },
             {
                 "type": "PHOTOLYSIS",
-                "name": "O3->O3P",
+                "name": "jno2",
                 "scaling factor": 1.0,
                 "reactants": [
                     {
@@ -5287,7 +5287,7 @@
             },
             {
                 "type": "PHOTOLYSIS",
-                "name": "O3->O1D",
+                "name": "jo3_a",
                 "scaling factor": 1.0,
                 "reactants": [
                     {
