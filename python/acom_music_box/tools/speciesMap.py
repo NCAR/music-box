@@ -75,8 +75,8 @@ def getMusicaDictionary(myFileClass, waccmSpecies=None, musicaSpecies=None):
             "pan": "PAN",
             "no3": "NO3",
             "n2o5": "N2O5",
-            "PHOTR2": "O3->O1D",    # WRF-Chem: O31D Photoloysis rate (min-1)
-            "PHOTR3": "O3->O3P"     # WRF-Chem: O33P Photoloysis rate (min-1)
+            "PHOTR2": "jo3_a",  # WRF-Chem: O3->O1D Photoloysis rate (min-1)
+            "PHOTR3": "jno2"    # WRF-Chem: O3->O3P Photoloysis rate (min-1)
         }
 
     # all common species are mapped to themselves
