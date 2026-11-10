@@ -27,7 +27,7 @@ class TestConvertCsvHeader(unittest.TestCase):
             "SURF.usr_GLYOXAL_aer.particle number concentration.# m-3")
 
     def test_passthrough(self):
-        for col in ("time.s", "ENV.temperature.K", "PHOTO.jno2.s-1", "EMIS.NO.mol m-3 s-1"):
+        for col in ("time.s", "ENV.temperature.K", "PHOTO.O3->O3P.s-1", "EMIS.NO.mol m-3 s-1"):
             self.assertEqual(convert_csv_header(col), col)
 
 
