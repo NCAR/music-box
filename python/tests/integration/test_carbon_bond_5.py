@@ -62,7 +62,6 @@ class TestCarbonBond5:
             "CONC.CRO",
             "CONC.MGLY",
             "CONC.HCO3",
-            "CONC.O1D",
             "CONC.ROR",
             "CONC.HNO3",
             "CONC.OPEN",
