@@ -24,6 +24,7 @@ Interactive Jupyter notebooks can also be found on our `GitHub <https://github.c
    box_model/index
    output/index
    examples/index
+   photolysis/index
 
 .. toctree::
    :maxdepth: 2
