@@ -6,7 +6,7 @@ Procedure
 ----------
 #. Go through a few MusicBox examples and simply verify that you can run the standard configuration. Since the examples include .csv files, you can include them in a zip file like this::
 
-    music-box/examples >>> zip -r carbon_bond_5.zip carbon_bond_5/
+    music-box/examples> zip -r carbon_bond_5.zip carbon_bond_5/
 
 #. Verify that you have everything needed in the zip file::
 
@@ -32,7 +32,7 @@ Procedure
     python3 modelToMusicBox.py --template carbon_bond_5_config.json --waccmDir "/home/drews/MusicBox/WACCM/model-output/" --date 20260827,20260827 --time 00:00,12:00 --latitude 40.0 --longitude 255.0 --altitude=2000 --topoFile ~/MusicBox/WACCM/model-output/fv_0.9x1.25_nc3000_Nsw042_Nrs008_Co060_Fi001_ZR_sgh30_24km_GRNL_MERRA2_c171218.nc --verbose --output stuff/Boulder-waccm-carbon_bond_5.csv
 
 #. We recommend using a temporary directory named something like “stuff” so you won’t confuse it later with a real github directory. Your sample output should look like this:: 
-    modeling2:/home/drews/MusicBox/music-box-535-environmental-conditions/python/acom_music_box/tools/stuff> ls -ltr
+    python/acom_music_box/tools/stuff> ls -ltr
     -rw-r--r-- 1 drews support 4172 Nov  2 14:12 Boulder-wrf-chem-carbon_bond_5.csv
     -rw-r--r-- 1 drews support 1647 Nov  2 14:12 Boulder-waccm-carbon_bond_5.csv
 
